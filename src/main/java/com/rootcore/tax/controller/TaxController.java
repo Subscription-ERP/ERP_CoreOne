@@ -11,5 +11,4 @@ public class TaxController {
 	public String taxInvoice() {
 	    return "tax/taxInvoice";
 	}
-   
 }
