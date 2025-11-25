@@ -57,13 +57,6 @@ public class HrController {
 	public String payrollReport() {
 		return "hr/payroll/payrollReport";
 	}
-	// 급여 대장 페이지 사원 조회
-//	@GetMapping("/hr/payrollReport/emplist")
-//	public String payrollReportEmplist(Model model) {
-//		List<Emp> empList = HrService.getempList(new EmpVO());
-//		model.addAttribute("empList",empList);
-//		return "hr/payroll/payrollReport";
-//	}
 	
 	// 인사평가	
 	@GetMapping("/hr/reviewMaster")

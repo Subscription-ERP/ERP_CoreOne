@@ -3,4 +3,14 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.rootcore.hr.mapper.HrMapper">
+
+	<select id="selectUserList" resultType="com.rootcore.hr.vo.UserVO">
+		SELECT user_id,
+		       user_name,
+		       dept,
+		       hire_date,
+		       job_title
+		FROM   tb_user_master
+	</select>
+
 </mapper>
