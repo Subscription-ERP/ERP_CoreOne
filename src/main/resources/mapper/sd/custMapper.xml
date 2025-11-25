@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sd.mapper.CustMapper">
+    <select id="selectCust">
+        SELECT  company_code,
+                cust_code,
+                cust_name,
+                ceo_name,
+                bno,
+                btype,
+                bitem,
+                phone,
+                fax_no,
+                cust_email,
+                address,
+                address_detail,
+                cust_type,
+                dept,
+                user_name,
+                use_status,
+                created_by,
+                create_date,
+                updated_by,
+                update_date
+        FROM tb_cust_master
+    </select>
+</mapper>

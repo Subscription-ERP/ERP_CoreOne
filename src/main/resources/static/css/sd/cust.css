@@ -1,0 +1,39 @@
+body, html {
+    overflow-x: hidden !important;
+}
+
+/* 검색 카드 높이 줄이기 */
+.query-card .card-body {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.query-card .form-control,
+.query-card .form-select {
+    padding: 0.2rem 0.4rem;
+    height: 1.9rem;
+    font-size: 0.8rem;
+    margin-right: 10px;
+}
+
+/* 라벨 공통 (검색 + 입력) */
+.query-label,
+.input-label {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin-right: 6px;     /* 라벨-입력 간격 */
+    white-space: nowrap;   /* 두 줄로 안 내려가게 */
+}
+
+/* 입력 행에서 인풋/셀렉트는 남는 공간 채우기 */
+.input-row .form-control,
+.input-row .form-select {
+    flex: 1 1 auto;
+    margin-right: 10px;
+}
+
+/* 그리드 폰트 */
+#partner-grid .tui-grid-cell {
+    font-size: 14px;
+}

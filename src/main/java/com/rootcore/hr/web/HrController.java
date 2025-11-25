@@ -1,8 +1,12 @@
 package com.rootcore.hr.web;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import com.rootcore.hr.service.HrService;
 
 
 @Controller
@@ -43,14 +47,23 @@ public class HrController {
 	}
 	
 	// 급여	
+	// 급여 관리(조회) 페이지 이동
 	@GetMapping("/hr/payrollManage")
 	public String payrollManage() {
 		return "hr/payroll/payrollManage";
 	}
+	// 급여 대장 페이지 이동
 	@GetMapping("/hr/payrollReport")
 	public String payrollReport() {
 		return "hr/payroll/payrollReport";
 	}
+	// 급여 대장 페이지 사원 조회
+//	@GetMapping("/hr/payrollReport/emplist")
+//	public String payrollReportEmplist(Model model) {
+//		List<Emp> empList = HrService.getempList(new EmpVO());
+//		model.addAttribute("empList",empList);
+//		return "hr/payroll/payrollReport";
+//	}
 	
 	// 인사평가	
 	@GetMapping("/hr/reviewMaster")

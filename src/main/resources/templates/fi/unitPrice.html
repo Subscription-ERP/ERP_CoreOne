@@ -73,7 +73,7 @@
         <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
           <div class="d-flex gap-2">
             <button class="btn btn-secondary" style="width:110px;">EXCEL</button>
-            <button class="btn btn-primary" style="width:110px;">조회</button>
+            <button class="btn btn-primary" style="width:110px;" th:>조회</button>
           </div>
         </div>
 
@@ -166,30 +166,9 @@
     </div>
   </div>
 
+<script th:src="@{/js/fi/unitPrice.js}"></script>
 
 
-<script>
-  const gridData = [
-    { 품번: '2025-HR-001', 품명: 'AAA', 단가유형: '매출단가', 단가적용일: '2025-01-02', 거래처: 'A업체', 기준단가: 500 },
-    { 품번: '2025-FI-001', 품명: 'BBB', 단가유형: '매출단가', 단가적용일: '2015-11-02', 거래처: 'B업체', 기준단가: 1200 }
-  ];
-
-  const grid = new tui.Grid({
-    el: document.getElementById('unitprice-grid'),
-    data: gridData,
-    rowHeaders: ['rowNum'],
-    scrollX: false,
-    scrollY: true,
-    columns: [
-      { header:'품번', name:'품번' },
-      { header:'품명', name:'품명' },
-      { header:'단가유형', name:'단가유형' },
-      { header:'단가적용일', name:'단가적용일' },
-      { header:'거래처', name:'거래처' },
-      { header:'기준단가', name:'기준단가' }
-    ]
-  });
-</script>
 <style>
   body, html {
     overflow-x: hidden !important;

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>거래처 관리</title>
+
+  <!-- Toast UI Grid -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+
+  <!-- Custom -->
+  <link rel="stylesheet" th:href="@{/css/sd/cust.css}">
+</head>
+
+<body layout:fragment="content">
+  <div class="p-2">
+
+    <!-- ===========================
+       조회조건 카드
+  ============================ -->
+    <div class="card query-card mb-2">
+      <div class="card-body">
+        <div class="row g-2 align-items-center">
+
+          <div class="col-md-3 d-flex">
+            <label class="query-label">거래처명</label>
+            <input type="text" id="searchName" class="form-control">
+          </div>
+
+          <div class="col-md-3 d-flex">
+            <label class="query-label">거래처 유형</label>
+            <select id="searchType" class="form-select">
+              <option value="">전체</option>
+              <option value="매입업체">매입업체</option>
+              <option value="매출업체">매출업체</option>
+              <option value="외주업체">외주업체</option>
+              <option value="내부거래사">내부거래사</option>
+            </select>
+          </div>
+
+          <div class="col-md-2 d-flex align-items-center">
+            <input type="checkbox" id="searchUse" class="form-check-input me-2">
+            <label for="searchUse" class="mb-0">사용중만</label>
+          </div>
+
+          <div class="col-md-4 d-flex justify-content-end gap-2">
+            <button class="btn btn-secondary" style="width:90px;">EXCEL</button>
+            <button id="btnSearch" class="btn btn-primary" style="width:90px;">조회</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ===========================
+       그리드 (상단)
+  ============================ -->
+    <div class="card mb-2">
+      <div class="card-body p-0">
+        <div id="partner-grid" style="height:320px;"></div>
+      </div>
+    </div>
+
+    <!-- ===========================
+       버튼
+  ============================ -->
+    <div class="col-md-8 text-end">
+      <button id="btnReset" class="btn btn-outline-secondary">초기화</button>
+      <button id="btnSave" class="btn btn-primary">저장</button>
+    </div>
+
+    <!-- 모달 포함 -->
+    <div th:replace="modal/custModal :: custModalFragment"></div>
+
+    <!-- 모달 호출 버튼 -->
+    <button type="button" class="btn btn-outline-primary btn-sm"
+            data-bs-toggle="modal" data-bs-target="#custModal">
+      거래처 조회
+    </button>
+
+
+    <!-- ===========================
+       상세 입력 (가운데)
+  ============================ -->
+    <div class="card mb-2">
+      <div class="card-body py-2">
+
+        <!-- 1줄: 거래처코드 / 상호 / 대표자명 -->
+        <div class="row g-1">
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">거래처코드</label>
+            <input id="formCode" type="text" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">상호(이름)</label>
+            <input id="formName" type="text" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">대표자명</label>
+            <input id="formCeo" type="text" class="form-control">
+          </div>
+        </div>
+
+        <!-- 2줄: 사업자등록번호 / 업태 / 종목 -->
+        <div class="row g-1 mt-1">
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">사업자번호</label>
+            <input id="formBiz" type="text" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">업태</label>
+            <input id="formBizType" type="text" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">종목</label>
+            <input id="formBizItem" type="text" class="form-control">
+          </div>
+        </div>
+
+        <!-- 3줄: 전화 / FAX / 이메일 -->
+        <div class="row g-1 mt-1">
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">전화</label>
+            <input id="formTel" type="text" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">Fax</label>
+            <input id="formFax" type="text" class="form-control">
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">이메일</label>
+            <input id="formEmail" type="email" class="form-control">
+          </div>
+        </div>
+
+        <!-- 4줄: 주소 / 상세주소 -->
+        <div class="row g-1 mt-1">
+          <div class="col-md-6 d-flex input-row">
+            <label class="input-label">주소</label>
+            <div class="d-flex flex-grow-1 gap-1">
+              <input id="formZip" type="text" class="form-control" placeholder="우편번호">
+              <button id="btnZipSearch" class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">상세주소</label>
+            <input id="formAddrDetail" type="text" class="form-control" placeholder="상세주소">
+          </div>
+        </div>
+
+        <!-- 5줄: 배송지(버튼) / 계좌번호(버튼) -->
+        <div class="row g-1 mt-1">
+          <div class="col-md-1 d-flex input-row">
+            <label class="input-label">배송지</label>
+            <button id="btnDelivery" class="btn btn-outline-secondary btn-sm">확인</button>
+          </div>
+          <div class="col-md-1 d-flex input-row">
+            <label class="input-label">계좌번호</label>
+            <button id="btnAccount" class="btn btn-outline-secondary btn-sm">확인</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===========================
+       하단 입력 (거래처유형/부서/담당자/사용여부)
+  ============================ -->
+    <div class="card">
+      <div class="card-body py-2">
+
+        <!-- 1줄: 거래처유형 / 부서 / 담당자 -->
+        <div class="row g-1">
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">거래처유형</label>
+            <select id="formType" class="form-select">
+              <option value="">선택</option>
+              <option>매입업체</option>
+              <option>매출업체</option>
+              <option>내부거래사</option>
+              <option>외주업체</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">부서</label>
+            <input id="formDept" type="text" class="form-control">
+          </div>
+
+          <div class="col-md-4 d-flex input-row">
+            <label class="input-label">담당자</label>
+            <input id="formManager" type="text" class="form-control">
+          </div>
+        </div>
+
+        <!-- 2줄: 사용여부 + 버튼들 -->
+        <div class="row g-1 mt-1">
+          <div class="col-md-4 d-flex input-row align-items-center">
+            <label class="input-label mb-0">사용여부</label>
+            <div class="ms-1">
+              <label class="me-3"><input type="radio" name="useYn" value="Y" checked> Y</label>
+              <label><input type="radio" name="useYn" value="N"> N</label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script th:src="@{/js/sd/cust.js}"></script>
+  <script>
+    let cust = ${cust};
+
+  </script>
+</body>
+
+</html>

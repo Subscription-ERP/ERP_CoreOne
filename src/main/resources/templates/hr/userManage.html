@@ -1,23 +1,630 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/layout}">
-
-<head>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}"
+>
+  <head>
     <title>사원관리</title>
+
+    <!-- BootStrap CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
     <!-- SheetJS CDN -->
-	<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+    <!-- ToastUI Grid -->
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/grid/latest/tui-grid.css"
+    />
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-</head>
 
-<body>
-    <div layout:fragment="content">
+    <!-- general.css (root/button/font/scroll 유지) -->
+    <link th:href="@{/css/general.css}" rel="stylesheet" />
+  </head>
 
-        
+  <body>
+    <div layout:fragment="content" class="page page-fluid">
+      <!-- ================= 검색/필터 섹션 ================= -->
+      <section
+        class="card-ui card-ui--search"
+        style="margin-top: 10px; display: flex; width: 100%"
+      >
+        <div
+          class="card-ui__body"
+          style="flex: 1; display: flex; align-items: center; padding: 0 12px"
+        >
+          <div class="filter-bar row g-2 align-items-center col-md-12">
+            <!-- 성명 -->
+            <div class="col-12 col-md-3">
+              <div class="field-inline">
+                <label for="keyword" class="field-inline__label">성명</label>
+                <input
+                  id="keyword"
+                  type="text"
+                  class="form-control input-base"
+                  style="flex: 1; min-width: 0"
+                />
+              </div>
+            </div>
 
-        
-        
+            <!-- 부서명 -->
+            <div class="col-12 col-md-3">
+              <div class="field-inline">
+                <label for="dept" class="field-inline__label">부서명</label>
+                <select
+                  id="dept"
+                  class="form-select input-base"
+                  style="flex: 1; min-width: 0"
+                >
+                  <option value="">전체</option>
+                  <option
+                    th:each="d : ${deptList}"
+                    th:value="${d.deptCode}"
+                    th:text="${d.deptName}"
+                  ></option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 퇴사자 포함 -->
+            <div class="col-12 col-md-2">
+              <label class="check-inline">
+                <input
+                  id="retiredYn"
+                  type="checkbox"
+                  class="check-inline__input"
+                />
+                <span class="check-inline__label">퇴사자 포함</span>
+              </label>
+            </div>
+
+            <!-- 조회 버튼 -->
+            <div class="col-12 col-md-2 ms-auto text-end">
+              <button
+                id="btnSearch"
+                type="button"
+                class="btn btn-color btn-outer"
+              >
+                조회
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 목록(Grid) 섹션 ================= -->
+      <section class="card-ui card-ui--grid section-flex">
+        <header class="card-ui__header">
+          <h6 class="card-ui__title">사원 목록</h6>
+          <small class="text-muted"
+            >행 선택 시 아래 상세 정보가 표시됩니다.</small
+          >
+        </header>
+
+        <div class="card-ui__body section-scroll p-0">
+          <div id="grid" class="grid-root"></div>
+        </div>
+      </section>
+
+      <!-- ================= 상세(탭 + 폼) 섹션 ================= -->
+      <section class="card-ui card-ui--detail section-fixed">
+        <header class="card-ui__header">
+          <!-- 탭 -->
+          <ul class="nav nav-tabs ui-tabs" id="empTabs">
+            <li class="nav-item">
+              <button
+                class="nav-link active tab-btn"
+                type="button"
+                data-tab="basic"
+              >
+                기본정보
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link tab-btn" type="button" data-tab="cert">
+                자격증
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link tab-btn" type="button" data-tab="career">
+                경력사항
+              </button>
+            </li>
+          </ul>
+
+          <!-- 우측 액션 -->
+          <div class="toolbar">
+            <button id="btnPrint" type="button" class="btn btn-white btn-inner">
+              인쇄
+            </button>
+            <button id="btnReset" type="button" class="btn btn-white btn-inner">
+              초기화
+            </button>
+            <button id="btnSave" type="button" class="btn btn-color btn-inner">
+              저장
+            </button>
+          </div>
+        </header>
+
+        <div class="card-ui__body section-scroll">
+          <!-- ===== 기본정보 ===== -->
+          <div id="tab-basic" class="tab-panel active">
+            <div class="row g-2">
+              <!-- 사진 -->
+              <div class="col-12 col-md-2">
+                <div class="photo-uploader">
+                  <img
+                    id="photoPreview"
+                    src=""
+                    alt="사진"
+                    class="photo-uploader__img d-none"
+                  />
+                  <div class="photo-uploader__placeholder">
+                    사진<br />업로드
+                  </div>
+
+                  <label for="photoInput" class="photo-uploader__overlay">
+                    <span>⬆️ 업로드</span>
+                  </label>
+                  <input
+                    id="photoInput"
+                    type="file"
+                    accept="image/*"
+                    class="d-none"
+                  />
+                </div>
+              </div>
+
+              <!-- 기본정보 폼 그리드 -->
+              <div class="col-12 col-md-10">
+                <div class="form-grid">
+                  <!-- row 1 -->
+                  <div class="form-grid__row">
+                    <div class="form-grid__label">사원번호</div>
+                    <div class="form-grid__field is-disabled">
+                      <input
+                        id="empNo"
+                        class="form-control form-control-sm input-base"
+                        readonly
+                        disabled
+                        placeholder="자동생성"
+                      />
+                    </div>
+
+                    <div class="form-grid__label">성명</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="empName"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- row 2 -->
+                  <div class="form-grid__row">
+                    <div class="form-grid__label">연락처</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="phone"
+                        class="form-control form-control-sm input-base"
+                        placeholder="010-0000-0000"
+                      />
+                    </div>
+
+                    <div class="form-grid__label">이메일</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="email"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- row 3 -->
+                  <div class="form-grid__row">
+                    <div class="form-grid__label">입사일</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="hireDate"
+                        type="date"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+
+                    <div class="form-grid__label">입사구분</div>
+                    <div class="form-grid__field">
+                      <select
+                        id="hireType"
+                        class="form-select form-select-sm input-base"
+                      >
+                        <option value="NEW">신입</option>
+                        <option value="EXP">경력</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- row 4 -->
+                  <div class="form-grid__row">
+                    <div class="form-grid__label">퇴사일</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="retireDate"
+                        type="date"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+
+                    <div class="form-grid__label">퇴사사유</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="reason"
+                        type="text"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- row 5 -->
+                  <div class="form-grid__row">
+                    <div class="form-grid__label">우편번호</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="zip"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+
+                    <div class="form-grid__label">주소</div>
+                    <div class="form-grid__field">
+                      <input
+                        id="addr"
+                        class="form-control form-control-sm input-base"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 추가정보 그리드 -->
+            <div class="form-grid mt-2">
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">부서</div>
+                <div class="form-grid__field">
+                  <select
+                    id="deptCode"
+                    class="form-select form-select-sm input-base"
+                  >
+                    <option
+                      th:each="d : ${deptList}"
+                      th:value="${d.deptCode}"
+                      th:text="${d.deptName}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="form-grid__label">직위/직급</div>
+                <div class="form-grid__field">
+                  <select
+                    id="positionCode"
+                    class="form-select form-select-sm input-base"
+                  >
+                    <option
+                      th:each="p : ${positionList}"
+                      th:value="${p.code}"
+                      th:text="${p.name}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="form-grid__label">직책</div>
+                <div class="form-grid__field">
+                  <select
+                    id="dutyCode"
+                    class="form-select form-select-sm input-base"
+                  >
+                    <option
+                      th:each="r : ${dutyList}"
+                      th:value="${r.code}"
+                      th:text="${r.name}"
+                    ></option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">재직상태</div>
+                <div class="form-grid__field">
+                  <select
+                    id="workStatus"
+                    class="form-select form-select-sm input-base"
+                  >
+                    <option value="WORK">재직</option>
+                    <option value="LEAVE">휴직</option>
+                    <option value="RETIRE">퇴사</option>
+                  </select>
+                </div>
+
+                <div class="form-grid__label">은행</div>
+                <div class="form-grid__field">
+                  <input
+                    id="bankName"
+                    class="form-control form-control-sm input-base"
+                  />
+                </div>
+
+                <div class="form-grid__label">계좌번호</div>
+                <div class="form-grid__field">
+                  <input
+                    id="accountNo"
+                    class="form-control form-control-sm input-base"
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid__row">
+                <div class="form-grid__label">비고</div>
+                <div class="form-grid__field form-grid__field--wide">
+                  <input
+                    id="remark"
+                    class="form-control form-control-sm input-base"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 자격증 ===== -->
+          <div id="tab-cert" class="tab-panel">
+            <div class="text-muted small">자격증 영역 (추후 Grid/폼 구성)</div>
+          </div>
+
+          <!-- ===== 경력사항 ===== -->
+          <div id="tab-career" class="tab-panel">
+            <div class="text-muted small">
+              경력사항 영역 (추후 Grid/폼 구성)
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-</body>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        /* ------------------------------------------------------------------
+         * 0) DOM 유틸
+         * ------------------------------------------------------------------ */
+        const $ = (sel) => document.querySelector(sel);
+
+        /* ------------------------------------------------------------------
+         * 1) Toast UI Grid 생성
+         * ------------------------------------------------------------------ */
+        const Grid = tui.Grid;
+        const gridEl = $("#grid");
+
+        const grid = new Grid({
+          el: gridEl,
+          rowHeaders: ["checkbox"],
+          bodyHeight: 300,
+          columns: [
+            { header: "사원번호", name: "empNo", width: 120 },
+            { header: "성명", name: "empName", width: 100 },
+            { header: "부서명", name: "deptName", width: 120 },
+            { header: "입사일", name: "hireDate", width: 110 },
+            { header: "직위/직급", name: "positionName", width: 110 },
+            { header: "직책", name: "dutyName", width: 90 },
+            { header: "연락처", name: "phone", width: 130 },
+            { header: "Email", name: "email", width: 160 },
+          ],
+          data: [],
+        });
+
+        /* ------------------------------------------------------------------
+         * 2) 목록 조회
+         * ------------------------------------------------------------------ */
+        async function loadList() {
+          const keywordEl = $("#keyword");
+          const deptEl = $("#dept");
+          const retiredYnEl = $("#retiredYn");
+
+          const params = new URLSearchParams({
+            keyword: keywordEl ? keywordEl.value : "",
+            dept: deptEl ? deptEl.value : "",
+            retiredYn: retiredYnEl && retiredYnEl.checked ? "Y" : "N",
+          });
+
+          const res = await fetch(`/hr/emp/list?${params.toString()}`);
+          const data = await res.json();
+          grid.resetData(data);
+        }
+
+        const btnSearch = $("#btnSearch");
+        if (btnSearch) btnSearch.addEventListener("click", loadList);
+        loadList();
+
+        /* ------------------------------------------------------------------
+         * 3) 행 클릭 → 상세 조회
+         * ------------------------------------------------------------------ */
+        grid.on("click", async (ev) => {
+          if (ev.rowKey == null) return;
+
+          const row = grid.getRow(ev.rowKey);
+          const empNo = row.empNo;
+          if (!empNo) return;
+
+          const res = await fetch(`/hr/emp/${empNo}`);
+          const detail = await res.json();
+
+          // ✅ 새 HTML의 id들로 바인딩
+          if ($("#empNo")) $("#empNo").value = detail.empNo ?? "";
+          if ($("#empName")) $("#empName").value = detail.empName ?? "";
+          if ($("#phone")) $("#phone").value = detail.phone ?? "";
+          if ($("#email")) $("#email").value = detail.email ?? "";
+          if ($("#hireDate")) $("#hireDate").value = detail.hireDate ?? "";
+          if ($("#hireType")) $("#hireType").value = detail.hireType ?? "NEW";
+          if ($("#deptCode")) $("#deptCode").value = detail.deptCode ?? "";
+          if ($("#positionCode"))
+            $("#positionCode").value = detail.positionCode ?? "";
+          if ($("#dutyCode")) $("#dutyCode").value = detail.dutyCode ?? "";
+          if ($("#workStatus"))
+            $("#workStatus").value = detail.workStatus ?? "WORK";
+          if ($("#zip")) $("#zip").value = detail.zip ?? "";
+          if ($("#addr")) $("#addr").value = detail.addr ?? "";
+
+          // ✅ 새로 바뀐 retireDate / reason 바인딩
+          if ($("#retireDate"))
+            $("#retireDate").value = detail.retireDate ?? "";
+          if ($("#reason")) $("#reason").value = detail.reason ?? "";
+
+          // ✅ 추가정보
+          if ($("#bankName")) $("#bankName").value = detail.bankName ?? "";
+          if ($("#accountNo")) $("#accountNo").value = detail.accountNo ?? "";
+          if ($("#remark")) $("#remark").value = detail.remark ?? "";
+        });
+
+        /* ------------------------------------------------------------------
+         * 4) 저장(등록/수정)
+         * ------------------------------------------------------------------ */
+        const btnSave = $("#btnSave");
+        if (btnSave) {
+          btnSave.addEventListener("click", async () => {
+            const payload = {
+              empNo: $("#empNo")?.value ?? "",
+              empName: $("#empName")?.value ?? "",
+              phone: $("#phone")?.value ?? "",
+              email: $("#email")?.value ?? "",
+              hireDate: $("#hireDate")?.value ?? "",
+              hireType: $("#hireType")?.value ?? "NEW",
+              deptCode: $("#deptCode")?.value ?? "",
+              positionCode: $("#positionCode")?.value ?? "",
+              dutyCode: $("#dutyCode")?.value ?? "",
+              workStatus: $("#workStatus")?.value ?? "WORK",
+              zip: $("#zip")?.value ?? "",
+              addr: $("#addr")?.value ?? "",
+              retireDate: $("#retireDate")?.value ?? "",
+              reason: $("#reason")?.value ?? "",
+              bankName: $("#bankName")?.value ?? "",
+              accountNo: $("#accountNo")?.value ?? "",
+              remark: $("#remark")?.value ?? "",
+            };
+
+            const res = await fetch("/hr/emp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            if (res.ok) {
+              alert("저장 완료");
+              loadList();
+            } else {
+              alert("저장 실패");
+            }
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         * 5) 탭 전환 (data-tab 기준으로 tab-xxx 보여주기)
+         * ------------------------------------------------------------------ */
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".tab-btn")
+              .forEach((b) => b.classList.remove("active"));
+            document
+              .querySelectorAll(".tab-panel")
+              .forEach((p) => p.classList.remove("active"));
+
+            btn.classList.add("active");
+            const targetId = "tab-" + btn.dataset.tab; // basic/cert/career
+            const panel = $("#" + targetId);
+            if (panel) panel.classList.add("active");
+          });
+        });
+
+        /* ------------------------------------------------------------------
+         * 6) 사진 업로드 미리보기
+         * ------------------------------------------------------------------ */
+        const photoInput = $("#photoInput");
+        if (photoInput) {
+          photoInput.addEventListener("change", (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const url = URL.createObjectURL(file);
+            const img = $("#photoPreview");
+            if (!img) return;
+
+            img.src = url;
+            img.classList.remove("d-none");
+            $(".photo-uploader__placeholder")?.classList.add("d-none");
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         * 7) 초기화
+         * ------------------------------------------------------------------ */
+        const btnReset = $("#btnReset");
+        if (btnReset) {
+          btnReset.addEventListener("click", () => {
+            // 기본정보 탭 안 input/select만 비움
+            document
+              .querySelectorAll("#tab-basic input, #tab-basic select")
+              .forEach((el) => {
+                if (el.type === "checkbox") el.checked = false;
+                else el.value = "";
+              });
+
+            // 사진 미리보기도 초기화
+            const img = $("#photoPreview");
+            if (img) {
+              img.src = "";
+              img.classList.add("d-none");
+              $(".photo-uploader__placeholder")?.classList.remove("d-none");
+            }
+          });
+        }
+
+        /* ------------------------------------------------------------------
+         * (옵션) 엑셀 export/upload 버튼이 나중에 다시 생기면 여기만 살리면 됨
+         * 현재 HTML에는 없으므로 null 가드만 둠
+         * ------------------------------------------------------------------ */
+        const exportBtn = $("#exportBtn");
+        if (exportBtn) {
+          exportBtn.addEventListener("click", () => {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, "0");
+            const d = String(now.getDate()).padStart(2, "0");
+            const today = `${y}${m}${d}`;
+
+            grid.export("xlsx", {
+              fileName: `사원목록_${today}`,
+              useFormattedValue: true,
+            });
+          });
+        }
+
+        const excelUploadBtn = $("#excelUploadBtn");
+        const excelFileInput = $("#excelFileInput");
+        if (excelUploadBtn && excelFileInput) {
+          excelUploadBtn.addEventListener("click", () =>
+            excelFileInput.click()
+          );
+          excelFileInput.addEventListener("change", (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            alert(`선택된 파일: ${file.name}`);
+          });
+        }
+      });
+    </script>
+  </body>
 </html>

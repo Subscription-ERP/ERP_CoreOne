@@ -1,15 +1,547 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <head>
-    <title>급여대장</title>
+<title>급여대장</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- TOAST UI Grid CDN 및 JS 제거 -->
+
+<style>
+/* AdminLTE 4 환경에서는 기본적으로 Bootstrap 5가 제공되므로, 
+    AdminLTE 클래스와 Bootstrap 유틸리티 클래스(flex, gap, p, m 등)를 주로 사용합니다.
+*/
+
+/* 폼 라벨 너비 고정: 수직 정렬 및 일관성을 위한 커스텀 클래스 */
+.input-group-label {
+	width: 140px;
+	min-width: 140px;
+	font-weight: 600;
+	flex-shrink: 0;
+	/* AdminLTE form-group margin-bottom 제거 및 flex 설정 */
+	display: flex;
+	align-items: center;
+	margin-right: 0.5rem;
+}
+
+/* 폼 그룹 레이아웃: 라벨-인풋이 한 줄에 오도록 flex 사용 */
+.form-horizontal-group {
+	display: flex;
+	margin-bottom: 1rem;
+	align-items: center;
+}
+
+/* 검색 조건 패널 스타일: AdminLTE 카드 헤더/바디와 유사하게 */
+.search-criteria {
+	background-color: var(--gray-light, #e9ecef);
+	border-radius: 0.25rem;
+	padding: 1rem;
+	margin-bottom: 1rem;
+}
+
+/* 라디오 버튼 그룹 간격 조정 (AdminLTE/BS5 기본 스타일 사용) */
+.radio-group-wrap {
+	display: flex;
+	gap: 1.5rem;
+}
+
+/* 테이블 컨테이너 높이 설정 (스크롤 영역) */
+.table-scroll-container {
+	height: 450px; /* Grid 대체 높이 */
+	overflow-y: auto;
+	border: 1px solid #dee2e6;
+	border-radius: 0.25rem;
+}
+
+/* 테이블 헤더 고정 (옵션) */
+.table-scroll-container table thead th {
+	position: sticky;
+	top: 0;
+	background-color: #f8f9fa; /* AdminLTE light header background */
+	z-index: 10;
+}
+</style>
 </head>
 
 <body>
-    <div layout:fragment="content">
-        <h3>급여대장</h3>
-    </div>
-</body>
+	<div layout:fragment="content">
+		<!-- AdminLTE Content Wrapper 시작 -->
+		<div class="content">
+			<div class="container-fluid">
+				<div class="row">
+					<!-- 좌측: 급여대장 조회 (Card: 흰색 유지) -->
+					<div class="col-lg-6">
+						<div class="card mt-1">
+							<div class="card-header border-bottom-0">
+								<h3 class="card-title">
+									<i class="fas fa-search me-2"></i>급여대장 조회
+								</h3>
+							</div>
+							<div class="card-body">
+								<!-- 검색 조건 영역 -->
+								<div class="search-criteria">
+									<div class="row">
+										<!-- 급여구분 select박스 -->
+										<div class="col-md-3 mb-2">
+											<!-- AdminLTE form-select-sm 사용 -->
+											<select name="salary-type" class="form-select form-select-sm">
+												<option value="">급여구분</option>
+												<option value="급여">급여</option>
+												<option value="상여">상여</option>
+											</select>
+										</div>
+										<!-- 대장명칭 -->
+										<div class="col-md-3 mb-2">
+											<input type="text" class="form-control form-control-sm"
+												placeholder="대장명칭">
+										</div>
+										<!-- 초기화 조회 버튼 -->
+										<div class="col-md-6 d-flex justify-content-end gap-2">
+											<!-- AdminLTE/Bootstrap 버튼 스타일 적용 -->
+											<button class="btn btn-sm btn-secondary">
+												<i class="fas fa-redo me-1"></i> 초기화
+											</button>
+											<button class="btn btn-sm btn-success" id="salary-search-btn">
+												<i class="fas fa-check me-1"></i> 조회
+											</button>
+										</div>
+									</div>
+									<div class="row">
+										<!-- 지급일: col-md-6에서 col-md-3로 변경하여 상위 입력 필드와 너비 일치 -->
+										<div class="col-md-3 mb-3 mb-md-0">
+											<input type="date" class="form-control form-control-sm"
+												placeholder="지급일">
+										</div>
+										<!-- 남은 공간은 비워둡니다 -->
+										<div class="col-md-9"></div>
+									</div>
+								</div>
 
+								<!-- AdminLTE/Bootstrap Table 컨테이너 (급여대장 조회) -->
+								<div class="table-scroll-container">
+									<!-- table-responsive: 반응형 테이블, table: 기본 스타일, table-hover: 마우스 오버 시 색상 변경 -->
+									<table class="table table-sm table-striped table-hover">
+										<thead class="bg-light">
+											<tr>
+												<th style="width: 100px;">신고귀속</th>
+												<th style="width: 60px;">구분</th>
+												<th>대장명칭</th>
+												<th style="width: 100px;">지급일</th>
+												<th style="width: 70px;" class="text-end">인원수</th>
+												<th style="width: 100px;" class="text-center">급여계산</th>
+												<th style="width: 120px;" class="text-end">지급총액</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- Mock Data for Salary Ledger -->
+											<tr>
+												<td class="text-center">2025/11-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 11월 정기 급여</td>
+												<td class="text-center">2025-12-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="1">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/11-1</td>
+												<td class="text-center">상여</td>
+												<td>2025년 추석 상여</td>
+												<td class="text-center">2025-11-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="2">계산하기</a></td>
+												<td class="text-end">5,000,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/10-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 10월 정기 급여</td>
+												<td class="text-center">2025-11-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="3">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<!-- 더미 데이터 추가 (스크롤 테스트용) -->
+											<tr>
+												<td class="text-center">2025/09-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 9월 정기 급여</td>
+												<td class="text-center">2025-10-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="4">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/08-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 8월 정기 급여</td>
+												<td class="text-center">2025-09-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="5">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/07-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 7월 정기 급여</td>
+												<td class="text-center">2025-08-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="6">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/06-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 6월 정기 급여</td>
+												<td class="text-center">2025-07-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="7">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/05-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 5월 정기 급여</td>
+												<td class="text-center">2025-06-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="8">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/04-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 4월 정기 급여</td>
+												<td class="text-center">2025-05-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="9">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/03-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 3월 정기 급여</td>
+												<td class="text-center">2025-04-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="10">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/02-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 2월 정기 급여</td>
+												<td class="text-center">2025-03-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="11">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+											<tr>
+												<td class="text-center">2025/01-1</td>
+												<td class="text-center">급여</td>
+												<td>2025년 1월 정기 급여</td>
+												<td class="text-center">2025-02-10</td>
+												<td class="text-end">10</td>
+												<td class="text-center"><a href="#"
+													class="text-primary calculate-link" data-ledger-id="12">계산하기</a></td>
+												<td class="text-end">21,699,000</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<!-- Table End -->
+							</div>
+						</div>
+					</div>
+
+					<!-- 우측: 상여등록 (Card: 흰색 유지) -->
+					<div class="col-lg-6">
+						<div class="card mt-1">
+							<div class="card-header">
+								<h3 class="card-title">
+									<i class="fas fa-file-invoice-dollar me-2"></i>상여등록
+								</h3>
+								<div class="card-tools">
+									<!-- AdminLTE 버튼 스타일 적용 -->
+									<button class="btn btn-sm btn-info" id="save-button">
+										<i class="fas fa-save me-1"></i> 저장
+									</button>
+								</div>
+							</div>
+
+							<div class="card-body">
+								<!-- 상여 등록 폼 -->
+								<form>
+									<!-- 폼 그룹 1: 귀속연월 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">귀속연월</label> <input
+											type="month" class="form-control form-control-sm">
+									</div>
+
+									<!-- 폼 그룹 2: 상여지급방법 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">상여지급방법</label>
+										<div class="radio-group-wrap">
+											<!-- AdminLTE/BS5 Radio 버튼 스타일 적용 -->
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="radio" id="지급률"
+													name="지급방법" checked> <label
+													class="form-check-label" for="지급률">지급률</label>
+											</div>
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="radio" id="지급액"
+													name="지급방법"> <label class="form-check-label"
+													for="지급액">지급액</label>
+											</div>
+										</div>
+									</div>
+
+									<!-- 폼 그룹 3: 지급률 및 지급금액 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">지급률 및 지급금액</label> <input
+											type="text" class="form-control form-control-sm" value=""
+											placeholder="숫자만 입력">
+									</div>
+
+									<!-- 폼 그룹 4: 대장명칭 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">대장명칭</label> <input
+											type="text" class="form-control form-control-sm">
+									</div>
+
+									<!-- 폼 그룹 5: 대장기간시작일 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">대장기간시작일</label> <input
+											type="date" class="form-control form-control-sm">
+									</div>
+
+									<!-- 폼 그룹 6: 대장기간종료일 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">대장기간종료일</label> <input
+											type="date" class="form-control form-control-sm">
+									</div>
+
+									<!-- 폼 그룹 7: 지급일 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">지급일</label> <input
+											type="date" class="form-control form-control-sm">
+									</div>
+
+									<!-- 폼 그룹 8: 인원수 -->
+									<div class="form-horizontal-group">
+										<label class="input-group-label">인원수</label> <input
+											type="text" class="form-control form-control-sm bg-light"
+											disabled value="7">
+									</div>
+								</form>
+
+								<!-- 대상자 선정 섹션 -->
+								<div>
+									<!-- 대상자 검색 폼 -->
+									<div class="d-flex gap-2 mb-3 align-items-center">
+										<!-- 성명 라벨 + 인풋을 묶어 가로 정렬 및 간결한 스타일 적용 -->
+										<div class="d-flex align-items-center gap-1 flex-shrink-0">
+											<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">성명</label>
+											<input type="text" id="target-name-input" class="form-control form-control-sm" placeholder="성명">
+										</div>
+										<div class="d-flex align-items-center gap-1 flex-shrink-0">
+											<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">부서명</label>
+											<input type="text" id="target-name-input" class="form-control form-control-sm" placeholder="부서명">
+										</div>
+										<div class="d-flex align-items-center gap-1 flex-shrink-0">
+											<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">입사일</label>
+											<input type="date" id="target-name-input" class="form-control form-control-sm" placeholder="입사일">
+										</div>
+										
+										<!-- ms-auto를 추가하여 오른쪽으로 정렬 -->
+										<button class="btn btn-sm btn-secondary flex-shrink-0 ms-auto" id="target-reset-btn">
+											<i class="fas fa-redo me-1"></i>초기화
+										</button>
+										<button class="btn btn-sm btn-success flex-shrink-0" id="target-search-btn">
+											<i class="fas fa-search me-1"></i>조회
+										</button>
+									</div>
+
+									<!-- AdminLTE/Bootstrap Table 컨테이너 (대상자 선정) -->
+									<div class="table-scroll-container" style="height: 250px;">
+										<table class="table table-sm table-striped table-hover">
+											<thead class="bg-light">
+												<tr>
+													<th style="width: 50px;" class="text-center">선택</th>
+													<th>사원번호</th>
+													<th>성명</th>
+													<th>부서명</th>
+													<th>입사일</th>
+													<th>직위</th>
+												</tr>
+											</thead>
+											<tbody>
+												<!-- Mock Data for Target Selection -->
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-001</td>
+													<td>김한솔</td>
+													<td>인사팀</td>
+													<td>2025-01-02</td>
+													<td>사원</td>
+												</tr>
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-002</td>
+													<td>이하나</td>
+													<td>개발팀</td>
+													<td>2025-03-15</td>
+													<td>대리</td>
+												</tr>
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-003</td>
+													<td>박세준</td>
+													<td>영업팀</td>
+													<td>2024-07-20</td>
+													<td>과장</td>
+												</tr>
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-004</td>
+													<td>정민서</td>
+													<td>인사팀</td>
+													<td>2025-01-02</td>
+													<td>사원</td>
+												</tr>
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-005</td>
+													<td>최지우</td>
+													<td>개발팀</td>
+													<td>2025-03-15</td>
+													<td>대리</td>
+												</tr>
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-006</td>
+													<td>김민준</td>
+													<td>영업팀</td>
+													<td>2024-07-20</td>
+													<td>과장</td>
+												</tr>
+												<tr>
+													<td class="text-center"><input type="checkbox"
+														class="form-check-input target-checkbox" checked></td>
+													<td>2025-HR-007</td>
+													<td>유나영</td>
+													<td>인사팀</td>
+													<td>2025-01-02</td>
+													<td>사원</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+									<!-- Table End -->
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- AdminLTE Content Wrapper 끝 -->
+
+	<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // =========================================================
+    // 1. 급여대장 계산하기 링크 클릭 이벤트
+    // =========================================================
+    document.querySelectorAll('.calculate-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const ledgerId = e.target.getAttribute('data-ledger-id');
+            const rowText = e.target.closest('tr').children[2].textContent;
+            console.log(`[ID: ${ledgerId}, 대장명: ${rowText}] 급여계산 화면으로 이동 또는 계산 로직을 실행합니다.`);
+            // 여기에 실제 라우팅 또는 모달 팝업 로직을 구현합니다.
+        });
+    });
+    
+    // =========================================================
+    // 2. 대상자 선정 인원수 자동 업데이트 로직
+    // =========================================================
+    const headcountInput = document.querySelector('.card-body input[disabled]');
+    const targetCheckboxes = document.querySelectorAll('.target-checkbox');
+
+    function updateHeadcount() {
+        // 체크된 체크박스만 카운트
+        const checkedCount = document.querySelectorAll('.target-checkbox:checked').length;
+        if (headcountInput) {
+            headcountInput.value = checkedCount.toLocaleString('ko-KR');
+        }
+    }
+
+    // 초기 로드 시 인원수 설정
+    updateHeadcount(); 
+
+    // 체크박스 클릭 이벤트 리스너 설정
+    targetCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateHeadcount);
+    });
+
+
+    // =========================================================
+    // 3. 우측 상여등록 '저장' 버튼 클릭 이벤트
+    // =========================================================
+    const saveButton = document.getElementById('save-button');
+    if (saveButton) {
+        saveButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const selectedCount = document.querySelectorAll('.target-checkbox:checked').length;
+            
+            if (selectedCount === 0) {
+                // 경고 메시지를 사용자에게 보여주는 커스텀 모달이나 토스트를 사용해야 합니다.
+                // 임시로 alert 대신 console.warn을 사용합니다.
+                console.warn('저장할 대상자를 한 명 이상 선택해주세요.'); 
+                alert('저장할 대상자를 한 명 이상 선택해주세요.');
+                return;
+            }
+            
+            console.log('상여 등록 정보를 저장 시도합니다. (총 인원:', selectedCount, ')');
+            // 실제 저장 로직 (AJAX call) 구현
+        });
+    }
+
+    // =========================================================
+    // 4. 대상자 선정 '조회' / '초기화' 버튼 클릭 이벤트
+    // =========================================================
+    document.getElementById('target-search-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('대상자 선정 조회 버튼 클릭: 검색 조건으로 데이터 리로드 시뮬레이션');
+        // 실제 데이터 검색 로직 구현
+    });
+
+    document.getElementById('target-reset-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('대상자 선정 검색 조건 초기화');
+        // 검색 조건 input 초기화 로직 구현
+    });
+
+});
+</script>
+</body>
 </html>
