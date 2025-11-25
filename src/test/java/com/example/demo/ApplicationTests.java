@@ -9,7 +9,7 @@ import com.rootcore.Application;
 class ApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void contextLoads() {  
 	}
 
 }
