@@ -1,0 +1,398 @@
+@charset "UTF-8";
+/* GoogleFont(Roboto, NotoSans KR) */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+:root {
+  /* brand */
+  --base-color-soft: #788bc9;
+  --base-color: #364d99;
+
+  /* ui color */
+  --white-color: #fff;
+  --light-gray-color: #eee;
+  --mid-light-gray-color: #dfdfdf;
+  --gray-color: #ccc;
+  --disabled-color: #888;
+  --black-color: #444;
+  --radius: 8px;
+
+  /* fonts */
+  --font-base: "Noto Sans KR", "Roboto", sans-serif;
+  --fs-b: 17px;
+  --fs-n: 15px;
+  --fs-s: 13px;
+}
+
+/* Font 및 스크롤 --------------------------------------------------------------------------
+   Toast UI Grid 폰트 강제적용 */
+body {
+  font-family: var(--font-base);
+  font-size: var(--fs-n);
+  color: var(--black-color);
+  font-weight: 400;
+  overflow: hidden; /* 스크롤제거 */
+}
+input,
+select,
+textarea {
+  font-family: var(--font-base);
+  font-weight: 400;
+}
+.tui-grid-container,
+.tui-grid-container *,
+.tui-grid-cell-content,
+.tui-grid-header-area,
+.tui-grid-header-area * {
+  font-family: var(--font-base), var(--font-en), sans-serif !important;
+}
+
+/* 카드 ----------------------------------------------------------------------------------
+  .core-card : 공통카드
+  .search-card : 조회(높이지정통일)
+*/
+.core-card {
+  background-color: var(--white-color);
+  border: 1px solid var(--mid-light-gray-color);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  margin: 10px;
+  padding: 12px;
+  color: inherit;
+  overflow: hidden;
+}
+.seach-card {
+  height: 120px;
+  padding: 5px 8px;
+}
+.hr-card-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.hr-card-title {
+  font-weight: 700;
+  font-size: var(--fs-s);
+  color: var(--text-color);
+}
+
+/* 버튼 ----------------------------------------------------------------------------------
+  btn-inner : 내부에 들어가는 버튼들 (초기화/저장 등)
+  btn-outer : 외부에 들어가는 버튼(조회 등)
+  btn-color : 기본색 버튼
+  btn-white : 흰색 버튼
+*/
+.btn-inner {
+  width: 75px;
+  height: auto;
+  padding: 8px 12px;
+  font-size: var(--fs-n);
+}
+.btn-outer {
+  width: 100px;
+  height: 45px;
+  padding: 0px 8px;
+  font-size: var(--fs-n);
+}
+.btn-color {
+  background-color: var(--base-color);
+  color: var(--white-color);
+}
+.btn-color:hover {
+  background-color: var(--base-color-soft);
+  color: var(--white-color);
+}
+.btn-white {
+  background-color: var(--white-color);
+  border: 1px solid var(--gray-color);
+}
+.btn-white:hover {
+  border: 1px solid var(--gray-color);
+  background-color: var(--light-gray-color);
+}
+
+/* disabled ----------------------------------------------------------------------------- */
+.disabled {
+  background: var(--white-color) !important;
+  color: var(--disabled-f-color) !important;
+  cursor: not-allowed !important;
+}
+
+/* ==========================================================================
+   - 카드/레이아웃/폼/탭/그리드/사진 업로더 공통
+   ========================================================================== */
+
+/* ===== Page Layout ======================================================= */
+.page.page-fluid {
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  padding: 0 6px;
+}
+
+/* 섹션 높이 패턴 */
+.section-flex {
+  flex: 1 1 auto;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.section-fixed {
+  flex: 0 0 340px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.section-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+/* ===== Card System ======================================================= */
+.card-ui {
+  background: var(--white-color);
+  border: 1px solid var(--mid-light-gray-color);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  margin: 0 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card-ui--search {
+  height: 120px;
+}
+.card-ui--search .input-base {
+  border: 1px solid var(--mid-light-gray-color) !important;
+  border-radius: 6px !important;
+  background: var(--white-color) !important;
+  box-shadow: none !important;
+}
+
+.card-ui__header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--mid-light-gray-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card-ui__title {
+  font-size: var(--fs-s);
+  font-weight: 700;
+  margin: 0;
+  color: var(--black-color);
+}
+.card-ui__body {
+  padding: 10px 12px;
+}
+
+/* ===== Filter Bar (검색/필터) ============================================ */
+.filter-bar .field-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.field-inline {
+  gap: 8px;
+  height: 34px; /* input과 정확히 동일한 높이 */
+  padding: 0;
+}
+.field-inline__label {
+  font-size: var(--fs-s);
+  font-weight: 700;
+  margin: 0;
+  height: 34px; /* 라벨도 동일 높이 */
+  display: flex;
+  align-items: center; /* 텍스트도 중앙 */
+  white-space: nowrap;
+  line-height: 1; /* 라벨 이상한 여백 제거 */
+}
+
+/* 체크박스 인라인 */
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px; /* input-base와 높이 맞춤 */
+  cursor: pointer;
+}
+.check-inline__input {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--mid-light-gray-color);
+  border-radius: 3px;
+  appearance: none;
+  background: var(--white-color);
+  display: grid;
+  place-items: center;
+}
+.check-inline__input:checked {
+  background: var(--base-color);
+  border-color: var(--base-color);
+}
+.check-inline__input:checked::after {
+  content: "✓";
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+}
+.check-inline__label {
+  font-size: var(--fs-n);
+}
+
+/* ===== Input Base (general의 컨셉 유지 + 디테일만) ======================= */
+.input-base {
+  height: 34px !important; /* input 통일 */
+  padding: 0 8px !important; /* padding 부분 제거 */
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+}
+.input-base:focus {
+  border-color: var(--base-color-soft);
+  box-shadow: 0 0 0 0.15rem rgba(54, 77, 153, 0.12);
+}
+
+/* select 화살표/여백 통일 */
+.input-base.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  height: 34px !important;
+  padding: 0 30px 0 8px !important;
+  background: transparent;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23444' height='14' viewBox='0 0 20 20' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M5.5 7.5l4.5 4.5 4.5-4.5'/></svg>");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  background-size: 12px;
+}
+.form-control.input-base,
+.form-select.input-base {
+  padding: 4px 8px;
+}
+
+/* ===== Tabs =============================================================== */
+.ui-tabs .nav-link {
+  font-size: var(--fs-s);
+  font-weight: 700;
+  color: var(--black-color);
+}
+.ui-tabs .nav-link.active {
+  color: var(--base-color);
+  border-color: var(--mid-light-gray-color) var(--mid-light-gray-color) #fff;
+}
+
+/* 탭 패널 */
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
+}
+
+/* ===== Toolbar =========================================================== */
+.toolbar {
+  display: flex;
+  gap: 6px;
+}
+
+/* ===== Grid Root ========================================================= */
+.grid-root {
+  min-height: 260px;
+}
+
+/* ===== Form Grid (상세 입력 격자) ======================================== */
+.form-grid {
+  border: 1px solid var(--mid-light-gray-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.form-grid__row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr 1.4fr; /* 라벨/필드 2세트 */
+  border-bottom: 1px solid var(--mid-light-gray-color);
+}
+.form-grid__row:last-child {
+  border-bottom: 0;
+}
+
+.form-grid__row--3col {
+  grid-template-columns: 1fr 1.4fr 1fr 1.4fr 1fr 1.4fr; /* 라벨/필드 3세트 */
+}
+
+.form-grid__label {
+  background: #f8f9fa;
+  padding: 6px 10px;
+  font-size: var(--fs-s);
+  font-weight: 700;
+  border-right: 1px solid var(--mid-light-gray-color);
+  display: flex;
+  align-items: center;
+}
+.form-grid__field {
+  padding: 4px 6px;
+  border-right: 1px solid var(--mid-light-gray-color);
+  display: flex;
+  align-items: center;
+}
+.form-grid__field:last-child {
+  border-right: 0;
+}
+.form-grid__field--wide {
+  grid-column: span 3;
+}
+
+/* disabled wrapper */
+.form-grid__field.is-disabled .input-base {
+  background: #f6f6f6 !important;
+  color: var(--disabled-color) !important;
+}
+
+/* ===== Photo Uploader ==================================================== */
+.photo-uploader {
+  height: 170px;
+  width: calc(170px * 3 / 4);
+  position: relative;
+  border: 1px dashed var(--mid-light-gray-color);
+  border-radius: 6px;
+  background: #f8f9fa;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.photo-uploader__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-uploader__placeholder {
+  font-size: var(--fs-s);
+  color: var(--disabled-color);
+  line-height: 1.4;
+}
+.photo-uploader__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-weight: 700;
+  opacity: 0;
+  transition: 0.15s ease;
+}
+.photo-uploader:hover .photo-uploader__overlay {
+  opacity: 1;
+}
