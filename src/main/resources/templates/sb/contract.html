@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>계약서</title>
+<style>
+.subscription-container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding-top: 20px;
+}
+
+.step-header {
+	max-width: 900px;
+	margin: 0 auto 40px auto;
+}
+
+.step-header-inner {
+	column-gap: 80px;
+}
+
+.section-title {
+	margin-bottom: 25px;
+}
+
+/* 모달 크기 & 안쪽 계약서 카드 스타일 */
+.contract-modal .modal-dialog {
+	max-width: 800px;
+}
+
+.contract-modal .modal-content {
+	border-radius: 10px;
+}
+
+.contract-paper {
+	border: 1px solid #ddd;
+	padding: 24px 28px;
+	background: #fff;
+	max-height: 60vh;
+	overflow-y: auto;
+	font-size: 0.9rem;
+	line-height: 1.5;
+}
+
+.btn-dark {
+	background: #000;
+	border-color: #000;
+}
+
+.btn-dark:hover {
+	background: #222;
+	border-color: #222;
+}
+</style>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="subscription-container">
+
+			<!-- 상단 단계 표시 -->
+			<div class="row step-header">
+				<div class="col-12 d-flex justify-content-center step-header-inner">
+
+					<!-- 1단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
+						<div class="mt-2">구독 정보</div>
+					</div>
+
+					<!-- 2단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">2</div>
+						<div class="mt-2">사용자 정보</div>
+					</div>
+
+					<!-- 3단계: 현재 단계 -->
+					<div class="text-center">
+						<div
+							class="rounded-circle d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
+							3</div>
+						<div class="mt-2 fw-bold">계약서</div>
+					</div>
+
+					<!-- 4단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">4</div>
+						<div class="mt-2">결제 완료</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 제목 -->
+			<div class="row section-title">
+				<div class="col-12 text-center">
+					<h4 class="fw-bold mb-1">ERP 시스템 이용 계약서</h4>
+					<div class="text-secondary">계약 내용을 확인하신 후 동의 버튼을 눌러 결제 단계로
+						이동합니다.</div>
+				</div>
+			</div>
+
+			<!-- 가운데 버튼 + 계약서 모달 트리거 -->
+			<div class="row">
+				<div class="col-12 d-flex justify-content-center">
+					<button type="button" class="btn btn-dark px-5 py-2"
+						data-bs-toggle="modal" data-bs-target="#contractModal">
+						계약서 보기</button>
+				</div>
+			</div>
+
+			<!-- 하단 이전/다음 버튼 -->
+			<div class="row mt-4">
+				<div class="col-12 d-flex justify-content-center gap-3">
+					<a th:href="@{/subscribe/step2}"
+						class="btn btn-outline-secondary px-4"> 이전으로 </a>
+					<!-- 동의 버튼은 모달 안에도 한 번 더 있음 -->
+					<a th:href="@{/subscribe/step4}" class="btn btn-dark px-4">
+						다음으로 </a>
+				</div>
+			</div>
+
+		</div>
+
+		<!-- ===== 계약서 모달 ===== -->
+		<div class="modal fade contract-modal" id="contractModal"
+			tabindex="-1" aria-labelledby="contractModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+
+					<div class="modal-header border-0">
+						<h5 class="modal-title fw-bold" id="contractModalLabel">ERP
+							시스템 이용 계약서</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+
+					<div class="modal-body">
+
+						<div class="contract-paper">
+							<h6 class="text-center mb-4">ERP 시스템 이용 계약서</h6>
+
+							<p>
+								<strong>제1조(목적)</strong><br /> 본 계약은 서비스 제공사업자(이하 “제공사”)와
+								고객사(이하 “고객”)가 ERP 서비스를 제공하고, 그 이용 조건을 정하기 위한 것입니다.
+							</p>
+
+							<p>
+								<strong>제2조(서비스 제공 내용)</strong><br /> 제공사는 회계/인사/영업 등 주요 기능을
+								포함한 ERP 서비스를 제공합니다.<br /> · 회계, 인사와 연동되는 임직원/거래처 기본 관리 기능<br />
+								· 기타 계약서에 명시된 부가 기능
+							</p>
+
+							<p>
+								<strong>제3조(이용요금 및 계약기간)</strong><br /> · 이용요금은 별도 제시된 요금제를
+								따릅니다.<br /> · 계약기간은 선택한 구독기간 동안 유효하며, 별도 해지 요청이 없으면 자동 갱신됩니다.
+							</p>
+
+							<p>
+								<strong>제4조(데이터의 소유 및 백업)</strong><br /> · 고객이 입력한 데이터의 소유권은
+								고객에게 있습니다.<br /> · 제공사는 안정적인 서비스 유지를 위해 정기적인 백업을 수행합니다.
+							</p>
+
+							<p>
+								<strong>제5조(보안 및 계정 관리)</strong><br /> · 고객은 계정 및 비밀번호를 안전하게
+								관리해야 합니다.<br /> · 다음 행위를 해서는 안 됩니다. 계정 공유 또는 무단 재판매 시스템 공격, 비인가
+								접근, 과도한 트래픽 유발 관련 법령 또는 서비스 정책 위반
+							</p>
+							<p>
+								<strong>제6조(해지 및 환불)</strong><br /> · 고객 사유의 중도 해지 시 기 납부한 요금은
+								환불되지 않습니다.<br /> · 고객이 요금을 30일 이상 연체하거나 계약을 위반한 경우, 제공사는 서비스 중단
+								또는 계약 해지를 할 수 있습니다.
+							</p>
+							<p>
+								<strong>제7조(책임 제한)</strong><br /> · 제공사의 손해배상 책임은 고객이 최근 12개월
+								동안 납부한 이용요금을 초과하지 않습니다.<br /> · 간접적 손해, 영업 손실 등은 책임 대상에 포함되지
+								않습니다.
+							</p>
+
+							<hr />
+
+							<p class="mt-3">
+								계약일자 : 20__년 __월 __일<br /> 회사명 : ____________________________<br />
+								대표자 : ____________________________ (서명)
+							</p>
+							<!-- 서명 영역 -->
+							<div class="mt-4">
+								<label class="form-label d-block mb-2">대표자 서명</label>
+								<div class="border rounded p-2 text-center">
+									<canvas id="signatureCanvas" width="300" height="150"
+										style="touch-action: none;"></canvas>
+								</div>
+								<button type="button"
+									class="btn btn-sm btn-outline-secondary mt-2"
+									id="clearSignature">서명 지우기</button>
+
+								<!-- 서명 이미지를 Base64로 담을 hidden input -->
+								<input type="hidden" name="signatureData" id="signatureData">
+							</div>
+						</div>
+
+						<div class="form-check mt-3">
+							<input class="form-check-input" type="checkbox" id="agreeCheck">
+							<label class="form-check-label" for="agreeCheck"> 위 계약서
+								내용을 모두 확인하였으며 동의합니다. </label>
+						</div>
+
+					</div>
+
+					<div class="modal-footer border-0 justify-content-between">
+						<button type="button" class="btn btn-outline-secondary"
+							data-bs-dismiss="modal">닫기</button>
+
+						<!-- 동의 시 결제 페이지로 이동 -->
+						<a th:href="@{/step4}" class="btn btn-dark"
+							onclick="return document.getElementById('agreeCheck').checked;">
+							동의하고 결제 단계로 이동 </a>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>
+<script>
+  (function () {
+    const canvas = document.getElementById('signatureCanvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    };
+
+    const startDraw = (e) => {
+      drawing = true;
+      const pos = getPos(e);
+      lastX = pos.x;
+      lastY = pos.y;
+    };
+
+    const draw = (e) => {
+      if (!drawing) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+    };
+
+    const endDraw = () => {
+      drawing = false;
+      // 서명 완료되면 hidden input에 base64 저장
+      const dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('signatureData').value = dataUrl;
+    };
+
+    // 마우스 이벤트
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+
+    // 터치 이벤트 (모바일)
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', endDraw);
+
+    // 서명 지우기
+    document.getElementById('clearSignature').addEventListener('click', function () {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('signatureData').value = '';
+    });
+  })();
+</script>
+
