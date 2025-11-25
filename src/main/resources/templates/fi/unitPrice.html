@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
+<head>
+<meta charset="UTF-8" />
+<title>세금계산서 화면 예시</title>
+
+<!-- Toast UI Grid -->
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+
+</head>
+<body>
+<div layout:fragment="content">
+
+  <!-- =======================
+       조회조건 (CARD 묶음)
+  ======================== -->
+ <!-- =======================
+     조회조건 (CARD 묶음)
+======================== -->
+<div class="container-fluid px-2" style="height:120px;margin-bottom:5px;margin-top:5px;">
+
+  <div class="card h-100">
+    <div class="card-body py-2">
+
+      <!-- ✔ 세로정렬을 중앙으로 -->
+      <div class="d-flex justify-content-between align-items-center h-100">
+
+        <!-- 좌측 조건들 -->
+        <div class="flex-grow-1">
+
+          <div class="row g-2">
+
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:150px;">품번</label>
+              <input type="text" class="form-control">
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:150px;">품명</label>
+              <input type="text" class="form-control">
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:150px;">단가유형</label>
+              <select class="form-select">
+                <option value="">선택</option>
+                <option>매출단가</option>
+                <option>매입단가</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="row g-2 mt-2">
+
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:150px;">거래처코드</label>
+              <input type="text" class="form-control">
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:150px;">거래처명</label>
+              <input type="text" class="form-control">
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 버튼 영역 (오른쪽) -->
+        <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
+          <div class="d-flex gap-2">
+            <button class="btn btn-secondary" style="width:110px;">EXCEL</button>
+            <button class="btn btn-primary" style="width:110px;">조회</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+
+  <!-- =======================
+       메인영역 = GRID + 입력폼
+  ======================== -->
+  <div class="container-fluid px-2" style="height: calc(98vh - 125px - 135px);">
+    <div class="row h-100">
+
+      <!-- 좌측 GRID -->
+      <div class="col-md-8 h-100">
+        <div class="card h-100">
+          <div class="card-body p-0">
+            <div id="unitprice-grid" style="height:100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우측 입력폼 -->
+      <div class="col-md-4 h-100" style="padding-left:0;">
+        <div class="card h-100">
+
+          <!-- 버튼 (카드 내부 오른쪽 상단) -->
+          <div class="card-header d-flex justify-content-end gap-2">
+            <button class="btn btn-outline-secondary">초기화</button>
+            <button class="btn btn-primary">저장</button>
+          </div>
+
+          <div class="card-body">
+
+            <!-- 입력 label width 통일: 90px -->
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">품번</label>
+              <div class="input-group">
+                <input type="text" class="form-control">
+                <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+              </div>
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">품명</label>
+              <input type="text" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">단가유형</label>
+              <select class="form-select">
+                <option value="">선택</option>
+                <option>매출단가</option>
+                <option>매입단가</option>
+              </select>
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">적용일자</label>
+              <input type="date" class="form-control">
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">거래처</label>
+              <div class="input-group">
+                <input type="text" class="form-control">
+                <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+              </div>
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">거래처명</label>
+              <input type="text" class="form-control" readonly>
+            </div>
+
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold" style="width:90px;">기준단가</label>
+              <input type="number" class="form-control">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+<script>
+  const gridData = [
+    { 품번: '2025-HR-001', 품명: 'AAA', 단가유형: '매출단가', 단가적용일: '2025-01-02', 거래처: 'A업체', 기준단가: 500 },
+    { 품번: '2025-FI-001', 품명: 'BBB', 단가유형: '매출단가', 단가적용일: '2015-11-02', 거래처: 'B업체', 기준단가: 1200 }
+  ];
+
+  const grid = new tui.Grid({
+    el: document.getElementById('unitprice-grid'),
+    data: gridData,
+    rowHeaders: ['rowNum'],
+    scrollX: false,
+    scrollY: true,
+    columns: [
+      { header:'품번', name:'품번' },
+      { header:'품명', name:'품명' },
+      { header:'단가유형', name:'단가유형' },
+      { header:'단가적용일', name:'단가적용일' },
+      { header:'거래처', name:'거래처' },
+      { header:'기준단가', name:'기준단가' }
+    ]
+  });
+</script>
+<style>
+  body, html {
+    overflow-x: hidden !important;
+  }
+  .app-main {
+    overflow-x: hidden !important;
+  }
+  .card-header {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+</style>
+
+</div>
+</body>
+</html>
