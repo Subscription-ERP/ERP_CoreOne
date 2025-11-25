@@ -5,6 +5,12 @@
 <head>
 <title>급여대장</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- TOAST UI Grid CSS 및 JS CDN 추가 -->
+<link rel="stylesheet"
+	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
 <style>
 /* 기본 스타일 */
 body {
@@ -61,19 +67,16 @@ h1 {
 	white-space: nowrap; /* 텍스트가 줄바꿈되지 않고 한 줄로 표시되도록 설정 */
 }
 
-/* 타입이 test, date, month, select(급여구분) input박스 태그 스타일 */
+input, select {
+	height: 36px;
+}
+
+/* 타입이 test, date, month, select(급여구분 select박스) input박스 태그 스타일 */
 input[type="text"], input[type="date"], input[type="month"], select {
 	padding: 8px;
 	border: 1px solid #ddd;
-	/* 1. 모든 모서리를 둥글게 통일 */
 	border-radius: 4px !important;
 	flex-grow: 1;
-}
-
-/* 특이하게 각진 모서리가 발생했던 경우를 대비해 확실히 재정의 */
-.register-form input[type="text"], .register-form input[type="date"],
-	.register-form input[type="month"] {
-	border-radius: 4px;
 }
 
 .button-group {
@@ -419,9 +422,9 @@ input[type="text"], input[type="date"], input[type="month"], select {
 					<div class="input-group">
 						<label>상여지급방법</label>
 						<div class="radio-group">
-							<input type="radio" id="급여지급" name="지급방법" checked> <label
-								for="급여지급">일괄지급</label> <input type="radio" id="비지급" name="지급방법">
-							<label for="비지급">비지급</label>
+							<input type="radio" id="지급률" name="지급방법" checked> <label
+								for="지급률">지급률</label> <input type="radio" id="지급액" name="지급방법">
+							<label for="지급액">지급액</label>
 						</div>
 					</div>
 
@@ -460,82 +463,15 @@ input[type="text"], input[type="date"], input[type="month"], select {
 						<button class="btn-search">조회</button>
 					</div>
 
-					<div style="max-height: 250px; overflow-y: auto;">
-						<table class="data-table">
-							<thead>
-								<tr>
-									<th class="checkbox-cell"><input type="checkbox"></th>
-									<th>사원번호</th>
-									<th>성명</th>
-									<th>부서명</th>
-									<th>입사일</th>
-									<th>직위</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-								<tr>
-									<td class="checkbox-cell"><input type="checkbox"></td>
-									<td>2025-HR-001</td>
-									<td>김한솔</td>
-									<td>인사팀</td>
-									<td>2025-01-02</td>
-									<td>사원</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+					<!-- TOAST UI Grid 컨테이너 (대상자 선정) -->
+					<div id="target-grid-container"></div>
 				</div>
 			</div>
 		</div>
 	</div>
+	<script>
+		
+	</script>
 </body>
 
 </html>
