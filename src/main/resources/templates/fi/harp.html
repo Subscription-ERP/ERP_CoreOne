@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <title>수금등록</title>
+
+  <!-- Toast UI Grid -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+
+  <style>
+    body, html { overflow-x: hidden !important; }
+    .app-main { overflow-x: hidden !important; }
+
+    .summary-box {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+      font-weight: 600;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    .summary-box input {
+      margin-top: 5px;
+      font-weight: 600;
+      height: 32px;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+
+<!-- ============================
+     전체 카드
+============================ -->
+<div class="container-fluid px-2" style="margin-top:10px;">
+
+  <div class="card" style="height: calc(89vh - 40px);">
+    <div class="card-body">
+
+      <!-- ============================
+           조회 + 입력 + 저장 버튼
+      ============================= -->
+      <div class="row g-3 align-items-center mb-3">
+
+        <!-- 거래처 코드 -->
+        <div class="col-md-3 d-flex align-items-center gap-2">
+          <label class="fw-semibold mb-0" style="width:150px;">거래처코드</label>
+          <div class="input-group">
+            <input type="text" id="custCode" class="form-control">
+            <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+          </div>
+        </div>
+
+        <!-- 거래처명 -->
+        <div class="col-md-3 d-flex align-items-center gap-2">
+          <label class="fw-semibold mb-0" style="width:150px;">거래처명</label>
+          <input type="text" id="custName" class="form-control" readonly>
+        </div>
+
+        <!-- 저장 버튼 -->
+        <div class="col-md-6 d-flex justify-content-end">
+          <button class="btn btn-primary" style="width:120px;">저장</button>
+        </div>
+
+      </div>
+
+
+
+      <!-- ============================
+           합계 3개
+      ============================= -->
+      <div class="row text-center mb-3">
+
+        <div class="col-md-4">
+          <div class="summary-box">
+            <div>총 공급가액</div>
+            <input id="sum-supply" type="text" class="form-control" readonly value="0">
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="summary-box">
+            <div>총 세액</div>
+            <input id="sum-tax" type="text" class="form-control" readonly value="0">
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="summary-box">
+            <div>총 금액</div>
+            <input id="sum-total" type="text" class="form-control" readonly value="0">
+          </div>
+        </div>
+
+      </div>
+
+
+
+      <!-- ============================
+           GRID 영역
+      ============================= -->
+      <div style="height: calc(100% - 230px);">
+        <div id="invoice-grid" style="height:100%;"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================
+     GRID SCRIPT + 합계 계산
+============================= -->
+<script>
+  const gridData = [
+    { 선택:false, 일련번호:'2025-HR-001', 거래처:'AAA', 발행일자:'2025-01-02', 공급가액:'5,000',  세액:'500' },
+    { 선택:false, 일련번호:'2025-FI-001', 거래처:'AAA', 발행일자:'2015-11-02', 공급가액:'12,000', 세액:'1,200' },
+    { 선택:false, 일련번호:'2025-SD-001', 거래처:'AAA', 발행일자:'2024-12-02', 공급가액:'30,000', 세액:'3,000' },
+    { 선택:false, 일련번호:'2025-HR-002', 거래처:'AAA', 발행일자:'2025-01-02', 공급가액:'7,000',  세액:'700' },
+    { 선택:false, 일련번호:'2025-CS-001', 거래처:'AAA', 발행일자:'2020-05-02', 공급가액:'13,000', 세액:'1,300' }
+  ];
+
+  const grid = new tui.Grid({
+    el: document.getElementById('invoice-grid'),
+    data: gridData,
+    scrollX: false,
+    scrollY: true,
+    bodyHeight: 'fitToParent',   
+    rowHeaders: ['checkbox'],
+
+    columns: [
+      { header:'일련번호', name:'일련번호'},
+      { header:'거래처', name:'거래처'},
+      { header:'발행일자', name:'발행일자'},
+      { header:'공급가액', name:'공급가액', align:'right'},
+      { header:'세액', name:'세액', align:'right' }
+    ]
+  });
+
+  /* ============================
+       합계 계산 함수
+  ============================= */
+  function updateSummary() {
+    const data = grid.getData();
+
+    let sumSupply = 0;
+    let sumTax = 0;
+
+    data.forEach(row => {
+      sumSupply += Number(String(row.공급가액).replace(/,/g, "")) || 0;
+      sumTax    += Number(String(row.세액).replace(/,/g, "")) || 0;
+    });
+
+    document.getElementById("sum-supply").value = sumSupply.toLocaleString();
+    document.getElementById("sum-tax").value    = sumTax.toLocaleString();
+    document.getElementById("sum-total").value  = (sumSupply + sumTax).toLocaleString();
+  }
+
+  // GRID 최초 로드 시 합계 적용
+  updateSummary();
+
+  // GRID 데이터 변경 시 자동 업데이트
+  grid.on("afterChange", () => {
+    updateSummary();
+  });
+
+</script>
+
+</div>
+</body>
+</html>
