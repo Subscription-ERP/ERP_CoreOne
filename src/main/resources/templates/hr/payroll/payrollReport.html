@@ -1,15 +1,541 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <head>
-    <title>급여대장</title>
+<title>급여대장</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* 기본 스타일 */
+body {
+	font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+	/* margin: 20px; */
+	background-color: #f4f4f4;
+}
+
+.container {
+	display: grid;
+	/* grid-template-columns: 2fr 1fr; */ /* 좌측 (조회) 2, 우측 (등록) 1 비율 */
+	grid-template-columns: 2fr 2fr;
+	/* gap: 20px; */
+	/* max-width: 1400px; */
+	max-width: 1600px;
+	margin: 0 auto;
+	background-color: #fff;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 페이지이름(급여대장) */
+h1 {
+	grid-column: 1/3; /* 제목은 전체 너비를 차지 */
+	margin-bottom: 20px;
+	font-size: 24px;
+	/* border-bottom: 3px solid #333; */
+	padding-bottom: 5px;
+}
+
+/* 공통 컴포넌트 스타일 */
+/* 좌우 칸 나누는 css */
+.panel {
+	border: 1px solid #ccc;
+	padding: 15px;
+	border-radius: 5px;
+	background-color: #fff;
+}
+
+/* 전체 label과 input상자 묶은 클래스 */
+.input-group {
+	display: flex;
+	align-items: center;
+}
+
+/* 전체 input상자에 해당하는 label들 */
+.input-group label {
+	/* 2. 라벨 텍스트 한 줄 표기를 위해 너비 확장 */
+	width: 150px; /* 기존 80px에서 120px로 확장 */
+	font-weight: bold;
+	flex-shrink: 0;
+	margin-right: 10px;
+	white-space: nowrap; /* 텍스트가 줄바꿈되지 않고 한 줄로 표시되도록 설정 */
+}
+
+/* 타입이 test, date, month, select(급여구분) input박스 태그 스타일 */
+input[type="text"], input[type="date"], input[type="month"], select {
+	padding: 8px;
+	border: 1px solid #ddd;
+	/* 1. 모든 모서리를 둥글게 통일 */
+	border-radius: 4px !important;
+	flex-grow: 1;
+}
+
+/* 특이하게 각진 모서리가 발생했던 경우를 대비해 확실히 재정의 */
+.register-form input[type="text"], .register-form input[type="date"],
+	.register-form input[type="month"] {
+	border-radius: 4px;
+}
+
+.button-group {
+	display: flex;
+	gap: 5px;
+}
+
+.button-group button {
+	padding: 8px 15px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.btn-primary {
+	background-color: #007bff;
+	color: white;
+}
+
+.btn-secondary {
+	background-color: #6c757d;
+	color: white;
+}
+
+.btn-search {
+	background-color: #28a745;
+	color: white;
+}
+
+/* 테이블 스타일 */
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+	margin-top: 10px;
+}
+
+.data-table th, .data-table td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	text-align: center;
+}
+
+.data-table th {
+	background-color: #e9ecef;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.data-table tbody tr:hover {
+	background-color: #f1f1f1;
+}
+
+/* 좌측: 급여대장 조회 전체 */
+.salary-ledger-search {
+	grid-column: 1;
+}
+
+.salary-ledger-search h2 {
+	font-size: 18px;
+}
+
+.search-criteria {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+	margin-bottom: 15px;
+	padding: 10px;
+	border: 1px solid #ddd;
+	background-color: #f8f9fa;
+}
+
+.search-input-box {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	flex-grow: 1;
+}
+
+.search-row {
+	display: flex;
+	gap: 10px;
+}
+
+.search-row>* {
+	flex-grow: 1;
+}
+
+/* 우측: 급여대장 등록 */
+.salary-ledger-register {
+	grid-column: 2;
+}
+
+.register-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 10px;
+	margin-bottom: 15px;
+}
+
+/* 급여대장 등록 쪽 css */
+.register-header h3 {
+	margin: 0;
+	font-size: 18px;
+}
+
+.radio-group {
+	display: flex;
+	gap: 20px;
+}
+
+.radio-group label {
+	width: 50px;
+}
+
+.register-form {
+	margin-bottom: 15px;
+}
+
+/* 우측 하단: 대상자 선정 */
+.target-selection {
+	margin-top: 20px;
+	border-top: 1px solid #ccc;
+	padding-top: 15px;
+}
+
+.target-selection h4 {
+	font-size: 18px;
+}
+
+.target-search-form {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.target-search-form input, .target-search-form button {
+	padding: 8px;
+	border-radius: 4px;
+}
+
+.target-search-form input[type="text"] {
+	flex-grow: 1;
+}
+
+.target-search-form button {
+	flex-shrink: 0;
+}
+
+.checkbox-cell {
+	width: 30px;
+}
+</style>
 </head>
 
 <body>
-    <div layout:fragment="content">
-        <h3>급여대장</h3>
-    </div>
+	<div layout:fragment="content">
+		<div class="container">
+			<div class="panel salary-ledger-search">
+				<h2>급여대장 조회</h2>
+
+				<div class="search-criteria">
+					<div class="search-input-box">
+						<div class="search-row">
+							<select name="salary-type">
+								<option value="">급여구분</option>
+								<option value="급여">급여</option>
+								<option value="상여">상여</option>
+							</select> <input type="text" placeholder="대장명칭">
+						</div>
+						<div class="search-row">
+							<input type="date" placeholder="지급일">
+						</div>
+					</div>
+
+					<div class="button-group">
+						<button class="btn-secondary">초기화</button>
+						<button class="btn-search">조회</button>
+					</div>
+				</div>
+
+				<div style="max-height: 400px; overflow-y: auto;">
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>신고귀속</th>
+								<th>급여구분</th>
+								<th>대장명칭</th>
+								<th>지급일</th>
+								<th>인원수</th>
+								<th>급여계산</th>
+								<th>지급총액</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>2025/11-1</td>
+								<td>급여</td>
+								<td>2025/11 급여</td>
+								<td>2025-12-10</td>
+								<td>10</td>
+								<td><a href="#">계산하기</a></td>
+								<td>21,699,000</td>
+							</tr>
+							<tr>
+								<td>2025/11-1</td>
+								<td>상여</td>
+								<td>2025/10 상여</td>
+								<td>2025-11-10</td>
+								<td>10</td>
+								<td><a href="#">계산하기</a></td>
+								<td>216,990</td>
+							</tr>
+							<tr>
+								<td>2025/10-1</td>
+								<td>급여</td>
+								<td>2025/10 급여</td>
+								<td>2025-11-10</td>
+								<td>10</td>
+								<td><a href="#">계산하기</a></td>
+								<td>21,699,000</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="panel salary-ledger-register">
+				<div class="register-header">
+					<h3>상여등록</h3>
+					<button class="btn-primary">저장</button>
+				</div>
+
+				<div class="register-form">
+					<div class="input-group">
+						<label>귀속연월</label><input type="month">
+						<!-- <input type="text" placeholder="YYYY/MM-N"> -->
+						<!-- <span style="width: 20px;"></span> -->
+					</div>
+
+					<div class="input-group">
+						<label>상여지급방법</label>
+						<div class="radio-group">
+							<input type="radio" id="급여지급" name="지급방법" checked> <label
+								for="급여지급">일괄지급</label> <input type="radio" id="비지급" name="지급방법">
+							<label for="비지급">비지급</label>
+						</div>
+					</div>
+
+					<div class="input-group">
+						<label>지급률 및 지급금액</label> <input type="text" value="">
+					</div>
+
+					<div class="input-group">
+						<label>대장명칭</label> <input type="text">
+					</div>
+
+					<div class="input-group">
+						<label>대장기간시작일</label> <input type="date">
+					</div>
+
+					<div class="input-group">
+						<label>대장기간종료일</label> <input type="date">
+					</div>
+
+					<div class="input-group">
+						<label>지급일</label> <input type="date">
+					</div>
+
+					<div class="input-group">
+						<label>인원수</label> <input type="text" disabled>
+					</div>
+				</div>
+
+				<div class="target-selection">
+					<h4>대상자 선정</h4>
+
+					<div class="target-search-form">
+						<input type="text" placeholder="성명"> <input type="text"
+							placeholder="부서명">
+						<button class="btn-secondary">초기화</button>
+						<button class="btn-search">조회</button>
+					</div>
+
+					<div style="max-height: 250px; overflow-y: auto;">
+						<table class="data-table">
+							<thead>
+								<tr>
+									<th class="checkbox-cell"><input type="checkbox"></th>
+									<th>사원번호</th>
+									<th>성명</th>
+									<th>부서명</th>
+									<th>입사일</th>
+									<th>직위</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+								<tr>
+									<td class="checkbox-cell"><input type="checkbox"></td>
+									<td>2025-HR-001</td>
+									<td>김한솔</td>
+									<td>인사팀</td>
+									<td>2025-01-02</td>
+									<td>사원</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 
 </html>
