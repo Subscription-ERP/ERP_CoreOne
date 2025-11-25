@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회계 layout</title>
+</head>
+
+<body layout:fragment="layout">
+  <a href="#" class="nav-link">
+    <i class="nav-icon bi bi-currency-dollar"></i>
+    <p>
+      회계
+      <i class="nav-arrow bi bi-chevron-right"></i>
+    </p>
+  </a>
+  <ul class="nav nav-treeview">
+    <li class="nav-item">
+      <a th:href="@{/fi/unitprice}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>단가관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/fi/credit}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>여신관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/fi/harp}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>수금등록</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>세금계산서 발행</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>세금계산서 발행내역</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>월별분개장 조회</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>수동전표등록</p>
+      </a>
+    </li>
+  </ul>
+</body>
+
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영업 layout</title>
+</head>
+
+<body layout:fragment="layout">
+  <a href="#" class="nav-link">
+    <i class="nav-icon bi bi-briefcase"></i>
+    <p>
+      영업
+      <i class="nav-arrow bi bi-chevron-right"></i>
+    </p>
+  </a>
+  <ul class="nav nav-treeview">
+    <li class="nav-item">
+      <a th:href="@{/sd/cust}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>거래처관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index2.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>수주등록</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>수주조회</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>발주등록</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>수주완료처리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="./index3.html" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>발주완료처리</p>
+      </a>
+    </li>
+  </ul>
+</body>
+
+</html>

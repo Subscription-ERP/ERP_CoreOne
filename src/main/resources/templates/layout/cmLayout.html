@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기준정보 layout</title>
+</head>
+
+<body layout:fragment="layout">
+  <a href="#" class="nav-link">
+    <i class="nav-icon bi bi-archive"></i>
+    <p>
+      기준정보
+      <i class="nav-arrow bi bi-chevron-right"></i>
+    </p>
+  </a>
+  <ul class="nav nav-treeview">
+    <li class="nav-item">
+      <a th:href="@{/cm/authManage}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>사용자권한관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/cm/itemManage}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>품목관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/cm/deptCodeManage}" class="nav-link">
+        <i class="nav-icon bi bi-circle"></i>
+        <p>부서코드관리</p>
+      </a>
+    </li>
+  </ul>
+</body>
+
+</html>
