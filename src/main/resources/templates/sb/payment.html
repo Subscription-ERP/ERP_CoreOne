@@ -189,4 +189,12 @@
 
 <script>
 const tossPayments = TossPayments("test_ck_yZqmkKeP8g7G06kZM1Bd8bQRxB9l");
+payment.requestPayment({
+	  method: "CARD",
+	  amount: 15000,
+	  orderId: "ORDER-20250101-0001",
+	  orderName: "테스트 상품",
+	  successUrl: "https://my-server.com/payments/success",
+	  failUrl: "https://my-server.com/payments/fail",
+	});
 </script>
