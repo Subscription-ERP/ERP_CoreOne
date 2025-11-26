@@ -1,18 +1,10 @@
 package com.rootcore.auth.mapper;
 
-
-
-	import java.util.List;
-
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
-import com.rootcore.auth.vo.LoginFindIdVO;
-
-	@Mapper
-	public interface FindIdMapper {
-	
-	    // 이메일로 아이디(사원번호) 찾기
-	    List<LoginFindIdVO> findIdByEmail(String email);
-	}
-
-
+@Mapper
+public interface FindIdMapper {
+    String findUserId(@Param("name") String name,
+                      @Param("phone") String phone);
+}

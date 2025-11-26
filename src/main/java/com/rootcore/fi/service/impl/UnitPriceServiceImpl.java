@@ -18,5 +18,10 @@ public class UnitPriceServiceImpl implements UnitPriceService{
 		
 		return unitPriceMapper.selectUnitPrice(unitPrice);
 	}
+	@Override
+	public int insertUnitPrice(UnitPriceVO unitPrice) {
+		// TODO Auto-generated method stub
+		return unitPriceMapper.insertUnitPrice(unitPrice);
+	}
 
 }
