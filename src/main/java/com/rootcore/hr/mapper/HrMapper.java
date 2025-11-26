@@ -2,8 +2,11 @@ package com.rootcore.hr.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Mapper;
+
 import com.rootcore.hr.vo.UserVO;
 
+@Mapper
 public interface HrMapper {
 	//=================
 	// 장준현
@@ -14,5 +17,9 @@ public interface HrMapper {
 	//=================
 	// 이한솔
 	//=================
-
+	List<UserVO> selectAllUserList();
+	
+	
+	
+	
 }

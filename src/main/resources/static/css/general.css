@@ -1,3 +1,18 @@
+/* 
+ 스타일 정리본
+
+ - 버튼
+    0. btn-inner : 내부에 들어가는 버튼들 (초기화/저장 등)
+    1. btn-outer : 외부에 들어가는 버튼(조회 등)
+    2. btn-color : 기본색 버튼
+    3. btn-white : 흰색 버튼
+ - 카드
+ - 페이지
+ - disabled
+ - select 박스 호버시 자동 cusor 포인트 변경
+
+*/
+
 @charset "UTF-8";
 /* GoogleFont(Roboto, NotoSans KR) */
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
@@ -46,43 +61,7 @@ textarea {
   font-family: var(--font-base), var(--font-en), sans-serif !important;
 }
 
-/* 카드 ----------------------------------------------------------------------------------
-  .core-card : 공통카드
-  .search-card : 조회(높이지정통일)
-*/
-.core-card {
-  background-color: var(--white-color);
-  border: 1px solid var(--mid-light-gray-color);
-  border-radius: var(--radius);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  margin: 10px;
-  padding: 12px;
-  color: inherit;
-  overflow: hidden;
-}
-.seach-card {
-  height: 120px;
-  padding: 5px 8px;
-}
-.hr-card-header {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--line-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.hr-card-title {
-  font-weight: 700;
-  font-size: var(--fs-s);
-  color: var(--text-color);
-}
-
-/* 버튼 ----------------------------------------------------------------------------------
-  btn-inner : 내부에 들어가는 버튼들 (초기화/저장 등)
-  btn-outer : 외부에 들어가는 버튼(조회 등)
-  btn-color : 기본색 버튼
-  btn-white : 흰색 버튼
-*/
+/* 버튼 ---------------------------------------------------------------------------------- */
 .btn-inner {
   width: 75px;
   height: auto;
@@ -114,16 +93,20 @@ textarea {
 
 /* disabled ----------------------------------------------------------------------------- */
 .disabled {
-  background: var(--white-color) !important;
+  background: #f6f6f6 !important;
   color: var(--disabled-f-color) !important;
   cursor: not-allowed !important;
 }
+input:disabled {
+  background-color: #f6f6f6 !important;
+}
 
-/* ==========================================================================
-   - 카드/레이아웃/폼/탭/그리드/사진 업로더 공통
-   ========================================================================== */
+/* select box hover시 cursor point변경 --------------------------------------------------- */
+select:hover {
+  cursor: pointer;
+}
 
-/* ===== Page Layout ======================================================= */
+/* Page Layout --------------------------------------------------------------------------- */
 .page.page-fluid {
   height: calc(100vh - 120px);
   display: flex;
@@ -152,7 +135,7 @@ textarea {
   overflow: auto;
 }
 
-/* ===== Card System ======================================================= */
+/* Card -------------------------------------------------------------------------------- */
 .card-ui {
   background: var(--white-color);
   border: 1px solid var(--mid-light-gray-color);
@@ -163,27 +146,18 @@ textarea {
   flex-direction: column;
   overflow: hidden;
 }
-
 .card-ui--search {
   height: 120px;
 }
-.card-ui--search .input-base {
-  border: 1px solid var(--mid-light-gray-color) !important;
-  border-radius: 6px !important;
-  background: var(--white-color) !important;
-  box-shadow: none !important;
-}
-
 .card-ui__header {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--mid-light-gray-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 .card-ui__title {
-  font-size: var(--fs-s);
+  font-size: var(--fs-n);
   font-weight: 700;
   margin: 0;
   color: var(--black-color);
@@ -192,7 +166,7 @@ textarea {
   padding: 10px 12px;
 }
 
-/* ===== Filter Bar (검색/필터) ============================================ */
+/* Filter (조회) --------------------------------------------------------------- */
 .filter-bar .field-inline {
   display: flex;
   align-items: center;
@@ -200,86 +174,57 @@ textarea {
 }
 .field-inline {
   gap: 8px;
-  height: 34px; /* input과 정확히 동일한 높이 */
   padding: 0;
 }
 .field-inline__label {
   font-size: var(--fs-s);
   font-weight: 700;
-  margin: 0;
-  height: 34px; /* 라벨도 동일 높이 */
-  display: flex;
-  align-items: center; /* 텍스트도 중앙 */
-  white-space: nowrap;
-  line-height: 1; /* 라벨 이상한 여백 제거 */
 }
 
-/* 체크박스 인라인 */
-.check-inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px; /* input-base와 높이 맞춤 */
-  cursor: pointer;
-}
-.check-inline__input {
-  width: 18px;
-  height: 18px;
+/* checkbox ----------------------------------------------------------------------- */
+input[type="checkbox"] {
   border: 1px solid var(--mid-light-gray-color);
   border-radius: 3px;
-  appearance: none;
-  background: var(--white-color);
-  display: grid;
-  place-items: center;
+  cursor: pointer;
 }
-.check-inline__input:checked {
-  background: var(--base-color);
-  border-color: var(--base-color);
+input[type="checkbox"]:checked {
+  background-color: var(--base-color) !important;
+  border-color: var(--base-color) !important;
 }
-.check-inline__input:checked::after {
-  content: "✓";
-  color: #fff;
-  font-size: 12px;
-  line-height: 1;
-}
-.check-inline__label {
-  font-size: var(--fs-n);
+.form-grid__field--checkbox {
+  /* margin-left: 10px;
+  align-items: center; */
+  padding-left: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
 }
 
-/* ===== Input Base (general의 컨셉 유지 + 디테일만) ======================= */
+/* Input Base --------------------------------------------------------------------- */
 .input-base {
-  height: 34px !important; /* input 통일 */
-  padding: 0 8px !important; /* padding 부분 제거 */
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  display: flex;
-  align-items: center;
+  font-size: var(--fs-s);
+  color: var(--black-color);
+  border: 1px solid var(--mid-light-gray-color);
+  box-shadow: none;
+  border-radius: 3px !important;
 }
 .input-base:focus {
   border-color: var(--base-color-soft);
   box-shadow: 0 0 0 0.15rem rgba(54, 77, 153, 0.12);
 }
-
-/* select 화살표/여백 통일 */
-.input-base.form-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+.form-grid .input-base {
+  width: 100%;
   height: 34px !important;
-  padding: 0 30px 0 8px !important;
-  background: transparent;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23444' height='14' viewBox='0 0 20 20' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M5.5 7.5l4.5 4.5 4.5-4.5'/></svg>");
-  background-position: right 6px center;
-  background-repeat: no-repeat;
-  background-size: 12px;
-}
-.form-control.input-base,
-.form-select.input-base {
-  padding: 4px 8px;
+  padding: 0 8px !important;
+  border: none;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: block;
+  box-sizing: border-box;
+  font-size: var(--fs-s);
 }
 
-/* ===== Tabs =============================================================== */
+/* Tabs -------------------------------------------------------------------------------- */
 .ui-tabs .nav-link {
   font-size: var(--fs-s);
   font-weight: 700;
@@ -290,7 +235,7 @@ textarea {
   border-color: var(--mid-light-gray-color) var(--mid-light-gray-color) #fff;
 }
 
-/* 탭 패널 */
+/* tab content (내용안보이게 처리) */
 .tab-panel {
   display: none;
 }
@@ -298,18 +243,12 @@ textarea {
   display: block;
 }
 
-/* ===== Toolbar =========================================================== */
-.toolbar {
-  display: flex;
-  gap: 6px;
+/* tab flex로 인해 선 짧아진 부분 늘리기 */
+.card-ui__header .ui-tabs {
+  flex: 1 1 auto;
 }
 
-/* ===== Grid Root ========================================================= */
-.grid-root {
-  min-height: 260px;
-}
-
-/* ===== Form Grid (상세 입력 격자) ======================================== */
+/* Form Grid ---------------------------------------------------------------- */
 .form-grid {
   border: 1px solid var(--mid-light-gray-color);
   border-radius: 6px;
@@ -317,17 +256,15 @@ textarea {
 }
 .form-grid__row {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr 1.4fr; /* 라벨/필드 2세트 */
+  grid-template-columns: 1fr 1.4fr 1fr 1.4fr;
   border-bottom: 1px solid var(--mid-light-gray-color);
 }
 .form-grid__row:last-child {
   border-bottom: 0;
 }
-
 .form-grid__row--3col {
-  grid-template-columns: 1fr 1.4fr 1fr 1.4fr 1fr 1.4fr; /* 라벨/필드 3세트 */
+  grid-template-columns: 1fr 1.4fr 1fr 1.4fr 1fr 1.4fr;
 }
-
 .form-grid__label {
   background: #f8f9fa;
   padding: 6px 10px;
@@ -338,10 +275,9 @@ textarea {
   align-items: center;
 }
 .form-grid__field {
-  padding: 4px 6px;
   border-right: 1px solid var(--mid-light-gray-color);
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 .form-grid__field:last-child {
   border-right: 0;
@@ -350,49 +286,126 @@ textarea {
   grid-column: span 3;
 }
 
-/* disabled wrapper */
-.form-grid__field.is-disabled .input-base {
-  background: #f6f6f6 !important;
-  color: var(--disabled-color) !important;
-}
-
-/* ===== Photo Uploader ==================================================== */
-.photo-uploader {
-  height: 170px;
-  width: calc(170px * 3 / 4);
-  position: relative;
-  border: 1px dashed var(--mid-light-gray-color);
-  border-radius: 6px;
-  background: #f8f9fa;
-  overflow: hidden;
-  cursor: pointer;
+/* modal ------------------------------------------------------------------------ */
+.modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
 }
-.photo-uploader__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.modal-layer[hidden] {
+  display: none;
 }
-.photo-uploader__placeholder {
-  font-size: var(--fs-s);
-  color: var(--disabled-color);
-  line-height: 1.4;
-}
-.photo-uploader__overlay {
+.modal-layer__backdrop {
   position: absolute;
   inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+.modal-layer__dialog {
+  position: relative;
+  background: var(--white-color);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  width: 780px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 모달 카드 공통 레이아웃 */
+.modal-card__header {
+  padding: 25px 30px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  font-weight: 700;
-  opacity: 0;
-  transition: 0.15s ease;
+  justify-content: space-between;
 }
-.photo-uploader:hover .photo-uploader__overlay {
-  opacity: 1;
+.modal-card__title {
+  margin: 0;
+  font-size: var(--fs-n);
+  font-weight: 700;
+}
+.modal-card__btn-close i {
+  font-size: 16px;
+}
+.modal-card__body {
+  padding: 0 30px 25px;
+  overflow: auto;
+}
+
+/* 모달 내부 정보 라인 */
+.modal-history__info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.modal-history__field {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--mid-light-gray-color);
+  font-size: var(--fs-n);
+}
+.modal-history__label {
+  font-size: var(--fs-s);
+  font-weight: 700;
+  color: var(--black-color);
+  background-color: #f8f9fa;
+  border-right: 1px solid var(--mid-light-gray-color);
+  padding: 8px;
+}
+.modal-history__value {
+  font-size: var(--fs-s);
+  color: var(--black-color);
+  padding: 8px;
+}
+.modal-history__btn-print {
+  margin-left: auto;
+}
+
+/* 모달 탭 */
+.modal-history__tabs {
+  margin: 15px 0 8px;
+}
+
+/* 모달 탭 패널 */
+.history-tab-panel {
+  display: none;
+}
+
+.history-tab-panel.active {
+  display: block;
+}
+
+/* input[type="file"] 스타일 조정(포기상태) -------------------------------------------------- */
+/* .form-grid input[type="file"] {
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  margin: 0 !important;
+  border: none;
+  box-sizing: border-box;
+  font-size: var(--fs-s);
+}
+.form-grid input[type="file"] {
+  border: none !important;
+} */
+
+/* 파일 셀 기본 정렬 */
+.form-grid__field--file {
+  display: flex; /* 혹시 몰라서 한 번 더 명시 */
+  align-items: center; /* 세로 가운데 정렬 */
+}
+
+/* 파일 인풋 모양 */
+.form-grid__field--file .file-input {
+  flex: 1 1 auto; /* 가로로 꽉 차게 */
+  height: 34px; /* 다른 input과 동일 높이 */
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none;
 }

@@ -22,4 +22,12 @@ public class HrRestController {
 	public List<UserVO> getUserList(UserVO param){
 		return hrService.selectUserList(param);
 	}
+	
+	@GetMapping("/empAllList")
+	public List<UserVO> getUserAllList(){
+		return hrService.selectAllUserList();
+	}
+	
+	
+	
 }

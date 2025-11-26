@@ -4,7 +4,7 @@
 
 <mapper namespace="com.rootcore.hr.mapper.HrMapper">
 
-	<select id="selectUserList" resultType="com.rootcore.hr.vo.UserVO">
+	<select id="selectUserList" resultType="UserVO">
 		SELECT user_id,
 		       user_name,
 		       dept,
@@ -12,5 +12,51 @@
 		       job_title
 		FROM   tb_user_master
 	</select>
+	
+	
+	
+	<!-- hansol -->
+	<!-- 사원 전체조회 -->
+	<select id="selectAllUserList" resultType="UserVO">
+		SELECT
+		    company_code,
+		    user_id,
+		    user_name,
+		    birth,
+		    tel,
+		    email,
+		    hire_date,
+		    hire_type,
+		    leave_date,
+		    leave_reason,
+		    zip_code,
+		    address,
+		    dept,
+		    job_title,
+		    position,
+		    family_count,
+		    children_count,
+		    householder,
+		    bank_name,
+		    account_no,
+		    account_holder,
+		    salary,
+		    user_status,
+		    user_photo,
+		    user_file,
+		    remark,
+		    created_by,
+		    create_date,
+		    updated_by,
+		    update_date
+		FROM
+		    tb_user_master
+		ORDER BY
+		    hire_date DESC
+	</select>
+	
+	
+	
+	
 
 </mapper>
