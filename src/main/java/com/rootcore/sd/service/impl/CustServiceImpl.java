@@ -15,7 +15,8 @@ public class CustServiceImpl implements CustService {
     final CustMapper custMapper;
 
     @Override
-    public List<CustVO> selectCust() {
-        return custMapper.selectCust();
+    public List<CustVO> selectCust(CustVO cust) {
+        return custMapper.selectCust(cust);
     }
+
 }
