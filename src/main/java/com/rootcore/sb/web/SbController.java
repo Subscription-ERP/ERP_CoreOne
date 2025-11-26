@@ -45,4 +45,9 @@ public class SbController {
 //        model.addAttribute("page", "subscribe");
 //        return "sb/payment";
 //    }
+    @GetMapping("/test")
+    public String test() {
+    	return "sb/PayTest";
+    }
+
 }
