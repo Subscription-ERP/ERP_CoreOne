@@ -25,6 +25,15 @@ public class HrServiceImpl implements HrService {
 		return hrMapper.selectUserList(param);
 	}
 
+	// 사원 - 사원전체조회
+	@Override
+	public List<UserVO> selectAllUserList() {
+		return hrMapper.selectAllUserList();
+	}
+	
+	
+	
+	
 	@Override
 	public List<PayrollVO> selectPayrollList(PayrollVO param) {
 		return hrMapper.selectPayrollList(param);

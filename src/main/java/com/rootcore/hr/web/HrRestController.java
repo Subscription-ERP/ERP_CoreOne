@@ -41,6 +41,14 @@ public class HrRestController {
 
 	    return result;
 	}
+	
+	@GetMapping("/empAllList")
+	public List<UserVO> getUserAllList(){
+		return hrService.selectAllUserList();
+	}
+	
+	
+	
 	// 급여대장-조회
 	@GetMapping("/payrollList")
 	public Map<String, Object> getPayrollList(PayrollVO param) {

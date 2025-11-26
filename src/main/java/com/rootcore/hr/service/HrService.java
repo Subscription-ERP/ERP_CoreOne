@@ -17,4 +17,6 @@ public interface HrService {
 	//=================
 	// 이한솔
 	//=================
+	List<UserVO> selectAllUserList();
+	
 }
