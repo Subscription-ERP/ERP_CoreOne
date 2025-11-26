@@ -1,4 +1,18 @@
 package com.rootcore.hr.mapper;
 
-public class HrMapper {
+import java.util.List;
+
+import com.rootcore.hr.vo.UserVO;
+
+public interface HrMapper {
+	//=================
+	// 장준현
+	//=================
+	// 급여대장-상여등록-사원조회
+	List<UserVO> selectUserList(UserVO param);
+	
+	//=================
+	// 이한솔
+	//=================
+
 }
