@@ -26,6 +26,20 @@
       async function main() {
         const button = document.getElementById("payment-button");
         const coupon = document.getElementById("coupon-box");
+        
+        // ⭐ 서버로 결제 준비 요청 보냄 (orderId 생성됨)
+        const response = await fetch("/api/payments/request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderName: "테스트상품",
+            amount: 50000,
+            customerEmail: "test@test.com",
+            customerName: "홍길동"
+          })
+        });
+        const data = await response.json(); // ⭐ 서버 응답값
+        
         // ------  결제위젯 초기화 ------
         const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
         const tossPayments = TossPayments(clientKey);
@@ -40,7 +54,7 @@
         // ------ 주문의 결제 금액 설정 ------
         await widgets.setAmount({
           currency: "KRW",
-          value: 50000,
+          value: data.amount,
         });
 
         await Promise.all([
@@ -73,13 +87,11 @@
         // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
         button.addEventListener("click", async function () {
           await widgets.requestPayment({
-            orderId: "b5XNTxG5BbrP67jr87IUa",
-            orderName: "토스 티셔츠 외 2건",
-            successUrl: window.location.origin + "/payment/success",
-            failUrl: window.location.origin + "/fail.html",
-            customerEmail: "customer123@gmail.com",
-            customerName: "김토스",
-            customerMobilePhone: "01012341234",
+            orderId: data.orderId,
+            orderName: data.orderName,
+            successUrl: data.successUrl,
+            failUrl: data.failUrl,
+           
           });
         });
       }
@@ -87,3 +99,4 @@
     </div>
   </body>
 </html>
+

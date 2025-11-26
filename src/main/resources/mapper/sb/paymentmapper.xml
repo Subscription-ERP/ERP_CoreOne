@@ -1,28 +1,69 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mapper.sb.paymentmapper">
- <!-- 결제 생성 -->
- <!--    <insert id="insertPayment" parameterType="PaymentVO">
-        INSERT INTO payments
-        (order_id, payment_key, amount, member_id, status, created_at, updated_at)
-        VALUES
-        (#{orderId}, #{paymentKey}, #{amount}, #{memberId}, #{status}, NOW(), NOW());
-    </insert> -->
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-    <!-- orderId로 검색 -->
-    <select id="findByOrderId" parameterType="string"> 
-        SELECT *
-        FROM payments
+<mapper namespace="com.rootcore.sb.mapper.PaymentMapper">
+
+    <resultMap id="PaymentResultMap" type="com.rootcore.sb.domain.Payment">
+        <id     column="id"          property="id"/>
+        <result column="order_id"    property="orderId"/>
+        <result column="order_name"  property="orderName"/>
+        <result column="amount"      property="amount"/>
+        <result column="status"      property="status"/>
+        <result column="payment_key" property="paymentKey"/>
+        <result column="customer_email" property="customerEmail"/>
+        <result column="customer_name"  property="customerName"/>
+        <result column="created_at"  property="createdAt"/>
+        <result column="updated_at"  property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insertPayment" parameterType="com.rootcore.sb.domain.Payment">
+        INSERT INTO payment (
+            order_id,
+            order_name,
+            amount,
+            status,
+            customer_email,
+            customer_name,
+            created_at,
+            updated_at
+        )
+        VALUES (
+            #{orderId},
+            #{orderName},
+            #{amount},
+            #{status},
+            #{customerEmail},
+            #{customerName},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <select id="selectByOrderId" resultMap="PaymentResultMap">
+        SELECT
+            id,
+            order_id,
+            order_name,
+            amount,
+            status,
+            payment_key,
+            customer_email,
+            customer_name,
+            created_at,
+            updated_at
+        FROM payment
         WHERE order_id = #{orderId}
-        LIMIT 1
     </select>
 
-    <!-- 결제 상태 업데이트 -->
     <update id="updatePaymentStatus">
-        UPDATE payments
-        SET status = #{status},
+        UPDATE payment
+        SET
+            status = #{status},
             payment_key = #{paymentKey},
             updated_at = NOW()
         WHERE order_id = #{orderId}
     </update>
+
 </mapper>

@@ -1,8 +1,12 @@
 package com.rootcore.sb.service;
 
-import com.rootcore.sb.vo.PaymentConfirmRequest;
-import com.rootcore.sb.vo.PaymentResultVO;
+import com.rootcore.sb.dto.PaymentReadyResponseDto;
+import com.rootcore.sb.dto.PaymentRequestDto;
+import com.rootcore.sb.dto.TossConfirmRequestDto;
+import com.rootcore.sb.dto.TossConfirmResponseDto;
 
 public interface PaymentService {
-    PaymentResultVO confirmPayment(PaymentConfirmRequest request);
+	   PaymentReadyResponseDto createPayment(PaymentRequestDto requestDto);
+
+	    TossConfirmResponseDto confirmPayment(TossConfirmRequestDto requestDto);
 }
