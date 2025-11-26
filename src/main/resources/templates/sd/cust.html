@@ -6,216 +6,253 @@
   <meta charset="UTF-8" />
   <title>거래처 관리</title>
 
+  <!-- BootStrap CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  
   <!-- Toast UI Grid -->
   <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
   <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
 
   <!-- Custom -->
   <link rel="stylesheet" th:href="@{/css/sd/cust.css}">
+  <link th:href="@{/css/general.css}" rel="stylesheet" />
+
+  <!-- Kakao Address API -->
+   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <body layout:fragment="content">
-  <div class="p-2">
+  <div class="page page-fluid">
+    <!-- ================= 검색/필터 섹션 ================= -->
+    <section class="card-ui card-ui--search" style="margin-top: 10px; display: flex; width: 100%">
+      <div class="card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+        <div class="filter-bar row g-2 align-items-center col-md-12">
 
-    <!-- ===========================
-       조회조건 카드
-  ============================ -->
-    <div class="card query-card mb-2">
-      <div class="card-body">
-        <div class="row g-2 align-items-center">
-
-          <div class="col-md-3 d-flex">
-            <label class="query-label">거래처명</label>
-            <input type="text" id="searchName" class="form-control">
-          </div>
-
-          <div class="col-md-3 d-flex">
-            <label class="query-label">거래처 유형</label>
-            <select id="searchType" class="form-select">
-              <option value="">전체</option>
-              <option value="매입업체">매입업체</option>
-              <option value="매출업체">매출업체</option>
-              <option value="외주업체">외주업체</option>
-              <option value="내부거래사">내부거래사</option>
-            </select>
-          </div>
-
-          <div class="col-md-2 d-flex align-items-center">
-            <input type="checkbox" id="searchUse" class="form-check-input me-2">
-            <label for="searchUse" class="mb-0">사용중만</label>
-          </div>
-
-          <div class="col-md-4 d-flex justify-content-end gap-2">
-            <button class="btn btn-secondary" style="width:90px;">EXCEL</button>
-            <button id="btnSearch" class="btn btn-primary" style="width:90px;">조회</button>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- ===========================
-       그리드 (상단)
-  ============================ -->
-    <div class="card mb-2">
-      <div class="card-body p-0">
-        <div id="partner-grid" style="height:320px;"></div>
-      </div>
-    </div>
-
-    <!-- ===========================
-       버튼
-  ============================ -->
-    <div class="col-md-8 text-end">
-      <button id="btnReset" class="btn btn-outline-secondary">초기화</button>
-      <button id="btnSave" class="btn btn-primary">저장</button>
-    </div>
-
-    <!-- 모달 포함 -->
-    <div th:replace="modal/custModal :: custModalFragment"></div>
-
-    <!-- 모달 호출 버튼 -->
-    <button type="button" class="btn btn-outline-primary btn-sm"
-            data-bs-toggle="modal" data-bs-target="#custModal">
-      거래처 조회
-    </button>
-
-
-    <!-- ===========================
-       상세 입력 (가운데)
-  ============================ -->
-    <div class="card mb-2">
-      <div class="card-body py-2">
-
-        <!-- 1줄: 거래처코드 / 상호 / 대표자명 -->
-        <div class="row g-1">
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">거래처코드</label>
-            <input id="formCode" type="text" class="form-control">
-          </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">상호(이름)</label>
-            <input id="formName" type="text" class="form-control">
-          </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">대표자명</label>
-            <input id="formCeo" type="text" class="form-control">
-          </div>
-        </div>
-
-        <!-- 2줄: 사업자등록번호 / 업태 / 종목 -->
-        <div class="row g-1 mt-1">
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">사업자번호</label>
-            <input id="formBiz" type="text" class="form-control">
-          </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">업태</label>
-            <input id="formBizType" type="text" class="form-control">
-          </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">종목</label>
-            <input id="formBizItem" type="text" class="form-control">
-          </div>
-        </div>
-
-        <!-- 3줄: 전화 / FAX / 이메일 -->
-        <div class="row g-1 mt-1">
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">전화</label>
-            <input id="formTel" type="text" class="form-control">
-          </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">Fax</label>
-            <input id="formFax" type="text" class="form-control">
-          </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">이메일</label>
-            <input id="formEmail" type="email" class="form-control">
-          </div>
-        </div>
-
-        <!-- 4줄: 주소 / 상세주소 -->
-        <div class="row g-1 mt-1">
-          <div class="col-md-6 d-flex input-row">
-            <label class="input-label">주소</label>
-            <div class="d-flex flex-grow-1 gap-1">
-              <input id="formZip" type="text" class="form-control" placeholder="우편번호">
-              <button id="btnZipSearch" class="btn btn-outline-secondary btn-sm"><i class="bi bi-search"></i></button>
+          <!-- 거래처명 -->
+          <div class="col-12 col-md-3">
+            <div class="field-inline">
+              <label for="searchName" class="field-inline__label">거래처명</label>
+              <input id="searchName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
             </div>
           </div>
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">상세주소</label>
-            <input id="formAddrDetail" type="text" class="form-control" placeholder="상세주소">
-          </div>
-        </div>
 
-        <!-- 5줄: 배송지(버튼) / 계좌번호(버튼) -->
-        <div class="row g-1 mt-1">
-          <div class="col-md-1 d-flex input-row">
-            <label class="input-label">배송지</label>
-            <button id="btnDelivery" class="btn btn-outline-secondary btn-sm">확인</button>
+          <!-- 거래처 유형 -->
+          <div class="col-12 col-md-3">
+            <div class="field-inline">
+              <label for="searchType" class="field-inline__label">거래처 유형</label>
+              <select id="searchType" class="form-select input-base" style="flex: 1; min-width: 0">
+                <option value="">전체</option>
+                <option value="매입업체">매입업체</option>
+                <option value="매출업체">매출업체</option>
+                <option value="외주업체">외주업체</option>
+                <option value="내부거래사">내부거래사</option>
+              </select>
+            </div>
           </div>
-          <div class="col-md-1 d-flex input-row">
-            <label class="input-label">계좌번호</label>
-            <button id="btnAccount" class="btn btn-outline-secondary btn-sm">확인</button>
-          </div>
-        </div>
 
+          <!-- 사용중만 -->
+          <div class="col-12 col-md-2">
+            <label class="check-inline">
+              <input id="searchUse" type="checkbox" class="check-inline__input" />
+              <span class="check-inline__label">사용중만</span>
+            </label>
+          </div>
+
+          <!-- 버튼 영역 -->
+          <div class="col-12 col-md-2 ms-auto text-end">
+            <button id="btnSearch" type="button" class="btn btn-color btn-outer" style="width: 90px">
+              조회
+            </button>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ===========================
-       하단 입력 (거래처유형/부서/담당자/사용여부)
-  ============================ -->
-    <div class="card">
-      <div class="card-body py-2">
+    <!-- ================= 목록(Grid) 섹션 ================= -->
+    <section class="card-ui card-ui--grid section-flex">
+      <header class="card-ui__header">
+        <h6 class="card-ui__title">사원 목록</h6>
+        <small class="text-muted">
+          행 선택 시 아래 상세 정보가 표시됩니다.
+        </small>
+      </header>
 
-        <!-- 1줄: 거래처유형 / 부서 / 담당자 -->
-        <div class="row g-1">
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">거래처유형</label>
-            <select id="formType" class="form-select">
-              <option value="">선택</option>
-              <option>매입업체</option>
-              <option>매출업체</option>
-              <option>내부거래사</option>
-              <option>외주업체</option>
-            </select>
+      <div class="card-ui__body section-scroll p-0">
+        <div id="grid" class="grid-root"></div>
+      </div>
+    </section>
+
+    <!-- ================= 상세(탭 + 폼) 섹션 ================= -->
+    <section class="card-ui card-ui--detail section-fixed">
+      <form action="" method="post">
+        <header class="card-ui__header d-flex justify-content-end">
+          <!-- 우측 액션 -->
+          <div class="toolbar">
+            <button id="btnReset" type="button" class="btn btn-white btn-inner">
+              초기화
+            </button>
+            <button id="btnSave" type="button" class="btn btn-color btn-inner">
+              저장
+            </button>
           </div>
+        </header>
 
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">부서</label>
-            <input id="formDept" type="text" class="form-control">
-          </div>
+        <div class="card-ui__body section-scroll">
+          <!-- ===== 기본정보 탭 ===== -->
+          <div id="tab-basic" class="tab-panel active">
 
-          <div class="col-md-4 d-flex input-row">
-            <label class="input-label">담당자</label>
-            <input id="formManager" type="text" class="form-control">
-          </div>
-        </div>
+            <!-- 상단 기본 정보 폼 -->
+            <div class="form-grid">
+              <!-- row 1: 거래처코드 / 상호 / 대표자명 -->
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">거래처코드</div>
+                <div class="form-grid__field">
+                  <input id="custCode" class="form-control form-control-sm input-base" readonly disabled placeholder="자동생성" />
+                </div>
 
-        <!-- 2줄: 사용여부 + 버튼들 -->
-        <div class="row g-1 mt-1">
-          <div class="col-md-4 d-flex input-row align-items-center">
-            <label class="input-label mb-0">사용여부</label>
-            <div class="ms-1">
-              <label class="me-3"><input type="radio" name="useYn" value="Y" checked> Y</label>
-              <label><input type="radio" name="useYn" value="N"> N</label>
+                <div class="form-grid__label">상호(이름)</div>
+                <div class="form-grid__field">
+                  <input id="custName" type="text" class="form-control form-control-sm input-base" />
+                </div>
+
+                <div class="form-grid__label">대표자명</div>
+                <div class="form-grid__field">
+                  <input id="ceoName" type="text" class="form-control form-control-sm input-base" />
+                </div>
+              </div>
+
+              <!-- row 2: 사업자번호 / 업태 / 종목 -->
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">사업자번호</div>
+                <div class="form-grid__field">
+                  <input id="bno" type="text" class="form-control form-control-sm input-base" />
+                </div>
+
+                <div class="form-grid__label">업태</div>
+                <div class="form-grid__field">
+                  <input id="bType" type="text" class="form-control form-control-sm input-base" />
+                </div>
+
+                <div class="form-grid__label">종목</div>
+                <div class="form-grid__field">
+                  <input id="bItem" type="text" class="form-control form-control-sm input-base" />
+                </div>
+              </div>
+
+              <!-- row 3: 전화 / FAX / 이메일 -->
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">전화</div>
+                <div class="form-grid__field">
+                  <input id="phone" type="text" class="form-control form-control-sm input-base" />
+                </div>
+
+                <div class="form-grid__label">Fax</div>
+                <div class="form-grid__field">
+                  <input id="faxNo" type="text" class="form-control form-control-sm input-base" />
+                </div>
+
+                <div class="form-grid__label">이메일</div>
+                <div class="form-grid__field">
+                  <input id="custEmail" type="email" class="form-control form-control-sm input-base" />
+                </div>
+              </div>
+
+              <!-- row 4: 우편번호 / 주소 / 상세주소 -->
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">우편번호</div>
+                <div class="form-grid__field">
+                  <div class="d-flex gap-3">
+                    <input id="zonecode" type="text" class="form-control form-control-sm input-base" placeholder="우편번호" />
+                    <button type="button" id="btnZipSearch" class="btn btn-outline-secondary btn-sm justify-content-end">
+                      <i class="bi bi-search"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-grid__label">주소</div>
+                <div class="form-grid__field">
+                  <input id="address" type="text" class="form-control form-control-sm input-base" placeholder="도로명주소" />
+                </div>
+
+                <div class="form-grid__label">상세주소</div>
+                <div class="form-grid__field">
+                  <input id="addressDetail" type="text" class="form-control form-control-sm input-base"
+                    placeholder="상세주소" />
+                </div>
+              </div>
+
+              <!-- row 5: 배송지 / 계좌번호 (버튼) -->
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">배송지</div>
+                <div class="form-grid__field ">
+                  <button id="btnDelivery" class="btn btn-outline-secondary btn-sm button-center">
+                    확인
+                  </button>
+                </div>
+
+                <div class="form-grid__label">계좌번호</div>
+                <div class="form-grid__field">
+                  <button id="btnAccount" class="btn btn-outline-secondary btn-sm button-center">
+                    확인
+                  </button>
+                </div>
+
+                <!-- 3열 레이아웃 맞추기용 빈 칸 -->
+                <div class="form-grid__label"></div>
+                <div class="form-grid__field"></div>
+              </div>
+            </div>
+
+            <!-- 하단 추가 정보 (거래처유형/부서/담당자/사용여부) -->
+            <div class="form-grid mt-2">
+              <div class="form-grid__row form-grid__row--3col">
+                <div class="form-grid__label">거래처유형</div>
+                <div class="form-grid__field">
+                  <select id="custType" class="form-select form-select-sm input-base">
+                    <option value="">선택</option>
+                    <option>매입업체</option>
+                    <option>매출업체</option>
+                    <option>내부거래사</option>
+                    <option>외주업체</option>
+                  </select>
+                </div>
+
+                <div class="form-grid__label">부서</div>
+                <div class="form-grid__field">
+                  <input id="dept" type="text" class="form-control form-control-sm input-base" />
+                </div>
+
+                <div class="form-grid__label">담당자</div>
+                <div class="form-grid__field">
+                  <input id="userName" type="text" class="form-control form-control-sm input-base" />
+                </div>
+              </div>
+
+              <div class="form-grid__row">
+                <div class="form-grid__label">사용여부</div>
+                <div class="form-grid__field">
+                  <div class="d-flex align-items-center">
+                    <label class="me-3">
+                      <input type="radio" name="useStatus" value="y" checked /> Y
+                    </label>
+                    <label>
+                      <input type="radio" name="useStatus" value="n" /> N
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </form>
+    </section>
 
-      </div>
-    </div>
 
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script th:src="@{/js/sd/cust.js}"></script>
-  <script>
-    let cust = ${cust};
-
-  </script>
 </body>
 
 </html>
