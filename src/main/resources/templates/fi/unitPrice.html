@@ -34,17 +34,17 @@
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">품번</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" id="selectsku">
             </div>
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">품명</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" id="selectskuname">
             </div>
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">단가유형</label>
-              <select class="form-select">
+              <select class="form-select" id="selectunitpricetype">
                 <option value="">선택</option>
                 <option>매출단가</option>
                 <option>매입단가</option>
@@ -57,12 +57,12 @@
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">거래처코드</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" id="selectcustcode">
             </div>
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">거래처명</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control" id="selectcustname">
             </div>
 
           </div>
@@ -73,7 +73,7 @@
         <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
           <div class="d-flex gap-2">
             <button class="btn btn-secondary" style="width:110px;">EXCEL</button>
-            <button class="btn btn-primary" style="width:110px;" th:>조회</button>
+            <button class="btn btn-primary" style="width:110px;" id="btnSearch" >조회</button>
           </div>
         </div>
 
@@ -105,62 +105,98 @@
       <div class="col-md-4 h-100" style="padding-left:0;">
         <div class="card h-100">
 
-          <!-- 버튼 (카드 내부 오른쪽 상단) -->
-          <div class="card-header d-flex justify-content-end gap-2">
-            <button class="btn btn-outline-secondary">초기화</button>
-            <button class="btn btn-primary">저장</button>
-          </div>
-
-          <div class="card-body">
-
-            <!-- 입력 label width 통일: 90px -->
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">품번</label>
-              <div class="input-group">
-                <input type="text" class="form-control">
-                <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
-              </div>
-            </div>
-
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">품명</label>
-              <input type="text" class="form-control" readonly>
-            </div>
-
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">단가유형</label>
-              <select class="form-select">
-                <option value="">선택</option>
-                <option>매출단가</option>
-                <option>매입단가</option>
-              </select>
-            </div>
-
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">적용일자</label>
-              <input type="date" class="form-control">
-            </div>
-
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">거래처</label>
-              <div class="input-group">
-                <input type="text" class="form-control">
-                <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
-              </div>
-            </div>
-
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">거래처명</label>
-              <input type="text" class="form-control" readonly>
-            </div>
-
-            <div class="mb-3 d-flex align-items-center gap-2">
-              <label class="fw-semibold" style="width:90px;">기준단가</label>
-              <input type="number" class="form-control">
-            </div>
-
-          </div>
-        </div>
+			  <!-- 버튼 (카드 내부 오른쪽 상단) -->
+			  <div class="card-header d-flex justify-content-end gap-2">
+			    <button class="btn btn-outline-secondary">초기화</button>
+			    <button class="btn btn-primary">저장</button>
+			  </div>
+			
+			  <div class="card-body">
+			
+			    <form>
+			
+			      <table class="table table-bordered align-middle">
+			        <tbody>
+			
+			          <!-- 품번 -->
+			          <tr>
+			            <th class="bg-light text-center" style="width:130px;">품번</th>
+			            <td>
+			              <div class="input-group">
+			                <input type="text" class="form-control">
+			                <button class="btn btn-outline-secondary">
+			                  <i class="bi bi-search"></i>
+			                </button>
+			              </div>
+			            </td>
+			          </tr>
+			
+			          <!-- 품명 -->
+			          <tr>
+			            <th class="bg-light text-center">품명</th>
+			            <td>
+			              <input type="text" class="form-control" readonly>
+			            </td>
+			          </tr>
+			
+			          <!-- 단가유형 -->
+			          <tr>
+			            <th class="bg-light text-center">단가유형</th>
+			            <td>
+			              <select class="form-select">
+			                <option value="">선택</option>
+			                <option>매출단가</option>
+			                <option>매입단가</option>
+			              </select>
+			            </td>
+			          </tr>
+			
+			          <!-- 적용일자 -->
+			          <tr>
+			            <th class="bg-light text-center">적용일자</th>
+			            <td>
+			              <input type="date" class="form-control">
+			            </td>
+			          </tr>
+			
+			          <!-- 거래처 -->
+			          <tr>
+			            <th class="bg-light text-center">거래처</th>
+			            <td>
+			              <div class="input-group">
+			                <input type="text" class="form-control">
+			                <button class="btn btn-outline-secondary">
+			                  <i class="bi bi-search"></i>
+			                </button>
+			              </div>
+			            </td>
+			          </tr>
+			
+			          <!-- 거래처명 -->
+			          <tr>
+			            <th class="bg-light text-center">거래처명</th>
+			            <td>
+			              <input type="text" class="form-control" readonly>
+			            </td>
+			          </tr>
+			
+			          <!-- 기준단가 -->
+			          <tr>
+			            <th class="bg-light text-center">기준단가</th>
+			            <td>
+			              <input type="number" class="form-control">
+			            </td>
+			          </tr>
+			
+			        </tbody>
+			      </table>
+			
+			    </form>
+			
+			  </div>
+			
+			</div>
+        
       </div>
 
     </div>

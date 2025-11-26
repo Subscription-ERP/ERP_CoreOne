@@ -1,3 +1,4 @@
+document.addEventListener("DOMContentLoaded", function () {
 
   const grid = new tui.Grid({
 	  el : document.getElementById('unitprice-grid'),
@@ -15,15 +16,26 @@
     ]
   });
   
-  getList();
   function getList() {
-	  fetch("/api/fi/unitprice")
+
+		const selectParam ={
+			sku : document.getElementById('selectsku').value,
+			skuName : document.getElementById('selectskuname').value,
+			unitPriceType : document.getElementById('selectunitpricetype').value,
+			custCode : document.getElementById('selectcustcode').value,
+			custName : document.getElementById('selectcustname').value
+		}
+		console.log(document.getElementById('selectunitpricetype').value);
+	  fetch("/api/fi/unitprice?"+new URLSearchParams(selectParam))
 	    .then(res => res.json())
 	    .then(result => {
 	      console.log(result); // JSON 데이터 확인
 
-	      grid.resetData(result);  // ⭐ 여기가 핵심
-		  grid.refreshLayout(); // ⭐ 중요
+	      grid.resetData(result);
+		  grid.refreshLayout();
 	    })
 	    .catch(err => console.error("조회 중 오류:", err));
 	}
+
+    document.getElementById("btnSearch").addEventListener("click", getList);
+});
