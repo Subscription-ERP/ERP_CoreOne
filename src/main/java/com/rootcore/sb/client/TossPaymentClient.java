@@ -13,15 +13,15 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TossPaymentClient {
 
-    private final WebClient tossWebClient;
-
-    public TossConfirmResponse confirmPayment(TossConfirmRequest request) {
-        return tossWebClient.post()
-                .uri("/payments/confirm")
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(TossConfirmResponse.class)
-                .onErrorResume(e -> Mono.error(e))
-                .block(); // 동기 방식 사용
-    }
+//    private final WebClient tossWebClient;
+//
+//    public TossConfirmResponse confirmPayment(TossConfirmRequest request) {
+//        return tossWebClient.post()
+//                .uri("/payments/confirm")
+//                .bodyValue(request)
+//                .retrieve()
+//                .bodyToMono(TossConfirmResponse.class)
+//                .onErrorResume(e -> Mono.error(e))
+//                .block(); // 동기 방식 사용
+//    }
 }
