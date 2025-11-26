@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.auth.mapper.SmsAuthMapper">
+
+    <!-- 인증번호 저장 -->
+    <insert id="saveAuthCode">
+        MERGE INTO TB_SMS_AUTH A
+        USING (SELECT #{phone} AS PHONE FROM dual) B
+        ON (A.PHONE = B.PHONE)
+        WHEN MATCHED THEN
+            UPDATE SET 
+                AUTH_CODE = #{authCode},
+                EXPIRE_TIME = SYSTIMESTAMP + (5/1440)
+        WHEN NOT MATCHED THEN
+            INSERT (PHONE, AUTH_CODE, EXPIRE_TIME)
+            VALUES (#{phone}, #{authCode}, SYSTIMESTAMP + (5/1440))
+    </insert>
+
+    <!-- 인증번호 검증 -->
+    <select id="getValidAuthCode" resultType="string">
+        SELECT AUTH_CODE
+        FROM TB_SMS_AUTH
+        WHERE PHONE = #{phone}
+          AND EXPIRE_TIME > SYSTIMESTAMP
+    </select>
+
+</mapper>
