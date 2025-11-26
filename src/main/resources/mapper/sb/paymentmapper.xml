@@ -2,15 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mapper.sb.paymentmapper">
  <!-- 결제 생성 -->
-    <insert id="insertPayment" parameterType="com.example.payment.vo.PaymentVO">
+ <!--    <insert id="insertPayment" parameterType="PaymentVO">
         INSERT INTO payments
         (order_id, payment_key, amount, member_id, status, created_at, updated_at)
         VALUES
         (#{orderId}, #{paymentKey}, #{amount}, #{memberId}, #{status}, NOW(), NOW());
-    </insert>
+    </insert> -->
 
     <!-- orderId로 검색 -->
-    <select id="findByOrderId" parameterType="string" resultType="com.example.payment.vo.PaymentVO">
+    <select id="findByOrderId" parameterType="string"> 
         SELECT *
         FROM payments
         WHERE order_id = #{orderId}
