@@ -1,13 +1,10 @@
-<html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
 
 <head>
 
 <title>급여대장</title>
 <!-- TOAST UI CDN, SCRIPT -->
-<link rel="stylesheet"
-	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 <!-- <script src="https://uicdn.toast.com/tui-pagination/latest/tui-pagination.js"></script>
 <link rel="stylesheet" href="https://uicdn.toast.com/tui-pagination/latest/tui-pagination.css" /> -->
@@ -88,8 +85,7 @@
 										</div>
 										<!-- 대장명칭 -->
 										<div class="col-md-3 mb-2">
-											<input type="text" class="form-control form-control-sm"
-												placeholder="대장명칭">
+											<input type="text" class="form-control form-control-sm" placeholder="대장명칭">
 										</div>
 										<!-- 초기화 조회 버튼 -->
 										<div class="col-md-6 d-flex justify-content-end gap-2">
@@ -105,8 +101,7 @@
 									<div class="row">
 										<!-- 지급일: col-md-6에서 col-md-3로 변경하여 상위 입력 필드와 너비 일치 -->
 										<div class="col-md-3 mb-3 mb-md-0">
-											<input type="date" class="form-control form-control-sm"
-												placeholder="지급일">
+											<input type="date" class="form-control form-control-sm" placeholder="지급일">
 										</div>
 										<!-- 남은 공간은 비워둡니다 -->
 										<div class="col-md-9"></div>
@@ -135,8 +130,7 @@
 								<form>
 									<!-- 폼 그룹 1: 귀속연월 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">귀속연월</label> <input
-											type="month" class="form-control form-control-sm">
+										<label class="input-group-label">귀속연월</label> <input type="month" class="form-control form-control-sm">
 									</div>
 
 									<!-- 폼 그룹 2: 상여지급방법 -->
@@ -145,54 +139,42 @@
 										<div class="radio-group-wrap">
 											<!-- AdminLTE/BS5 Radio 버튼 스타일 적용 -->
 											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" id="지급률"
-													name="지급방법" checked> <label
-													class="form-check-label" for="지급률">지급률</label>
+												<input class="form-check-input" type="radio" id="지급률" name="지급방법" checked> <label class="form-check-label" for="지급률">지급률</label>
 											</div>
 											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" id="지급액"
-													name="지급방법"> <label class="form-check-label"
-													for="지급액">지급액</label>
+												<input class="form-check-input" type="radio" id="지급액" name="지급방법"> <label class="form-check-label" for="지급액">지급액</label>
 											</div>
 										</div>
 									</div>
 
 									<!-- 폼 그룹 3: 지급률 및 지급금액 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">지급률 및 지급금액</label> <input
-											type="text" class="form-control form-control-sm" value=""
-											placeholder="숫자만 입력">
+										<label class="input-group-label">지급률 및 지급금액</label> <input type="text" class="form-control form-control-sm" value="" placeholder="숫자만 입력">
 									</div>
 
 									<!-- 폼 그룹 4: 대장명칭 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">대장명칭</label> <input
-											type="text" class="form-control form-control-sm">
+										<label class="input-group-label">대장명칭</label> <input type="text" class="form-control form-control-sm">
 									</div>
 
 									<!-- 폼 그룹 5: 대장기간시작일 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">대장기간시작일</label> <input
-											type="date" class="form-control form-control-sm">
+										<label class="input-group-label">대장기간시작일</label> <input type="date" class="form-control form-control-sm">
 									</div>
 
 									<!-- 폼 그룹 6: 대장기간종료일 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">대장기간종료일</label> <input
-											type="date" class="form-control form-control-sm">
+										<label class="input-group-label">대장기간종료일</label> <input type="date" class="form-control form-control-sm">
 									</div>
 
 									<!-- 폼 그룹 7: 지급일 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">지급일</label> <input
-											type="date" class="form-control form-control-sm">
+										<label class="input-group-label">지급일</label> <input type="date" class="form-control form-control-sm">
 									</div>
 
 									<!-- 폼 그룹 8: 인원수 -->
 									<div class="form-horizontal-group">
-										<label class="input-group-label">인원수</label> <input
-											type="text" class="form-control form-control-sm bg-light"
-											disabled value="7">
+										<label class="input-group-label">인원수</label> <input type="text" class="form-control form-control-sm bg-light" disabled value="7">
 									</div>
 								</form>
 
@@ -203,32 +185,20 @@
 										<div class="d-flex gap-2 mb-3 align-items-center">
 											<!-- 성명 라벨 + 인풋을 묶어 가로 정렬 및 간결한 스타일 적용 -->
 											<div class="d-flex align-items-center gap-1 flex-shrink-0">
-												<label for="target-name-input"
-													class="fw-bold flex-shrink-0 me-1" style="width: 50px;">성명</label>
-												<input type="text" id="target-name-input"
-													class="form-control form-control-sm" placeholder="성명">
+												<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">성명</label> <input type="text" id="target-name-input" class="form-control form-control-sm" placeholder="성명">
 											</div>
 											<div class="d-flex align-items-center gap-1 flex-shrink-0">
-												<label for="target-name-input"
-													class="fw-bold flex-shrink-0 me-1" style="width: 50px;">부서명</label>
-												<input type="text" id="target-name-input"
-													class="form-control form-control-sm" placeholder="부서명">
+												<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">부서명</label> <input type="text" id="target-name-input" class="form-control form-control-sm" placeholder="부서명">
 											</div>
 											<div class="d-flex align-items-center gap-1 flex-shrink-0">
-												<label for="target-name-input"
-													class="fw-bold flex-shrink-0 me-1" style="width: 50px;">입사일</label>
-												<input type="date" id="target-name-input"
-													class="form-control form-control-sm" placeholder="입사일">
+												<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">입사일</label> <input type="date" id="target-name-input" class="form-control form-control-sm" placeholder="입사일">
 											</div>
 
 											<!-- ms-auto를 추가하여 오른쪽으로 정렬 -->
-											<button
-												class="btn btn-sm btn-secondary flex-shrink-0 ms-auto"
-												id="target-reset-btn">
+											<button class="btn btn-sm btn-secondary flex-shrink-0 ms-auto" id="target-reset-btn">
 												<i class="fas fa-redo me-1"></i>초기화
 											</button>
-											<button class="btn btn-sm btn-success flex-shrink-0"
-												id="target-search-btn">
+											<button class="btn btn-sm btn-success flex-shrink-0" id="target-search-btn">
 												<i class="fas fa-search me-1"></i>조회
 											</button>
 										</div>
@@ -252,7 +222,7 @@
 				data : {
 					api : {
 						readData : {
-							url : '/api/hr/emplist',
+							url : '/api/hr/payrollEmpList',
 							method : 'GET'
 						}
 					}
@@ -277,13 +247,13 @@
 					name : 'jobTitle'
 				} ]
 			});
-			
+
 			/* 급여대장-조회 */
 			const payrollGrid = new tui.Grid({
 				el : document.getElementById('payrollGrid'),
 				scrollX : false,
 				scrollY : true,
-				
+
 				data : {
 					api : {
 						readData : {
@@ -296,23 +266,32 @@
 				columns : [ {
 					header : '귀속연월',
 					name : 'payrollPeriod',
-					align : 'center'
+					align : 'center',
+					width : 80
 				}, {
 					header : '급여구분',
-					name : 'payrollType'
+					name : 'payrollType',
+					width : 70
 				}, {
 					header : '대장명칭',
-					name : 'payrollName'
+					name : 'payrollName',
+					width : 200
 				}, {
 					header : '지급일',
 					name : 'payrollDate',
 					align : 'center'
 				}, {
 					header : '인원수',
-					name : 'peopleNumber'
+					name : 'peopleNumber',
+					width : 70
 				}, {
 					header : '급여계산',
-					name : 'salaryCalculation'
+					name : 'salaryCalculation',
+					align : 'center',
+					formatter : function(data) {
+						const payrollCode = data.row.payrollCode;
+						return `<a href=# data-paroll-code="${payrollCode}">계산하기</a>`;
+					}
 				}, {
 					header : '지급총액',
 					name : 'totalAmount'

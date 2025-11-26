@@ -4,27 +4,7 @@
 
 <mapper namespace="com.rootcore.hr.mapper.HrMapper">
 
-	<!-- 장준현 -->
-	<!-- 급여대장-조회 -->
-	<select id="selectPayrollList" resultType="PayrollVO">
-		SELECT payroll_period,
-		       payroll_type,
-		       payroll_name,
-		       payroll_date,
-		       COUNT(*) AS peopleNumber
-		FROM   tb_payroll
-		GROUP BY payroll_period, payroll_type, payroll_name, payroll_date
-	</select>
 	
-	<!-- 급여대장-상여등록-사원조회 -->
-	<select id="selectUserList" resultType="UserVO">
-		SELECT user_id,
-		       user_name,
-		       dept,
-		       hire_date,
-		       job_title
-		FROM   tb_user_master
-	</select>
 	
 	
 	

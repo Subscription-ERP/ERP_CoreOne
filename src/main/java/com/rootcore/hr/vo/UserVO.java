@@ -1,12 +1,9 @@
 package com.rootcore.hr.vo;
 
-import java.time.LocalDate;
-
-import org.springframework.format.annotation.DateTimeFormat;
+import java.util.Date;
 
 import lombok.Data;
 
-// 급여대장-상여등록-사원조회VO
 @Data
 public class UserVO {	
 	
@@ -41,11 +38,4 @@ public class UserVO {
 	private String updatedBy;
 	private Date updateDate;
 	
-	
-	private String userId; // 사원번호
-	private String userName; // 성명
-	private String dept; // 부서
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDate hireDate; // 입사일
-	private String jobTitle; // 직위/직급
 }
