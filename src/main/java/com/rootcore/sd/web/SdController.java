@@ -14,14 +14,10 @@ public class SdController {
 
     // 거래처 관리
     @GetMapping("/sd/cust")
-    public String custMain(Model model) {
-        model.addAttribute("custList", custService.selectCust());
+    public String custMain() {
         return "sd/cust";
     }
 
     // 거래처 모달
-    public String custModal(Model model) {
-        model.addAttribute("custList", custService.selectCust());
-        return "modal/custModal";
-    }
+
 }
