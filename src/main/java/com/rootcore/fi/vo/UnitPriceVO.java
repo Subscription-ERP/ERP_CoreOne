@@ -12,7 +12,7 @@ public class UnitPriceVO {
 	private String skuName;
 	private String custCode;
 	private String custName;
-	private String unitPirceType;
+	private String unitPriceType;
 	private String unitPriceTypeName;
 	private Date startDate;
 	private double unitPrice;

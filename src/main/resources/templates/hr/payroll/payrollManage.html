@@ -1,15 +1,82 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <head>
-    <title>급여관리</title>
+<title>급여관리</title>
+<!-- TOAST UI CDN, SCRIPT -->
+<link rel="stylesheet"
+	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+<link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+
+<style>
+.app-main {
+    overflow: visible !important;
+}
+#grid {
+    height: 600px !important;
+}
+.content-wrapper, .content {
+    height: auto !important;
+    min-height: 100vh;
+}
+</style>
 </head>
 
 <body>
-    <div layout:fragment="content">
-        <h3>급여관리</h3>
-    </div>
+
+	<div layout:fragment="content">
+		<h3>급여관리</h3>
+		<div id="grid"></div>
+		<div id="gridTest" style="height:500px; border:1px solid red;"></div>
+		<script>
+	document.addEventListener("DOMContentLoaded", () => {
+		new tui.Grid({
+	        el: document.getElementById('gridTest'),
+	        columns: [
+	            { header: 'A', name: 'a' },
+	            { header: 'B', name: 'b' }
+	        ],
+	        data: [{a:1, b:2}]
+	    });
+		const grid = new tui.Grid({
+			el : document.getElementById('grid'),
+			scrollX : false,
+			scrollY : false,
+			columns : [ {
+				header : '사원번호',
+				name : 'userId'
+			}, {
+				header : '성명',
+				name : 'userName'
+			}, {
+				header : '부서명',
+				name : 'dept'
+			}, {
+				header : '입사일',
+				name : 'hireDate'
+			}, {
+				header : '직위',
+				name : 'jobTitle'
+			} ],
+			data : [ {
+				userId : '10012',
+				userName : 'Seoul',
+				dept : 'South Korea'
+			}, {
+				userId : '10013',
+				userName : 'Tokyo',
+				dept : 'Japan'
+			} ]
+		});
+	});
+	</script>
+	</div>
+	
 </body>
+
 
 </html>
