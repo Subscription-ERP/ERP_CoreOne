@@ -4,21 +4,20 @@
 
 <mapper namespace="com.rootcore.auth.mapper.SmsAuthMapper">
 
-    <!-- 인증번호 저장 -->
     <insert id="saveAuthCode">
         MERGE INTO TB_SMS_AUTH A
-        USING (SELECT #{phone} AS PHONE FROM dual) B
-        ON (A.PHONE = B.PHONE)
+        USING (SELECT #{companyCode} AS COMPANY_CODE, #{phone} AS PHONE FROM dual) B
+        ON (A.PHONE = B.PHONE AND A.COMPANY_CODE = B.COMPANY_CODE)
         WHEN MATCHED THEN
-            UPDATE SET 
+            UPDATE SET
                 AUTH_CODE = #{authCode},
                 EXPIRE_TIME = SYSTIMESTAMP + (5/1440)
         WHEN NOT MATCHED THEN
-            INSERT (PHONE, AUTH_CODE, EXPIRE_TIME)
-            VALUES (#{phone}, #{authCode}, SYSTIMESTAMP + (5/1440))
+            INSERT (COMPANY_CODE, PHONE, AUTH_CODE, EXPIRE_TIME)
+            VALUES (#{companyCode}, #{phone}, #{authCode},
+                    SYSTIMESTAMP + (5/1440))
     </insert>
 
-    <!-- 인증번호 검증 -->
     <select id="getValidAuthCode" resultType="string">
         SELECT AUTH_CODE
         FROM TB_SMS_AUTH
