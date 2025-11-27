@@ -91,6 +91,20 @@ textarea {
   background-color: var(--light-gray-color);
 }
 
+
+/* from-grid 안에 있는 button 스타일 정리 */
+.form-grid .btn-grid{
+  border: none;
+  border-left: 1px solid var(--mid-light-gray-color);
+  background-color: #f6f6f6;
+  color: var(--black-color);
+  padding: 0 10px !important;
+  transition: 0.3s;
+}
+.form-grid .btn-grid:hover{
+  background-color: var(--gray-color);
+}
+
 /* disabled ----------------------------------------------------------------------------- */
 .disabled {
   background: #f6f6f6 !important;

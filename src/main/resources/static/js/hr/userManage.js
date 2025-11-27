@@ -2,7 +2,10 @@
  * userManage.js
  */
 
-document.addEventListener("DOMContentLoaded", () => {
+console.log(window.tui);
+console.log(window.tui && window.tui.DatePicker);
+
+document.addEventListener("DOMContentLoaded", async () => {
 	/* ------------------------------------------------------------------
 	 * 0) DOM 유틸
 	 * ------------------------------------------------------------------ */
@@ -15,18 +18,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	function initGrid() {
 	  grid = new tui.Grid({
-	    el: document.getElementById('grid'),
+	    el: document.getElementById('userList'),
 	    bodyHeight: 300,
-	    rowHeaders: ['rowNum'],
+	    rowHeaders: ['checkbox'],
 	    columns: [
 			{ header: "사원번호", name: "userId"},
-			{ header: "성명", name: "	userName"},
+			{ header: "성명", name: "userName"},
 			{ header: "부서명", name: "dept"},
 			{ header: "입사일", name: "hireDate"},
-			{ header: "직위/직급", name: "jobTitle"},
-			{ header: "직책", name: "position"},
-			{ header: "연락처", name: "tel"},
-			{ header: "Email", name: "email"},
+			// 직위/직급 (c1~c6 → 한글)
+			{
+			  header: "직위/직급",
+			  name: "jobTitle",
+			  formatter({ value }) {
+			    const jobTitleMap = {
+			      c1: "사원",
+			      c2: "주임",
+			      c3: "대리",
+			      c4: "과장",
+			      c5: "차장",
+			      c6: "부장"
+			    };
+			    return jobTitleMap[value] || value; // 없으면 그냥 원래 값(c1 등) 보여주기
+			  }
+			},
+			// 직책 (d1~d2 → 한글)
+			{
+			  header: "직책",
+			  name: "position",
+			  formatter({ value }) {
+			    const positionMap = {
+			      d1: "팀원",
+			      d2: "팀장"
+			    };
+			    return positionMap[value] || value;
+			  }
+			},
+			{ header: "연락처", name: "tel" },
+			{ header: "Email", name: "email" }
+
+
+
 	    ]
 	  });
 	}
@@ -41,35 +73,44 @@ document.addEventListener("DOMContentLoaded", () => {
 	initGrid();
 	loadUserList();
 	
-/*	function loadUserList(){
-		fetch("/api/hr/userAllList")
-	}*/
-	
-	
-	
 
-/*	const grid = new Grid({
-		el: gridEl,
-		rowHeaders: ["checkbox"],
-		bodyHeight: 250,
-		columns: [
-			{ header: "사원번호", name: "userId"},
-			{ header: "성명", name: "	userName"},
-			{ header: "부서명", name: "dept"},
-			{ header: "입사일", name: "hireDate"},
-			{ header: "직위/직급", name: "jobTitle"},
-			{ header: "직책", name: "position"},
-			{ header: "연락처", name: "tel"},
-			{ header: "Email", name: "email"},
-		],
-		data: data,
-	});*/
+	/* ------------------------------------------------------------------
+	 * 2) input 클릭시 달력 선택창 뜨게 하기
+	 * ------------------------------------------------------------------ */
+	
+	// 2-1) 공통 함수
+	function setupNativeDatePicker(wrapperId, inputId) {
+	  const wrapper = document.getElementById(wrapperId);
+	  const input = document.getElementById(inputId);
+	  if (!wrapper || !input) return;
 
+	  // wrapper 아무 곳이나 클릭해도 달력 뜨게
+	  wrapper.addEventListener('click', () => {
+	    if (input.showPicker) {
+	      input.showPicker();      // 크롬/엣지에서 달력 팝업
+	    } else {
+	      input.focus();           // 지원 안 하는 브라우저용 최소한의 처리
+	    }
+	  });
+
+	  // input이 포커스를 얻었을 때도 자동으로 달력 띄우기 (원하면)
+	  input.addEventListener('focus', () => {
+	    if (input.showPicker) {
+	      input.showPicker();
+	    }
+	  });
+	}
+
+	// 입사일 / 퇴사일 세팅
+	setupNativeDatePicker('hireDateWrapper', 'hireDateInput');
+	setupNativeDatePicker('leaveDateWrapper', 'leaveDateInput');
+	
+		
 
 	/* ------------------------------------------------------------------
 	 * 2) 목록 조회
 	 * ------------------------------------------------------------------ */
-	async function loadList() {
+/*	async function loadList() {
 		const keywordEl = $("#keyword");
 		const deptEl = $("#dept");
 		const retiredYnEl = $("#retiredYn");
@@ -87,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const btnSearch = $("#btnSearch");
 	if (btnSearch) btnSearch.addEventListener("click", loadList);
-	loadList();
+	loadList();*/
 
 	/* ------------------------------------------------------------------
 	 * 3) 행 클릭 → 상세 조회
@@ -192,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	/* ------------------------------------------------------------------
 	 * 6) 사진 업로드 미리보기
 	 * ------------------------------------------------------------------ */
-	const photoInput = $("#photoInput");
+	const photoInput = $("#userPhoto");
 	if (photoInput) {
 		photoInput.addEventListener("change", (e) => {
 			const file = e.target.files?.[0];
@@ -442,6 +483,50 @@ document.addEventListener("DOMContentLoaded", () => {
 	    renderPrintPage();
 	  }
 	});
+	
+	
+	
+	/* ------------------------------------------------------------------
+	 * 11) Kakao Address API
+	 * ------------------------------------------------------------------ */
+	function findAddress() {
+	  new daum.Postcode({
+	    oncomplete: function (data) {
+	      // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+	      // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+	      // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+	      let roadAddr = data.roadAddress; // 도로명 주소 변수
+	      let zonecode = data.zonecode; // 도로명 주소 변수
+
+	      // 우편번호와 주소 정보를 해당 필드에 넣는다.
+	      document.getElementById("address").value = roadAddr;
+	      document.getElementById("zipCode").value = zonecode;
+	    }
+	  }).open();
+	}
+
+	// 지도 검색을 눌렀을 때 Kakao Address API 켜지도록 설정
+	document.getElementById("btnZipSearch").addEventListener('click', findAddress);
+
+	
+	/* ------------------------------------------------------------------
+	 * 12) 사원번호 생성
+	 * ------------------------------------------------------------------ */
+/*	const datePart = formatDate(orderDate);
+	const lastList = await conn.query(sqlList.selectLastOutordNo, [`OO${datePart}%`]);
+	let seq = 1;
+	if (lastList.length > 0) {
+	  const lastNo = lastList[0].OUTORD_NO;
+	  const lastSeq = parseInt(lastNo.slice(-5)); // 마지막 5자리 추출
+	  seq = lastSeq + 1;
+	}
+	let outordDate = formatFullDate(orderDate);
+	let outdelDate = formatFullDate(deliveryDate);
+
+	// 신규 발주번호 생성 (EMP + YYMMDD + 5자리SEQ)
+	// 00 -> EMP (사원번호)
+	const outordNo = `EMP${datePart}${String(seq).padStart(5, "0")}`;*/
 
 	
 
