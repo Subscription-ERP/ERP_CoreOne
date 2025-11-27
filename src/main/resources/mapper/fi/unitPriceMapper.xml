@@ -3,7 +3,41 @@
 <mapper namespace="com.rootcore.fi.mapper.UnitPriceMapper">
 
 	<select id="selectUnitPrice" resultType="com.rootcore.fi.vo.UnitPriceVO">
-		select * from tb_unit_price_master where sku like '%' || #{sku} || '%'
+		SELECT upm.sku sku
+		     , sku.sku_name skuName
+		     , upm.cust_code custCode
+		     , cst.cust_name custName
+		     , upm.unit_price_type unitPriceType
+		     , cod.code_name unitPriceTypeName
+		     , TO_CHAR(upm.start_date, 'YYYY-MM-DD') startDate
+		     , upm.unit_price unitPrice
+		  FROM tb_unit_price_master upm
+		  JOIN tb_sku_master sku
+		    ON (upm.company_code = sku.company_code
+		   AND upm.sku = sku.sku)
+		  JOIN tb_cust_master cst
+		    ON (upm.company_code = cst.company_code
+		   AND upm.cust_code = cst.cust_code)
+		  JOIN tb_cm_code cod
+		    ON (upm.unit_price_type = cod.code
+		   AND cod.group_code = 'UNIT_PRICE_TYPE')
+		 WHERE 1=1
+		<if test="sku != null and sku !='' ">
+			AND upm.sku like '%' || #{sku} || '%'
+		</if>
+		<if test="skuName != null and skuName !='' ">
+			AND sku.sku_name like '%'|| #{skuName} ||'%'
+		</if>
+		<if test="unitPriceType != null and unitPriceType !='' ">
+			AND upm.unit_price_type = #{unitPriceType}
+		</if>
+		<if test="custCode != null and custCode !='' ">
+			AND upm.cust_code like '%'|| #{custCode} || '%'
+		</if>
+		<if test="custName != null and custName !='' ">
+			AND cst.cust_name like '%'|| #{custName} ||'%'		
+		</if>
+		 ORDER BY sku
 	</select>
 
 	<insert id="insertUnitPrice" parameterType="com.rootcore.fi.vo.UnitPriceVO">
@@ -23,4 +57,13 @@
 		  , #{unit_price}
 		)
 	</insert>
+	
+	<select id="checkUnitPrice">
+		SELECT count(*) cnt
+		  FROM tb_unit_price_master
+		 WHERE company_code = #{companyCode}
+		   AND sku = #{sku}
+		   AND cust_code = #{custCode}
+		   AND unit_price_type = #{unitPriceType}
+	</select>
 </mapper>

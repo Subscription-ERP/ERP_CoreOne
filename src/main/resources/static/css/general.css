@@ -223,7 +223,21 @@ input[type="checkbox"]:checked {
   box-sizing: border-box;
   font-size: var(--fs-s);
 }
-
+.form-grid .input-base-icon {
+  width: 75%;
+  height: 34px !important;
+  padding: 0 8px !important;
+  border: none;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: block;
+  box-sizing: border-box;
+  font-size: var(--fs-s);
+}
+.form-grid .btn-icon{
+	height : 33px;
+	padding : 0 10px;
+}
 /* Tabs -------------------------------------------------------------------------------- */
 .ui-tabs .nav-link {
   font-size: var(--fs-s);
