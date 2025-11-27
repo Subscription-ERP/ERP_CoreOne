@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/sd")
@@ -20,7 +19,7 @@ public class SdRestController {
     CustService custService;
 
     @GetMapping("/cust")
-    public List<CustVO> getCustList(CustVO param) {
-        return custService.selectCust(param);
+    public List<CustVO> CustList(CustVO param) {
+        return custService.getCustList(param);
     }
 }

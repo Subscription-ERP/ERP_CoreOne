@@ -15,8 +15,13 @@ public class CustServiceImpl implements CustService {
     final CustMapper custMapper;
 
     @Override
-    public List<CustVO> selectCust(CustVO cust) {
-        return custMapper.selectCust(cust);
+    public List<CustVO> getCustList(CustVO cust) {
+        return custMapper.selectAllCust(cust);
+    }
+
+    @Override
+    public int addCust(CustVO cust) {
+        return custMapper.insertCust(cust);
     }
 
 }

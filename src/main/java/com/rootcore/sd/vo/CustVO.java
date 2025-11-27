@@ -16,6 +16,7 @@ public class CustVO {
     private String phone;
     private String faxNo;
     private String custEmail;
+    private int zonecode;
     private String address;
     private String addressDetail;
     private String custType;
@@ -24,6 +25,4 @@ public class CustVO {
     private char useStatus;
     private String createdBy;
     private Date createDate;
-    private String updatedBy;
-    private Date updateDate;
 }
