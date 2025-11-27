@@ -2,6 +2,8 @@ package com.rootcore.hr.vo;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 @Data
@@ -10,17 +12,18 @@ public class UserVO {
 	private String companyCode;      //회사코드
 	private String userId;           //사원번호
 	private String userName;         //사원명
-	private Date birth; 
 	private String tel;
 	private String email;
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date hireDate;           //입사일
 	private String hireType;         //입사구분
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date leaveDate;          //퇴사일
 	private String leaveReason;      //퇴사사유
 	private String zipCode;          //우편번호
 	private String address;          //주소
 	private String dept;             //부서
-	private String jobTitle;         //직급,직위
+	private String jobTitle;         //직위,직급
 	private String position;         //직책
 	private Long familyCount;        //가족수
 	private Long childrenCount;      //자녀수

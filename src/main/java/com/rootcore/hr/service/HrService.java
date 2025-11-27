@@ -7,6 +7,7 @@ import com.rootcore.hr.vo.UserVO;
 
 public interface HrService {
 
-	List<UserVO> selectAllUserList();
+	// 사원
+	List<UserVO> selectAllUserList();      // 전체조회
 
 }

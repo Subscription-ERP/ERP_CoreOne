@@ -8,9 +8,19 @@
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <!-- ToastUI Grid -->
   <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+  <!-- ToastUI Date/Time Picker CSS -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
+  <!-- ToastUI JS -->
+  <script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
+  <script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
+  <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+  <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
   <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
   <!-- general.css -->
   <link th:href="@{/css/general.css}" rel="stylesheet" />
+  <!-- Kakao Address API -->
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
   <style>
     /* Toolbar(인쇄,이력,조회 버튼 갭처리) */
@@ -349,7 +359,7 @@
       </header>
 
       <div class="card-ui__body section-scroll p-0">
-        <div id="grid" class="grid-root"></div>
+        <div id="userList" class="grid-root"></div>
       </div>
     </section>
 
@@ -392,41 +402,53 @@
               <div class="photo-uploader">
                 <img id="photoPreview" src="" alt="사진" class="photo-uploader__img d-none" />
                 <div class="photo-uploader__placeholder">사진</div>
-                <label for="photoInput" class="photo-uploader__overlay">
+                <label for="userPhoto" class="photo-uploader__overlay">
                   <span><i class="bi bi-upload"></i><br />업로드</span>
                 </label>
-                <input id="photoInput" type="file" accept="image/*" class="d-none" />
+                <input id="userPhoto" name="userPhoto" type="file" accept="image/*" class="d-none" />
               </div>
             </div>
 
             <!-- Row 1 -->
             <div class="form-grid__label">사원번호</div>
             <div class="form-grid__field is-disabled">
-              <input id="empNo" class="form-control form-control-sm input-base" readonly disabled placeholder="자동생성" />
+              <input name="userId" class="form-control form-control-sm input-base" readonly disabled
+                placeholder="자동생성" />
             </div>
             <div class="form-grid__label">성명</div>
             <div class="form-grid__field">
-              <input id="empName" class="form-control form-control-sm input-base" />
+              <input name="userName" class="form-control form-control-sm input-base" />
             </div>
 
             <!-- Row 2 -->
             <div class="form-grid__label">연락처</div>
             <div class="form-grid__field">
-              <input id="phone" class="form-control form-control-sm input-base" placeholder="010-0000-0000" />
+              <input name="tel" class="form-control form-control-sm input-base" placeholder="010-0000-0000" />
             </div>
             <div class="form-grid__label">이메일</div>
             <div class="form-grid__field">
-              <input id="email" class="form-control form-control-sm input-base" />
+              <input name="email" class="form-control form-control-sm input-base" />
             </div>
 
             <!-- Row 3 -->
             <div class="form-grid__label">입사일</div>
-            <div class="form-grid__field">
-              <input id="hireDate" type="date" class="form-control form-control-sm input-base" />
+            <div class="form-grid__field" id="hireDateWrapper">
+              <input name="hireDate" id="hireDateInput" type="date" class="form-control form-control-sm input-base" />
             </div>
+			<!-- <div class="form-grid__label">입사일</div>
+			<div class="form-grid__field">
+			  인풋 + 아이콘
+			  <div id="hireDateInputWrapper" class="tui-datepicker-input tui-datetime-input">
+			    <input name="hireDate" id="hireDateInput" type="text"
+			           class="form-control form-control-sm input-base" />
+			    <span class="tui-ico-date"></span>
+			  </div>
+			  실제 달력 DOM이 들어갈 컨테이너
+			  <div id="hireDatePickerContainer"></div>
+			</div> -->
             <div class="form-grid__label">입사구분</div>
             <div class="form-grid__field">
-              <select id="hireType" class="form-select form-select-sm input-base">
+              <select name="hireType" class="form-select form-select-sm input-base">
                 <option value="NEW">신입</option>
                 <option value="EXP">경력</option>
               </select>
@@ -434,22 +456,34 @@
 
             <!-- Row 4 -->
             <div class="form-grid__label">퇴사일</div>
-            <div class="form-grid__field">
-              <input id="retireDate" type="date" class="form-control form-control-sm input-base" />
-            </div>
+            <div class="form-grid__field" id="leaveDateWrapper">
+              <input name="leaveDate" id="leaveDateInput" type="date" class="form-control form-control-sm input-base" />
+            </div> 
+			<!-- <div class="form-grid__label">퇴사일</div>
+			<div class="form-grid__field">
+			  <div id="leaveDateInputWrapper" class="tui-datepicker-input tui-datetime-input">
+			    <input name="leaveDate" id="leaveDateInput" type="text"
+			           class="form-control form-control-sm input-base" />
+			    <span class="tui-ico-date"></span>
+			  </div>
+			  <div id="leaveDatePickerContainer"></div>
+			</div> -->
             <div class="form-grid__label">퇴사사유</div>
             <div class="form-grid__field">
-              <input id="reason" type="text" class="form-control form-control-sm input-base" />
+              <input name="leaveReason" type="text" class="form-control form-control-sm input-base" />
             </div>
 
             <!-- Row 5 -->
             <div class="form-grid__label">우편번호</div>
             <div class="form-grid__field">
-              <input id="zip" class="form-control form-control-sm input-base" />
+              <input id="zipCode" name="zipCode" class="form-control form-control-sm input-base" />
+              <button type="button" id="btnZipSearch" class="btn-grid">
+                <i class="bi bi-search"></i>
+              </button>
             </div>
             <div class="form-grid__label">주소</div>
             <div class="form-grid__field">
-              <input id="addr" class="form-control form-control-sm input-base" />
+              <input id="address" name="address" class="form-control form-control-sm input-base" />
             </div>
           </div>
 
@@ -457,21 +491,21 @@
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">부서</div>
               <div class="form-grid__field">
-                <select id="deptCode" class="form-select form-select-sm input-base">
+                <select name="dept" class="form-select form-select-sm input-base">
                   <option th:each="d : ${deptList}" th:value="${d.deptCode}" th:text="${d.deptName}"></option>
                 </select>
               </div>
 
               <div class="form-grid__label">직위/직급</div>
               <div class="form-grid__field">
-                <select id="positionCode" class="form-select form-select-sm input-base">
+                <select name="jobTitle" class="form-select form-select-sm input-base">
                   <option th:each="p : ${positionList}" th:value="${p.code}" th:text="${p.name}"></option>
                 </select>
               </div>
 
               <div class="form-grid__label">직책</div>
               <div class="form-grid__field">
-                <select id="dutyCode" class="form-select form-select-sm input-base">
+                <select name="position" class="form-select form-select-sm input-base">
                   <option th:each="r : ${dutyList}" th:value="${r.code}" th:text="${r.name}"></option>
                 </select>
               </div>
@@ -480,36 +514,38 @@
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">가족수</div>
               <div class="form-grid__field">
-                <input type="number" id="familyCount" name="familyCount"
-                  class="form-control form-control-sm input-base" />
+                <input type="number" name="familyCount" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">자녀수</div>
               <div class="form-grid__field">
-                <input type="number" id="childrenCount" name="childrenCount"
-                  class="form-control form-control-sm input-base" />
+                <input type="number" name="childrenCount" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">세대주여부</div>
               <div class="form-grid__field form-grid__field--checkbox">
-                <input type="checkbox">
+                <!-- 체크시 Y, 아닐시 N (default Y) -->
+                <input type="checkbox" class="householder">
               </div>
             </div>
 
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">은행</div>
               <div class="form-grid__field">
-                <input id="bankName" class="form-control form-control-sm input-base" />
+                <input name="bankName" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">계좌번호</div>
               <div class="form-grid__field">
-                <input id="accountNo" class="form-control form-control-sm input-base" />
+                <input name="accountNo" class="form-control form-control-sm input-base" />
+                <button type="button" class="btn-grid">
+                  <i class="bi bi-check"></i>
+                </button>
               </div>
 
               <div class="form-grid__label">예금주</div>
               <div class="form-grid__field disabled">
-                <input name="accountName" class="form-control form-control-sm input-base" disabled readonly />
+                <input name="accountHolder" class="form-control form-control-sm input-base" disabled readonly />
               </div>
             </div>
 
@@ -517,15 +553,15 @@
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">급여</div>
               <div class="form-grid__field">
-                <input type="number" id="bankName" class="form-control form-control-sm input-base" />
+                <input type="number" name="salary" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">재직상태</div>
               <div class="form-grid__field">
-                <select name="workStatus" class="form-select form-select-sm input-base">
-                  <option value="WORK">재직</option>
-                  <option value="LEAVE">휴직</option>
-                  <option value="RETIRE">퇴사</option>
+                <select name="userStatus" class="form-select form-select-sm input-base">
+                  <option value="0">재직</option>
+                  <option value="1">휴직</option>
+                  <option value="2">퇴사</option>
                 </select>
               </div>
 
@@ -536,17 +572,10 @@
 
             </div>
 
-
-            <div class="form-grid__row">
-              <div class="form-grid__label">생년월일</div>
-              <div class="form-grid__field form-grid__field--wide">
-                <input id="birthDate" name="birthDate" type="date" class="form-control form-control-sm input-base" />
-              </div>
-            </div>
             <div class="form-grid__row">
               <div class="form-grid__label">비고</div>
               <div class="form-grid__field form-grid__field--wide">
-                <input id="remark" class="form-control form-control-sm input-base" />
+                <input name="remark" class="form-control form-control-sm input-base" />
               </div>
             </div>
 
@@ -912,9 +941,6 @@
         </div> <!-- // modal-card__body -->
       </div> <!-- // modal-layer__dialog -->
     </div>
-
-
-
 
 
     <script th:src="@{/js/hr/userManage.js}"></script>

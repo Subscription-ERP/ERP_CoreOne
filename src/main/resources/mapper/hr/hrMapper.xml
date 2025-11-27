@@ -3,11 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.rootcore.hr.mapper.HrMapper">
-
-	
-	
-	
-	
 	<!-- hansol -->
 	<!-- 사원 전체조회 -->
 	<select id="selectAllUserList" resultType="UserVO">
@@ -15,7 +10,6 @@
 		    company_code,
 		    user_id,
 		    user_name,
-		    birth,
 		    tel,
 		    email,
 		    hire_date,
@@ -37,11 +31,7 @@
 		    user_status,
 		    user_photo,
 		    user_file,
-		    remark,
-		    created_by,
-		    create_date,
-		    updated_by,
-		    update_date
+		    remark
 		FROM
 		    tb_user_master
 		ORDER BY
@@ -49,8 +39,6 @@
 	</select>
 	
 	
-	
-	<!-- 이한솔 -->
 	
 			
 	
