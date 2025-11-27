@@ -1,20 +1,13 @@
 package com.rootcore.sb.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import com.rootcore.sb.domain.Payment;
 
 @Mapper
 public interface PaymentMapper {
 
-    void insertPayment(Payment payment);
+    void insertPayment(Payment payment); // 결제 승인 시 INSERT
 
-    Payment selectByOrderId(@Param("orderId") String orderId);
-
-    void updatePaymentStatus(
-            @Param("orderId") String orderId,
-            @Param("status") String status,
-            @Param("paymentKey") String paymentKey
-    );
+    // 필요하다면 이 정도만
+    Payment selectLatestByOrderId(String orderId);
 }

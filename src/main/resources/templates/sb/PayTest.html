@@ -33,7 +33,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderName: "테스트상품",
-            amount: 50000,
+            amount: 1000,
             customerEmail: "test@test.com",
             customerName: "홍길동"
           })
@@ -80,7 +80,7 @@
        // ------ 주문의 결제 금액 설정 ------
           await widgets.setAmount({
             currency: "KRW",
-            value: 50000,
+            value: 1000,
           });
         });
 

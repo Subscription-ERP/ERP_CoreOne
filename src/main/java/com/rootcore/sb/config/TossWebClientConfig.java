@@ -9,14 +9,20 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@Configuration
-public class TossWebClientConfig {
+@Configuration	//Spring에게“여기 안에 있는 @Bean 메서드를 등록해줘”
+//라고 알려주는 설정 클래스입니다.
 
-    @Bean
+//토스 서버로 요청을 보내는 메소드
+public class TossWebClientConfig {
+	
+    @Bean	//Spring 컨테이너에 WebClient 객체를 등록합니다.
+    //이 Bean은 어디서든 주입받아 사용할 수 있습니다.
     public WebClient tossWebClient(
             @Value("${toss.api.base-url}") String baseUrl,
             @Value("${toss.api.secret-key}") String secretKey
     ) {
+    	System.out.println(secretKey);
+    	//Toss Payments는 API 요청 시 Basic Auth 방식의 인증을 사용
         String credential = secretKey + ":";
         String encoded = Base64.getEncoder()
                 .encodeToString(credential.getBytes(StandardCharsets.UTF_8));
