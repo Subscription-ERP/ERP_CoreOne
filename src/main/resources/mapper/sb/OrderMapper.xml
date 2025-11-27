@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.sb.mapper.OrderMapper">
+
+	<!-- 주문 INSERT -->
+	<insert id="insertOrder"
+		parameterType="com.rootcore.sb.domain.Order">
+		<selectKey resultType="String" order="BEFORE"
+			keyProperty="orderId">
+			SELECT FN_MAKE_ORDER_ID() FROM DUAL
+
+		</selectKey>
+		INSERT INTO TB_PAYMENT_ORDER
+		(
+		ORDER_ID,
+		ORDER_AMOUNT,
+		ORDER_STATUS,
+		ORDER_NAME,
+		ORDER_TYPE,
+		BILLING_START,
+		BILLING_END,
+		SUB_CODE,
+		PLAN_CODE,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		)
+		VALUES
+		(
+		#{orderId},
+		#{orderAmount},
+		#{orderStatus},
+		#{orderName},
+		#{orderType},
+		#{billingStart},
+		#{billingEnd},
+		#{subCode},
+		#{planCode},
+		#{createdBy},
+		#{createDate},
+		#{updatedBy},
+		#{updateDate}
+		)
+	</insert>
+
+	<!-- 주문 조회 -->
+	<select id="selectByOrderId" parameterType="string"
+		resultType="com.rootcore.sb.domain.Order">
+		SELECT
+		ORDER_ID,
+		ORDER_AMOUNT,
+		ORDER_STATUS,
+		ORDER_NAME,
+		ORDER_TYPE,
+		BILLING_START,
+		BILLING_END,
+		SUB_CODE,
+		PLAN_CODE,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		FROM TB_PAYMENT_ORDER
+		WHERE ORDER_ID = #{orderId}
+	</select>
+
+	<update id="updateOrderStatus">
+		UPDATE TB_PAYMENT_ORDER
+		SET ORDER_STATUS = #{orderStatus},
+		UPDATE_DATE = SYSDATE
+		WHERE ORDER_ID = #{orderId}
+	</update>
+
+	<update id="updateOrderSubCode">
+		UPDATE TB_PAYMENT_ORDER
+		SET SUB_CODE = #{subCode},
+		UPDATED_BY = #{updatedBy},
+		UPDATE_DATE = SYSDATE
+		WHERE ORDER_ID = #{orderId}
+	</update>
+
+</mapper>

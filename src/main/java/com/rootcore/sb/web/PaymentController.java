@@ -3,13 +3,19 @@ package com.rootcore.sb.web;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.rootcore.sb.dto.PaymentReadyResponseDto;
-import com.rootcore.sb.dto.PaymentRequestDto;
-import com.rootcore.sb.dto.TossConfirmRequestDto;
-import com.rootcore.sb.dto.TossConfirmResponseDto;
 import com.rootcore.sb.service.PaymentService;
+import com.rootcore.sb.vo.PaymentReadyResponseVO;
+import com.rootcore.sb.vo.PaymentRequestVO;
+import com.rootcore.sb.vo.TossConfirmRequestVO;
+import com.rootcore.sb.vo.TossConfirmResponseVO;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -35,9 +41,9 @@ public class PaymentController {
 //        return ResponseEntity.ok(responseDto);
 //    }
     @PostMapping("/request")
-    public PaymentReadyResponseDto request(@RequestBody PaymentRequestDto requestDto) {
+    public PaymentReadyResponseVO request(@RequestBody PaymentRequestVO requestVO) {
         // 일단 서비스 호출해서 DTO만 만들어서 리턴 (DB 오류 나면 서비스 안에서 try-catch)
-        return paymentService.createPayment(requestDto);
+        return paymentService.createPayment(requestVO);
     }
     
 
@@ -47,12 +53,12 @@ public class PaymentController {
      *      프론트가 서버로 보내면, 서버가 토스 승인 API를 호출합니다.
      */
     @PostMapping("/confirm")
-    public ResponseEntity<TossConfirmResponseDto> confirmPayment(
-            @RequestBody TossConfirmRequestDto confirmRequestDto
+    public ResponseEntity<TossConfirmResponseVO> confirmPayment(
+            @RequestBody TossConfirmRequestVO confirmRequestVO
     ) {
-        log.info("Toss payment confirm request: {}", confirmRequestDto.getOrderId());
-        TossConfirmResponseDto responseDto = paymentService.confirmPayment(confirmRequestDto);
-        return ResponseEntity.ok(responseDto);
+        log.info("Toss payment confirm request: {}", confirmRequestVO.getOrderId());
+        TossConfirmResponseVO responseVO = paymentService.confirmPayment(confirmRequestVO);
+        return ResponseEntity.ok(responseVO);
     }
 
     /**
@@ -60,22 +66,37 @@ public class PaymentController {
      *  - 여기서는 단순히 메시지를 리턴하는 예제입니다.
      */
     @GetMapping("/success")
-    public ResponseEntity<String> paymentSuccess(
+    public String paymentSuccess(
             @RequestParam String paymentKey,
             @RequestParam String orderId,
-            @RequestParam Long amount
+            @RequestParam Long amount,
+            Model model
     ) {
-        // 보통은 여기서 바로 server-side에서 confirm을 호출하기도 함.
-        // 지금 구조는 success 페이지에서 Ajax로 /api/payments/confirm 호출하는 방식
-        return ResponseEntity.ok("결제가 성공적으로 완료되었습니다. orderId=" + orderId);
+        // 1) Pay Confirm Request 생성
+        TossConfirmRequestVO req = new TossConfirmRequestVO();
+        req.setPaymentKey(paymentKey);
+        req.setOrderId(orderId);
+        req.setAmount(amount);
+
+        // 2) 결제 승인 API 호출
+        TossConfirmResponseVO res = paymentService.confirmPayment(req);
+
+        // 3) 사용자에게 보여줄 데이터 모델에 담기
+        model.addAttribute("payment", res);
+
+        // 4) 결제완료 화면 렌더링
+        return "sb/success"; // resources/templates/payments/success.html
     }
 
     @GetMapping("/fail")
-    public ResponseEntity<String> paymentFail(
+    public String paymentFail(
             @RequestParam String code,
             @RequestParam String message,
-            @RequestParam String orderId
+            @RequestParam String orderId,
+            Model model
     ) {
-        return ResponseEntity.badRequest().body("결제 실패: " + message);
+    	   model.addAttribute("code", code);
+    	    model.addAttribute("message", message);
+    	    return "sb/fail";
     }
 }
