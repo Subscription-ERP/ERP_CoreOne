@@ -31,4 +31,10 @@ public class FiRestController {
         return unitPriceService.insertUnitPrice(param);
     }
     
+    @GetMapping("/unitprice/check")
+    public int unitPriceCheck(UnitPriceVO param) {
+        return unitPriceService.checkUnitPrice(param);
+    }
+    
+    
 }

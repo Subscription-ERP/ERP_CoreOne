@@ -8,4 +8,5 @@ public interface UnitPriceService {
 
 	public List<UnitPriceVO> selectList(UnitPriceVO unitPrice);
 	public int insertUnitPrice(UnitPriceVO unitPrice);
+	public int checkUnitPrice(UnitPriceVO unitPrice);
 }

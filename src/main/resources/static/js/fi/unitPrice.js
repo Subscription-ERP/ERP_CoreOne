@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+	let alreadyCheck = false;
   const grid = new tui.Grid({
 	  el : document.getElementById('unitprice-grid'),
     data: [],
@@ -19,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function getList() {
 
 		const selectParam ={
+			companyCode : '0000',
 			sku : document.getElementById('selectsku').value,
 			skuName : document.getElementById('selectskuname').value,
 			unitPriceType : document.getElementById('selectunitpricetype').value,
@@ -26,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			custName : document.getElementById('selectcustname').value
 		}
 		console.log(document.getElementById('selectunitpricetype').value);
-	  fetch("/api/fi/unitprice?"+new URLSearchParams(selectParam))
+	    fetch("/api/fi/unitprice?"+new URLSearchParams(selectParam))
 	    .then(res => res.json())
 	    .then(result => {
 	      console.log(result); // JSON 데이터 확인
@@ -38,4 +40,33 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
     document.getElementById("btnSearch").addEventListener("click", getList);
+	
+	function saveUnitPrice(){
+		const selectParam ={
+			companyCode : '0000',
+			sku : document.getElementById('selectsku').value,
+			unitPriceType : document.getElementById('selectunitpricetype').value,
+			custCode : document.getElementById('selectcustcode').value
+		}
+		fetch("/api/fi/unitprice/check?" + new URLSearchParams(selectParam))
+		.then(res => res.json())
+		.then(result => {
+		    console.log(result); // JSON 데이터 확인
+			if(result.cnt > 0){
+				updateUnitPrice();	
+			}
+			else {
+				insertUnitPrice();
+			}
+  		})
+		.catch(err => console.error("조회 중 오류:", err));
+	}
+
+	document.getElementById("btnSave").addEventListener("click", saveUnitPrice);
+	function insertUnitPrice(){
+		
+	}
+	function updateUnitPrice(){
+		
+	}
 });

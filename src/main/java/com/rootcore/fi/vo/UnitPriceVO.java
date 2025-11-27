@@ -14,6 +14,6 @@ public class UnitPriceVO {
 	private String custName;
 	private String unitPriceType;
 	private String unitPriceTypeName;
-	private Date startDate;
+	private String startDate;
 	private double unitPrice;
 }
