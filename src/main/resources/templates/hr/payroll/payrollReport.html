@@ -3,302 +3,163 @@
 <head>
 
 <title>급여대장</title>
-<!-- TOAST UI CDN, SCRIPT -->
+
+<!-- TOAST UI GRID -->
 <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-<!-- <script src="https://uicdn.toast.com/tui-pagination/latest/tui-pagination.js"></script>
-<link rel="stylesheet" href="https://uicdn.toast.com/tui-pagination/latest/tui-pagination.css" /> -->
+
+<!-- general.css -->
+<link th:href="@{/css/general.css}" rel="stylesheet" />
 
 <style>
-/* 폼 라벨 너비 고정: 수직 정렬 및 일관성을 위한 커스텀 클래스 */
-.input-group-label {
-	width: 140px;
-	min-width: 140px;
-	font-weight: 600;
-	flex-shrink: 0;
-	/* AdminLTE form-group margin-bottom 제거 및 flex 설정 */
+/* 라디오 버튼 위치 조정 3개 */
+.form-grid__field--wide {
 	display: flex;
+	align-items: center; /* 수직 중앙 정렬 */
+}
+
+.form-grid__field--wide .form-check-input {
+	margin-right: 4px; /* 라디오와 글자 사이 여백 */
+	margin-left: 6px; /* 맨 앞쪽 여백 */
+}
+
+.form-grid__field--wide label {
+	margin-right: 12px; /* 라벨 사이 간격 */
+	margin-bottom: 0; /* Bootstrap label baseline 보정 */
+}
+
+/* 초기화 저장 버튼 우측으로 이동 */
+/* #chogihwa {
+	display: flex;
+	justify-content: flex-end;
 	align-items: center;
-	margin-right: 0.5rem;
-}
-
-/* 폼 그룹 레이아웃: 라벨-인풋이 한 줄에 오도록 flex 사용 */
-.form-horizontal-group {
-	display: flex;
-	margin-bottom: 1rem;
-	align-items: center;
-}
-
-/* 검색 조건 패널 스타일: AdminLTE 카드 헤더/바디와 유사하게 */
-.search-criteria {
-	background-color: var(--gray-light, #e9ecef);
-	border-radius: 0.25rem;
-	padding: 1rem;
-	margin-bottom: 1rem;
-}
-
-/* 라디오 버튼 그룹 간격 조정 (AdminLTE/BS5 기본 스타일 사용) */
-.radio-group-wrap {
-	display: flex;
-	gap: 1.5rem;
-}
-
-/* 테이블 컨테이너 높이 설정 (스크롤 영역) */
-.table-scroll-container {
-	height: 450px; /* Grid 대체 높이 */
-	overflow-y: auto;
-	border: 1px solid #dee2e6;
-	border-radius: 0.25rem;
-}
-
-/* 테이블 헤더 고정 (옵션) */
-.table-scroll-container table thead th {
-	position: sticky;
-	top: 0;
-	background-color: #f8f9fa; /* AdminLTE light header background */
-	z-index: 10;
-}
+} */
 </style>
 </head>
 
 <body>
-	<div layout:fragment="content">
-		<!-- AdminLTE Content Wrapper 시작 -->
-		<div class="content">
-			<div class="container-fluid">
-				<div class="row">
-					<!-- 좌측: 급여대장 조회 (Card: 흰색 유지) -->
-					<div class="col-lg-6">
-						<div class="card mt-2">
-							<div class="card-body">
-								<!-- 검색 조건 영역 -->
-								<div class="search-criteria">
-									<div class="row">
-										<!-- 급여구분 select박스 -->
-										<div class="col-md-3 mb-2">
-											<!-- AdminLTE form-select-sm 사용 -->
-											<select name="salary-type" class="form-select form-select-sm">
-												<option value="">급여구분</option>
-												<option value="급여">급여</option>
-												<option value="상여">상여</option>
-											</select>
-										</div>
-										<!-- 대장명칭 -->
-										<div class="col-md-3 mb-2">
-											<input type="text" class="form-control form-control-sm" placeholder="대장명칭">
-										</div>
-										<!-- 초기화 조회 버튼 -->
-										<div class="col-md-6 d-flex justify-content-end gap-2">
-											<!-- AdminLTE/Bootstrap 버튼 스타일 적용 -->
-											<button class="btn btn-sm btn-secondary">
-												<i class="fas fa-redo me-1"></i> 초기화
-											</button>
-											<button class="btn btn-sm btn-success" id="salary-search-btn">
-												<i class="fas fa-check me-1"></i> 조회
-											</button>
-										</div>
-									</div>
-									<div class="row">
-										<!-- 지급일: col-md-6에서 col-md-3로 변경하여 상위 입력 필드와 너비 일치 -->
-										<div class="col-md-3 mb-3 mb-md-0">
-											<input type="date" class="form-control form-control-sm" placeholder="지급일">
-										</div>
-										<!-- 남은 공간은 비워둡니다 -->
-										<div class="col-md-9"></div>
-									</div>
+	<div layout:fragment="content" class="page page-fluid">
+		<div class="row">
+			<div class="col-lg-6 pe-0">
+				<!-- ==================== 조회 ================================================================== -->
+				<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
+					<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+						<div class="filter-bar row g-4 align-items-center col-md-12">
+							<!-- 급여구분 -->
+							<div class="col-12 col-md-3">
+								<div class="field-inline">
+									<label for="payroll" class="field-inline__label">급여구분</label> <select id="payrollType" class="form-select input-base" style="flex: 1; min-width: 0">
+										<option value="">전체</option>
+										<option th:each="p : ${payrollTypeList}" th:value="${p.payrollTypeCode}" th:text="${p.payrollTypeName}"></option>
+									</select>
 								</div>
-								<!-- 급여대장 테이블 출력 -->
-								<div id="payrollGrid" style="height: 625px"></div>
+							</div>
+
+							<!-- 대장명칭 -->
+							<div class="col-12 col-md-3">
+								<div class="field-inline">
+									<label for="payrollName" class="field-inline__label">대장명칭</label> <input id="payrollName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
+							</div>
+
+							<!-- 지급일 -->
+							<div class="col-12 col-md-3">
+								<div class="field-inline">
+									<label for="payrollDate" class="field-inline__label">지급일</label> <input id="payrollDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
+							</div>
+
+							<!-- 조회 버튼 -->
+							<div class="col-12 col-md-2 ms-auto text-end">
+								<button id="btnSearch" type="button" class="btn btn-color btn-outer">조회</button>
 							</div>
 						</div>
 					</div>
+				</section>
+				<!-- ================= 목록(Grid) 섹션 ================= -->
+				<section class="card-ui section-flex" style="margin-top: 10px">
+					<header class="card-ui__header">
+						<h6 class="card-ui__title">급여 대장 목록</h6>
+					</header>
+					<!-- 급여대장목록조회 -->
+					<div id="payrollGrid" class="grid-root"></div>
+				</section>
+			</div>
+			<div class="col-lg-6 ps-0">
+				<section class="card-ui section-flex" style="margin-top: 10px">
+					<header class="card-ui__header">
+						<h6 class="card-ui__title">상여 등록</h6>
+						<!-- 우측 액션 -->
+						<div class="toolbar" id="chogihwa">
+							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto">초기화</button>
+							<button id="btnSave" type="button" class="btn btn-color btn-inner ms-auto">저장</button>
+						</div>
+					</header>
 
-					<!-- 우측: 상여등록 (Card: 흰색 유지) -->
-					<div class="col-lg-6">
-						<div class="card mt-2">
-							<div class="card-header border-bottom-0">
-								<div class="card-tools">
-									<!-- AdminLTE 버튼 스타일 적용 -->
-									<button class="btn btn-sm btn-info" id="save-button">
-										<i class="fas fa-save me-1"></i> 저장
-									</button>
+					<div class="card-ui__body section-scroll">
+						<div id="tab-basic" class="tab-panel active">
+							<div class="form-grid form-grid--sub">
+								<div class="form-grid__row">
+									<div class="form-grid__label">귀속연월</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="payrollPeriod" name="payrollPeriod" type="month" class="form-control form-control-sm input-base" />
+									</div>
 								</div>
-							</div>
-
-							<div class="card-body pt-0">
-								<!-- 상여 등록 폼 -->
-								<form>
-									<!-- 폼 그룹 1: 귀속연월 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">귀속연월</label> <input type="month" class="form-control form-control-sm">
+								<div class="form-grid__row">
+									<div class="form-grid__label" style="white-space: nowrap">상여지급방법</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input class="form-check-input" type="radio" id="bonusRate" name="bonusType" checked value="rate"> <label for="bonusRate">지급률</label>
+										<!--  -->
+										<input class="form-check-input" type="radio" id="bonusAmount" name="bonusType" value="amount"> <label for="bonusAmount">지급액</label>
 									</div>
-
-									<!-- 폼 그룹 2: 상여지급방법 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">상여지급방법</label>
-										<div class="radio-group-wrap">
-											<!-- AdminLTE/BS5 Radio 버튼 스타일 적용 -->
-											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" id="지급률" name="지급방법" checked> <label class="form-check-label" for="지급률">지급률</label>
-											</div>
-											<div class="form-check form-check-inline">
-												<input class="form-check-input" type="radio" id="지급액" name="지급방법"> <label class="form-check-label" for="지급액">지급액</label>
-											</div>
-										</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">지급률 및 지급액</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input type="number" id="bonus" name="bonus" class="form-control form-control-sm input-base text-end" />
 									</div>
-
-									<!-- 폼 그룹 3: 지급률 및 지급금액 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">지급률 및 지급금액</label> <input type="text" class="form-control form-control-sm" value="" placeholder="숫자만 입력">
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">대장명칭</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input type="text" id="payrollBonusName" name="payrollBonusName" class="form-control form-control-sm input-base" />
 									</div>
-
-									<!-- 폼 그룹 4: 대장명칭 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">대장명칭</label> <input type="text" class="form-control form-control-sm">
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">대장기간시작일</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="payrollStartDate" name="payrollStartDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
-
-									<!-- 폼 그룹 5: 대장기간시작일 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">대장기간시작일</label> <input type="date" class="form-control form-control-sm">
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">대장기간종료일</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="payrollEndDate" name="payrollEndDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
-
-									<!-- 폼 그룹 6: 대장기간종료일 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">대장기간종료일</label> <input type="date" class="form-control form-control-sm">
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">지급일</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="payrollBonusDate" name="payrollBonusDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
-
-									<!-- 폼 그룹 7: 지급일 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">지급일</label> <input type="date" class="form-control form-control-sm">
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">선택된 인원수</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="number" class="form-control form-control-sm input-base text-end" disabled />
 									</div>
-
-									<!-- 폼 그룹 8: 인원수 -->
-									<div class="form-horizontal-group">
-										<label class="input-group-label">인원수</label> <input type="text" class="form-control form-control-sm bg-light" disabled value="7">
-									</div>
-								</form>
-
-								<!-- 대상자 선정 섹션 -->
-								<div>
-									<!-- 대상자 검색 폼 -->
-									<div class="search-criteria">
-										<div class="d-flex gap-2 mb-3 align-items-center">
-											<!-- 성명 라벨 + 인풋을 묶어 가로 정렬 및 간결한 스타일 적용 -->
-											<div class="d-flex align-items-center gap-1 flex-shrink-0">
-												<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">성명</label> <input type="text" id="target-name-input" class="form-control form-control-sm" placeholder="성명">
-											</div>
-											<div class="d-flex align-items-center gap-1 flex-shrink-0">
-												<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">부서명</label> <input type="text" id="target-name-input" class="form-control form-control-sm" placeholder="부서명">
-											</div>
-											<div class="d-flex align-items-center gap-1 flex-shrink-0">
-												<label for="target-name-input" class="fw-bold flex-shrink-0 me-1" style="width: 50px;">입사일</label> <input type="date" id="target-name-input" class="form-control form-control-sm" placeholder="입사일">
-											</div>
-
-											<!-- ms-auto를 추가하여 오른쪽으로 정렬 -->
-											<button class="btn btn-sm btn-secondary flex-shrink-0 ms-auto" id="target-reset-btn">
-												<i class="fas fa-redo me-1"></i>초기화
-											</button>
-											<button class="btn btn-sm btn-success flex-shrink-0" id="target-search-btn">
-												<i class="fas fa-search me-1"></i>조회
-											</button>
-										</div>
-									</div>
-									<!-- 상여등록-사원조회-그리드 -->
-									<div id="userGrid" style="height: 230px"></div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+					<div id="userGrid" class="grid-root"></div>
+				</section>
 			</div>
 		</div>
+		<script th:src="@{/js/hr/payRoll.js}"></script>
 		<script>
-			/* 급여대장-상여등록-사원조회 */
-			const userGrid = new tui.Grid({
-				el : document.getElementById('userGrid'),
-				scrollX : false,
-				scrollY : true,
-				rowHeaders : [ 'checkbox' ],
-				data : {
-					api : {
-						readData : {
-							url : '/api/hr/payrollEmpList',
-							method : 'GET'
-						}
-					}
-				},
-				bodyHeight : 200,
-				columns : [ {
-					header : '사원번호',
-					name : 'userId',
-					align : 'center'
-				}, {
-					header : '성명',
-					name : 'userName'
-				}, {
-					header : '부서명',
-					name : 'dept'
-				}, {
-					header : '입사일',
-					name : 'hireDate',
-					align : 'center'
-				}, {
-					header : '직위',
-					name : 'jobTitle'
-				} ]
-			});
-
-			/* 급여대장-조회 */
-			const payrollGrid = new tui.Grid({
-				el : document.getElementById('payrollGrid'),
-				scrollX : false,
-				scrollY : true,
-
-				data : {
-					api : {
-						readData : {
-							url : '/api/hr/payrollList',
-							method : 'GET'
-						}
-					}
-				},
-				bodyHeight : 590,
-				columns : [ {
-					header : '귀속연월',
-					name : 'payrollPeriod',
-					align : 'center',
-					width : 80
-				}, {
-					header : '급여구분',
-					name : 'payrollType',
-					width : 70
-				}, {
-					header : '대장명칭',
-					name : 'payrollName',
-					width : 200
-				}, {
-					header : '지급일',
-					name : 'payrollDate',
-					align : 'center'
-				}, {
-					header : '인원수',
-					name : 'peopleNumber',
-					width : 70
-				}, {
-					header : '급여계산',
-					name : 'salaryCalculation',
-					align : 'center',
-					formatter : function(data) {
-						const payrollCode = data.row.payrollCode;
-						return `<a href=# data-paroll-code="${payrollCode}">계산하기</a>`;
-					}
-				}, {
-					header : '지급총액',
-					name : 'totalAmount'
-				} ]
-			});
+			
 		</script>
 	</div>
-	<!-- end of fragment -->
 </body>
 </html>
