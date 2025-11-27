@@ -19,9 +19,10 @@ public class PayrollVO {
 	private Long bonusAmount; // 상여지급액
 	private String payrollName; // 대장명칭
 	private Date payrollStartDate; // 대장기간시작일
-	private Date payroll_end_date; // 대장기간종료일 
+	private Date payrollEndDate; // 대장기간종료일 
 	private LocalDate payrollDate; // 지급일
 	private int peopleNumber; // 인원수
 	private List<String> employeeIds; // 사원ID배열집합
+	private String userId; // 사원ID
 	
 }

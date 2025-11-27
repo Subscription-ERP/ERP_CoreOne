@@ -2,16 +2,47 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.hr.mapper.PayrollMapper">
 
-	<!-- 장준현 -->
+	<!-- 급여대장-상여등록 -->
+	<insert id="insertBonusPayrollOne" parameterType="com.rootcore.hr.vo.PayrollVO">
+        INSERT INTO tb_payroll (
+            payroll_code,
+            company_code,
+            user_id,
+            payroll_period,
+            payroll_type,
+            bonus_method,
+            bonus_rate,
+            bonus_amount,
+            payroll_name,
+            payroll_start_date,
+            payroll_end_date,
+            payroll_date
+        )   
+        VALUES (
+              FN_MAKE_PAYROLL_CODE(), 
+              'ROOT',
+              #{userId},
+              #{payrollPeriod},
+              '상여',
+              #{bonusMethod},  #{bonusRate},
+              #{bonusAmount},
+              #{payrollName},
+              #{payrollStartDate},
+              #{payrollEndDate},
+              #{payrollDate}
+        )
+    </insert>
+
 	<!-- 급여대장조회 -->
 	<select id="selectPayrollList" resultType="PayrollVO">
 		SELECT   payroll_period,
 			     payroll_type,
 			     payroll_name,
 			     payroll_date,
+			     create_date,
 			     COUNT(*) AS peopleNumber
 		FROM     tb_payroll
-		GROUP BY payroll_period, payroll_type, payroll_name, payroll_date
+		GROUP BY payroll_period, payroll_type, payroll_name, payroll_date, create_date
 	</select>
 
 	<!-- 급여대장-상여등록-사원조회 -->

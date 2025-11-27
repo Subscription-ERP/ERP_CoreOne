@@ -25,24 +25,24 @@ document.getElementById('btnSave').addEventListener('click', function() {
 	const employeeIds = checkedEmployees.map(row => row.userId);
 	console.log("payrollPeriod:", payrollPeriod);
 	console.log("bonusType:", bonusType);
-	console.log("bonusValue:",bonusValue);
-	console.log("payrollBonusName:",payrollBonusName);
-	console.log("payrollStartDate:",payrollStartDate);
-	console.log("payrollEndDate:",payrollEndDate);
-	console.log("payrollBonusDate:",payrollBonusDate);
-	console.log("checkedEmployees:",checkedEmployees);
-	console.log("employeeIds:",employeeIds);
-	
+	console.log("bonusValue:", bonusValue);
+	console.log("payrollBonusName:", payrollBonusName);
+	console.log("payrollStartDate:", payrollStartDate);
+	console.log("payrollEndDate:", payrollEndDate);
+	console.log("payrollBonusDate:", payrollBonusDate);
+	console.log("checkedEmployees:", checkedEmployees);
+	console.log("employeeIds:", employeeIds);
+
 	// 서버전송할때 보낼 데이터 객체 생성
 	const data = {
 		payrollPeriod: payrollPeriod, // 귀속연월
-		bonusType: bonusType, // 상여지급방법
+		bonusMethod: bonusType, // 상여지급방법
 		bonusRate: (bonusType === 'rate') ? bonusValue : null, // 상여지급율
 		bonusAmount: (bonusType === 'amount') ? bonusValue : null, // 상여지급액
-		payrollBonusName: payrollBonusName, // 대장명칭
+		payrollName: payrollBonusName, // 대장명칭
 		payrollStartDate: payrollStartDate, // 대장기간시작일
 		payrollEndDate: payrollEndDate, // 대장기간종료일
-		payrollBonusDate: payrollBonusDate, // 지급일
+		payrollDate: payrollBonusDate, // 지급일
 		peopleNumber: employeeIds.length, // 인원수
 		employeeIds: employeeIds // 사원ID배열들
 	}
@@ -50,19 +50,19 @@ document.getElementById('btnSave').addEventListener('click', function() {
 	fetch('/api/hr/bonusRegister', {
 		method: 'POST',
 		headers: {
-			'Content-Type':'application/json'
+			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(data)
 	})
-	.then(response => response.json())
-	.then(result => {
-		if(result.success) {
-			alert('상여 등록이 완료되었습니다.');
-		} else {
-			alert('등록 실패 : ' + result.message);
-		}
-	})
-	.catch(error => console.error('Error:', error));
+		.then(response => response.json())
+		.then(result => {
+			if (result.success) {
+				alert(result.count + '건의 상여 등록이 완료되었습니다.');
+			} else {
+				alert('등록 실패 : ' + result.message);
+			}
+		})
+		.catch(error => console.error('Error:', error));
 })
 
 /* 급여대장-상여등록-사원조회 */
@@ -112,12 +112,12 @@ function updatePeopleNumber() {
 	bonusPeopleNumberInpur.value = checkedRows.length;
 }
 // 전체 체크박스를 포함한 모든 체크/언체크 이벤트에 리스너 등록
-userGrid.on('check',updatePeopleNumber);
-userGrid.on('uncheck',updatePeopleNumber);
-userGrid.on('checkAll',updatePeopleNumber);
-userGrid.on('uncheckAll',updatePeopleNumber);
+userGrid.on('check', updatePeopleNumber);
+userGrid.on('uncheck', updatePeopleNumber);
+userGrid.on('checkAll', updatePeopleNumber);
+userGrid.on('uncheckAll', updatePeopleNumber);
 // Grid 데이터 로드 완료 하고나서 초기 인원 수 설정
-userGrid.on('response',updatePeopleNumber);
+userGrid.on('response', updatePeopleNumber);
 
 /* 급여대장-조회 */
 const payrollGrid = new tui.Grid(
