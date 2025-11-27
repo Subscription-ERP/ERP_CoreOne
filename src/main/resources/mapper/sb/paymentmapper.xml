@@ -4,55 +4,50 @@
 
 <mapper namespace="com.rootcore.sb.mapper.PaymentMapper">
 
-	<insert id="insertPayment"
-		parameterType="com.rootcore.sb.domain.Payment">
-		<selectKey resultType="String" order="BEFORE"
-			keyProperty="paymentCode">
-			SELECT FN_MAKE_PAYMENT_CODE() FROM DUAL
-		</selectKey>
-		INSERT INTO TB_PAYMENT
-		(
-		PAYMENT_CODE,
-		ORDER_ID,
-		SUB_CODE,
-		COMPANY_CODE,
-		TOTAL_PRICE,
-		PAYMENT_STAT,
-		PAYMENT_METHOD,
-		PAYMENT_DATE,
-		CARD_COMPANY,
-		PAYMENT_KEY,
-		RECENT_PAYMENT,
-		NEXT_PAYMENT,
-		BILLING_START,
-		BILLING_END,
-		CREATED_BY,
-		CREATE_DATE,
-		UPDATED_BY,
-		UPDATE_DATE
-		)
-		VALUES
-		(
-		#{paymentCode},
-		#{orderId},
-		#{subCode},
-		#{companyCode},
-		#{totalPrice},
-		#{paymentStat},
-		#{paymentMethod},
-		#{paymentDate},
-		#{cardCompany},
-		#{paymentKey},
-		#{recentPayment},
-		#{nextPayment},
-		#{billingStart},
-		#{billingEnd},
-		#{createdBy},
-		#{createDate},
-		#{updatedBy},
-		#{updateDate}
-		)
-	</insert>
+	  <!-- 신규 구독 + 결제 동시 처리 프로시저 호출 -->
+    <update id="callNewSubsAndPayment"
+            parameterType="com.example.payment.dto.NewSubsPaymentRequest"
+            statementType="CALLABLE">
+        { call PRC_NEW_SUBS_AND_PAYMENT(
+            #{companyName,    mode=IN, jdbcType=VARCHAR},
+            #{ceoName,        mode=IN, jdbcType=VARCHAR},
+            #{ceoPhone,       mode=IN, jdbcType=VARCHAR},
+            #{companyEmail,   mode=IN, jdbcType=VARCHAR},
+            #{industryType,   mode=IN, jdbcType=VARCHAR},
+            #{businessType,   mode=IN, jdbcType=VARCHAR},
+            #{managerName,    mode=IN, jdbcType=VARCHAR},
+            #{employeeCount,  mode=IN, jdbcType=NUMERIC},
+            #{bno,            mode=IN, jdbcType=VARCHAR},
+            #{checkNo,        mode=IN, jdbcType=VARCHAR},
+            #{companyAddress, mode=IN, jdbcType=VARCHAR},
+            #{companyPhone,   mode=IN, jdbcType=VARCHAR},
+            #{managerPhone,   mode=IN, jdbcType=VARCHAR},
+
+            #{planCode,       mode=IN, jdbcType=VARCHAR},
+            #{subsStart,      mode=IN, jdbcType=TIMESTAMP},
+            #{subsEnd,        mode=IN, jdbcType=TIMESTAMP},
+
+            #{totalPrice,     mode=IN, jdbcType=NUMERIC},
+            #{paymentMethod,  mode=IN, jdbcType=VARCHAR},
+            #{paymentKey,     mode=IN, jdbcType=VARCHAR},
+            #{orderId,        mode=IN, jdbcType=VARCHAR},
+            #{cardCompany,    mode=IN, jdbcType=VARCHAR}
+        ) }
+    </update>
+
+    <!-- 기존 구독 결제만 처리 프로시저 -->
+    <update id="callExistSubsPayment"
+            parameterType="com.example.payment.dto.ExistSubsPaymentRequest"
+            statementType="CALLABLE">
+        { call PRC_EXIST_SUBS_PAYMENT(
+            #{subCode,       mode=IN, jdbcType=VARCHAR},
+            #{totalPrice,    mode=IN, jdbcType=NUMERIC},
+            #{paymentMethod, mode=IN, jdbcType=VARCHAR},
+            #{paymentKey,    mode=IN, jdbcType=VARCHAR},
+            #{orderId,       mode=IN, jdbcType=VARCHAR},
+            #{cardCompany,   mode=IN, jdbcType=VARCHAR}
+        ) }
+    </update>
 
 	<update id="updateOrderSubCode">
 		UPDATE TB_PAYMENT_ORDER
