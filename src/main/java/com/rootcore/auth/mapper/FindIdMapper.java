@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface FindIdMapper {
+
     String findUserId(@Param("name") String name,
-                      @Param("phone") String phone);
+                      @Param("phone") String phone,
+                      @Param("email") String email);
 }

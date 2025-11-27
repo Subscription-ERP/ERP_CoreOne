@@ -12,35 +12,33 @@ public class FindIdController {
 
     private final FindIdService findIdService;
 
-    /* 아이디 찾기 페이지 */
     @GetMapping("/find_id")
     public String findIdPage() {
-        return "auth/find_id";   // templates/auth/find_id.html
+        return "auth/find_id";  // find_id.html
     }
 
-    /* 1) 인증번호 전송 */
     @PostMapping("/send_code")
     @ResponseBody
     public String sendCode(@RequestParam String phone) {
-        findIdService.sendAuthCode(phone);
-        return "OK";
+        boolean result = findIdService.sendAuthCode(phone);
+        return result ? "OK" : "FAIL";
     }
 
-    /* 2) 인증번호 검증 */
     @PostMapping("/verify_code")
     @ResponseBody
-    public boolean verifyCode(@RequestParam String phone,
-                              @RequestParam String code) {
-        return findIdService.verifyAuthCode(phone, code);
+    public String verify(@RequestParam String phone,
+                         @RequestParam String code) {
+        boolean ok = findIdService.verifyAuthCode(phone, code);
+        return ok ? "true" : "false";
     }
 
-    /* 3) 이름+휴대폰으로 아이디 조회 */
     @PostMapping("/find_id_do")
     @ResponseBody
-    public String findId(@RequestParam String name,
-                         @RequestParam String phone) {
+    public String sendUserId(@RequestParam String name,
+                             @RequestParam String phone,
+                             @RequestParam String email) {
 
-        String userId = findIdService.getUserId(name, phone);
-        return userId == null ? "" : userId;
+        boolean ok = findIdService.sendUserIdToEmail(name, phone, email);
+        return ok ? "OK" : "FAIL";
     }
 }

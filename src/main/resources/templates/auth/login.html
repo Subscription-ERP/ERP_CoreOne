@@ -130,10 +130,31 @@
         .login-links {
             margin-top: 18px;
         }
+
         .login-links a {
             color: #BFD6FF;
+            margin: 4px 0;
+            display: block;
         }
+
         .login-links a:hover {
+            color: white;
+        }
+
+        /* 아이디/비밀번호 찾기 라인 */
+        .find-wrap {
+            display: flex;
+            justify-content: center;
+            gap: 20px;  /* 링크 간 간격 */
+            margin-top: 15px;
+        }
+
+        .find-wrap a {
+            color: #BFD6FF;
+            font-size: 14px;
+        }
+
+        .find-wrap a:hover {
             color: white;
         }
 
@@ -176,8 +197,13 @@
 
     </form>
 
+    <!-- 아이디 / 비밀번호 찾기 추가 -->
+    <div class="find-wrap">
+        <a th:href="@{/auth/find_id}">아이디 찾기</a>
+        <a th:href="@{/auth/password_reset/send}">비밀번호 찾기</a>
+    </div>
+
     <div class="login-links">
-    	<p><a th:href="@{/auth/find_id}">아이디 찾기</a></p>   
         <p><a th:href="@{/subscribe/start}">신규가입 / 구독 신청</a></p>
     </div>
 
