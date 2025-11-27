@@ -8,6 +8,7 @@ import java.util.List;
 @Mapper
 public interface CustMapper {
 
-    List<CustVO> selectCust(CustVO cust);
+    List<CustVO> selectAllCust(CustVO cust);
+    int insertCust(CustVO cust);
 
 }

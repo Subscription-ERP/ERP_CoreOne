@@ -1,4 +1,26 @@
+.button-updown-center {
+    width: auto;
+    height: 30px;
+    margin: auto 10px;
+}
+
 .button-center {
-    justify-content: center; /* 가로 가운데 */
-    align-items: center;     /* 세로 가운데 */
+    width: 50px;
+    height: 27px;
+    margin: auto;
+}
+
+.is-disabled {
+    pointer-events: none;
+    caret-color: transparent;
+    background-color: #f6f6f6;
+}
+
+.form-grid__field_sd {
+    border-right: 1px solid var(--mid-light-gray-color);
+    align-items: stretch;
+}
+
+td.tui-grid-cell.tui-grid-cell-has-input.row-inactive {
+    background-color: #ffecec;
 }

@@ -5,5 +5,6 @@ import com.rootcore.sd.vo.CustVO;
 import java.util.List;
 
 public interface CustService {
-    List<CustVO> selectCust(CustVO cust);
+    List<CustVO> getCustList(CustVO cust);
+    int addCust(CustVO cust);
 }
