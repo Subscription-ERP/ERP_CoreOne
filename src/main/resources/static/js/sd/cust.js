@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 거래처유형 불러오기
   function custTypeListData() {
-    fetch('/api/com/custType')
+    fetch('/api/com/type?groupCode=CUST_TYPE')
         .then(res => res.json())
         .then(result => {
           const searchCustType = document.getElementById('searchCustType');
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 수정
-  function editMode(row) {
+  function editMode() {
     form.action = '/sd/cust/modify';
     btnSave.textContent = '수정';
   }

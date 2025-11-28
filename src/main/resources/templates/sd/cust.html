@@ -167,7 +167,7 @@
                     <input id="zonecode" name="zonecode" type="text" class="form-control form-control-sm input-base is-disabled"
                       readonly placeholder="우편번호" />
                     <button type="button" id="btnZipSearch"
-                      class="btn btn-outline-secondary btn-sm justify-content-end button-updown-center">
+                      class="btn-grid">
                       <i class="bi bi-search"></i>
                     </button>
                   </div>
@@ -188,22 +188,22 @@
               <!-- row 5: 배송지 / 계좌번호 (버튼) -->
               <div class="form-grid__row form-grid__row--3col">
                 <div class="form-grid__label">배송지</div>
-                <div class="form-grid__field ">
-                  <button type="button" id="btnDelivery" name="btnDelivery" class="btn btn-outline-secondary btn-sm button-center">
+                <div class="form-grid__field form-height">
+                  <button type="button" id="btnDelivery" name="btnDelivery" class="btn-grid">
                     확인
                   </button>
                 </div>
 
                 <div class="form-grid__label">계좌번호</div>
-                <div class="form-grid__field">
-                  <button type="button" id="btnAccount" name="btnAccount" class="btn btn-outline-secondary btn-sm button-center">
+                <div class="form-grid__field form-height">
+                  <button type="button" id="btnAccount" name="btnAccount" class="btn-grid">
                     확인
                   </button>
                 </div>
 
                 <!-- 3열 레이아웃 맞추기용 빈 칸 -->
-                <div class="form-grid__label"></div>
-                <div class="form-grid__field"></div>
+                <div class="form-grid__label is-disabled"></div>
+                <div class="form-grid__field "></div>
               </div>
             </div>
 
@@ -229,7 +229,7 @@
               <div class="form-grid__row">
                 <div class="form-grid__label">사용여부</div>
                 <div class="form-grid__field form-grid__field--checkbox">
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center form-height">
                     <label class="me-3">
                       <input type="radio" name="useStatus" value="Y" checked /> Y
                     </label>
