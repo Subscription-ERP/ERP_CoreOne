@@ -9,7 +9,7 @@
 		     , cst.cust_name custName
 		     , upm.unit_price_type unitPriceType
 		     , cod.code_name unitPriceTypeName
-		     , TO_CHAR(upm.start_date, 'YYYY-MM-DD') startDate
+		     , upm.start_date startDate
 		     , upm.unit_price unitPrice
 		  FROM tb_unit_price_master upm
 		  JOIN tb_sku_master sku
@@ -49,15 +49,35 @@
 		    , start_date
 		    , unit_price
 		) VALUES (
-		    #{company_code}
+		    #{companyCode}
 		  , #{sku}
-		  , #{cust_code}
-		  , #{unit_price_type}
-		  , #{start_date}
-		  , #{unit_price}
+		  , #{custCode}
+		  , #{unitPriceType}
+		  , #{startDate}
+		  , #{unitPrice}
 		)
 	</insert>
 	
+	<insert id="insertUnitPriceHistory" parameterType="com.rootcore.fi.vo.UnitPriceVO">
+		INSERT INTO tb_unit_price_history (
+			unit_price_seq
+		    , company_code
+		    , sku
+		    , cust_code
+		    , unit_price_type
+		    , start_date
+		    , unit_price
+		) VALUES (
+		  unit_price_seq.nextval
+		  , #{companyCode}
+		  , #{sku}
+		  , #{custCode}
+		  , #{unitPriceType}
+		  , #{startDate}
+		  , #{unitPrice}
+		)
+	</insert>
+		
 	<select id="checkUnitPrice">
 		SELECT count(*) cnt
 		  FROM tb_unit_price_master
@@ -66,4 +86,16 @@
 		   AND cust_code = #{custCode}
 		   AND unit_price_type = #{unitPriceType}
 	</select>
+	
+	<update id="updateUnitPrice" parameterType="com.rootcore.fi.vo.UnitPriceVO">
+		UPDATE tb_unit_price_master
+		   SET unit_price = #{unitPrice}
+		     , start_date = #{startDate}
+		     , updated_by = 'ADMIN'
+		     , update_date = sysdate
+		 WHERE company_code = #{companyCode}
+		   AND sku = #{sku}
+		   AND cust_code = #{custCode}
+		   AND unit_price_type = #{unitPriceType}
+	</update>
 </mapper>

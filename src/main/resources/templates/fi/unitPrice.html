@@ -45,10 +45,8 @@
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">단가유형</label>
-              <select class="form-select" id="selectunitpricetype">
+              <select class="form-select" id="selectunitpricetype" name = "selectunitpricetype">
                 <option value="">선택</option>
-                <option>매출단가</option>
-                <option>매입단가</option>
               </select>
             </div>
 
@@ -114,7 +112,7 @@
 			
 			  <div class="card-body" style= "width:100%">
 			
-			    <form>
+			    <form id="unitPriceForm">
 			
 			      <table class="form-grid table-bordered align-middle" style="border:1px gray;">
 			        <tbody>
@@ -124,7 +122,7 @@
 			            <th class="bg-light text-center" style="width:130px;">품번</th>
 			            <td style="width:75%;">
 			              <div class="input-group">
-			                <input type="text" class="form-control input-base-icon">
+			                <input type="text" class="form-control input-base-icon" name="insertsku">
 			                <button class="btn btn-icon">
 			                  <i class="bi bi-search"></i>
 			                </button>
@@ -136,7 +134,7 @@
 			          <tr>
 			            <th class="bg-light text-center">품명</th>
 			            <td class="disabled">
-			              <input type="text" class="form-control input-base" readonly>
+			              <input type="text" class="form-control input-base" readonly name="insertskuname">
 			            </td>
 			          </tr>
 			
@@ -144,10 +142,8 @@
 			          <tr>
 			            <th class="bg-light text-center">단가유형</th>
 			            <td>
-			              <select class="form-select input-base">
+			              <select class="form-select input-base" name="insertunitpricetype">
 			                <option value="">선택</option>
-			                <option>매출단가</option>
-			                <option>매입단가</option>
 			              </select>
 			            </td>
 			          </tr>
@@ -156,7 +152,7 @@
 			          <tr>
 			            <th class="bg-light text-center">적용일자</th>
 			            <td>
-			              <input type="date" class="form-control input-base">
+			              <input type="date" class="form-control input-base" name="insertstartdate">
 			            </td>
 			          </tr>
 			
@@ -165,7 +161,7 @@
 			            <th class="bg-light text-center">거래처</th>
 			            <td>
 			              <div class="input-group">
-			                <input type="text" class="form-control input-base-icon">
+			                <input type="text" class="form-control input-base-icon" name="insertcustcode">
 			                <button class="btn btn-icon">
 			                  <i class="bi bi-search"></i>
 			                </button>
@@ -177,7 +173,7 @@
 			          <tr>
 			            <th class="bg-light text-center">거래처명</th>
 			            <td>
-			              <input type="text" class="form-control input-base" readonly>
+			              <input type="text" class="form-control input-base" readonly name="insertcustname">
 			            </td>
 			          </tr>
 			
@@ -185,7 +181,7 @@
 			          <tr>
 			            <th class="bg-light text-center">기준단가</th>
 			            <td>
-			              <input type="number" class="form-control input-base">
+			              <input type="number" class="form-control input-base" name="insertunitprice">
 			            </td>
 			          </tr>
 			

@@ -18,9 +18,9 @@ public class CommonRestController {
     @Autowired
     CommonService commonService;
 
-    @GetMapping("/custType")
-    public List<CommonVO> custTypeList(CommonVO param) {
-        return commonService.selectCustType(param);
+    @GetMapping("/type")
+    public List<CommonVO> custTypeList(String groupCode) {
+        return commonService.selectType(groupCode);
     }
 
 }

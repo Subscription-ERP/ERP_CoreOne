@@ -5,5 +5,5 @@ import com.rootcore.common.vo.CommonVO;
 import java.util.List;
 
 public interface CommonMapper {
-    List<CommonVO> selectCustType(CommonVO common);
+    List<CommonVO> selectType(String groupCode);
 }

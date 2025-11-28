@@ -5,5 +5,5 @@ import com.rootcore.common.vo.CommonVO;
 import java.util.List;
 
 public interface CommonService {
-    List<CommonVO> selectCustType(CommonVO common);  // 거래처유형
+    List<CommonVO> selectType(String groupCode);  // 거래처유형
 }
