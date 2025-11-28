@@ -6,6 +6,10 @@ console.log(window.tui);
 console.log(window.tui && window.tui.DatePicker);
 
 document.addEventListener("DOMContentLoaded", async () => {
+	const divId = {'0A':'hireType', '0C':'jobTitle', '0D':'position', '0E':'userStatus'}
+	getCmCodeOptions(divId);
+	getDeptOptions();
+	
 	/* ------------------------------------------------------------------
 	 * 0) DOM 유틸
 	 * ------------------------------------------------------------------ */
@@ -22,49 +26,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 	    bodyHeight: 300,
 	    rowHeaders: ['checkbox'],
 	    columns: [
-			{ header: "사원번호", name: "userId"},
+			{ header: "사원번호", name: "userId", align: 'center', sortable: true},
 			{ header: "성명", name: "userName"},
-			{ header: "부서명", name: "dept"},
-			{ header: "입사일", name: "hireDate"},
-			// 직위/직급 (c1~c6 → 한글)
-			{
-			  header: "직위/직급",
-			  name: "jobTitle",
-			  formatter({ value }) {
-			    const jobTitleMap = {
-			      c1: "사원",
-			      c2: "주임",
-			      c3: "대리",
-			      c4: "과장",
-			      c5: "차장",
-			      c6: "부장"
-			    };
-			    return jobTitleMap[value] || value; // 없으면 그냥 원래 값(c1 등) 보여주기
-			  }
-			},
-			// 직책 (d1~d2 → 한글)
-			{
-			  header: "직책",
-			  name: "position",
-			  formatter({ value }) {
-			    const positionMap = {
-			      d1: "팀원",
-			      d2: "팀장"
-			    };
-			    return positionMap[value] || value;
-			  }
-			},
+			{ header: "부서", name: "deptName"},
+			{ header: "입사일", name: "hireDate", align: 'center' },
+			{ header: "직위/직급", name: "jobTitleName"},
+			{ header: "직책", name: "positionName"},
 			{ header: "연락처", name: "tel" },
 			{ header: "Email", name: "email" }
-
-
 
 	    ]
 	  });
 	}
 	
 	async function loadUserList(){
-		const response = await fetch('/api/hr/empAllList');
+		const response = await fetch('/api/hr/userAllList');
 		const data = await response.json();
 		grid.resetData(data);
 		grid.refreshLayout();
@@ -106,7 +82,101 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupNativeDatePicker('leaveDateWrapper', 'leaveDateInput');
 	
 		
-
+	/* ------------------------------------------------------------------
+	 * 3) 사원 상세조회 (기본정보/자격증/경력사항/이력)
+	 * ------------------------------------------------------------------ */
+	
+     grid.on('click', (ev) => {
+		const rowKey = ev.rowKey;
+		
+		if(rowKey == null) return;
+		
+		const row = grid.getRow(rowKey);
+		const userId = row.userId;
+		
+		fetch(`/api/hr/userDetail?userId=${userId}`)
+			.then(response => response.json())
+			.then(data => {
+				InputUserBasicInfo(data);
+				InputCertification(data.certificationList);
+				InputWorkExperience(data.workExperienceList);
+				InputUserHistory(data.historyList);
+			});
+	});
+	
+	// 기본정보
+	function InputUserBasicInfo(data){
+		if (!data){
+			resetData();
+			return;
+		}
+		const fr= document.querySelector(".form-allwrapper");
+		fr.querySelector("#userId").value = data.userId;
+		fr.querySelector("#userName").value = data.userName;
+		fr.querySelector("#tel").value = data.tel;
+		fr.querySelector("#email").value = data.email;
+		fr.querySelector("#hireDate").value = data.hireDate;
+		fr.querySelector("#hireType").value = data.hireType;
+		fr.querySelector("#leaveDate").value = data.leaveDate;
+		fr.querySelector("#leaveReason").value = data.leaveReason;
+		fr.querySelector("#zipCode").value = data.zipCode;
+		fr.querySelector("#address").value = data.address;
+		fr.querySelector("#dept").value = data.dept;
+		fr.querySelector("#jobTitle").value = data.jobTitle;
+		fr.querySelector("#position").value = data.position;
+		fr.querySelector("#familyCount").value = data.familyCount;
+		fr.querySelector("#childrenCount").value = data.childrenCount;
+		fr.querySelector("#householder").value = data.householder;
+		fr.querySelector("#bankName").value = data.bankName;
+		fr.querySelector("#accountNo").value = data.accountNo;
+		fr.querySelector("#accountHolder").value = data.accountHolder;
+		fr.querySelector("#salary").value = data.salary;
+		fr.querySelector("#userStatus").value = data.userStatus;
+		fr.querySelector("#userFile").value = data.userFile;
+		fr.querySelector("#remark").value = data.remark;	
+		
+	}
+	
+	// 자격증
+	function InputCertification(data){
+		if (!data){
+			resetData();
+			return;
+		}
+		
+		document.querySelector("#certiName").value = data.certiName;
+		document.querySelector("#issueOrgName").value = data.issueOrgName;
+		document.querySelector("#getDate").value = data.getDate;
+		document.querySelector("#licenseNo").value = data.licenseNo;
+		document.querySelector("#expireDate").value = data.expireDate;
+		document.querySelector("#remark").value = data.remark;
+		document.querySelector("#certiFile").value = data.certiFile;
+		
+	}
+	
+	// 경력사항
+	function InputCertification(data){
+		if (!data){
+			resetData();
+			return;
+		}
+		
+		document.querySelector("#wexCompanyName").value = data.certiName;
+		document.querySelector("#wexDept").value = data.issueOrgName;
+		document.querySelector("#wexJobTitle").value = data.getDate;
+		document.querySelector("#wexHireDate").value = data.licenseNo;
+		document.querySelector("#wexLeaveDate").value = data.expireDate;
+		document.querySelector("#wexMainDuty").value = data.remark;
+		document.querySelector("#wexSalary").value = data.certiFile;
+		document.querySelector("#remark").value = data.certiFile;
+		
+	}
+	
+	
+	
+	
+	
+	
 	/* ------------------------------------------------------------------
 	 * 2) 목록 조회
 	 * ------------------------------------------------------------------ */
@@ -130,45 +200,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	if (btnSearch) btnSearch.addEventListener("click", loadList);
 	loadList();*/
 
-	/* ------------------------------------------------------------------
-	 * 3) 행 클릭 → 상세 조회
-	 * ------------------------------------------------------------------ */
-	grid.on("click", async (ev) => {
-		if (ev.rowKey == null) return;
 
-		const row = grid.getRow(ev.rowKey);
-		const empNo = row.empNo;
-		if (!empNo) return;
-
-		const res = await fetch(`/hr/emp/${empNo}`);
-		const detail = await res.json();
-
-		// ✅ 새 HTML의 id들로 바인딩
-		if ($("#empNo")) $("#empNo").value = detail.empNo ?? "";
-		if ($("#empName")) $("#empName").value = detail.empName ?? "";
-		if ($("#phone")) $("#phone").value = detail.phone ?? "";
-		if ($("#email")) $("#email").value = detail.email ?? "";
-		if ($("#hireDate")) $("#hireDate").value = detail.hireDate ?? "";
-		if ($("#hireType")) $("#hireType").value = detail.hireType ?? "NEW";
-		if ($("#deptCode")) $("#deptCode").value = detail.deptCode ?? "";
-		if ($("#positionCode"))
-			$("#positionCode").value = detail.positionCode ?? "";
-		if ($("#dutyCode")) $("#dutyCode").value = detail.dutyCode ?? "";
-		if ($("#workStatus"))
-			$("#workStatus").value = detail.workStatus ?? "WORK";
-		if ($("#zip")) $("#zip").value = detail.zip ?? "";
-		if ($("#addr")) $("#addr").value = detail.addr ?? "";
-
-		// ✅ 새로 바뀐 retireDate / reason 바인딩
-		if ($("#retireDate"))
-			$("#retireDate").value = detail.retireDate ?? "";
-		if ($("#reason")) $("#reason").value = detail.reason ?? "";
-
-		// ✅ 추가정보
-		if ($("#bankName")) $("#bankName").value = detail.bankName ?? "";
-		if ($("#accountNo")) $("#accountNo").value = detail.accountNo ?? "";
-		if ($("#remark")) $("#remark").value = detail.remark ?? "";
-	});
 
 	/* ------------------------------------------------------------------
 	 * 4) 저장(등록/수정)
