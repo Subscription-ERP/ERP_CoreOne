@@ -3,56 +3,71 @@
 <mapper namespace="com.rootcore.hr.mapper.PayrollMapper">
 
 	<!-- 급여대장-상여등록 -->
-	<insert id="insertBonusPayrollOne" parameterType="com.rootcore.hr.vo.PayrollVO">
-        INSERT INTO tb_payroll (
-            payroll_code,
-            company_code,
-            user_id,
-            payroll_period,
-            payroll_type,
-            bonus_method,
-            bonus_rate,
-            bonus_amount,
-            payroll_name,
-            payroll_start_date,
-            payroll_end_date,
-            payroll_date
-        )   
-        VALUES (
-              FN_MAKE_PAYROLL_CODE(), 
-              'ROOT',
-              #{userId},
-              #{payrollPeriod},
-              '상여',
-              #{bonusMethod},  #{bonusRate},
-              #{bonusAmount},
-              #{payrollName},
-              #{payrollStartDate},
-              #{payrollEndDate},
-              #{payrollDate}
-        )
-    </insert>
+	<insert id="insertBonusPayrollOne"
+		parameterType="com.rootcore.hr.vo.PayrollVO">
+		INSERT INTO tb_payroll (
+		payroll_code,
+		company_code,
+		user_id,
+		payroll_period,
+		payroll_type,
+		bonus_method,
+		bonus_rate,
+		bonus_amount,
+		payroll_name,
+		payroll_start_date,
+		payroll_end_date,
+		payroll_date
+		)
+		VALUES (
+		FN_MAKE_PAYROLL_CODE(),
+		'ROOT',
+		#{userId},
+		#{payrollPeriod},
+		'상여',
+		#{bonusMethod}, #{bonusRate},
+		#{bonusAmount},
+		#{payrollName},
+		#{payrollStartDate},
+		#{payrollEndDate},
+		#{payrollDate}
+		)
+	</insert>
 
 	<!-- 급여대장조회 -->
 	<select id="selectPayrollList" resultType="PayrollVO">
-		SELECT   payroll_period,
-			     payroll_type,
-			     payroll_name,
-			     payroll_date,
-			     create_date,
-			     COUNT(*) AS peopleNumber
-		FROM     tb_payroll
-		GROUP BY payroll_period, payroll_type, payroll_name, payroll_date, create_date
+		SELECT payroll_period,
+		payroll_type,
+		payroll_name,
+		payroll_date,
+		create_date,
+		COUNT(*) AS peopleNumber
+		FROM tb_payroll
+		GROUP BY payroll_period, payroll_type,
+		payroll_name, payroll_date, create_date
 	</select>
 
 	<!-- 급여대장-상여등록-사원조회 -->
 	<select id="selectUserList" resultType="PayrollUserVO">
 		SELECT user_id,
-		       user_name,
-		       dept,
-		       hire_date,
-		       job_title
-		FROM   tb_user_master
+		user_name,
+		dept,
+		hire_date,
+		job_title
+		FROM tb_user_master
+		WHERE 1=1
+		<if test="userName != null and userName != '' ">
+			AND user_name like '%' || #{userName} || '%'
+		</if>
+		<if test="dept != null and dept != '' ">
+			AND dept like '%' || #{dept} || '%'
+		</if>
+		<if test="payrollEmpStartDate != null and payrollEmpStartDate != '' ">
+			AND hire_date >= TO_DATE(#{payrollEmpStartDate} , 'YYYY-MM-DD')
+		</if>
+		<if test="payrollEmpEndDate != null and payrollEmpEndDate != '' ">
+			AND hire_date &lt;= TO_DATE(#{payrollEmpEndDate}, 'YYYY-MM-DD')
+		</if>
 	</select>
 
 </mapper>

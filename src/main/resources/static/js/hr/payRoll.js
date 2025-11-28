@@ -1,8 +1,110 @@
 /**
  * payRoll.js
  */
+/* 급여대장-대장조회버튼 */
+document.querySelector('#btnPayrollSearch').addEventListener('click',function(){
+	d
+})
 
-/* 급여대장-상여등록 */
+/* 급여대장-상여등록-초기화버튼 기능 */
+document.querySelector('#btnEmpReset').addEventListener('click',function(){
+	document.querySelector('#payrollUserName').value = '';
+	document.querySelector('#payrollDeptName').value = '';
+	document.querySelector('#payrollEmpStartDate').value = '';
+	document.querySelector('#payrollEmpEndDate').value = '';
+})
+
+// 전역변수로 설정.
+let checkedUserIds = [];
+
+/* 급여대장-상여등록-사원조회 */
+const userGrid = new tui.Grid({
+	el: document.getElementById('userGrid'),
+	scrollX: false,
+	scrollY: true,
+	rowHeaders: ['checkbox'],
+	data: {
+		api: {
+			readData: {
+				url: '/api/hr/payrollEmpList',
+				method: 'GET'
+			}
+		}
+	},
+	bodyHeight: 260,
+	rowKey:'userId',
+	columns: [{
+		header: '사원번호',
+		name: 'userId',
+		align: 'center',
+		width: 200
+	}, {
+		header: '성명',
+		name: 'userName'
+	}, {
+		header: '부서명',
+		name: 'dept'
+	}, {
+		header: '입사일',
+		name: 'hireDate',
+		align: 'center'
+	}, {
+		header: '직위',
+		name: 'jobTitle'
+	}]
+});
+
+/* 급여대장-상여등록-사원조회-조회버튼 */
+document.getElementById('btnPayrollEmpSearch').addEventListener('click', function() {
+	// 성명
+	const payrollUserName = document.querySelector('#payrollUserName').value;
+	// 부서명
+	const payrollDeptName = document.querySelector('#payrollDeptName').value;
+	// 입사일 범위 시작일
+	const payrollEmpStartDate = document.querySelector('#payrollEmpStartDate').value;
+	// 입사일 범위 종료일
+	const payrollEmpEndDate = document.querySelector('#payrollEmpEndDate').value;
+	// 조회 할 검색조건 데이터 객체 생성
+	const data = {
+		userName: payrollUserName,
+		dept: payrollDeptName,
+		payrollEmpStartDate: payrollEmpStartDate,
+		payrollEmpEndDate: payrollEmpEndDate
+	}
+
+	// 조건 조회 실행을 한다
+	// 이 메서드가 '/api/hr/payrollEmpList?userName=...&dept=...' 형태로 요청을 보냄
+	userGrid.readData(1, data, true);
+})
+
+// Grid 데이터 로드가 완료되면은 발생하는 이벤트 리스너를 등록한다.
+userGrid.on('response', function(ev) {
+	
+	// ⏱️ Grid 렌더링 후 실행되도록 0ms 지연 적용 (필수 유지)
+	setTimeout(function() { 
+		if (checkedUserIds.length > 0) {
+			console.log('복원 대상 ID:', checkedUserIds)
+			
+			const gridData = userGrid.getData();
+			
+			gridData.forEach(function(row) {
+				// 만약에 이전에 저장한 ID가 현재 조회된 데이터에 포함되어 있다면
+				if (checkedUserIds.includes(row.userId)) {
+					// 2. 해당 행을 체크합니다.
+					userGrid.check(row.rowKey);
+				}
+			});
+		}
+        
+		// 3. 인원수 업데이트
+		updatePeopleNumber();
+	}, 0); 
+})
+
+/* 
+ * 급여대장-상여등록
+ * 저장버튼을 누르면 상여등록이 이루어진다.
+ */
 document.getElementById('btnSave').addEventListener('click', function() {
 	// 1. 데이터 수집
 	// 귀속연월
@@ -23,7 +125,7 @@ document.getElementById('btnSave').addEventListener('click', function() {
 	const checkedEmployees = userGrid.getCheckedRows();
 	// 사원 객체 배열에서 'userId'필드만 추출
 	const employeeIds = checkedEmployees.map(row => row.userId);
-	console.log("payrollPeriod:", payrollPeriod);
+	/*console.log("payrollPeriod:", payrollPeriod);
 	console.log("bonusType:", bonusType);
 	console.log("bonusValue:", bonusValue);
 	console.log("payrollBonusName:", payrollBonusName);
@@ -31,7 +133,7 @@ document.getElementById('btnSave').addEventListener('click', function() {
 	console.log("payrollEndDate:", payrollEndDate);
 	console.log("payrollBonusDate:", payrollBonusDate);
 	console.log("checkedEmployees:", checkedEmployees);
-	console.log("employeeIds:", employeeIds);
+	console.log("employeeIds:", employeeIds);*/
 
 	// 서버전송할때 보낼 데이터 객체 생성
 	const data = {
@@ -65,42 +167,6 @@ document.getElementById('btnSave').addEventListener('click', function() {
 		.catch(error => console.error('Error:', error));
 })
 
-/* 급여대장-상여등록-사원조회 */
-const userGrid = new tui.Grid({
-	el: document.getElementById('userGrid'),
-	scrollX: false,
-	scrollY: true,
-	rowHeaders: ['checkbox'],
-	data: {
-		api: {
-			readData: {
-				url: '/api/hr/payrollEmpList',
-				method: 'GET'
-			}
-		}
-	},
-	bodyHeight: 380,
-	columns: [{
-		header: '사원번호',
-		name: 'userId',
-		align: 'center',
-		width: 200
-	}, {
-		header: '성명',
-		name: 'userName'
-	}, {
-		header: '부서명',
-		name: 'dept'
-	}, {
-		header: '입사일',
-		name: 'hireDate',
-		align: 'center'
-	}, {
-		header: '직위',
-		name: 'jobTitle'
-	}]
-});
-
 /* 인원수 반영 */
 // 인원수 태그
 const bonusPeopleNumberInpur = document.querySelector('#bonusPeopleNumber');
@@ -111,13 +177,48 @@ function updatePeopleNumber() {
 	// 가져온 데이터의 개수를 필드에 반영
 	bonusPeopleNumberInpur.value = checkedRows.length;
 }
-// 전체 체크박스를 포함한 모든 체크/언체크 이벤트에 리스너 등록
-userGrid.on('check', updatePeopleNumber);
-userGrid.on('uncheck', updatePeopleNumber);
-userGrid.on('checkAll', updatePeopleNumber);
-userGrid.on('uncheckAll', updatePeopleNumber);
-// Grid 데이터 로드 완료 하고나서 초기 인원 수 설정
-userGrid.on('response', updatePeopleNumber);
+// 🌟 체크 상태 누적/제거 로직 추가 🌟
+
+// 개별 체크/언체크 이벤트
+userGrid.on('check', function(ev) {
+    const userId = ev.rowKey; 
+    if (!checkedUserIds.includes(userId)) {
+        checkedUserIds.push(userId); // 누적 추가
+    }
+    updatePeopleNumber();
+});
+
+userGrid.on('uncheck', function(ev) {
+    const userId = ev.rowKey;
+    const index = checkedUserIds.indexOf(userId);
+    if (index > -1) {
+        checkedUserIds.splice(index, 1); // 제거
+    }
+    updatePeopleNumber();
+});
+
+// 전체 체크/언체크 이벤트 (전체 사원 목록이 checkedUserIds에 반영되어야 함)
+userGrid.on('checkAll', function(ev) {
+    const gridData = userGrid.getData();
+    gridData.forEach(row => {
+        if (!checkedUserIds.includes(row.userId)) {
+             checkedUserIds.push(row.userId); // 현재 Grid의 모든 ID를 누적 추가
+        }
+    });
+    updatePeopleNumber();
+});
+
+userGrid.on('uncheckAll', function(ev) {
+    const gridData = userGrid.getData();
+    gridData.forEach(row => {
+        const index = checkedUserIds.indexOf(row.userId);
+        if (index > -1) {
+            checkedUserIds.splice(index, 1); // 현재 Grid의 모든 ID를 제거
+        }
+    });
+    updatePeopleNumber();
+});
+
 
 /* 급여대장-조회 */
 const payrollGrid = new tui.Grid(

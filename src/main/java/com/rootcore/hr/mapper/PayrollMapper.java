@@ -2,13 +2,13 @@ package com.rootcore.hr.mapper;
 
 import java.util.List;
 
+import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
-import com.rootcore.hr.vo.UserVO;
 
 public interface PayrollMapper {
 	
 	// 급여대장-상여등록-사원조회
-	List<UserVO> selectUserList(UserVO param);
+	List<PayrollUserVO> selectUserList(PayrollUserVO param);
 
 	// 급여대장조회
 	List<PayrollVO> selectPayrollList(PayrollVO param);

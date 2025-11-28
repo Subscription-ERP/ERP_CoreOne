@@ -187,6 +187,7 @@ WHERE group_code = '0B';
 DELETE FROM tb_cm_code_group
 WHERE group_code = '0B';
 
+-- 급여귀속코드 생성 함수
 create or replace FUNCTION FN_MAKE_PAYROLL_CODE
 RETURN VARCHAR2
 IS
@@ -216,3 +217,32 @@ BEGIN
 END;
 
 -- 급여대장-상여등록
+--INSERT INTO tb_payroll (
+--            payroll_code,
+--            company_code,
+--            user_id,
+--            payroll_period,
+--            payroll_type,
+--            bonus_method,
+--            bonus_rate,
+--            bonus_amount,
+--            payroll_name,
+--            payroll_start_date,
+--            payroll_end_date,
+--            payroll_date
+--        )   
+--        VALUES (
+--              FN_MAKE_PAYROLL_CODE(), 
+--              'ROOT',
+--              #{userId},
+--              #{payrollPeriod},
+--              '상여',
+--              #{bonusMethod},  #{bonusRate},
+--              #{bonusAmount},
+--              #{payrollName},
+--              #{payrollStartDate},
+--              #{payrollEndDate},
+--              #{payrollDate}
+--        );
+
+        

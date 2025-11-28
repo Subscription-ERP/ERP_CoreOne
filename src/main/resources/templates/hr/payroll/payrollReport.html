@@ -27,13 +27,6 @@
 	margin-right: 12px; /* 라벨 사이 간격 */
 	margin-bottom: 0; /* Bootstrap label baseline 보정 */
 }
-
-/* 초기화 저장 버튼 우측으로 이동 */
-/* #chogihwa {
-	display: flex;
-	justify-content: flex-end;
-	align-items: center;
-} */
 </style>
 </head>
 
@@ -45,33 +38,34 @@
 				<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
 					<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
 						<div class="filter-bar row g-4 align-items-center col-md-12">
-							<!-- 급여구분 -->
-							<div class="col-12 col-md-3">
+							<div class="col-12 col-md-4">
 								<div class="field-inline">
-									<label for="payroll" class="field-inline__label">급여구분</label> <select id="payrollType" class="form-select input-base" style="flex: 1; min-width: 0">
+									<label for="payrollType" class="field-inline__label">급여구분</label> <select id="payrollType" class="form-select input-base" style="flex: 1; min-width: 0">
 										<option value="">전체</option>
 										<option th:each="p : ${payrollTypeList}" th:value="${p.payrollTypeCode}" th:text="${p.payrollTypeName}"></option>
 									</select>
 								</div>
 							</div>
 
-							<!-- 대장명칭 -->
-							<div class="col-12 col-md-3">
+							<div class="col-12 col-md-4">
 								<div class="field-inline">
 									<label for="payrollName" class="field-inline__label">대장명칭</label> <input id="payrollName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
 								</div>
 							</div>
 
-							<!-- 지급일 -->
-							<div class="col-12 col-md-3">
-								<div class="field-inline">
-									<label for="payrollDate" class="field-inline__label">지급일</label> <input id="payrollDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
-								</div>
+							<!-- 초기화 조회 버튼 -->
+							<div class="col-12 col-md-4 d-flex align-items-center justify-content-end gap-2">
+								<button id="btnPayrollReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
+								<button id="btnPayrollSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
 							</div>
 
-							<!-- 조회 버튼 -->
-							<div class="col-12 col-md-2 ms-auto text-end">
-								<button id="btnSearch" type="button" class="btn btn-color btn-outer">조회</button>
+							<!-- 지급일 범위 -->
+							<div class="col-12 col-md-8 mt-0">
+								<div class="field-inline">
+									<label for="payrollDate" class="field-inline__label">지급일</label>
+									<!-- 범위 input -->
+									<input id="payrollDateStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />~<input id="payrollDateEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
 							</div>
 						</div>
 					</div>
@@ -152,6 +146,35 @@
 							</div>
 						</div>
 					</div>
+					<section class="card-ui card-ui--search">
+						<div class="card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+							<div class="filter-bar row g-4 align-items-center col-md-12">
+
+								<div class="col-12 col-md-4">
+									<div class="field-inline">
+										<label for="payrollUserName" class="field-inline__label">성명</label> <input id="payrollUserName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
+								</div>
+
+								<div class="col-12 col-md-4">
+									<div class="field-inline">
+										<label for="payrollDeptName" class="field-inline__label">부서명</label> <input id="payrollDeptName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
+								</div>
+
+								<div class="col-12 col-md-4 d-flex align-items-center justify-content-end gap-2">
+									<button id="btnEmpReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
+									<button id="btnPayrollEmpSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
+								</div>
+
+								<div class="col-12 col-md-8 mt-0">
+									<div class="field-inline">
+										<label for="payrollDateEmp" class="field-inline__label">입사일범위</label> <input id="payrollEmpStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" /> ~ <input id="payrollEmpEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
 					<div id="userGrid" class="grid-root"></div>
 				</section>
 			</div>
