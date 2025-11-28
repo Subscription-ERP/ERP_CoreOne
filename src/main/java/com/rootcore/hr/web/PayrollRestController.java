@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.hr.service.PayrollService;
+import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
-import com.rootcore.hr.vo.UserVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,9 +41,9 @@ public class PayrollRestController {
 	
 	// 급여대장-상여등록-사원조회
 	@GetMapping("/payrollEmpList")
-	public Map<String, Object> getUserList(UserVO param) {
+	public Map<String, Object> getUserList(PayrollUserVO param) {
 		// 사원조회
-		List<UserVO> list = payrollService.selectUserList(param);
+		List<PayrollUserVO> list = payrollService.selectUserList(param);
 
 		// RESULT에 실행결과 저장
 		Map<String, Object> result = new HashMap<>();
