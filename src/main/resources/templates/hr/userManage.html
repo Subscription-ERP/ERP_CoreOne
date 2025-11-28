@@ -394,8 +394,8 @@
         </div>
       </header>
 
-      <div class="card-ui__body section-scroll">
-        <div id="tab-basic" class="tab-panel active">
+      <div class="card-ui__body section-scroll">    
+        <div id="tab-basic" class="tab-panel active form-allwrapper">
           <div class="form-grid form-grid--basic-layout">
             <!-- 사진 -->
             <div class="form-grid__photo">
@@ -412,65 +412,43 @@
             <!-- Row 1 -->
             <div class="form-grid__label">사원번호</div>
             <div class="form-grid__field is-disabled">
-              <input name="userId" class="form-control form-control-sm input-base" readonly disabled
+              <input id="userId" name="userId" class="form-control form-control-sm input-base" readonly disabled
                 placeholder="자동생성" />
             </div>
             <div class="form-grid__label">성명</div>
             <div class="form-grid__field">
-              <input name="userName" class="form-control form-control-sm input-base" />
+              <input id="userName" name="userName" class="form-control form-control-sm input-base" />
             </div>
 
             <!-- Row 2 -->
             <div class="form-grid__label">연락처</div>
             <div class="form-grid__field">
-              <input name="tel" class="form-control form-control-sm input-base" placeholder="010-0000-0000" />
+              <input id="tel" name="tel" class="form-control form-control-sm input-base" placeholder="010-0000-0000" />
             </div>
             <div class="form-grid__label">이메일</div>
             <div class="form-grid__field">
-              <input name="email" class="form-control form-control-sm input-base" />
+              <input id="email" name="email" class="form-control form-control-sm input-base" />
             </div>
 
             <!-- Row 3 -->
             <div class="form-grid__label">입사일</div>
             <div class="form-grid__field" id="hireDateWrapper">
-              <input name="hireDate" id="hireDateInput" type="date" class="form-control form-control-sm input-base" />
+              <input id="hireDate" name="hireDate" type="date" class="form-control form-control-sm input-base" />
             </div>
-			<!-- <div class="form-grid__label">입사일</div>
-			<div class="form-grid__field">
-			  인풋 + 아이콘
-			  <div id="hireDateInputWrapper" class="tui-datepicker-input tui-datetime-input">
-			    <input name="hireDate" id="hireDateInput" type="text"
-			           class="form-control form-control-sm input-base" />
-			    <span class="tui-ico-date"></span>
-			  </div>
-			  실제 달력 DOM이 들어갈 컨테이너
-			  <div id="hireDatePickerContainer"></div>
-			</div> -->
-            <div class="form-grid__label">입사구분</div>
+            <div class="form-grid__label">인사구분</div>
             <div class="form-grid__field">
-              <select name="hireType" class="form-select form-select-sm input-base">
-                <option value="NEW">신입</option>
-                <option value="EXP">경력</option>
+              <select id="hireType" name="hireType" class="form-select form-select-sm input-base">
               </select>
             </div>
 
             <!-- Row 4 -->
             <div class="form-grid__label">퇴사일</div>
             <div class="form-grid__field" id="leaveDateWrapper">
-              <input name="leaveDate" id="leaveDateInput" type="date" class="form-control form-control-sm input-base" />
+              <input id="leaveDate" name="leaveDate" type="date" class="form-control form-control-sm input-base" />
             </div> 
-			<!-- <div class="form-grid__label">퇴사일</div>
-			<div class="form-grid__field">
-			  <div id="leaveDateInputWrapper" class="tui-datepicker-input tui-datetime-input">
-			    <input name="leaveDate" id="leaveDateInput" type="text"
-			           class="form-control form-control-sm input-base" />
-			    <span class="tui-ico-date"></span>
-			  </div>
-			  <div id="leaveDatePickerContainer"></div>
-			</div> -->
             <div class="form-grid__label">퇴사사유</div>
             <div class="form-grid__field">
-              <input name="leaveReason" type="text" class="form-control form-control-sm input-base" />
+              <input id="leaveReason" name="leaveReason" type="text" class="form-control form-control-sm input-base" />
             </div>
 
             <!-- Row 5 -->
@@ -491,21 +469,20 @@
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">부서</div>
               <div class="form-grid__field">
-                <select name="dept" class="form-select form-select-sm input-base">
-                  <option th:each="d : ${deptList}" th:value="${d.deptCode}" th:text="${d.deptName}"></option>
+                <select id="dept" name="dept" class="form-select form-select-sm input-base">
                 </select>
               </div>
 
               <div class="form-grid__label">직위/직급</div>
               <div class="form-grid__field">
-                <select name="jobTitle" class="form-select form-select-sm input-base">
+                <select id="jobTitle" name="jobTitle" class="form-select form-select-sm input-base">
                   <option th:each="p : ${positionList}" th:value="${p.code}" th:text="${p.name}"></option>
                 </select>
               </div>
 
               <div class="form-grid__label">직책</div>
               <div class="form-grid__field">
-                <select name="position" class="form-select form-select-sm input-base">
+                <select id="position" name="position" class="form-select form-select-sm input-base">
                   <option th:each="r : ${dutyList}" th:value="${r.code}" th:text="${r.name}"></option>
                 </select>
               </div>
@@ -514,30 +491,30 @@
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">가족수</div>
               <div class="form-grid__field">
-                <input type="number" name="familyCount" class="form-control form-control-sm input-base" />
+                <input id="familyCount" type="number" name="familyCount" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">자녀수</div>
               <div class="form-grid__field">
-                <input type="number" name="childrenCount" class="form-control form-control-sm input-base" />
+                <input id="childrenCount" type="number" name="childrenCount" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">세대주여부</div>
               <div class="form-grid__field form-grid__field--checkbox">
-                <!-- 체크시 Y, 아닐시 N (default Y) -->
-                <input type="checkbox" class="householder">
+                <!-- 체크시 Y -->
+                <input id="householder" type="checkbox" class="householder" value="Y">
               </div>
             </div>
 
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">은행</div>
               <div class="form-grid__field">
-                <input name="bankName" class="form-control form-control-sm input-base" />
+                <input id="bankName" name="bankName" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">계좌번호</div>
               <div class="form-grid__field">
-                <input name="accountNo" class="form-control form-control-sm input-base" />
+                <input id="accountNo" name="accountNo" class="form-control form-control-sm input-base" />
                 <button type="button" class="btn-grid">
                   <i class="bi bi-check"></i>
                 </button>
@@ -545,7 +522,7 @@
 
               <div class="form-grid__label">예금주</div>
               <div class="form-grid__field disabled">
-                <input name="accountHolder" class="form-control form-control-sm input-base" disabled readonly />
+                <input id="accountHolder" name="accountHolder" class="form-control form-control-sm input-base" disabled readonly />
               </div>
             </div>
 
@@ -553,12 +530,12 @@
             <div class="form-grid__row form-grid__row--3col">
               <div class="form-grid__label">급여</div>
               <div class="form-grid__field">
-                <input type="number" name="salary" class="form-control form-control-sm input-base" />
+                <input id="salary" type="number" name="salary" class="form-control form-control-sm input-base" />
               </div>
 
               <div class="form-grid__label">재직상태</div>
               <div class="form-grid__field">
-                <select name="userStatus" class="form-select form-select-sm input-base">
+                <select id="userStatus" name="userStatus" class="form-select form-select-sm input-base">
                   <option value="0">재직</option>
                   <option value="1">휴직</option>
                   <option value="2">퇴사</option>
@@ -567,7 +544,7 @@
 
               <div class="form-grid__label">첨부파일</div>
               <div class="form-grid__field form-grid__field--file">
-                <input type="file" name="userFile" class="form-control form-control-sm input-base file-input" />
+                <input id="userFile" type="file" name="userFile" class="form-control form-control-sm input-base file-input" />
               </div>
 
             </div>
@@ -575,7 +552,7 @@
             <div class="form-grid__row">
               <div class="form-grid__label">비고</div>
               <div class="form-grid__field form-grid__field--wide">
-                <input name="remark" class="form-control form-control-sm input-base" />
+                <input id="remark" name="remark" class="form-control form-control-sm input-base" />
               </div>
             </div>
 
@@ -606,6 +583,8 @@
                   <col style="width: 18%">
                   <col style="width: 14%">
                   <col style="width: 10%">
+                  <col style="width: 10%">
+                  <col style="width: 10%">
                 </colgroup>
                 <thead>
                   <tr>
@@ -614,6 +593,8 @@
                     <th>취득일자</th>
                     <th>자격번호</th>
                     <th>유효/만료일</th>
+                    <th>비고</th>
+                    <th>파일</th>
                     <th>수정</th>
                   </tr>
                 </thead>
@@ -633,19 +614,25 @@
           <template id="certRowTemplate">
             <tr>
               <td>
-                <input type="text" name="certName" class="form-control form-control-sm input-base" />
+                <input type="text" name="certiName" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="text" name="issuer" class="form-control form-control-sm input-base" />
+                <input type="text" name="issueOrgName" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="date" name="acquireDate" class="form-control form-control-sm input-base" />
+                <input type="date" name="getDate" class="form-control form-control-sm input-base" />
               </td>
               <td>
                 <input type="text" name="licenseNo" class="form-control form-control-sm input-base" />
               </td>
               <td>
                 <input type="date" name="expireDate" class="form-control form-control-sm input-base" />
+              </td>
+              <td>
+                <input type="text" name="remark" class="form-control form-control-sm input-base" />
+              </td>
+              <td>
+                <input type="file" name="certiFile" class="form-control form-control-sm input-base" />
               </td>
               <td class="text-center">
                 <button type="button" class="btn-icon btn-row-edit" title="수정">
@@ -714,26 +701,29 @@
           <template id="careerRowTemplate">
             <tr>
               <td>
-                <input type="text" name="companyName" class="form-control form-control-sm input-base" />
+                <input type="text" id="wexCompanyName" name="wexCompanyName" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="text" name="deptName" class="form-control form-control-sm input-base" />
+                <input type="text" id="wexDept" name="wexDept" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="text" name="positionName" class="form-control form-control-sm input-base" />
+                <input type="text" id="wexJobTitle" name="wexJobTitle" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="date" name="joinDate" class="form-control form-control-sm input-base" />
+                <input type="date" id="wexHireDate" name="wexHireDate" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="date" name="leaveDate" class="form-control form-control-sm input-base" />
+                <input type="date" id="wexLeaveDate" name="wexLeaveDate" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="text" name="dutyDesc" class="form-control form-control-sm input-base" />
+                <input type="text" id="wexMainDuty" name="wexMainDuty" class="form-control form-control-sm input-base" />
               </td>
               <td>
-                <input type="text" name="lastSalary" class="form-control form-control-sm input-base"
+                <input type="text" id="wexSalary" name="wexSalary" class="form-control form-control-sm input-base"
                   placeholder="예) 36,000,000" />
+              </td>
+              <td>
+                <input type="text" id="remark" name="remark" class="form-control form-control-sm input-base" />
               </td>
               <td class="text-center">
                 <button type="button" class="btn-icon btn-row-edit" title="수정">
@@ -766,9 +756,9 @@
           <div class="modal-history__info-row">
             <div class="modal-history__field col-md-10">
               <span class="modal-history__label col-md-2">성명</span>
-              <span class="modal-history__value col-md-4" id="historyEmpName">이한솔</span>
+              <span class="modal-history__value col-md-4" id="userName"></span>
               <span class="modal-history__label col-md-2">사원번호</span>
-              <span class="modal-history__value col-md-4" id="historyEmpNo">2025-HR-001</span>
+              <span class="modal-history__value col-md-4" id="userId"></span>
             </div>
 
             <button type="button" class="btn btn-white btn-inner modal-history__btn-print col-md-2"
@@ -944,6 +934,7 @@
 
 
     <script th:src="@{/js/hr/userManage.js}"></script>
+    <script th:src="@{/js/common.js}"></script>
   </div>
 </body>
 

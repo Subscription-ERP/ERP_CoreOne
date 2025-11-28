@@ -9,4 +9,16 @@
 									 ON cm_code.group_code = code_group.group_code
 		WHERE code_group.group_code = #{groupCode}
 	</select>
+	
+	<!-- 공통코드 조회 -->
+	<select id="selectCode" resultType="CommonVO">
+		SELECT cm_code.code,
+			   cm_code.code_name
+		FROM tb_cm_code cm_code JOIN tb_cm_code_group code_group
+									 ON cm_code.group_code = code_group.group_code
+		WHERE code_group.group_code = #{code}
+	</select>
+	
+	
+	
 </mapper>
