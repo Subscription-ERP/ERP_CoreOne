@@ -4,6 +4,10 @@ SELECT user_id,
        dept,
        hire_date,
        job_title
+FROM   tb_user_master
+WHERE  leave_date IS NULL;
+
+SELECT *
 FROM   tb_user_master;
 
 -- =========

@@ -24,5 +24,7 @@ public class PayrollVO {
 	private int peopleNumber; // 인원수
 	private List<String> employeeIds; // 사원ID배열집합
 	private String userId; // 사원ID
+	private String paymentStartDate; // 지급시작일
+	private String paymentEndDate; // 지급종료일
 	
 }

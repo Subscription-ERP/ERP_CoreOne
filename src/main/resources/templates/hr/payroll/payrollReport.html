@@ -64,7 +64,7 @@
 								<div class="field-inline">
 									<label for="payrollDate" class="field-inline__label">지급일</label>
 									<!-- 범위 input -->
-									<input id="payrollDateStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />~<input id="payrollDateEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+									<input id="paymentStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />~<input id="paymentEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
 								</div>
 							</div>
 						</div>
@@ -179,7 +179,139 @@
 				</section>
 			</div>
 		</div>
+		<!-- ==================== 계산하기모달창 ================================================================== -->
+		<div id="historyModal" class="modal-layer" hidden>
+			<div class="modal-layer__backdrop"></div>
 
+			<div class="modal-layer__dialog">
+				<!-- 상단 헤더 -->
+				<header class="modal-card__header">
+					<h5 class="modal-card__title">사원 이력조회</h5>
+					<button type="button" class="btn-icon modal-card__btn-close" id="btnHistoryClose">
+						<i class="bi bi-x-lg"></i>
+					</button>
+				</header>
+
+				<!-- 내용 -->
+				<div class="modal-card__body">
+					<!-- 상단 정보 영역 (성명, 사번) -->
+					<div class="modal-history__info-row">
+						<div class="modal-history__field col-md-10">
+							<span class="modal-history__label col-md-2">성명</span> <span class="modal-history__value col-md-4" id="historyEmpName">이한솔</span> <span class="modal-history__label col-md-2">사원번호</span> <span class="modal-history__value col-md-4" id="historyEmpNo">2025-HR-001</span>
+						</div>
+
+						<button type="button" class="btn btn-white btn-inner modal-history__btn-print col-md-2" id="btnHistoryPrint">인쇄</button>
+					</div>
+
+					<!-- 탭(부서 / 급여) -->
+					<ul class="nav nav-tabs ui-tabs modal-history__tabs" id="historyTabs">
+						<li class="nav-item">
+							<button class="nav-link active history-tab-btn" type="button" data-tab="dept">부서</button>
+						</li>
+						<li class="nav-item">
+							<button class="nav-link history-tab-btn" type="button" data-tab="salary">급여</button>
+						</li>
+					</ul>
+
+					<!-- 탭 콘텐츠 : 부서 -->
+					<div id="history-tab-dept" class="history-tab-panel active">
+						<div class="form-grid sub-grid">
+							<div class="sub-grid__body">
+								<table class="sub-table">
+									<colgroup>
+										<col style="width: 15%">
+										<col style="width: 15%">
+										<col style="width: 15%">
+										<col style="width: 15%">
+										<col style="width: 20%">
+										<col style="width: 20%">
+									</colgroup>
+									<thead>
+										<tr>
+											<th>적용일자</th>
+											<th>이전 부서</th>
+											<th>이전 직위/직급</th>
+											<th>변경 부서</th>
+											<th>변경 직위/직급</th>
+											<th>변경사유</th>
+										</tr>
+									</thead>
+									<tbody id="historyDeptTbody">
+										<!-- 예시 데이터 (나중에 JS로 교체 가능) -->
+										<tr>
+											<td>2023-02-01</td>
+											<td>인사팀</td>
+											<td>사원</td>
+											<td>총무팀</td>
+											<td>대리</td>
+											<td>인사발령</td>
+										</tr>
+										<tr>
+											<td>2021-07-01</td>
+											<td>회계팀</td>
+											<td>사원</td>
+											<td>인사팀</td>
+											<td>사원</td>
+											<td>부서 이동</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- 탭 콘텐츠 : 급여 -->
+					<div id="history-tab-salary" class="history-tab-panel">
+						<div class="form-grid sub-grid">
+							<div class="sub-grid__body">
+								<table class="sub-table">
+									<colgroup>
+										<col style="width: 15%">
+										<col style="width: 15%">
+										<col style="width: 15%">
+										<col style="width: 15%">
+										<col style="width: 20%">
+										<col style="width: 20%">
+									</colgroup>
+									<thead>
+										<tr>
+											<th>적용일자</th>
+											<th>기본급</th>
+											<th>총급여</th>
+											<th>지급유형</th>
+											<th>변경사유</th>
+											<th>변경자</th>
+										</tr>
+									</thead>
+									<tbody id="historySalaryTbody">
+										<!-- 예시 데이터 -->
+										<tr>
+											<td>2023-02-01</td>
+											<td>3,000,000</td>
+											<td>3,500,000</td>
+											<td>월급</td>
+											<td>연봉조정</td>
+											<td>관리자A</td>
+										</tr>
+										<tr>
+											<td>2021-07-01</td>
+											<td>2,800,000</td>
+											<td>3,200,000</td>
+											<td>월급</td>
+											<td>연봉조정</td>
+											<td>관리자B</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<!-- // modal-card__body -->
+			</div>
+			<!-- // modal-layer__dialog -->
+		</div>
 		<script th:src="@{/js/hr/payRoll.js}"></script>
 
 	</div>
