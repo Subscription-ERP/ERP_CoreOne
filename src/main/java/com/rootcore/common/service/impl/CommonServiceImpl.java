@@ -19,8 +19,8 @@ public class CommonServiceImpl implements CommonService {
     final CommonMapper commonMapper;
 
     @Override
-    public List<CommonVO> selectCustType(CommonVO common) {
-        return commonMapper.selectCustType(common);
+    public List<CommonVO> selectType(String groupCode) {
+        return commonMapper.selectType(groupCode);
     }
 
 	@Override

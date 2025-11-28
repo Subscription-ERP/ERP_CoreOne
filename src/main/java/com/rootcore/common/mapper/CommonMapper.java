@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface CommonMapper {
-    List<CommonVO> selectCustType(CommonVO common);
     List<CommonVO> selectCode(String common);
-    
+    List<CommonVO> selectType(String groupCode);
 }

@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.rootcore.hr.mapper.PayrollMapper;
 import com.rootcore.hr.service.PayrollService;
+import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
-import com.rootcore.hr.vo.UserVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ public class PayrollServiceImpl implements PayrollService {
 
 	// 급여대장-상여등록-사원조회
 	@Override
-	public List<UserVO> selectUserList(UserVO param) {
+	public List<PayrollUserVO> selectUserList(PayrollUserVO param) {
 		return payrollMapper.selectUserList(param);
 	}
 

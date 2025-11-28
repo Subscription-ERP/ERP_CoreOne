@@ -2,9 +2,11 @@ package com.rootcore.fi.web;
 
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,9 +34,15 @@ public class FiRestController {
     }
     
     @GetMapping("/unitprice/check")
-    public int unitPriceCheck(UnitPriceVO param) {
-        return unitPriceService.checkUnitPrice(param);
+    public  Map<String, Object> unitPriceCheck(UnitPriceVO param) {
+        int cnt = unitPriceService.checkUnitPrice(param);
+        return Map.of("cnt", cnt);
     }
+    @PutMapping("/unitprice")
+    public int modifyUnitPrice(@RequestBody UnitPriceVO param) {
+        return unitPriceService.updateUnitPrice(param);
+    }
+    
     
     
 }
