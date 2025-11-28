@@ -19,10 +19,12 @@ public class CustVO {
     private int zonecode;
     private String address;
     private String addressDetail;
+    private String custTypeCode;
     private String custType;
     private String dept;
     private String userName;
     private char useStatus;
     private String createdBy;
     private Date createDate;
+    private Boolean includeStopped; // 검색조건
 }
