@@ -8,5 +8,7 @@ public interface UnitPriceMapper {
 
 	List<UnitPriceVO> selectUnitPrice(UnitPriceVO unitPrice);
 	int insertUnitPrice(UnitPriceVO unitPrice);
+	int insertUnitPriceHistory(UnitPriceVO unitPrice);
 	int checkUnitPrice(UnitPriceVO unitPrice);
+	int updateUnitPrice(UnitPriceVO unitPrice);
 }

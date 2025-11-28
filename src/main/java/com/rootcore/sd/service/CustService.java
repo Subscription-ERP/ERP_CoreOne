@@ -7,4 +7,5 @@ import java.util.List;
 public interface CustService {
     List<CustVO> getCustList(CustVO cust);
     int addCust(CustVO cust);
+    int modifyCust(CustVO cust);
 }

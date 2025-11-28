@@ -12,58 +12,74 @@
 </head>
 
 <body th:fragment="custModalFragment">
-    <!-- 거래처 조회 모달 -->
-    <div class="modal fade" id="custModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg"> <!-- 사진처럼 가로 넓은 모달 -->
-        <div class="modal-content">
+<!-- 거래처 조회 모달 (예시 모달 스타일 적용) -->
+<div id="custModal" class="modal-layer" hidden>
+  <div class="modal-layer__backdrop"></div>
 
-          <!-- 헤더 -->
-          <div class="modal-header py-2">
-            <h5 class="modal-title">거래처 조회</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="modal-layer__dialog modal-layer__dialog--lg"><!-- 가로 넓은 버전 옵션 클래스 -->
+
+    <!-- 상단 헤더 -->
+    <header class="modal-card__header">
+      <h5 class="modal-card__title">거래처 조회</h5>
+      <button type="button" class="btn-icon modal-card__btn-close" id="btnCustClose">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <!-- 내용 -->
+    <div class="modal-card__body">
+
+      <!-- 검색 영역 -->
+      <div class="modal-search__row small-form-bottom">
+        <div class="row g-2 align-items-center">
+
+          <div class="col-md-3 d-flex align-items-center modal-search__field">
+            <label class="form-label mb-0 me-2" for="schCustName">거래처명</label>
+            <input type="text" id="schCustName" class="form-control">
           </div>
 
-          <!-- 바디 -->
-          <div class="modal-body p-3">
-
-            <!-- 검색 영역 -->
-            <div class="row g-2 align-items-center mb-2 small-form-bottom">
-              <div class="col-md-3 d-flex align-items-center">
-                <label class="form-label mb-0 me-2" for="schCustName">거래처명</label>
-                <input type="text" id="schCustName" class="form-control">
-              </div>
-              <div class="col-md-3 d-flex align-items-center">
-                <label class="form-label mb-0 me-2" for="schCeoName">대표자명</label>
-                <input type="text" id="schCeoName" class="form-control">
-              </div>
-              <div class="col-md-3 d-flex align-items-center">
-                <label class="form-label mb-0 me-2" for="schType">거래처유형</label>
-                <select id="schType" class="form-select">
-                  <option value="">전체</option>
-                  <option value="BUY">매입업체</option>
-                  <option value="SELL">매출업체</option>
-                </select>
-              </div>
-              <div class="col-md-3 text-end">
-                <button id="btnCustSearch" class="btn btn-primary btn-sm px-3">조회</button>
-              </div>
-            </div>
-
-            <!-- Toast UI Grid 영역 -->
-            <div id="custModalGrid" style="height:260px;"></div>
-
+          <div class="col-md-3 d-flex align-items-center modal-search__field">
+            <label class="form-label mb-0 me-2" for="schCeoName">대표자명</label>
+            <input type="text" id="schCeoName" class="form-control">
           </div>
 
-          <!-- 푸터 -->
-          <div class="modal-footer py-2">
-            <button type="button" class="btn btn-primary btn-sm" id="btnCustSelect">확인</button>
-            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
+          <div class="col-md-3 d-flex align-items-center modal-search__field">
+            <label class="form-label mb-0 me-2" for="schType">거래처유형</label>
+            <select id="schType" class="form-select">
+              <option value="">전체</option>
+              <option value="BUY">매입업체</option>
+              <option value="SELL">매출업체</option>
+            </select>
+          </div>
+
+          <div class="col-md-3 text-end">
+            <button id="btnCustSearch" class="btn btn-primary btn-sm px-3">조회</button>
           </div>
 
         </div>
       </div>
-    </div>
-  <script th:src="@{/js/modal/custModal.js}"></script>
+
+      <!-- 목록 (Toast UI Grid 영역) -->
+      <div class="form-grid sub-grid mt-2">
+        <div class="sub-grid__body">
+          <div id="custModalGrid" style="height:260px;"></div>
+        </div>
+      </div>
+
+    </div> <!-- // modal-card__body -->
+
+    <!-- 하단 푸터 -->
+    <footer class="modal-card__footer">
+      <div class="modal-card__footer-right">
+        <button type="button" class="btn btn-primary btn-sm" id="btnCustSelect">확인</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnCustCancel">닫기</button>
+      </div>
+    </footer>
+
+  </div> <!-- // modal-layer__dialog -->
+</div>
+
+<script th:src="@{/js/modal/custModal.js}"></script>
 </body>
 
 </html>

@@ -13,22 +13,34 @@ public class SdController {
     @Autowired
     CustService custService;
 
-    // 거래처 관리
+    // 거래처 메인
     @GetMapping("/sd/cust")
     public String custMain() {
         return "sd/cust";
     }
 
     // 거래처 등록
-    @GetMapping("/sd/addCust")
+    @GetMapping("/sd/cust/save")
     public String addCustPage() {
-        return "sd/addCust";
+        return "/sd/cust/save";
     }
 
-    @PostMapping("/sd/addCust")
+    @PostMapping("/sd/cust/save")
     public String addCust(CustVO cust) {
         custService.addCust(cust);
         return "redirect:/sd/cust";
     };
+    
+    // 거래처 수정
+    @GetMapping("/sd/cust/modify")
+    public String modifyCustPage() {
+        return "/sd/cust/modify";
+    }
+
+    @PostMapping("/sd/cust/modify")
+    public String modifyCust(CustVO cust) {
+        custService.modifyCust(cust);
+        return "redirect:/sd/cust";
+    }
 
 }
