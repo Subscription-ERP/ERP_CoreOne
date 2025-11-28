@@ -1,10 +1,10 @@
-package com.rootcore.sb.domain;
+package com.rootcore.sb.vo;
 
 import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class Payment {
+public class PaymentVO {
 
 	private String paymentCode;  // PAYMENT_CODE
 	private String subCode;      // SUB_CODE

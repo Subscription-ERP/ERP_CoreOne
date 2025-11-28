@@ -5,10 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.rootcore.sb.domain.Company;
 import com.rootcore.sb.mapper.CompanyMapper;
 import com.rootcore.sb.service.CompanyService;
-import com.rootcore.sb.vo.CompanyRequestVO;
+import com.rootcore.sb.vo.CompanyVO;
 
 @Service
 public class CompanyServiceImpl implements CompanyService {
@@ -20,9 +19,9 @@ public class CompanyServiceImpl implements CompanyService {
 	  
 	  @Override
 	    @Transactional
-	    public String registerCompany(CompanyRequestVO requestVO) {
+	    public String registerCompany(CompanyVO requestVO) {
 
-	        Company company = new Company();
+	        CompanyVO company = new CompanyVO();
 
 	        // ❌ 더 이상 회사코드 직접 생성 X
 	        // company.setCompanyCode(generateCompanyCode());
@@ -55,5 +54,9 @@ public class CompanyServiceImpl implements CompanyService {
 	        //     company.setCompanyCode(...) 가 자동으로 채워진 상태가 된다.
 	        return company.getCompanyCode();
 	    }
+	  @Override
+	  public CompanyVO getCompany(String companyCode) {
+	      return companyMapper.selectCompany(companyCode);
+	  }
 	  
 }

@@ -3,14 +3,14 @@ package com.rootcore.sb.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.rootcore.sb.domain.Order;
+import com.rootcore.sb.vo.OrderVO;
 
 @Mapper
 public interface OrderMapper {
 
-    void insertOrder(Order order);
+    void insertOrder(OrderVO order);
 
-    Order selectByOrderId(@Param("orderId") String orderId);
+    OrderVO selectByOrderId(@Param("orderId") String orderId);
 
     void updateOrderStatus(@Param("orderId") String orderId,
                            @Param("orderStatus") String orderStatus);

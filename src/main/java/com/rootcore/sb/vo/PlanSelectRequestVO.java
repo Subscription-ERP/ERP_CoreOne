@@ -6,10 +6,7 @@ import lombok.Data;
 public class PlanSelectRequestVO {
 	private String companyCode;
     private String planCode;
+    private Integer subsPeriod;
+    private Integer userCount;
 
-    public String getCompanyCode() { return companyCode; }
-    public void setCompanyCode(String companyCode) { this.companyCode = companyCode; }
-
-    public String getPlanCode() { return planCode; }
-    public void setPlanCode(String planCode) { this.planCode = planCode; }
 }

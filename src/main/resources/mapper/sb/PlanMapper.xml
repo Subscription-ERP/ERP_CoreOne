@@ -3,7 +3,7 @@
 <mapper namespace="com.rootcore.sb.mapper.PlanMapper">
 
     <!-- 도메인 매핑 -->
-    <resultMap id="PlanResultMap" type="com.rootcore.sb.domain.Plan">
+    <resultMap id="PlanResultMap" type="com.rootcore.sb.vo.PlanVO">
         <id     property="planCode"   column="PLAN_CODE" />
         <result property="planName"   column="PLAN_NAME" />
         <result property="planInfo"   column="PLAN_INFO" />

@@ -2,13 +2,13 @@ package com.rootcore.sb.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.rootcore.sb.domain.Company;
+import com.rootcore.sb.vo.CompanyVO;
 
 @Mapper
 public interface CompanyMapper {
-	void insertCompany(Company company);
+	void insertCompany(CompanyVO company);
 
-	Company selectByCompanyCode(String companyCode);
+	CompanyVO selectCompany(String companyCode);
 	
 	 // (선택) 상태 업데이트 같은 거 쓰고 싶으면 나중에 추가
     // void updateCompanyStatus(@Param("companyCode") String companyCode,

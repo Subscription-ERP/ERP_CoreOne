@@ -1,4 +1,4 @@
-package com.rootcore.sb.domain;
+package com.rootcore.sb.vo;
 
 import java.time.LocalDateTime;
 
@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 //domain = DB 테이블과 1ㄷ1 대응되는객체
 //MyBatis mapper의 parameterType, resultType 으로 사용
-public class Company {
+public class CompanyVO {
 
     private String companyCode;      // 회사코드
     private String companyName;      // 회사명

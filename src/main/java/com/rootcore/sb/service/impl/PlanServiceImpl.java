@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.rootcore.sb.domain.Plan;
 import com.rootcore.sb.mapper.PlanMapper;
 import com.rootcore.sb.service.PlanService;
 import com.rootcore.sb.vo.PlanVO;
@@ -20,7 +19,7 @@ public class PlanServiceImpl implements PlanService {
 	    
 	    @Override
 	    public List<PlanVO> getPlanList() {
-	        List<Plan> planList = planMapper.selectPlanList();
+	        List<PlanVO> planList = planMapper.selectPlanList();
 
 	        return planList.stream().map(p -> {
 	            PlanVO vo = new PlanVO();
@@ -36,7 +35,7 @@ public class PlanServiceImpl implements PlanService {
 	    
 	    @Override
 	    public PlanVO getPlanDetail(String planCode) {
-	        Plan p = planMapper.selectPlanByCode(planCode);
+	        PlanVO p = planMapper.selectPlanByCode(planCode);
 	        if (p == null) return null;
 
 	        PlanVO vo = new PlanVO();
