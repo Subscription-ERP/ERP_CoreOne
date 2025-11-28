@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sb.mapper.CompanyMapper">
+ <insert id="insertCompany" parameterType="com.rootcore.sb.domain.Company">
+ <selectKey resultType="String" order="BEFORE"
+			keyProperty="companyCode">
+			SELECT FN_MAKE_COMPANY_CODE() FROM DUAL
+
+		</selectKey>
+        INSERT INTO TB_COMPANY_MASTER (
+            COMPANY_CODE,
+            COMPANY_NAME,
+            CEO_NAME,
+            CEO_PHONE,
+            COMPANY_EMAIL,
+            INDUSTRY_TYPE,
+            BUSINESS_TYPE,
+            MANAGER_NAME,
+            EMPLOYEE_COUNT,
+            BNO,
+            CHECK_NO,
+            COMPANY_ADDRESS,
+            COMPANY_PHONE,
+            MANAGER_PHONE,
+            CREATED_BY,
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE
+        ) VALUES (
+            #{companyCode},
+            #{companyName},
+            #{ceoName},
+            #{ceoPhone},
+            #{companyEmail},
+            #{industryType},
+            #{businessType},
+            #{managerName},
+            #{employeeCount},
+            #{bno},
+            #{checkNo},
+            #{companyAddress},
+            #{companyPhone},
+            #{managerPhone},
+            #{createdBy},
+            #{createDate},
+            #{updatedBy},
+            #{updateDate}
+        )
+    </insert>
+    
+    <select id="selectByCompanyCode" parameterType="string"
+            resultType="com.rootcore.sb.domain.Company">
+        SELECT
+            COMPANY_CODE,
+            COMPANY_NAME,
+            CEO_NAME,
+            CEO_PHONE,
+            COMPANY_EMAIL,
+            INDUSTRY_TYPE,
+            BUSINESS_TYPE,
+            MANAGER_NAME,
+            EMPLOYEE_COUNT,
+            BNO,
+            CHECK_NO,
+            COMPANY_ADDRESS,
+            COMPANY_PHONE,
+            MANAGER_PHONE,
+            CREATED_BY,
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE
+        FROM TB_COMPANY_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+    </select>
+
+</mapper>

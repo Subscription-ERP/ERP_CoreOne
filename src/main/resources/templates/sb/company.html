@@ -55,10 +55,11 @@
 	background: #222;
 	border-color: #222;
 }
- html, body {
-        overflow: hidden !important;   /* 전체 스크롤 제거 */
-        height: 100%;
-    }
+
+html, body {
+	overflow: hidden !important; /* 전체 스크롤 제거 */
+	height: 100%;
+}
 </style>
 </head>
 
@@ -74,17 +75,17 @@
 					<div class="text-center text-secondary">
 						<div
 							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
-						<div class="mt-2">구독 정보</div>
+							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">1</div>
+						<div class="mt-2">회사 등록</div>
 					</div>
 
 					<!-- 2단계: 현재 단계 -->
 					<div class="text-center">
 						<div
-							class="rounded-circle d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">
 							2</div>
-						<div class="mt-2 fw-bold">사용자 정보</div>
+						<div class="mt-2 fw-bold">플랜 선택</div>
 					</div>
 
 					<!-- 3단계 -->
@@ -118,7 +119,8 @@
 			<div class="row">
 				<div class="col-12">
 					<div class="user-form-card">
-						<form>
+						<form th:action="@{/companies}"
+							th:object="${companyRequest}" method="post">
 
 							<div class="row g-4">
 
@@ -132,7 +134,7 @@
 										</label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control"
-												placeholder="회사명을 입력하세요">
+												th:field="*{companyName}" placeholder="회사명을 입력하세요">
 										</div>
 									</div>
 
@@ -142,7 +144,7 @@
 											class="required-star">*</span>
 										</label>
 										<div class="col-sm-8">
-											<input type="text" class="form-control"
+											<input type="text" class="form-control" th:field="*{ceoName}"
 												placeholder="대표자명을 입력하세요">
 										</div>
 									</div>
@@ -155,7 +157,7 @@
 										<div class="col-sm-8">
 											<div class="input-group">
 												<input type="text" class="form-control"
-													placeholder="'-' 없이 숫자만 입력">
+													th:field="*{ceoPhone}" placeholder="'-' 없이 숫자만 입력">
 												<button type="button" class="btn btn-dark">본인인증</button>
 											</div>
 											<div class="helper-text mt-1">인증번호 전송 후 본인 인증을 진행합니다.</div>
@@ -168,6 +170,7 @@
 										<div class="col-sm-8">
 											<div class="input-group">
 												<input type="email" class="form-control"
+													th:field="*{companyEmail}"
 													placeholder="example@company.com">
 												<button type="button" class="btn btn-outline-secondary">중복확인</button>
 											</div>
@@ -209,11 +212,11 @@
 										<label class="col-sm-4 col-form-label">업종 / 업태</label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control"
-												placeholder="예: 제조 / 도매">
+												th:field="*{industryType}" placeholder="예: 제조 / 도매">
 										</div>
 									</div>
 
-									
+
 
 								</div>
 
@@ -227,7 +230,7 @@
 										</label>
 										<div class="col-sm-8">
 											<div class="input-group">
-												<input type="text" class="form-control"
+												<input type="text" class="form-control" th:field="*{bno}"
 													placeholder="'-' 없이 숫자만 입력">
 												<button type="button" class="btn btn-outline-secondary">중복확인</button>
 											</div>
@@ -241,7 +244,7 @@
 										<div class="col-sm-8">
 											<div class="input-group">
 												<input type="text" class="form-control"
-													placeholder="수신한 인증번호 입력">
+													th:field="*{checkNo}" placeholder="수신한 인증번호 입력">
 												<button type="button" class="btn btn-dark">확인</button>
 											</div>
 										</div>
@@ -253,7 +256,7 @@
 										<div class="col-sm-8">
 											<div class="input-group">
 												<input type="text" class="form-control"
-													placeholder="주소를 검색해주세요">
+													th:field="*{companyAddress}" placeholder="주소를 검색해주세요">
 												<button type="button" class="btn btn-outline-secondary">
 													<i class="bi bi-search"></i>
 												</button>
@@ -266,7 +269,7 @@
 										<label class="col-sm-4 col-form-label">회사 전화번호</label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control"
-												placeholder="예: 02-123-4567">
+												th:field="*{companyPhone}" placeholder="예: 02-123-4567">
 										</div>
 									</div>
 
@@ -275,28 +278,17 @@
 										<label class="col-sm-4 col-form-label">담당자 연락처</label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control"
-												placeholder="예: 010-1234-5678">
+												th:field="*{managerPhone}" placeholder="예: 010-1234-5678">
 										</div>
 									</div>
 
-									<!-- 급여지급일 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">급여지급일</label>
-										<div class="col-sm-8">
-											<select class="form-select">
-												<option value="">선택</option>
-												<option>매월 10일</option>
-												<option>매월 20일</option>
-												<option>매월 25일</option>
-												<option>매월 말일</option>
-											</select>
-										</div>
-									</div>
+
 									<!-- 담당자 명 -->
 									<div class="mb-3 row">
 										<label class="col-sm-4 col-form-label">담당자 명</label>
 										<div class="col-sm-8">
-											<input type="text" class="form-control" placeholder="담당자 이름">
+											<input type="text" class="form-control"
+												th:field="*{managerName}" placeholder="담당자 이름">
 										</div>
 									</div>
 
@@ -304,7 +296,7 @@
 									<div class="mb-3 row">
 										<label class="col-sm-4 col-form-label">직원 수</label>
 										<div class="col-sm-8">
-											<select class="form-select">
+											<select class="form-select" th:field="*{employeeCount}">
 												<option value="">선택</option>
 												<option value="under10">10명 이하</option>
 												<option value="10-50">10 ~ 50명</option>
@@ -319,11 +311,7 @@
 							</div>
 
 							<!-- 하단 버튼 -->
-							<div class="mt-4 d-flex justify-content-center gap-3">
-								<a th:href="@{/subscribe/step1}"
-									class="btn btn-outline-secondary px-4"> 이전으로 </a>
-								<button type="submit" class="btn btn-dark px-4"
-									th:formaction="@{/step3}">다음으로</button>
+								<button type="submit" class="btn btn-dark px-4">다음으로</button>
 							</div>
 
 						</form>

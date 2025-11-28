@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
+//domain = DB 테이블과 1ㄷ1 대응되는객체
+//MyBatis mapper의 parameterType, resultType 으로 사용
 public class Company {
 
     private String companyCode;      // 회사코드

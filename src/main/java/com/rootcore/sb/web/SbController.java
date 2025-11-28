@@ -14,12 +14,12 @@ public class SbController {
         return "sb/sbinfo";
     }
 
-    // 2단계: 사용자정보
-    @GetMapping("/step2")
-    public String userinfo(@RequestParam String plan, Model model) {
-        model.addAttribute("plan", plan); // 선택한 요금제 전달
-        return "sb/userinfo"; // step2 템플릿 경로
-    }
+//    // 2단계: 사용자정보
+//    @GetMapping("/step2")
+//    public String userinfo(@RequestParam String plan, Model model) {
+//        model.addAttribute("plan", plan); // 선택한 요금제 전달
+//        return "sb/userinfo"; // step2 템플릿 경로
+//    }
 
     // 3단계: 계약서
     @GetMapping("/step3")

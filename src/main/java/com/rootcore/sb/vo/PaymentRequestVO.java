@@ -1,5 +1,7 @@
 package com.rootcore.sb.vo;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -9,8 +11,10 @@ public class PaymentRequestVO {
 
     private String orderName;
     private Long amount;
-    private String customerEmail;
-    private String customerName;
+    private String companyCode;
+    private String planCode; 
+    private LocalDateTime billingStart; 
+    private LocalDateTime billingEnd;   
 
    
 }
