@@ -1,3 +1,37 @@
-.form-grid__field.span-2 {
-  grid-column: span 1; /* 기본값: 1칸 */
+/* 공통 레이아웃은 사원 이력조회 모달과 동일 가정 */
+.modal-layer__dialog--lg {
+  max-width: 900px;
+}
+
+/* 검색 영역 정리 */
+.modal-search__row {
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-search__field .form-label {
+  min-width: 70px;
+  font-size: 0.875rem;
+}
+
+/* 그리드 영역 */
+.sub-grid {
+  margin-top: 8px;
+}
+.sub-grid__body {
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background-color: #fff;
+  padding: 4px;
+}
+
+/* 푸터 정렬 */
+.modal-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+  border-top: 1px solid #e5e7eb;
+}
+.modal-card__footer-right > .btn + .btn {
+  margin-left: 4px;
 }
