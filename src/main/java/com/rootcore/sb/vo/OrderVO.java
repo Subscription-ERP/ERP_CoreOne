@@ -1,10 +1,10 @@
-package com.rootcore.sb.domain;
+package com.rootcore.sb.vo;
 
 import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class Order {
+public class OrderVO {
 
     private String orderId;        // ORDER_ID
     private Long orderAmount;      // ORDER_AMOUNT
@@ -15,6 +15,8 @@ public class Order {
     private LocalDateTime billingEnd;    // BILLING_END
     private String subCode;        // SUB_CODE
     private String planCode;       // PLAN_CODE
+    private Long amount;
+    private String companyCode;
     
     private String createdBy;      // CREATED_BY
     private LocalDateTime createDate;   // CREATE_DATE

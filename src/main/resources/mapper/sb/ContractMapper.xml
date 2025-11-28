@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sb.mapper.ContractMapper">
+<insert id="insertContract" parameterType="com.rootcore.sb.vo.ContractVO">
+
+        INSERT INTO TB_CONTRACT (
+            CONTRACT_CODE,
+            COMPANY_CODE,
+            CONTRACT_DATE,
+            COMPANY_NAME,
+            CEO_NAME,
+            SIGN_NAME,
+            FILE_PATH,
+            PLAN_CODE,
+            CONTRACT_START,
+            CONTRACT_END,
+            SUBS_PERIOD,
+            USER_COUNT,
+            TOTAL_PRICE,
+            DISCOUNT_AMOUNT,
+            STATUS,
+            CREATED_BY,
+            CREATE_DATE
+        )
+        VALUES (
+            #{contractCode},
+            #{companyCode},
+            SYSDATE,
+            #{companyName},
+            #{ceoName},
+            #{signName},
+            #{filePath},
+            #{planCode},
+            #{contractStart},
+            #{contractEnd},
+            #{subsPeriod},
+            #{userCount},
+            #{totalPrice},
+            #{discountAmount},
+            #{status},
+            'ADMIN',
+            SYSDATE
+        )
+
+    </insert>
+
+</mapper>

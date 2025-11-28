@@ -1,5 +1,5 @@
 package com.rootcore.sb.mapper;
 
-public interface SbMapper {
+public interface SubscribeMapper {
 
 }

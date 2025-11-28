@@ -76,7 +76,8 @@
 <body>
 	<div layout:fragment="content">
 		<div class="subscription-container">
-
+[[${session.company}]]
+[[${session.plan}]]
 			<!-- 상단 단계 표시 -->
 			<div class="row step-header">
 				<div class="col-12 d-flex justify-content-center step-header-inner">
@@ -176,7 +177,7 @@
 						class="btn btn-outline-secondary px-5"> 이전으로 </a>
 
 					<!-- 실제 결제 요청 보낼 곳으로 action/href 변경 -->
-					<form th:action="@{/payment/request}" method="post">
+					<form th:action="@{/test}" method="post">
 						<button type="submit" id="pay-button" class="btn btn-dark px-5">결제하기</button>
 					</form>
 				</div>

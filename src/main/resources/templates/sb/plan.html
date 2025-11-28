@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+
+<head>
+<meta charset="UTF-8">
+<title>구독정보</title>
+<style>
+.subscription-container {
+	max-width: 1400px;
+	margin: 0 auto;
+	padding-top: 20px;
+}
+
+/* 상단 단계 영역 자체 여백 */
+.step-header {
+	max-width: 900px;
+	margin: 0 auto 40px auto; /* 아래 여백 조금 더 크게 */
+}
+
+/* 단계(1~4) 사이 간격 조정 */
+.step-header-inner {
+	column-gap: 80px; /* 좌우 간격 넓게 */
+}
+
+/* 타이틀 + 안내문 블록 여백 */
+.section-title {
+	margin-bottom: 40px; /* 타이틀과 카드 사이 간격 넓게 */
+}
+
+/* 카드 영역 중앙 정렬 + 위쪽 여백 약간 */
+.plan-cards {
+	max-width: 1400px;
+	margin: 20px auto 0 auto;
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="subscription-container">
+
+			<!-- 상단 단계 표시 -->
+			<div class="row step-header">
+				<div class="col-12 d-flex justify-content-center step-header-inner">
+
+					<!-- 1단계: 구독 정보 (현재 단계) -->
+					<div class="text-center">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
+						<div class="mt-2 fw-bold">회사 등록</div>
+					</div>
+
+					<!-- 2단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
+							2</div>
+						<div class="mt-2">플랜 선택</div>
+					</div>
+
+					<!-- 3단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">3</div>
+						<div class="mt-2">계약서</div>
+					</div>
+
+					<!-- 4단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">4</div>
+						<div class="mt-2">결제 완료</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 제목 / 안내문 -->
+			<div class="row section-title">
+				<div class="col-12 text-center">
+					<h4 class="fw-bold mb-2">요금제 선택</h4>
+					<div class="text-secondary">*첫 결제는 일반결제로, 다음부터는 월별 자동결제로
+						등록가능합니다.</div>
+				</div>
+			</div>
+
+			<!-- 요금제 카드 영역 -->
+			<div class="row g-4 justify-content-center plan-cards">
+
+				<!-- Essential -->
+				<div class="col-12 col-md-4">
+					<div class="card h-100 shadow-sm">
+						<div class="card-body d-flex flex-column">
+
+							<h5 class="card-title fw-bold">Essential</h5>
+							<p class="mb-1">
+								<span class="fw-bold">₩9,900 / 월</span>
+							</p>
+							<p class="text-secondary mb-3">핵심 서비스 : 회계/인사/영업</p>
+
+							<!-- ★★★ form 시작 ★★★ -->
+							<form th:action="@{/company/plans/select}" method="post"
+								class="mt-auto">
+
+								<!-- 회사 코드 유지 -->
+								<input type="hidden" name="companyCode"
+									th:value="${companyCode}">
+
+								<!-- 필요한 플랜코드 -->
+								<input type="hidden" name="planCode" value="ESSENTIAL">
+
+								<!-- 구독기간 -->
+								<div class="mb-3">
+									<label class="form-label mb-1">구독기간</label> <select
+										class="form-select" name="subsPeriod">
+										<option value="1">1개월</option>
+										<option value="3">3개월</option>
+										<option value="6">6개월</option>
+										<option value="12">1년</option>
+									</select>
+								</div>
+
+								<!-- 사용자 수 -->
+								<div class="mb-3">
+									<label class="form-label mb-1">사용자 수</label> <select
+										class="form-select" name="userCount">
+										<option value="20">20명</option>
+										<option value="50">50명</option>
+										<option value="100">100명</option>
+										<option value="200" selected>200명</option>
+									</select>
+									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
+								</div>
+
+								<button type="submit" class="btn btn-dark w-100">구독하기</button>
+							</form>
+							<!-- ★★★ form 끝 ★★★ -->
+
+						</div>
+					</div>
+				</div>
+
+				<!-- Professional -->
+				<div class="col-12 col-md-4">
+					<div class="card h-100 shadow-sm">
+						<div class="card-body d-flex flex-column">
+							<h5 class="card-title fw-bold">Professional</h5>
+							<p class="mb-1">
+								<span class="fw-bold">₩13,000 / 월</span>
+							</p>
+							<p class="text-secondary mb-3">핵심 서비스 : 회계/인사/영업</p>
+							<form th:action="@{/company/plans/select}" method="post"
+								class="mt-auto">
+
+								<input type="hidden" name="companyCode"
+									th:value="${companyCode}"> <input type="hidden"
+									name="planCode" value="PROFESSIONAL">
+								<!-- 구독기간 -->
+								<div class="mb-3">
+									<label class="form-label mb-1">구독기간</label> <select
+										class="form-select" name="subsPeriod">
+										<option value="1">1개월</option>
+										<option value="3" selected>3개월</option>
+										<option value="6">6개월</option>
+										<option value="12">1년</option>
+									</select>
+								</div>
+
+								<!-- 사용자 수 -->
+								<div class="mb-3">
+									<label class="form-label mb-1">사용자 수</label> <select
+										class="form-select" name="userCount">
+										<option value="50">50명</option>
+										<option value="100" selected>100명</option>
+										<option value="200">200명</option>
+										<option value="500">500명</option>
+									</select>
+								</div>
+
+								<button type="submit" class="btn btn-dark w-100">구독하기</button>
+							</form>
+						</div>
+					</div>
+				</div>
+
+				<!-- Enterprise -->
+				<div class="col-12 col-md-4">
+					<div class="card h-100 shadow-sm">
+						<div class="card-body d-flex flex-column">
+							<h5 class="card-title fw-bold">Enterprise</h5>
+							<p class="mb-1">
+								<span class="fw-bold">₩17,000 / 월</span>
+							</p>
+							<p class="text-secondary mb-3">핵심 서비스 : 회계/인사/영업</p>
+							<form th:action="@{/company/plans/select}" method="post"
+								class="mt-auto">
+
+								<input type="hidden" name="companyCode"
+									th:value="${companyCode}"> <input type="hidden"
+									name="planCode" value="ENTERPRISE">
+								<!-- 구독기간 -->
+								<div class="mb-3">
+									<label class="form-label mb-1">구독기간</label> <select
+										class="form-select" name="subsPeriod">
+										<option value="12" selected>1년</option>
+										<option value="24">2년</option>
+									</select>
+								</div>
+
+								<!-- 사용자 수 -->
+								<div class="mb-3">
+									<label class="form-label mb-1">사용자 수</label> <select
+										class="form-select" name="userCount">
+										<option value="100">100명</option>
+										<option value="200">200명</option>
+										<option value="500" selected>500명</option>
+										<option value="1000">1000명+</option>
+									</select>
+								</div>
+
+								<button type="submit" class="btn btn-dark w-100">구독하기</button>
+								</form>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<!-- /row -->
+
+		</div>
+	</div>
+</body>
+</html>

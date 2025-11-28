@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sb.mapper.PlanMapper">
+
+    <!-- 도메인 매핑 -->
+    <resultMap id="PlanResultMap" type="com.rootcore.sb.vo.PlanVO">
+        <id     property="planCode"   column="PLAN_CODE" />
+        <result property="planName"   column="PLAN_NAME" />
+        <result property="planInfo"   column="PLAN_INFO" />
+        <result property="price"      column="PRICE" />
+        <result property="subsPeriod" column="SUBS_PERIOD" />
+        <result property="userCount"  column="USER_COUNT" />
+        <result property="createdBy"  column="CREATED_BY" />
+        <result property="createDate" column="CREATE_DATE" />
+        <result property="updatedBy"  column="UPDATED_BY" />
+        <result property="updateDate" column="UPDATE_DATE" />
+    </resultMap>
+	<!-- 플랜 전체 조회 -->
+    <select id="selectPlanList" resultMap="PlanResultMap">
+        SELECT
+            PLAN_CODE,
+            PLAN_NAME,
+            PLAN_INFO,
+            PRICE,
+            SUBS_PERIOD,
+            USER_COUNT,
+            CREATED_BY,
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE
+        FROM TB_SUBSCRIBE_PLAN
+        ORDER BY PRICE ASC
+    </select>
+    
+     <!-- 플랜 코드로 단건 조회 -->
+    <select id="selectPlanByCode" parameterType="string" resultMap="PlanResultMap">
+        SELECT
+            PLAN_CODE,
+            PLAN_NAME,
+            PLAN_INFO,
+            PRICE,
+            SUBS_PERIOD,
+            USER_COUNT,
+            CREATED_BY,
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE
+        FROM TB_SUBSCRIBE_PLAN
+        WHERE PLAN_CODE = #{planCode}
+    </select>
+	
+	
+</mapper>
