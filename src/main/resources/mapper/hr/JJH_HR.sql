@@ -5,6 +5,7 @@ SELECT user_id,
        hire_date,
        job_title
 FROM   tb_user_master;
+
 -- =========
 -- 20251126
 -- =========
@@ -185,3 +186,33 @@ DELETE FROM tb_cm_code
 WHERE group_code = '0B';
 DELETE FROM tb_cm_code_group
 WHERE group_code = '0B';
+
+create or replace FUNCTION FN_MAKE_PAYROLL_CODE
+RETURN VARCHAR2
+IS
+    v_date          VARCHAR2(8);
+    v_max           VARCHAR2(50);
+    v_seq_num       NUMBER;
+    v_new_seq       VARCHAR2(5);
+    v_payroll_code  VARCHAR2(50);
+BEGIN
+    -- 오늘 날짜
+    v_date := TO_CHAR(SYSDATE, 'YYMMDD');
+
+    SELECT MAX(PAYROLL_CODE)
+      INTO v_max
+      FROM TB_PAYROLL
+     WHERE payroll_code LIKE 'PRL' || v_date || '%';
+
+    IF v_max IS NULL THEN
+        v_new_seq := '00001';
+    ELSE
+        v_seq_num := TO_NUMBER(SUBSTR(v_max, 12, 5)) + 1;
+        v_new_seq := LPAD(v_seq_num, 5, '0');
+    END IF;
+
+    v_payroll_code := 'CPY' || v_date || v_new_seq;
+    RETURN v_payroll_code;
+END;
+
+-- 급여대장-상여등록

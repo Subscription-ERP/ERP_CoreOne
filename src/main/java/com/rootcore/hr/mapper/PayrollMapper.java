@@ -12,4 +12,7 @@ public interface PayrollMapper {
 
 	// 급여대장조회
 	List<PayrollVO> selectPayrollList(PayrollVO param);
+	
+	// 급여대장-상여등록
+	int insertBonusPayrollOne(PayrollVO param);
 }
