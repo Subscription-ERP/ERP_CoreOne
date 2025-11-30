@@ -34,8 +34,12 @@ public class PayrollServiceImpl implements PayrollService {
 	@Transactional // 트랜잭션 필수: 하나라도 실패하면 전체 롤백
 	public int insertBonusPayroll(PayrollVO param) {
 		int count = 0;
-		List<String> targetEmployees = param.getEmployeeIds();
-
+		List<String> targetEmployees = param.getEmployeeIds();	
+		
+		// 신고 귀속 코드 조회
+		String newPeriodCode = payrollMapper.selectNewPeriodCode();
+		param.setPayrollPeriodCode(newPeriodCode);
+		
 		// 리스트가 비어있지 않다면 반복문 실행
 		if (targetEmployees != null && !targetEmployees.isEmpty()) {
 			for (String empId : targetEmployees) {
@@ -48,4 +52,8 @@ public class PayrollServiceImpl implements PayrollService {
 		}
 		return count; // 총 등록된 건수 반환
 	}
+
+	
+
+	
 }

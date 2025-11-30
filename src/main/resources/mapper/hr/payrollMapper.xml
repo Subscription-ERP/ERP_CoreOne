@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.hr.mapper.PayrollMapper">
-
+	
+	<!-- 급여대장-상여등록-신고귀속코드-생성 -->
+	<select id="selectNewPeriodCode" resultType="String">
+	    SELECT FN_MAKE_PERIOD_CODE() FROM DUAL
+	</select>
+	
 	<!-- 급여대장-상여등록 -->
-	<insert id="insertBonusPayrollOne"
-		parameterType="com.rootcore.hr.vo.PayrollVO">
+	<insert id="insertBonusPayrollOne" parameterType="com.rootcore.hr.vo.PayrollVO">
 		INSERT INTO tb_payroll (
 			payroll_code,
 			company_code,
 			user_id,
+			payroll_period_code,
 			payroll_period,
 			payroll_type,
 			bonus_method,
@@ -23,9 +28,11 @@
 			FN_MAKE_PAYROLL_CODE(),
 			'ROOT',
 			#{userId},
+			#{payrollPeriodCode},
 			#{payrollPeriod},
-			'상여',
-			#{bonusMethod}, #{bonusRate},
+			'j2',
+			#{bonusMethod}, 
+			#{bonusRate},
 			#{bonusAmount},
 			#{payrollName},
 			#{payrollStartDate},
@@ -36,52 +43,59 @@
 
 	<!-- 급여대장조회 -->
 	<select id="selectPayrollList" resultType="PayrollVO">
-		SELECT   payroll_period,
-			     payroll_type,
-			     payroll_name,
-			     payroll_date,
-			     create_date,
-			     COUNT(*) AS peopleNumber
-		FROM     tb_payroll
+		SELECT   pr.payroll_period,
+		         cc.code_name AS payroll_type,
+		         pr.payroll_name,
+		         pr.payroll_date,
+		         pr.create_date,
+		         COUNT(*) AS peopleNumber
+		FROM     tb_payroll pr
+		         JOIN tb_cm_code cc
+		         ON pr.payroll_type = cc.code
 		WHERE    1=1
+		<if test="payrollType != null and payrollType != '' ">
+            AND pr.payroll_type = #{payrollType}
+        </if>
 		<if test="payrollName != null and payrollName != '' ">
-			AND payroll_name like '%' || #{payroll_name} || '%'
+			AND pr.payroll_name like '%' || #{payrollName} || '%'
 		</if>
 		<if test="paymentStartDate != null and paymentStartDate != '' ">
-			AND payroll_date >= TO_DATE(#{paymentStartDate} , 'YYYY-MM-DD')
+			AND pr.payroll_date >= TO_DATE(#{paymentStartDate} , 'YYYY-MM-DD')
 		</if>
 		<if test="paymentEndDate != null and paymentEndDate != '' ">
-			AND payroll_date &lt;= TO_DATE(#{paymentEndDate} , 'YYYY-MM-DD')
+			AND pr.payroll_date &lt;= TO_DATE(#{paymentEndDate} , 'YYYY-MM-DD')
 		</if>
-		GROUP BY payroll_period, 
-			     payroll_type,
-		         payroll_name, 
-		         payroll_date, 
-		         create_date
+		GROUP BY pr.payroll_period, 
+		         cc.code_name,
+		         pr.payroll_name, 
+		         pr.payroll_date, 
+		         pr.create_date
 	</select>
 
 	<!-- 급여대장-상여등록-사원조회 -->
 	<select id="selectUserList" resultType="PayrollUserVO">
-		SELECT user_id,
-		       user_name,
-		       dept,
-		       hire_date,
-		       job_title
-		FROM   tb_user_master
+		SELECT um.user_id,
+		       um.user_name,
+		       dm.dept_name AS dept
+		       <!-- hire_date, -->
+		       <!-- job_title -->
+		FROM   tb_user_master um
+		       JOIN tb_dept_master dm
+		       ON um.dept = dm.dept_code
 		WHERE  1=1
-		AND    leave_date IS NULL
+		AND    um.leave_date IS NULL
 		<if test="userName != null and userName != '' ">
-			AND user_name like '%' || #{userName} || '%'
+			AND um.user_name like '%' || #{userName} || '%'
 		</if>
 		<if test="dept != null and dept != '' ">
-			AND dept like '%' || #{dept} || '%'
+			AND um.dept like '%' || #{dept} || '%'
 		</if>
-		<if test="payrollEmpStartDate != null and payrollEmpStartDate != '' ">
+		<!-- <if test="payrollEmpStartDate != null and payrollEmpStartDate != '' ">
 			AND hire_date >= TO_DATE(#{payrollEmpStartDate} , 'YYYY-MM-DD')
 		</if>
 		<if test="payrollEmpEndDate != null and payrollEmpEndDate != '' ">
 			AND hire_date &lt;= TO_DATE(#{payrollEmpEndDate}, 'YYYY-MM-DD')
-		</if>
+		</if> --><!-- 임시제거 -->
 	</select>
 
 </mapper>
