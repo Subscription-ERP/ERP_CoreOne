@@ -1,16 +1,18 @@
 package com.rootcore.auth.service.impl;
 
-import com.rootcore.auth.mapper.PasswordResetMapper;
-import com.rootcore.auth.service.EmailService;
-import com.rootcore.auth.service.PasswordResetService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.rootcore.auth.mapper.PasswordResetMapper;
+import com.rootcore.auth.service.EmailService;
+import com.rootcore.auth.service.PasswordResetService;
+import com.rootcore.auth.util.TokenUtil;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -19,29 +21,25 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     private final PasswordResetMapper passwordResetMapper;
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder; // Security Config에 Bean 등록되어 있어야 함
+    private final PasswordEncoder passwordEncoder;
 
-    /**
-     * 비밀번호 재설정 링크 발송
-     */
     @Override
     public boolean sendResetLink(String userId, String email) {
 
-        // 1) USER 존재 여부 확인
         Map<String, Object> user = passwordResetMapper.findUserByIdAndEmail(userId, email);
         if (user == null) {
-            log.warn("비밀번호 재설정 요청 실패 - 사용자 정보 불일치 userId={}, email={}", userId, email);
             return false;
         }
 
-        String companyCode = (String) user.getOrDefault("COMPANY_CODE", "ROOT");
+        String companyCode = (String) user.get("COMPANY_CODE");
 
-        // 2) 기존 토큰 무효화
+        // 기존 토큰 무효화
         passwordResetMapper.invalidateOldToken(userId);
 
-        // 3) 새 토큰 생성 및 저장
-        String token = UUID.randomUUID().toString();
+        // 새로운 토큰 생성
+        String token = TokenUtil.generateSecureToken();
 
+        // 저장
         Map<String, Object> param = new HashMap<>();
         param.put("companyCode", companyCode);
         param.put("userId", userId);
@@ -49,52 +47,48 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
         passwordResetMapper.insertResetToken(param);
 
-        // 4) 이메일 발송
-        String resetLink = "http://localhost:8080/auth/password_reset?token=" + token;
-        emailService.sendPasswordResetLink(email, resetLink);
+        // 이메일 발송
+        String link = "http://localhost:8080/auth/password_reset?token=" + token;
+        emailService.sendPasswordResetLink(email, link);
 
-        log.info("비밀번호 재설정 링크 발송 완료 -> userId={}, email={}, token={}", userId, email, token);
         return true;
     }
 
-    /**
-     * 토큰 유효 여부 확인
-     */
     @Override
     public boolean isValidToken(String token) {
-        if (token == null || token.isBlank()) return false;
+
+        if (!TokenUtil.isValidTokenFormat(token)) return false;
+
         Map<String, Object> tokenInfo = passwordResetMapper.findValidToken(token);
         return tokenInfo != null;
     }
 
-    /**
-     * 실제 비밀번호 변경
-     */
     @Override
     public boolean resetPassword(String token, String newPassword) {
-        // 1) 토큰 유효 여부 + 사용자 정보 조회
-        Map<String, Object> tokenInfo = passwordResetMapper.findValidToken(token);
-        if (tokenInfo == null) {
-            log.warn("비밀번호 재설정 실패 - 유효하지 않은 토큰 token={}", token);
+
+        if (!TokenUtil.isValidTokenFormat(token))
             return false;
-        }
+
+        Map<String, Object> tokenInfo = passwordResetMapper.findValidToken(token);
+        if (tokenInfo == null)
+            return false;
 
         String userId = (String) tokenInfo.get("USER_ID");
+        String companyCode = (String) tokenInfo.get("COMPANY_CODE");
 
-        // 2) 새 비밀번호 암호화
-        String encodedPw = passwordEncoder.encode(newPassword);
+        String encoded = passwordEncoder.encode(newPassword);
 
-        // 3) 비밀번호 변경
-        int updated = passwordResetMapper.updateUserPassword(userId, encodedPw);
+        // UPDATE COMPANY_CODE 포함
+        int updated = passwordResetMapper.updateUserPassword(companyCode, userId, encoded);
+
         if (updated <= 0) {
-            log.warn("비밀번호 재설정 실패 - 비밀번호 업데이트 실패 userId={}", userId);
+            log.warn("비밀번호 업데이트 실패 company={}, user={}", companyCode, userId);
             return false;
         }
 
-        // 4) 토큰 사용 완료 처리
+        // 토큰 만료 처리
         passwordResetMapper.expireToken(token);
 
-        log.info("비밀번호 재설정 완료 userId={}", userId);
         return true;
     }
 }
