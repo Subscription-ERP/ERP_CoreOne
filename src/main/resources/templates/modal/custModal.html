@@ -11,12 +11,12 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
-<body th:fragment="custModalFragment">
+<body th:fragment="custModal">
 <!-- 거래처 조회 모달 (예시 모달 스타일 적용) -->
 <div id="custModal" class="modal-layer" hidden>
   <div class="modal-layer__backdrop"></div>
 
-  <div class="modal-layer__dialog modal-layer__dialog--lg"><!-- 가로 넓은 버전 옵션 클래스 -->
+  <div class="modal-layer__dialog modal-layer__dialog--lg">
 
     <!-- 상단 헤더 -->
     <header class="modal-card__header">
@@ -30,22 +30,22 @@
     <div class="modal-card__body">
 
       <!-- 검색 영역 -->
-      <div class="modal-search__row small-form-bottom">
-        <div class="row g-2 align-items-center">
+      <div class="modal-history__info-row modal-search__wrapper small-form-bottom">
+        <div class="modal-history__field row g-2 align-items-center">
 
-          <div class="col-md-3 d-flex align-items-center modal-search__field">
-            <label class="form-label mb-0 me-2" for="schCustName">거래처명</label>
-            <input type="text" id="schCustName" class="form-control">
+          <div class="col-md-3 modal-search__field d-flex align-items-center">
+            <span class="modal-history__label">거래처명</span>
+            <input type="text" id="schCustName" class="form-control modal-history__value-input">
           </div>
 
-          <div class="col-md-3 d-flex align-items-center modal-search__field">
-            <label class="form-label mb-0 me-2" for="schCeoName">대표자명</label>
-            <input type="text" id="schCeoName" class="form-control">
+          <div class="col-md-3 modal-search__field d-flex align-items-center">
+            <span class="modal-history__label">대표자명</span>
+            <input type="text" id="schCeoName" class="form-control modal-history__value-input">
           </div>
 
-          <div class="col-md-3 d-flex align-items-center modal-search__field">
-            <label class="form-label mb-0 me-2" for="schType">거래처유형</label>
-            <select id="schType" class="form-select">
+          <div class="col-md-3 modal-search__field d-flex align-items-center">
+            <span class="modal-history__label">거래처유형</span>
+            <select id="schType" class="form-select modal-history__value-input">
               <option value="">전체</option>
               <option value="BUY">매입업체</option>
               <option value="SELL">매출업체</option>
@@ -53,11 +53,14 @@
           </div>
 
           <div class="col-md-3 text-end">
-            <button id="btnCustSearch" class="btn btn-primary btn-sm px-3">조회</button>
+            <button id="btnCustSearch" class="btn btn-white btn-inner modal-history__btn-print">
+              조회
+            </button>
           </div>
 
         </div>
       </div>
+
 
       <!-- 목록 (Toast UI Grid 영역) -->
       <div class="form-grid sub-grid mt-2">
@@ -66,17 +69,8 @@
         </div>
       </div>
 
-    </div> <!-- // modal-card__body -->
-
-    <!-- 하단 푸터 -->
-    <footer class="modal-card__footer">
-      <div class="modal-card__footer-right">
-        <button type="button" class="btn btn-primary btn-sm" id="btnCustSelect">확인</button>
-        <button type="button" class="btn btn-secondary btn-sm" id="btnCustCancel">닫기</button>
-      </div>
-    </footer>
-
-  </div> <!-- // modal-layer__dialog -->
+    </div>
+  </div>
 </div>
 
 <script th:src="@{/js/modal/custModal.js}"></script>

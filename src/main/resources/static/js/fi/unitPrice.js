@@ -1,23 +1,31 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+	// 거래처 모달
+	const custModal = document.getElementById('custModal');
+	const btnOpenCustModal = document.getElementById('btnOpenCustModal');
+	const btnCustClose = document.getElementById('btnCustClose');
+	const btnCustCancel = document.getElementById('btnCustCancel');
+	const backdrop = custModal.querySelector('.modal-layer__backdrop');
+	
 	let alreadyCheck = false;
-  const grid = new tui.Grid({
-	  el : document.getElementById('unitprice-grid'),
-    data: [],
-    rowHeaders: ['rowNum'],
-    scrollX: false,
-    scrollY: true,
-    columns: [
-      { header:'품번', name:'sku' },
-      { header:'품명', name:'skuName' },
-      { header:'단가유형', name:'unitPriceTypeName' },
-      { header:'단가적용일', name:'startDate' },
-      { header:'거래처', name:'custName' },
-      { header:'기준단가', name:'unitPrice' }
-    ]
-  });
+	
+	const grid = new tui.Grid({
+		  el : document.getElementById('unitprice-grid'),
+		data: [],
+		rowHeaders: ['rowNum'],
+		scrollX: false,
+		scrollY: true,
+		columns: [
+		  { header:'품번', name:'sku' },
+		  { header:'품명', name:'skuName' },
+		  { header:'단가유형', name:'unitPriceTypeName' },
+		  { header:'단가적용일', name:'startDate' },
+		  { header:'거래처', name:'custName' },
+		  { header:'기준단가', name:'unitPrice' }
+		]
+	});
   
-  function getList() {
+	function getList() {
 
 		const selectParam ={
 			companyCode : 'SAMPLE_COMPANY',
@@ -27,15 +35,15 @@ document.addEventListener("DOMContentLoaded", function () {
 			custCode : document.getElementById('selectcustcode').value,
 			custName : document.getElementById('selectcustname').value
 		}
-	    fetch("/api/fi/unitprice?"+new URLSearchParams(selectParam))
-	    .then(res => res.json())
-	    .then(result => {
-	      console.log(result); // JSON 데이터 확인
+		fetch("/api/fi/unitprice?"+new URLSearchParams(selectParam))
+		.then(res => res.json())
+		.then(result => {
+		  console.log(result); // JSON 데이터 확인
 
-	      grid.resetData(result);
+		  grid.resetData(result);
 		  grid.refreshLayout();
-	    })
-	    .catch(err => console.error("조회 중 오류:", err));
+		})
+		.catch(err => console.error("조회 중 오류:", err));
 	}
 
     document.getElementById("btnSearch").addEventListener("click", getList);
@@ -145,4 +153,33 @@ document.addEventListener("DOMContentLoaded", function () {
 		document.querySelector("input[name='insertcustname']").value  = '';
 		document.querySelector("input[name='insertunitprice']").value  = '';
 	}
+
+	// 거래처 모달
+	function openCustModal(e) {
+		if (e) {
+			e.stopPropagation();
+			e.preventDefault();
+		}
+		custModal.hidden = false;
+		custModal.classList.remove('hidden');
+
+		custModal.dispatchEvent(new Event('modalopen'));
+	}
+
+	function closeCustModal() {
+		custModal.hidden = true;
+		custModal.classList.add('hidden');
+	}
+
+	// 열기 버튼
+	btnOpenCustModal.addEventListener('click', openCustModal);
+
+	// 닫기 버튼들
+	btnCustClose.addEventListener('click', closeCustModal);
+	btnCustCancel.addEventListener('click', closeCustModal);
+
+	// 배경 클릭 시 닫기 (옵션)
+	backdrop.addEventListener('click', function (e) {
+		closeCustModal();
+	});
 });
