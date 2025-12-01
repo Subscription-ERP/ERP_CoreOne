@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rowHeaders: ['rowNum'],
     bodyHeight: 210,
     scrollX: false,
-    scrollY: true,
+    scrollY: false,
     columns: [
       { header: '거래처코드', name: 'custCode' },
       { header: '거래처명', name: 'custName' },

@@ -1,19 +1,11 @@
-.button-updown-center {
-    width: auto;
-    height: 30px;
-    margin: auto 10px;
-}
-
-.button-center {
-    width: 50px;
-    height: 27px;
-    margin: auto;
-}
-
 .is-disabled {
     pointer-events: none;
     caret-color: transparent;
     background-color: #f6f6f6;
+}
+
+.form-height {
+    height: 34px;
 }
 
 .form-grid__field_sd {

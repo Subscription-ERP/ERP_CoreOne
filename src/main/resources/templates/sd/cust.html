@@ -15,7 +15,7 @@
 
   <!-- Custom -->
   <link rel="stylesheet" th:href="@{/css/sd/cust.css}">
-  <link th:href="@{/css/general.css}" rel="stylesheet" />
+  <link rel="stylesheet" th:href="@{/css/general.css}">
 
   <!-- Kakao Address API -->
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
@@ -83,12 +83,6 @@
         <header class="card-ui__header d-flex justify-content-end">
           <!-- 우측 액션 -->
           <div class="toolbar">
-            <!-- 거래처 조회 모달 include -->
-            <div th:replace="modal/custModal :: custModalFragment"></div>
-
-            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenCustModal">
-              거래처 조회
-            </button>
             <button id="btnReset" type="button" class="btn btn-white btn-inner">
               초기화
             </button>
@@ -167,7 +161,7 @@
                     <input id="zonecode" name="zonecode" type="text" class="form-control form-control-sm input-base is-disabled"
                       readonly placeholder="우편번호" />
                     <button type="button" id="btnZipSearch"
-                      class="btn btn-outline-secondary btn-sm justify-content-end button-updown-center">
+                      class="btn-grid">
                       <i class="bi bi-search"></i>
                     </button>
                   </div>
@@ -188,22 +182,22 @@
               <!-- row 5: 배송지 / 계좌번호 (버튼) -->
               <div class="form-grid__row form-grid__row--3col">
                 <div class="form-grid__label">배송지</div>
-                <div class="form-grid__field ">
-                  <button type="button" id="btnDelivery" name="btnDelivery" class="btn btn-outline-secondary btn-sm button-center">
+                <div class="form-grid__field form-height">
+                  <button type="button" id="btnDelivery" name="btnDelivery" class="btn-grid">
                     확인
                   </button>
                 </div>
 
                 <div class="form-grid__label">계좌번호</div>
-                <div class="form-grid__field">
-                  <button type="button" id="btnAccount" name="btnAccount" class="btn btn-outline-secondary btn-sm button-center">
+                <div class="form-grid__field form-height">
+                  <button type="button" id="btnAccount" name="btnAccount" class="btn-grid">
                     확인
                   </button>
                 </div>
 
                 <!-- 3열 레이아웃 맞추기용 빈 칸 -->
-                <div class="form-grid__label"></div>
-                <div class="form-grid__field"></div>
+                <div class="form-grid__label is-disabled"></div>
+                <div class="form-grid__field "></div>
               </div>
             </div>
 
@@ -229,7 +223,7 @@
               <div class="form-grid__row">
                 <div class="form-grid__label">사용여부</div>
                 <div class="form-grid__field form-grid__field--checkbox">
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center form-height">
                     <label class="me-3">
                       <input type="radio" name="useStatus" value="Y" checked /> Y
                     </label>
@@ -248,43 +242,7 @@
 
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
   <script th:src="@{/js/sd/cust.js}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const custModal = document.getElementById('custModal');
-      const btnOpenCustModal = document.getElementById('btnOpenCustModal');
-      const btnCustClose = document.getElementById('btnCustClose');
-      const btnCustCancel = document.getElementById('btnCustCancel');
-      const backdrop = custModal.querySelector('.modal-layer__backdrop');
-
-      // 공통 오픈/클로즈 함수
-      function openCustModal() {
-        custModal.hidden = false;
-        custModal.classList.remove('hidden');
-      }
-
-      function closeCustModal() {
-        custModal.hidden = true;
-        custModal.classList.add('hidden');
-      }
-
-      // 열기 버튼
-      btnOpenCustModal.addEventListener('click', openCustModal);
-
-      // 닫기 버튼들(우측 상단 X, 푸터 닫기)
-      btnCustClose.addEventListener('click', closeCustModal);
-      btnCustCancel.addEventListener('click', closeCustModal);
-
-      // 배경 클릭 시 닫기 (옵션)
-      backdrop.addEventListener('click', function (e) {
-        if (e.target === backdrop) {
-          closeCustModal();
-        }
-      });
-    });
-  </script>
-
 </body>
 
 </html>

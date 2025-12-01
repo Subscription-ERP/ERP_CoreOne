@@ -161,8 +161,9 @@
 			            <th class="bg-light text-center">거래처</th>
 			            <td>
 			              <div class="input-group">
+							<div th:replace="modal/custModal :: custModal"></div>
 			                <input type="text" class="form-control input-base-icon" name="insertcustcode">
-			                <button class="btn btn-icon">
+			                <button class="btn btn-icon" id="btnOpenCustModal">
 			                  <i class="bi bi-search"></i>
 			                </button>
 			              </div>
