@@ -43,4 +43,10 @@ public class SdController {
         return "redirect:/sd/cust";
     }
 
+    // 수주 등록
+    @GetMapping("/sd/inOrd")
+    public String inOrdMain() {
+        return "sd/inOrd";
+    }
+
 }

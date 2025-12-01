@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" th:href="@{/css/modal/custModal.css}">
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body th:fragment="custModal">
+<!-- 거래처 조회 모달 (예시 모달 스타일 적용) -->
+<div id="custModal" class="modal-layer" hidden>
+    <div class="modal-layer__backdrop"></div>
+
+    <div class="modal-layer__dialog modal-layer__dialog--lg" style="width: 900px">
+
+        <!-- 상단 헤더 -->
+        <header class="modal-card__header">
+            <h5 class="modal-card__title">거래처 조회</h5>
+            <button type="button" class="btn-icon modal-card__btn-close" id="btnCustClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </header>
+
+        <!-- 내용 -->
+        <div class="modal-card__body">
+            <!-- 검색 영역 -->
+            <div class="modal-history__info-row">
+                <div class="modal-history__field col-md-10">
+                    <span class="modal-history__label" style="width: 80px">거래처명</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+              <input type="text" id="schCustName" class="form-control input-base">
+            </span>
+
+                    <span class="modal-history__label" style="width: 80px">대표자명</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+              <input type="text" id="schCeoName" class="form-control input-base">
+            </span>
+
+                    <span class="modal-history__label" style="width: 100px">거래처유형</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+              <select id="schCustType" class="form-select modal-history__value-input input-base"></select>
+            </span>
+                </div>
+
+                <button type="button" id="btnCustSearch" class="btn btn-white btn-inner modal-history__btn-print col-md-2">
+                    조회
+                </button>
+            </div>
+
+            <!-- 목록 (Toast UI Grid 영역) -->
+            <div class="form-grid sub-grid mt-2">
+                <div class="sub-grid__body">
+                    <div id="custModalGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/modal/custModal.js}"></script>
+</body>
+
+</html>
