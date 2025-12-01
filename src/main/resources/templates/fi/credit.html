@@ -7,6 +7,9 @@
 
 <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+<link th:href="@{/css/general.css}" rel="stylesheet" />
+
+
 
 </head>
 <body>
@@ -28,12 +31,12 @@
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">거래처코드</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control input-base" id="selectcustcode">
             </div>
 
             <div class="col-md-3 d-flex align-items-center gap-2">
               <label class="fw-semibold mb-0" style="width:150px;">거래처명</label>
-              <input type="text" class="form-control">
+              <input type="text" class="form-control input-base" id="selectcustname">
             </div>
 
           </div>
@@ -43,7 +46,7 @@
         <!-- 조회 버튼 -->
         <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
           <div class="d-flex gap-2">
-            <button class="btn btn-primary" style="width:110px;">조회</button>
+            <button class="btn btn-color btn-outer" id=btnSearch>조회</button>
           </div>
         </div>
 
@@ -52,7 +55,6 @@
     </div>
   </div>
 </div>
-
 
 
 <!-- ==========================
@@ -73,47 +75,61 @@
     <!-- 입력폼 -->
     <div class="col-md-4 h-100" style="padding-left:0;">
       <div class="card h-100">
-
+        
         <!-- 버튼 -->
         <div class="card-header d-flex justify-content-end gap-2">
-          <button class="btn btn-outline-secondary">초기화</button>
-          <button class="btn btn-primary">등록</button>
+          <button class="btn btn-white btn-inner">초기화</button>
+          <button id="btnSave" class="btn btn-color btn-inner">등록</button>
         </div>
 
         <div class="card-body">
 
-          <!-- 입력 -->
-          <div class="mb-3 d-flex align-items-center gap-2">
-            <label class="fw-semibold" style="width:120px;">거래처</label>
-            <div class="input-group">
-              <input type="text" class="form-control">
-              <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
-            </div>
-          </div>
+          <form id="creditForm">
+            <table class="form-grid table-bordered align-middle" style="border:1px gray;">
 
-          <div class="mb-3 d-flex align-items-center gap-2">
-            <label class="fw-semibold" style="width:120px;">거래처명</label>
-            <input type="text" class="form-control" readonly>
-          </div>
+              <tbody>
+                <!-- 거래처 -->
+                <tr>
+                  <th class="bg-light text-center" style="width:130px;">거래처</th>
+                  <td style="width:75%;">
+                    <div class="input-group">
+                      <input type="text" name="custCode" class="form-control input-base-icon">
+                      <button class="btn btn-icon"><i class="bi bi-search"></i></button>
+                    </div>
+                  </td>
+                </tr>
 
-          <div class="mb-3 d-flex align-items-center gap-2">
-            <label class="fw-semibold" style="width:120px;">여신구분</label>
-            <select class="form-select">
-              <option value="">선택</option>
-              <option>매출여신</option>
-              <option>매입여신</option>
-            </select>
-          </div>
+                <!-- 거래처명 -->
+                <tr>
+                  <th class="bg-light text-center">거래처명</th>
+                  <td class="disabled"><input type="text" name="custName" class="form-control input-base" readonly></td>
+                </tr>
 
-          <div class="mb-3 d-flex align-items-center gap-2">
-            <label class="fw-semibold" style="width:120px;">여신한도</label>
-            <input type="number" class="form-control">
-          </div>
+                <!-- 여신구분 -->
+                <tr>
+                  <th class="bg-light text-center">여신구분</th>
+                  <td>
+                    <select name="creditType" class="form-select input-base">
+                      <option value="">선택</option>
+                    </select>
+                  </td>
+                </tr>
 
-          <div class="mb-3 d-flex align-items-center gap-2">
-            <label class="fw-semibold" style="width:120px;">외상한도일</label>
-            <input type="number" class="form-control">
-          </div>
+                <!-- 여신한도 -->
+                <tr>
+                  <th class="bg-light text-center">여신한도</th>
+                  <td><input type="number" name="creditLimit" class="form-control input-base"></td>
+                </tr>
+
+                <!-- 외상한도일 -->
+                <tr>
+                  <th class="bg-light text-center">외상한도일</th>
+                  <td><input type="number" name="dueDays" class="form-control input-base"></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </form>
 
         </div>
 
@@ -124,67 +140,22 @@
 </div>
 
 
-
-<!-- ==========================
-     GRID SCRIPT
-=========================== -->
-<script>
-  const creditData = [
-    { 거래처코드:'C00001', 거래처명:'AAA', 여신구분:'매출여신', 여신한도:'1,000,000,000', 외상한도일:60 },
-    { 거래처코드:'C00002', 거래처명:'BBB', 여신구분:'매입여신', 여신한도:'1,400,000,000', 외상한도일:30 },
-    { 거래처코드:'C00003', 거래처명:'CCC', 여신구분:'매출여신', 여신한도:'750,000,000', 외상한도일:30 },
-    { 거래처코드:'C00004', 거래처명:'DDD', 여신구분:'매출여신', 여신한도:'300,000,000', 외상한도일:60 },
-    { 거래처코드:'C00005', 거래처명:'EEE', 여신구분:'매입여신', 여신한도:'500,000,000', 외상한도일:120 },
-    { 거래처코드:'C00001', 거래처명:'AAA', 여신구분:'매출여신', 여신한도:'1,000,000,000', 외상한도일:60 },
-    { 거래처코드:'C00002', 거래처명:'BBB', 여신구분:'매입여신', 여신한도:'1,400,000,000', 외상한도일:30 },
-    { 거래처코드:'C00003', 거래처명:'CCC', 여신구분:'매출여신', 여신한도:'750,000,000', 외상한도일:30 },
-    { 거래처코드:'C00004', 거래처명:'DDD', 여신구분:'매출여신', 여신한도:'300,000,000', 외상한도일:60 },
-    { 거래처코드:'C00005', 거래처명:'EEE', 여신구분:'매입여신', 여신한도:'500,000,000', 외상한도일:120 },
-    { 거래처코드:'C00001', 거래처명:'AAA', 여신구분:'매출여신', 여신한도:'1,000,000,000', 외상한도일:60 },
-    { 거래처코드:'C00002', 거래처명:'BBB', 여신구분:'매입여신', 여신한도:'1,400,000,000', 외상한도일:30 },
-    { 거래처코드:'C00003', 거래처명:'CCC', 여신구분:'매출여신', 여신한도:'750,000,000', 외상한도일:30 },
-    { 거래처코드:'C00004', 거래처명:'DDD', 여신구분:'매출여신', 여신한도:'300,000,000', 외상한도일:60 },
-    { 거래처코드:'C00005', 거래처명:'EEE', 여신구분:'매입여신', 여신한도:'500,000,000', 외상한도일:120 },
-    { 거래처코드:'C00001', 거래처명:'AAA', 여신구분:'매출여신', 여신한도:'1,000,000,000', 외상한도일:60 },
-    { 거래처코드:'C00002', 거래처명:'BBB', 여신구분:'매입여신', 여신한도:'1,400,000,000', 외상한도일:30 },
-    { 거래처코드:'C00003', 거래처명:'CCC', 여신구분:'매출여신', 여신한도:'750,000,000', 외상한도일:30 },
-    { 거래처코드:'C00004', 거래처명:'DDD', 여신구분:'매출여신', 여신한도:'300,000,000', 외상한도일:60 },
-    { 거래처코드:'C00005', 거래처명:'EEE', 여신구분:'매입여신', 여신한도:'500,000,000', 외상한도일:120 },
-    { 거래처코드:'C00001', 거래처명:'AAA', 여신구분:'매출여신', 여신한도:'1,000,000,000', 외상한도일:60 },
-    { 거래처코드:'C00002', 거래처명:'BBB', 여신구분:'매입여신', 여신한도:'1,400,000,000', 외상한도일:30 },
-    { 거래처코드:'C00003', 거래처명:'CCC', 여신구분:'매출여신', 여신한도:'750,000,000', 외상한도일:30 },
-    { 거래처코드:'C00004', 거래처명:'DDD', 여신구분:'매출여신', 여신한도:'300,000,000', 외상한도일:60 },
-    { 거래처코드:'C00005', 거래처명:'EEE', 여신구분:'매입여신', 여신한도:'500,000,000', 외상한도일:120 },
-    { 거래처코드:'C00001', 거래처명:'AAA', 여신구분:'매출여신', 여신한도:'1,000,000,000', 외상한도일:60 },
-    { 거래처코드:'C00002', 거래처명:'BBB', 여신구분:'매입여신', 여신한도:'1,400,000,000', 외상한도일:30 },
-    { 거래처코드:'C00003', 거래처명:'CCC', 여신구분:'매출여신', 여신한도:'750,000,000', 외상한도일:30 },
-    { 거래처코드:'C00004', 거래처명:'DDD', 여신구분:'매출여신', 여신한도:'300,000,000', 외상한도일:60 },
-    { 거래처코드:'C00005', 거래처명:'EEE', 여신구분:'매입여신', 여신한도:'500,000,000', 외상한도일:120 }
-  ];
-
-  const grid = new tui.Grid({
-    el: document.getElementById('credit-grid'),
-    data: creditData,
-    rowHeaders: ['rowNum'],
-    scrollX: false,
-    scrollY: true,
-    bodyHeight: 'fitToParent',   
-    columns: [
-      { header:'거래처코드', name:'거래처코드' },
-      { header:'거래처명', name:'거래처명' },
-      { header:'여신구분', name:'여신구분' },
-      { header:'여신한도', name:'여신한도', align:'right'},
-      { header:'외상한도일', name:'외상한도일', align:'center'}
-    ]
-  });
-</script>
+<script th:src="@{/js/fi/credit.js}"></script>
 
 <style>
-  body, html { overflow-x: hidden !important; }
-  .app-main { overflow-x: hidden !important; }
-  .card-header { border-bottom: none !important; }
+  body, html {
+    overflow-x: hidden !important;
+  }
+  .app-main {
+    overflow-x: hidden !important;
+  }
+  .card-header {
+  border-bottom: none !important;
+  box-shadow: none !important;
+  }
+  .input-base{
+  width:80%;}
 </style>
-
 </div>
 </body>
 </html>

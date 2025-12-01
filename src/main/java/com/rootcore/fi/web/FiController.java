@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/fi")
 public class FiController {
 
-	@GetMapping("/invoice")
+	@GetMapping("/taxinvoice")
 	public String taxInvoice() {
-	    return "fi/tax/taxInvoice";
+	    return "fi/taxInvoice";
 	}
 
 	@GetMapping("/unitprice")

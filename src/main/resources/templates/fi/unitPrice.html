@@ -3,12 +3,11 @@
   layout:decorate="~{layout/layout}">
 <head>
 <meta charset="UTF-8" />
-<title>세금계산서 화면 예시</title>
+<title>단가관리</title>
 
 <!-- Toast UI Grid -->
 <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
-  <link th:href="@{/css/general.css}" rel="stylesheet" />
 
 </head>
 <body>
@@ -71,8 +70,8 @@
         <!-- 버튼 영역 (오른쪽) -->
         <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
           <div class="d-flex gap-2">
-            <button class="btn btn-secondary" style="width:110px;">EXCEL</button>
-            <button class="btn btn-color btn-outer" style="width:110px;" id="btnSearch" >조회</button>
+            <button class="btn btn-secondary" style="width:100px;">EXCEL</button>
+            <button class="btn btn-color btn-outer" id="btnSearch" >조회</button>
           </div>
         </div>
 

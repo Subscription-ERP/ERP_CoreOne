@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.fi.mapper.CreditMapper">
+
+	<select id = "selectCredit" resultType="com.rootcore.fi.vo.CreditVO">
+		SELECT crm.cust_code
+		     , cst.cust_name
+		     , crm.credit_type
+		     , cod.code_name credit_type_name
+		     , crm.credit_max
+		     , crm.credit_due_day
+		  FROM tb_credit_master crm
+		  JOIN tb_cm_code     cod
+		    ON (crm.credit_type = cod.code
+		   AND cod.group_code = 'CREDIT_TYPE')
+		  JOIN tb_cust_master cst
+		    ON (crm.cust_code = cst.cust_code
+		   AND crm.company_code = cst.company_code)
+		 WHERE 1=1
+		<if test="custCode != null and custCode !='' ">
+			AND crm.cust_code like '%' || #{custCode} || '%'
+		</if>
+		<if test="custName != null and custName !='' ">
+			AND cst.cust_name like '%' || #{custName} || '%'
+		</if>
+	</select>
+	
+	<update id="mergeCredit">
+		MERGE INTO tb_credit_master crm
+		USING (SELECT #{companyCode} company_code
+		            , #{custCode} cust_code
+		            , #{creditMax} credit_max
+		            , #{creditDueDay} credit_due_day
+		            , #{creditType} credit_type
+		         FROM dual) ins 
+		    ON (crm.company_code = ins.company_code
+		   AND crm.cust_code = ins.cust_code
+		   AND crm.credit_type = ins.credit_type)
+		  WHEN MATCHED THEN
+		UPDATE
+		   SET crm.credit_max = ins.credit_max
+		     , crm.credit_due_day = ins.credit_due_day
+		     , crm.update_date = sysdate
+		     , crm.updated_by = 'ADMIN'
+		  WHEN NOT MATCHED THEN
+		INSERT (company_code
+		      , cust_code
+		      , credit_type
+		      , credit_max
+		      , credit_due_day
+		      , create_date
+		      , created_by)
+		VALUES (ins.company_code
+		      , ins.cust_code
+		      , ins.credit_type
+		      , ins.credit_max
+		      , ins.credit_due_day
+		      , sysdate
+		      , 'ADMIN')
+	</update>
+</mapper>

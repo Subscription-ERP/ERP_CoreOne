@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	function getList() {
 
 		const selectParam ={
-			companyCode : 'SAMPLE_COMPANY',
+			companyCode : '0000',
 			sku : document.getElementById('selectsku').value,
 			skuName : document.getElementById('selectskuname').value,
 			unitPriceType : document.getElementById('selectunitpricetype').value,
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		const raw = Object.fromEntries(new FormData(document.getElementById("unitPriceForm")));
 	
 		const selectParam = {
-			companyCode : 'SAMPLE_COMPANY',
+			companyCode : '0000',
 		    sku: raw.insertsku,
 		    unitPriceType: raw.insertunitpricetype,
 		    startDate: raw.insertstartdate,
@@ -110,11 +110,16 @@ document.addEventListener("DOMContentLoaded", function () {
 		.then(result => {
 			result.forEach(item => {
 				const select = document.querySelector("select[name='insertunitpricetype']");
-				const select2 = document.querySelector("select[name='selectunitpricetype']");
 				const option = document.createElement("option");
 				option.value = item.code;
 				option.textContent = item.codeName; 
 				select.appendChild(option);
+			});
+			result.forEach(item => {
+				const select2 = document.querySelector("select[name='selectunitpricetype']");
+				const option = document.createElement("option");
+				option.value = item.code;
+				option.textContent = item.codeName; 
 				select2.appendChild(option);
 			});
 		})

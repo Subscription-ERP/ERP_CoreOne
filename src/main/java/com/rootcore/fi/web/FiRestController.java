@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rootcore.fi.service.CreditService;
 import com.rootcore.fi.service.UnitPriceService;
+import com.rootcore.fi.vo.CreditVO;
 import com.rootcore.fi.vo.UnitPriceVO;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/fi")
 public class FiRestController {
 	private final UnitPriceService unitPriceService;
+	private final CreditService creditService;
 	
+	//
+	//단가관리
+	//
     @GetMapping("/unitprice")
     public List<UnitPriceVO> getUnitPriceList(UnitPriceVO param) {
         return unitPriceService.selectList(param);
@@ -43,6 +49,18 @@ public class FiRestController {
         return unitPriceService.updateUnitPrice(param);
     }
     
+    //
+    //여신관리
+    //
+    @GetMapping("/credit")
+    public List<CreditVO> getCreditList(CreditVO param){
+    	System.out.println(param.custCode);
+    	return creditService.selectList(param);
+    }
+    @PutMapping("/credit")
+    public int upsertCredit(@RequestBody CreditVO param) {
+    	return creditService.mergeCredit(param);
+    }
     
     
 }
