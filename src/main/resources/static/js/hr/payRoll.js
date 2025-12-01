@@ -425,6 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		],
 	}); // end of payrollGrid
 
+	/* 계산하기 클릭했을때 모달창이 나타나게 */
 	document.querySelector('#payrollGrid').addEventListener('click', function(event) {
 		const targetElement = event.target;
 		// 클릭된 요소가 'btn-calculate' 클래스를 가졌는지 확인
@@ -444,9 +445,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				console.error("Modal element #historyModal not found.");
 			}
 
+			payrollDetailGrid.refreshLayout();
+			totalAllowances.refreshLayout();
+
 			// 3. 모달 Grid에 데이터 로드 (API 호출 필요)
 			// 실제 API 경로와 파라미터는 백엔드에 맞게 수정해야 합니다.
-			fetch(`/api/hr/payrollDetailList?payrollCode=${payrollCode}`)
+			/*fetch(`/api/hr/payrollDetailList?payrollCode=${payrollCode}`)
 				.then(res => res.json())
 				.then(data => {
 					// Tui Grid에 데이터 설정
@@ -455,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					// 선택된 행의 상세 수당/공제 정보도 업데이트하는 로직이 여기에 추가되어야 함
 					// (예: 첫 번째 행을 자동으로 선택하고 하단 테이블 업데이트)
 				})
-				.catch(error => console.error("Error loading payroll detail:", error));
+				.catch(error => console.error("Error loading payroll detail:", error));*/
 		}
 	}); // end of payrollGrid 클릭 이벤트
 
@@ -469,7 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	/* 급여관리 모달 - 사원별 급여 상세 Grid */
 	const payrollDetailGrid = new tui.Grid({
 		el: document.getElementById("payrollDetailGrid"),
-		scrollX: false,
+		scrollX: true,
 		scrollY: true,
 		data: {
 			api: {
@@ -479,12 +483,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 			},
 		}, // 초기 데이터는 비어있음
-		bodyHeight: 250, // HTML에서 설정한 높이와 일치시킵니다.
+		bodyHeight: 200, // HTML에서 설정한 높이와 일치시킵니다.
 		rowKey: "userId",
 		columns: [
-			{ header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
-			{ header: "사번", name: "userId", align: "center"},
-			/*{ header: "성명", name: "userName", width: 10 },
+			// { header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
+			{ header: "사번", name: "userId", align: "center" },
+			{ header: "성명", name: "userName", width: 10 },
 			{ header: "부서명", name: "deptName", width: 10 },
 			{ header: "지급일", name: "payrollDate", align: "center", width: 10 },
 			{ header: "기본급", name: "baseSalary", align: "right", formatter: 'money' },
@@ -492,7 +496,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			{ header: "수당총액", name: "totalAllowance", align: "right", formatter: 'money' },
 			{ header: "총 지급액", name: "totalPayment", align: "right", formatter: 'money' },
 			{ header: "공제 총액", name: "totalDeduction", align: "right", formatter: 'money' },
-			{ header: "실 수령액", name: "netPay", align: "right", formatter: 'money' },*/
+			{ header: "실 수령액", name: "netPay", align: "right", formatter: 'money' }
 		],
-	});
+	}); // end of payrollDetailGrid
+
 }); // end of DOMContentLoaded
