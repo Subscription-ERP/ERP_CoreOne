@@ -304,6 +304,81 @@
       opacity: 0.4;
       pointer-events: none;
     }
+    
+    /* 사원이력 화면 인쇄 ------------------------------------------ */
+	@media print {
+	
+	  /* 1) 페이지 여백 제거 */
+	  body {
+	    margin: 0;
+	  }
+	
+	  /* 2) 기본적으로 모든 화면 요소는 숨기기 */
+	  body * {
+	    visibility: hidden;
+	  }
+	
+	  /* 3) 모달(#historyModal) 안의 요소만 보이게 */
+	  #historyModal,
+	  #historyModal * {
+	    visibility: visible;
+	  }
+	
+	  /* 4) 인쇄 제목 (인쇄 전용) 추가 */
+	  #history-tab-dept::before {
+	    content: "부서 이력";
+	    display: block;
+	    font-weight: bold;
+	    font-size: 16px;
+	    margin: 8px 0;
+	  }
+	
+	  #history-tab-salary::before {
+	    content: "급여 이력";
+	    display: block;
+	    font-weight: bold;
+	    font-size: 16px;
+	    margin: 16px 0 8px;
+	  }
+	
+	  /* 5) 인쇄할 때는 모달을 페이지 맨 위에 배치 */
+	  #historyModal {
+	    position: absolute !important;
+	    top: 0 !important;
+	    left: 0 !important;
+	    right: 0 !important;
+	    margin: 0 auto !important;
+	    width: 100% !important;
+	    height: auto !important;
+	    transform: none !important;
+	    box-shadow: none !important;
+	    border-radius: 0 !important;
+	  }
+	
+	  /* 6) 모달 내부 카드 영역도 기본 레이아웃으로 */
+	  .modal-layer__dialog {
+	    position: static !important;
+	    margin: 0 auto !important;
+	    max-width: 100% !important;
+	  }
+	
+	  /* 7) 백드롭, 탭 버튼 등 인쇄 불필요 요소 숨기기 */
+	  .modal-layer__backdrop,
+	  .modal-history__tabs {
+	    display: none !important;
+	  }
+	
+	  /* 8) 두 탭 모두 보여주기 (active 무시) */
+	  .history-tab-panel {
+	    display: block !important;
+	  }
+	
+	  /* 9) 부서/급여 구분 여백 */
+	  #history-tab-dept {
+	    margin-bottom: 24px;
+	  }
+	}
+
   </style>
 </head>
 
@@ -317,18 +392,16 @@
           <!-- 성명 -->
           <div class="col-12 col-md-3">
             <div class="field-inline">
-              <label for="keyword" class="field-inline__label">성명</label>
-              <input id="keyword" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+              <label for="keyName" class="field-inline__label">성명</label>
+              <input id="keyName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
             </div>
           </div>
 
           <!-- 부서명 -->
           <div class="col-12 col-md-3">
             <div class="field-inline">
-              <label for="dept" class="field-inline__label">부서명</label>
-              <select id="dept" class="form-select input-base" style="flex: 1; min-width: 0">
-                <option value="">전체</option>
-                <option th:each="d : ${deptList}" th:value="${d.deptCode}" th:text="${d.deptName}"></option>
+              <label for="dept-search" class="field-inline__label">부서명</label>
+              <select id="dept-search" class="form-select input-base" style="flex: 1; min-width: 0">
               </select>
             </div>
           </div>
@@ -336,7 +409,7 @@
           <!-- 퇴사자 포함 -->
           <div class="col-12 col-md-2">
             <label class="check-inline">
-              <input id="retiredYn" type="checkbox" />
+              <input id="leavedYN" type="checkbox" />
               <span class="field-inline__label">퇴사자 포함</span>
             </label>
           </div>
@@ -358,7 +431,7 @@
         <small class="text-muted">행 선택 시 아래 상세 정보가 표시됩니다.</small>
       </header>
 
-      <div class="card-ui__body section-scroll p-0">
+      <div class="card-ui__body p-0">
         <div id="userList" class="grid-root"></div>
       </div>
     </section>
@@ -395,6 +468,7 @@
       </header>
 
       <div class="card-ui__body section-scroll">    
+      <form id="userForm" enctype="multipart/form-data">
         <div id="tab-basic" class="tab-panel active form-allwrapper">
           <div class="form-grid form-grid--basic-layout">
             <!-- 사진 -->
@@ -558,6 +632,7 @@
 
           </div>
         </div>
+	  </form>
 
         <!-- ===== 자격증 ===== -->
         <div id="tab-cert" class="tab-panel">
@@ -578,13 +653,12 @@
               <table class="sub-table sub-table--cert">
                 <colgroup>
                   <col style="width: 18%">
-                  <col style="width: 20%">
-                  <col style="width: 14%">
                   <col style="width: 18%">
-                  <col style="width: 14%">
                   <col style="width: 10%">
+                  <col style="width: 12%">
                   <col style="width: 10%">
-                  <col style="width: 10%">
+                  <col style="width: 16%">
+                  <col style="width: 16%">
                 </colgroup>
                 <thead>
                   <tr>
@@ -595,15 +669,14 @@
                     <th>유효/만료일</th>
                     <th>비고</th>
                     <th>파일</th>
-                    <th>수정</th>
                   </tr>
                 </thead>
                 <tbody id="certTbody">
-                  <!-- <tr class="empty-row">
+                  <tr class="empty-row">
                     <td colspan="6" class="text-center text-muted py-3">
                       데이터가 없습니다. 추가해주세요.
                     </td>
-                  </tr> -->
+                  </tr>
                   <!-- JS로 행 추가 -->
                 </tbody>
               </table>
@@ -664,14 +737,13 @@
             <div class="sub-grid__body">
               <table class="sub-table sub-table--career">
                 <colgroup>
-                  <col style="width: 18%">
-                  <col style="width: 14%">
+                  <col style="width: 15%">
+                  <col style="width: 13%">
                   <col style="width: 12%">
                   <col style="width: 12%">
                   <col style="width: 12%">
-                  <col style="width: 20%">
-                  <col style="width: 12%">
-                  <col style="width: 6%">
+                  <col style="width: 26%">
+                  <col style="width: 10%">
                 </colgroup>
                 <thead>
                   <tr>
@@ -682,15 +754,14 @@
                     <th>퇴사일자</th>
                     <th>담당업무</th>
                     <th>최종연봉</th>
-                    <th>수정</th>
                   </tr>
                 </thead>
                 <tbody id="careerTbody">
-                  <!-- <tr class="empty-row">
+                  <tr class="empty-row">
                     <td colspan="8" class="text-center text-muted py-3">
                       데이터가 없습니다. 추가해주세요.
                     </td>
-                  </tr> -->
+                  </tr>
                   <!-- JS로 행 추가 -->
                 </tbody>
               </table>
@@ -804,23 +875,7 @@
                     </tr>
                   </thead>
                   <tbody id="historyDeptTbody">
-                    <!-- 예시 데이터 (나중에 JS로 교체 가능) -->
-                    <tr>
-                      <td>2023-02-01</td>
-                      <td>인사팀</td>
-                      <td>사원</td>
-                      <td>총무팀</td>
-                      <td>대리</td>
-                      <td>인사발령</td>
-                    </tr>
-                    <tr>
-                      <td>2021-07-01</td>
-                      <td>회계팀</td>
-                      <td>사원</td>
-                      <td>인사팀</td>
-                      <td>사원</td>
-                      <td>부서 이동</td>
-                    </tr>
+                    <!-- JS -->
                   </tbody>
                 </table>
               </div>
@@ -851,23 +906,7 @@
                     </tr>
                   </thead>
                   <tbody id="historySalaryTbody">
-                    <!-- 예시 데이터 -->
-                    <tr>
-                      <td>2023-02-01</td>
-                      <td>3,000,000</td>
-                      <td>3,500,000</td>
-                      <td>월급</td>
-                      <td>연봉조정</td>
-                      <td>관리자A</td>
-                    </tr>
-                    <tr>
-                      <td>2021-07-01</td>
-                      <td>2,800,000</td>
-                      <td>3,200,000</td>
-                      <td>월급</td>
-                      <td>연봉조정</td>
-                      <td>관리자B</td>
-                    </tr>
+                    <!-- JS -->
                   </tbody>
                 </table>
               </div>
@@ -931,7 +970,14 @@
       </div> <!-- // modal-layer__dialog -->
     </div>
 
-
+	<!-- 전역 토스트 알림 -->
+    <div id="toastContainer" class="rc-toast"></div>
+    
+    <!-- spinner(loading) -->
+    <div id="globalLoader" class="rc-loader-overlay" style="display: none;">
+  	  <div class="rc-loader-spinner"></div>
+    </div>
+    
     <script th:src="@{/js/hr/userManage.js}"></script>
     <script th:src="@{/js/common.js}"></script>
   </div>

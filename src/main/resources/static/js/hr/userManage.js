@@ -2,21 +2,25 @@
  * userManage.js
  */
 
-console.log(window.tui);
-console.log(window.tui && window.tui.DatePicker);
-
 document.addEventListener("DOMContentLoaded", async () => {
-	const divId = {'0A':'hireType', '0C':'jobTitle', '0D':'position', '0E':'userStatus'}
-	getCmCodeOptions(divId);
-	getDeptOptions();
 	
 	/* ------------------------------------------------------------------
-	 * 0) DOM 유틸
+	 * 0) common.js : 공통코드, 부서
+	 * ------------------------------------------------------------------ */
+	const divId = {'0A':'hireType', '0C':'jobTitle', '0D':'position', '0E':'userStatus'}
+	getCmCodeOptions(divId);
+	//getDeptOptions();
+	
+	// 부서 select 두 군데: 상세폼 + 검색폼
+	getDeptOptions2([".form-grid #dept", "#dept-search"]);
+	
+	/* ------------------------------------------------------------------
+	 * 1) DOM 유틸
 	 * ------------------------------------------------------------------ */
 	const $ = (sel) => document.querySelector(sel);
 
 	/* ------------------------------------------------------------------
-	 * 1) Toast UI Grid 생성
+	 * 2) Toast UI Grid 생성
 	 * ------------------------------------------------------------------ */
 	let grid;
 
@@ -39,22 +43,53 @@ document.addEventListener("DOMContentLoaded", async () => {
 	  });
 	}
 	
+	
+	/* ------------------------------------------------------------------
+	 * 사원 전체 조회 + 스피너
+	 * ------------------------------------------------------------------ */
 	async function loadUserList(){
+		globalLoader.style.display = "flex";
 		const response = await fetch('/api/hr/userAllList');
 		const data = await response.json();
 		grid.resetData(data);
 		grid.refreshLayout();
+		globalLoader.style.display = "none";
 	}
 	
 	initGrid();
 	loadUserList();
-	
 
+	
 	/* ------------------------------------------------------------------
-	 * 2) input 클릭시 달력 선택창 뜨게 하기
+	 * 사원 검색 (조회버튼 클릭)
+	 * ------------------------------------------------------------------ */
+	const btnSearch = document.querySelector("#btnSearch");
+
+	btnSearch.addEventListener('click', () => {
+	  const keyName    = document.querySelector("#keyName").value.trim();
+	  const deptSearch = document.querySelector("#dept-search").value;
+	  const leavedYN   = document.querySelector("#leavedYN").checked ? 'Y' : '';
+
+	  const params = new URLSearchParams();
+	  if (keyName)    params.append('keyName', keyName);
+	  if (deptSearch) params.append('deptSearch', deptSearch);
+	  if (leavedYN)   params.append('leavedYN', leavedYN);
+
+	  fetch(`/api/hr/userSearch?${params.toString()}`)
+	    .then(res => res.json())
+	    .then(data => {
+	      grid.resetData(data);
+	      grid.refreshLayout();
+	    })
+	    .catch(err => console.error(err));
+	});
+	
+	
+	/* ------------------------------------------------------------------
+	 * input 클릭시 달력 선택창 뜨게 하기
 	 * ------------------------------------------------------------------ */
 	
-	// 2-1) 공통 함수
+	// 공통 함수
 	function setupNativeDatePicker(wrapperId, inputId) {
 	  const wrapper = document.getElementById(wrapperId);
 	  const input = document.getElementById(inputId);
@@ -83,8 +118,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	
 		
 	/* ------------------------------------------------------------------
-	 * 3) 사원 상세조회 (기본정보/자격증/경력사항/이력)
+	 * 사원 상세조회 (기본정보/자격증/경력사항/이력)
 	 * ------------------------------------------------------------------ */
+	
+	 let currentUserDetail = null;
 	
      grid.on('click', (ev) => {
 		const rowKey = ev.rowKey;
@@ -97,10 +134,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		fetch(`/api/hr/userDetail?userId=${userId}`)
 			.then(response => response.json())
 			.then(data => {
+				currentUserDetail = data; 
 				InputUserBasicInfo(data);
 				InputCertification(data.certificationList);
 				InputWorkExperience(data.workExperienceList);
-				InputUserHistory(data.historyList);
+				//InputUserHistory(data.historyList);
 			});
 	});
 	
@@ -126,7 +164,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		fr.querySelector("#position").value = data.position;
 		fr.querySelector("#familyCount").value = data.familyCount;
 		fr.querySelector("#childrenCount").value = data.childrenCount;
-		fr.querySelector("#householder").value = data.householder;
+		
+		const householder = fr.querySelector("#householder");
+		// DB 값이 'Y'면 체크, 아니면 해제
+		householder.checked = (data.householder === 'Y');
+		
 		fr.querySelector("#bankName").value = data.bankName;
 		fr.querySelector("#accountNo").value = data.accountNo;
 		fr.querySelector("#accountHolder").value = data.accountHolder;
@@ -137,152 +179,146 @@ document.addEventListener("DOMContentLoaded", async () => {
 		
 	}
 	
-	// 자격증
-	function InputCertification(data){
-		if (!data){
-			resetData();
-			return;
-		}
-		
-		document.querySelector("#certiName").value = data.certiName;
-		document.querySelector("#issueOrgName").value = data.issueOrgName;
-		document.querySelector("#getDate").value = data.getDate;
-		document.querySelector("#licenseNo").value = data.licenseNo;
-		document.querySelector("#expireDate").value = data.expireDate;
-		document.querySelector("#remark").value = data.remark;
-		document.querySelector("#certiFile").value = data.certiFile;
-		
+	
+	// 자격증 
+	function InputCertification(certList) {
+	  const tbody = document.querySelector('#certTbody');
+	  const template = document.querySelector('#certRowTemplate');
+	  const countEl = document.querySelector('#certCount');
+
+	  // 0) certList 없으면 바로 "데이터 없음"
+	  if (!Array.isArray(certList)) {
+	    tbody.innerHTML = `
+	      <tr class="empty-row">
+	        <td colspan="8" class="text-center text-muted py-3">
+	          데이터가 없습니다. 추가해주세요.
+	        </td>
+	      </tr>
+	    `;
+	    if (countEl) countEl.textContent = 0;
+	    return;
+	  }
+
+	  // 1) null/빈 데이터 제거해서 "실제 데이터만" 남기기
+	  const validList = certList.filter((item) => {
+	    if (!item) return false; // null, undefined 제거
+
+	    // 모든 필드가 비어 있는 객체는 의미 없는 행으로 판단
+	    const hasValue =
+	      (item.certiName && item.certiName.trim() !== '') ||
+	      (item.issueOrgName && item.issueOrgName.trim() !== '') ||
+	      (item.getDate && item.getDate.trim() !== '') ||
+	      (item.licenseNo && item.licenseNo.trim() !== '') ||
+	      (item.expireDate && item.expireDate.trim() !== '') ||
+	      (item.remark && item.remark.trim() !== '');
+
+	    return hasValue;
+	  });
+
+	  // 2) 유효한 데이터가 하나도 없으면 "데이터 없음" 표시
+	  if (validList.length === 0) {
+	    tbody.innerHTML = `
+	      <tr class="empty-row">
+	        <td colspan="8" class="text-center text-muted py-3">
+	          데이터가 없습니다. 추가해주세요.
+	        </td>
+	      </tr>
+	    `;
+	    if (countEl) countEl.textContent = 0;
+	    return;
+	  }
+
+	  // 3) 유효 데이터가 있을 때만 테이블 렌더링
+	  tbody.innerHTML = '';
+	  validList.forEach((item) => {
+	    const fragment = template.content.cloneNode(true);
+	    const row = fragment.querySelector('tr');
+
+	    row.querySelector('input[name="certiName"]').value    = item.certiName    ?? '';
+	    row.querySelector('input[name="issueOrgName"]').value = item.issueOrgName ?? '';
+	    row.querySelector('input[name="getDate"]').value      = item.getDate      ?? '';
+	    row.querySelector('input[name="licenseNo"]').value    = item.licenseNo    ?? '';
+	    row.querySelector('input[name="expireDate"]').value   = item.expireDate   ?? '';
+	    row.querySelector('input[name="remark"]').value       = item.remark       ?? '';
+
+	    tbody.appendChild(fragment);
+	  });
+
+	  if (countEl) countEl.textContent = validList.length;
 	}
+
 	
 	// 경력사항
-	function InputCertification(data){
-		if (!data){
-			resetData();
-			return;
-		}
-		
-		document.querySelector("#wexCompanyName").value = data.certiName;
-		document.querySelector("#wexDept").value = data.issueOrgName;
-		document.querySelector("#wexJobTitle").value = data.getDate;
-		document.querySelector("#wexHireDate").value = data.licenseNo;
-		document.querySelector("#wexLeaveDate").value = data.expireDate;
-		document.querySelector("#wexMainDuty").value = data.remark;
-		document.querySelector("#wexSalary").value = data.certiFile;
-		document.querySelector("#remark").value = data.certiFile;
-		
+	function InputWorkExperience(workList) {
+	  const tbody = document.querySelector('#careerTbody');
+	  const template = document.querySelector('#careerRowTemplate');
+	  const countEl = document.querySelector('#careerCount');
+
+	  // 0) 배열이 아니면 바로 "데이터 없음"
+	  if (!Array.isArray(workList)) {
+	    tbody.innerHTML = `
+	      <tr class="empty-row">
+	        <td colspan="8" class="text-center text-muted py-3">
+	          데이터가 없습니다. 추가해주세요.
+	        </td>
+	      </tr>
+	    `;
+	    if (countEl) countEl.textContent = 0;
+	    return;
+	  }
+
+	  // 1) null/빈 객체 제거해서 "실제 데이터 있는 것만" 필터링
+	  const validList = workList.filter((item) => {
+	    if (!item) return false; // null, undefined 제거
+
+	    const hasValue =
+	      (item.wexCompanyName && item.wexCompanyName.trim() !== '') ||
+	      (item.wexDept && item.wexDept.trim() !== '') ||
+	      (item.wexJobTitle && item.wexJobTitle.trim() !== '') ||
+	      (item.wexHireDate && item.wexHireDate.trim() !== '') ||
+	      (item.wexLeaveDate && item.wexLeaveDate.trim() !== '') ||
+	      (item.wexMainDuty && item.wexMainDuty.trim() !== '') ||
+	      (item.wexSalary && item.wexSalary.toString().trim() !== '');
+
+	    return hasValue;
+	  });
+
+	  // 2) 유효한 데이터 0개면 placeholder + count 0
+	  if (validList.length === 0) {
+	    tbody.innerHTML = `
+	      <tr class="empty-row">
+	        <td colspan="8" class="text-center text-muted py-3">
+	          데이터가 없습니다. 추가해주세요.
+	        </td>
+	      </tr>
+	    `;
+	    if (countEl) countEl.textContent = 0;
+	    return;
+	  }
+
+	  // 3) 유효 데이터 있을 때만 테이블 렌더링
+	  tbody.innerHTML = '';
+	  validList.forEach((item) => {
+	    const fragment = template.content.cloneNode(true);
+	    const row = fragment.querySelector('tr');
+
+	    row.querySelector('input[name="wexCompanyName"]').value = item.wexCompanyName ?? '';
+	    row.querySelector('input[name="wexDept"]').value        = item.wexDept ?? '';
+	    row.querySelector('input[name="wexJobTitle"]').value    = item.wexJobTitle ?? '';
+	    row.querySelector('input[name="wexHireDate"]').value    = item.wexHireDate ?? '';
+	    row.querySelector('input[name="wexLeaveDate"]').value   = item.wexLeaveDate ?? '';
+	    row.querySelector('input[name="wexMainDuty"]').value    = item.wexMainDuty ?? '';
+	    row.querySelector('input[name="wexSalary"]').value      = item.wexSalary ?? '';
+
+	    tbody.appendChild(fragment);
+	  });
+
+	  if (countEl) countEl.textContent = validList.length;
 	}
 	
 	
-	
-	
-	
-	
 	/* ------------------------------------------------------------------
-	 * 2) 목록 조회
-	 * ------------------------------------------------------------------ */
-/*	async function loadList() {
-		const keywordEl = $("#keyword");
-		const deptEl = $("#dept");
-		const retiredYnEl = $("#retiredYn");
-
-		const params = new URLSearchParams({
-			keyword: keywordEl ? keywordEl.value : "",
-			dept: deptEl ? deptEl.value : "",
-			retiredYn: retiredYnEl && retiredYnEl.checked ? "Y" : "N",
-		});
-
-		const res = await fetch(`/hr/emp/list?${params.toString()}`);
-		const data = await res.json();
-		grid.resetData(data);
-	}
-
-	const btnSearch = $("#btnSearch");
-	if (btnSearch) btnSearch.addEventListener("click", loadList);
-	loadList();*/
-
-
-
-	/* ------------------------------------------------------------------
-	 * 4) 저장(등록/수정)
-	 * ------------------------------------------------------------------ */
-	const btnSave = $("#btnSave");
-	if (btnSave) {
-		btnSave.addEventListener("click", async () => {
-			const payload = {
-				empNo: $("#empNo")?.value ?? "",
-				empName: $("#empName")?.value ?? "",
-				phone: $("#phone")?.value ?? "",
-				email: $("#email")?.value ?? "",
-				hireDate: $("#hireDate")?.value ?? "",
-				hireType: $("#hireType")?.value ?? "NEW",
-				deptCode: $("#deptCode")?.value ?? "",
-				positionCode: $("#positionCode")?.value ?? "",
-				dutyCode: $("#dutyCode")?.value ?? "",
-				workStatus: $("#workStatus")?.value ?? "WORK",
-				zip: $("#zip")?.value ?? "",
-				addr: $("#addr")?.value ?? "",
-				retireDate: $("#retireDate")?.value ?? "",
-				reason: $("#reason")?.value ?? "",
-				bankName: $("#bankName")?.value ?? "",
-				accountNo: $("#accountNo")?.value ?? "",
-				remark: $("#remark")?.value ?? "",
-			};
-
-			const res = await fetch("/hr/emp", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
-
-			if (res.ok) {
-				alert("저장 완료");
-				loadList();
-			} else {
-				alert("저장 실패");
-			}
-		});
-	}
-
-	/* ------------------------------------------------------------------
-	 * 5) 탭 전환 (data-tab 기준으로 tab-xxx 보여주기)
-	 * ------------------------------------------------------------------ */
-	document.querySelectorAll(".tab-btn").forEach((btn) => {
-		btn.addEventListener("click", () => {
-			document
-				.querySelectorAll(".tab-btn")
-				.forEach((b) => b.classList.remove("active"));
-			document
-				.querySelectorAll(".tab-panel")
-				.forEach((p) => p.classList.remove("active"));
-
-			btn.classList.add("active");
-			const targetId = "tab-" + btn.dataset.tab; // basic/cert/career
-			const panel = $("#" + targetId);
-			if (panel) panel.classList.add("active");
-		});
-	});
-
-	/* ------------------------------------------------------------------
-	 * 6) 사진 업로드 미리보기
-	 * ------------------------------------------------------------------ */
-	const photoInput = $("#userPhoto");
-	if (photoInput) {
-		photoInput.addEventListener("change", (e) => {
-			const file = e.target.files?.[0];
-			if (!file) return;
-
-			const url = URL.createObjectURL(file);
-			const img = $("#photoPreview");
-			if (!img) return;
-
-			img.src = url;
-			img.classList.remove("d-none");
-			$(".photo-uploader__placeholder")?.classList.add("d-none");
-		});
-	}
-
-	/* ------------------------------------------------------------------
-	 * 7) 초기화
+	 * 초기화
 	 * ------------------------------------------------------------------ */
 	const btnReset = $("#btnReset");
 	if (btnReset) {
@@ -302,45 +338,36 @@ document.addEventListener("DOMContentLoaded", async () => {
 				img.classList.add("d-none");
 				$(".photo-uploader__placeholder")?.classList.remove("d-none");
 			}
-		});
-	}
-
-	/* ------------------------------------------------------------------
-	 * (옵션) 엑셀 export/upload 버튼이 나중에 다시 생기면 여기만 살리면 됨
-	 * 현재 HTML에는 없으므로 null 가드만 둠
-	 * ------------------------------------------------------------------ */
-	const exportBtn = $("#exportBtn");
-	if (exportBtn) {
-		exportBtn.addEventListener("click", () => {
-			const now = new Date();
-			const y = now.getFullYear();
-			const m = String(now.getMonth() + 1).padStart(2, "0");
-			const d = String(now.getDate()).padStart(2, "0");
-			const today = `${y}${m}${d}`;
-
-			grid.export("xlsx", {
-				fileName: `사원목록_${today}`,
-				useFormattedValue: true,
-			});
-		});
-	}
-
-	const excelUploadBtn = $("#excelUploadBtn");
-	const excelFileInput = $("#excelFileInput");
-	if (excelUploadBtn && excelFileInput) {
-		excelUploadBtn.addEventListener("click", () =>
-			excelFileInput.click()
-		);
-		excelFileInput.addEventListener("change", (e) => {
-			const file = e.target.files?.[0];
-			if (!file) return;
-			alert(`선택된 파일: ${file.name}`);
+			
+			// 자격증 초기화
+			const certTbody = document.querySelector('#certTbody');
+			certTbody.innerHTML = `
+			  <tr class="empty-row">
+			    <td colspan="8" class="text-center text-muted py-3">
+			      데이터가 없습니다. 추가해주세요.
+			    </td>
+			  </tr>
+			`;
+			document.querySelector("#certCount").textContent = 0;
+			
+			// 경력사항 초기화
+			const wex_tbody = document.querySelector('#careerTbody');
+			wex_tbody.innerHTML = 			`
+			  <tr class="empty-row">
+			    <td colspan="8" class="text-center text-muted py-3">
+			      데이터가 없습니다. 추가해주세요.
+			    </td>
+			  </tr>
+			`;
+			document.querySelector("#careerCount").textContent = 0;
+			
 		});
 	}
 	
 	
+	
 	/* ------------------------------------------------------------------
-	 * 8) 자격증 / 경력사항 동적 그리드 (추가 +, 수정 버튼)
+	 * 자격증 / 경력사항 동적 그리드 (추가 +, 수정 버튼)
 	 * ------------------------------------------------------------------ */
 	function setupSubGrid({ tbodyId, templateId, addBtnId, countId }) {
 	  const tbody = document.getElementById(tbodyId);
@@ -352,18 +379,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	  function updateCount() {
 	    if (!countEl) return;
-	    const rowCount = tbody.querySelectorAll("tr").length;
+	    const rowCount = tbody.querySelectorAll("tr:not(.empty-row)").length;
 	    countEl.textContent = rowCount;
 	  }
 
 	  function addRow() {
+		// "데이터가 없습니다" placeholder 있으면 제거
+		const emptyRow = tbody.querySelector('.empty-row');
+		if (emptyRow) emptyRow.remove();
+		
 	    const clone = template.content.firstElementChild.cloneNode(true);
 	    tbody.appendChild(clone);
 	    updateCount();
 	  }
-
-	  // 처음에 한 줄 깔고 싶으면 주석 해제
-	  // addRow();
 
 	  if (addBtn) {
 	    addBtn.addEventListener("click", () => addRow());
@@ -399,10 +427,76 @@ document.addEventListener("DOMContentLoaded", async () => {
 	  addBtnId: "btnCareerAdd",
 	  countId: "careerCount",
 	});
+		
 	
 	
 	/* ------------------------------------------------------------------
-	 * 9) 사원 이력조회 모달
+	 * 탭 전환 
+	 * ------------------------------------------------------------------ */
+	document.querySelectorAll(".tab-btn").forEach((btn) => {
+		btn.addEventListener("click", () => {
+			document
+				.querySelectorAll(".tab-btn")
+				.forEach((b) => b.classList.remove("active"));
+			document
+				.querySelectorAll(".tab-panel")
+				.forEach((p) => p.classList.remove("active"));
+
+			btn.classList.add("active");
+			const targetId = "tab-" + btn.dataset.tab; // basic/cert/career
+			const panel = $("#" + targetId);
+			if (panel) panel.classList.add("active");
+		});
+	});
+	
+	
+	/* ------------------------------------------------------------------
+	 * 사진 업로드 미리보기
+	 * ------------------------------------------------------------------ */
+	const photoInput = $("#userPhoto");
+	if (photoInput) {
+		photoInput.addEventListener("change", (e) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+
+			const url = URL.createObjectURL(file);
+			const img = $("#photoPreview");
+			if (!img) return;
+
+			img.src = url;
+			img.classList.remove("d-none");
+			$(".photo-uploader__placeholder")?.classList.add("d-none");
+		});
+	}
+	
+	
+	/* ------------------------------------------------------------------
+	 * Kakao Address API
+	 * ------------------------------------------------------------------ */
+	function findAddress() {
+	  new daum.Postcode({
+	    oncomplete: function (data) {
+	      // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+	      // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+	      // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+	      let roadAddr = data.roadAddress; // 도로명 주소 변수
+	      let zonecode = data.zonecode; // 도로명 주소 변수
+
+	      // 우편번호와 주소 정보를 해당 필드에 넣는다.
+	      document.getElementById("address").value = roadAddr;
+	      document.getElementById("zipCode").value = zonecode;
+	    }
+	  }).open();
+	}
+
+	// 지도 검색을 눌렀을 때 Kakao Address API 켜지도록 설정
+	document.getElementById("btnZipSearch").addEventListener('click', findAddress);
+	
+	
+
+	/* ------------------------------------------------------------------
+	 * 사원 이력조회 모달
 	 * ------------------------------------------------------------------ */
 	const historyModal = document.querySelector("#historyModal");
 	const historyCloseBtn = document.querySelector("#btnHistoryClose");
@@ -412,17 +506,91 @@ document.addEventListener("DOMContentLoaded", async () => {
 	// 열기
 	if (btnHistory && historyModal) {
 	  btnHistory.addEventListener("click", () => {
-	    // TODO: 선택한 행 정보에서 이름/사번 가져와서 세팅
-	    const row = grid.getRow(grid.getFocusedCell()?.rowKey);
-	    if (row) {
-	      const nameEl = document.querySelector("#historyEmpName");
-	      const noEl = document.querySelector("#historyEmpNo");
-	      if (nameEl) nameEl.textContent = row.empName ?? "";
-	      if (noEl) noEl.textContent = row.empNo ?? "";
+
+	    // 1) 상세조회 데이터 없으면 막기
+        if (!currentUserDetail) {
+	      showToast("사원 상세정보가 없습니다. 먼저 사원을 선택해 주세요.", 'warning');
+	      return;
 	    }
 
+	    // 2) 성명 / 사번 세팅
+	    const nameEl = document.querySelector("#historyModal #userName");
+	    const noEl   = document.querySelector("#historyModal #userId");
+
+	    if (nameEl) nameEl.textContent = currentUserDetail.userName ?? "";
+	    if (noEl)   noEl.textContent   = currentUserDetail.userId ?? "";
+
+	    // 3) 이력 테이블 렌더링
+		const list = currentUserDetail.historyList || [];
+		renderHistoryTables(list);
+
+	    // 4) 모달 열기
 	    historyModal.hidden = false;
 	  });
+	}
+
+	// 사원 이력 테이블 그리기
+	function renderHistoryTables(historyList) {
+	  const deptBody = document.querySelector("#historyDeptTbody");
+	  const salaryBody = document.querySelector("#historySalaryTbody");
+
+	  if (!deptBody || !salaryBody) return;
+
+	  deptBody.innerHTML = "";
+	  salaryBody.innerHTML = "";
+
+	  // historyList가 null이거나 빈 배열인 경우
+	  if (!Array.isArray(historyList) || historyList.length === 0) {
+	    deptBody.innerHTML = `<tr><td colspan="6" class="text-center">부서 이력이 없습니다.</td></tr>`;
+	    salaryBody.innerHTML = `<tr><td colspan="6" class="text-center">급여 이력이 없습니다.</td></tr>`;
+	    return;
+	  }
+
+	  historyList.forEach(h => {
+	    if (!h) return; // 항목 자체가 null일 때 skip
+
+	    // 🔹 부서 이력 (f1)
+	    if (h.histType === "f1") {
+	      const tr = document.createElement("tr");
+	      tr.innerHTML = `
+	        <td>${h.applyDate ?? ""}</td>
+	        <td>${h.prevDeptName ?? ""}</td>
+	        <td>${h.prevJobTitleName ?? ""}</td>
+	        <td>${h.newDeptName ?? ""}</td>
+	        <td>${h.newJobTitleName ?? ""}</td>
+	        <td>${h.deptChangeReason ?? ""}</td>
+	      `;
+	      deptBody.appendChild(tr);
+	    }
+
+	    // 🔹 급여 이력 (f2)
+	    if (h.histType === "f2") {
+	      const tr = document.createElement("tr");
+	      tr.innerHTML = `
+	        <td>${h.applyDate ?? ""}</td>
+	        <td>${formatNumber(h.baseSalary) || ""}</td>
+	        <td>${formatNumber(h.totalSalary) || ""}</td>
+	        <td>${h.payTypeName ?? ""}</td>
+	        <td>${h.salaryChangeReason ?? ""}</td>
+	        <td>${h.updatedBy ?? h.createdBy ?? ""}</td>
+	      `;
+	      salaryBody.appendChild(tr);
+	    }
+	  });
+
+	  // 🔥 혹시 f1 또는 f2가 아예 없는 경우에 대비
+	  if (deptBody.children.length === 0) {
+	    deptBody.innerHTML = `<tr><td colspan="6" class="text-center">부서 이력이 없습니다.</td></tr>`;
+	  }
+	  if (salaryBody.children.length === 0) {
+	    salaryBody.innerHTML = `<tr><td colspan="6" class="text-center">급여 이력이 없습니다.</td></tr>`;
+	  }
+	}
+
+	// 금액 포맷용 (65000000 -> "65,000,000")
+	function formatNumber(value) {
+	  if (value === null || value === undefined) return "";
+	  return value.toLocaleString();
 	}
 
 	// 닫기(버튼/백드롭)
@@ -449,12 +617,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 	  });
 	});
 
-	
+
 	/* ------------------------------------------------------------------
-	 * 10) 사원카드(인쇄) 모달
+	 * 사원카드(인쇄) 모달
 	 * ------------------------------------------------------------------ */
 	const printPreviewModal = document.getElementById('printPreviewModal');
-	const btnPrint = document.getElementById('btnPrint');              // 기존 인쇄 버튼
+	const btnPrint = document.getElementById('btnPrint');              
 	const btnPrintPreviewClose = document.getElementById('btnPrintPreviewClose');
 	const btnPrintPreviewConfirm = document.getElementById('btnPrintPreviewConfirm');
 
@@ -464,20 +632,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 	const printPageTotal = document.getElementById('printPageTotal');
 	const printPreviewPage = document.getElementById('printPreviewPage');
 
-	// 나중에 체크된 사원들 카드 HTML을 여기 배열에 담는 구조로 가면 됨
-	let printPages = [];   // ['<div>첫번째 카드</div>', '<div>두번째 카드</div>', ...]
+	// 선택된 사원 카드 미리보기용 배열
+	let printPages = [];   
 	let printPageIndex = 0;
 
-	function openPrintPreview() {
-	  // TODO: 선택된 사원들로 printPages 채우기
-	  // 예시 (당장은 플레이스홀더만):
-	  if (printPages.length === 0) {
-	    printPages = ['<div class="print-preview__placeholder">사원 카드 미리보기</div>'];
+	// 인쇄 버튼 클릭 시
+	btnPrint?.addEventListener('click', () => {
+	  // 1) 체크된 사원들 가져오기
+	  const checkedRows = grid.getCheckedRows();
+
+	  if (!checkedRows || checkedRows.length === 0) {
+	    showToast('인쇄할 사원을 먼저 선택해 주세요.', 'warning');
+	    return;
 	  }
 
+	  // 2) 각 사원의 userId 로 PDF URL 만들기 → iframe HTML 생성
+	  printPages = checkedRows.map(row => {
+	    const userId = row.userId;
+	    const url = `/api/hr/userCard?userId=${encodeURIComponent(userId)}`;
+
+	    return `
+	      <iframe
+	        src="${url}"
+	        style="width:100%;height:100%;border:none;"
+	      ></iframe>
+	    `;
+	  });
+
+	  // 3) 첫 페이지로 세팅 후 모달 오픈
+	  printPageIndex = 0;
 	  renderPrintPage();
 	  printPreviewModal.removeAttribute('hidden');
-	}
+	});
+
 
 	function closePrintPreview() {
 	  printPreviewModal.setAttribute('hidden', '');
@@ -492,16 +679,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 	  printPageCurrent.textContent = printPageIndex + 1;
 	  printPageTotal.textContent = total;
 
-	  // 화살표 활성/비활성
 	  btnPrintPrev.classList.toggle('is-disabled', printPageIndex === 0);
 	  btnPrintNext.classList.toggle('is-disabled', printPageIndex === total - 1);
 	}
 
-	// 이벤트 바인딩
-	btnPrint?.addEventListener('click', openPrintPreview);
-	btnPrintPreviewClose?.addEventListener('click', closePrintPreview);
-	btnPrintPreviewConfirm?.addEventListener('click', closePrintPreview);
+	btnPrintPreviewClose.addEventListener('click', closePrintPreview);
+	
+	// 확인버튼 : 선택된 사원카드 PDF 모두 다운로드
+	btnPrintPreviewConfirm.addEventListener('click', () => {
+		// 현재 체크된 행 다시 조회
+		const checkedRows = grid.getCheckedRows();
+		
+		// 각 사원에 대해 a 태그를 만들어 클릭 -> 브라우저가 다운로드 처리
+		checkedRows.forEach(row => {
+			const userId = row.userId;
+			const url = `/api/hr/userCard?userId=${encodeURIComponent(userId)}`;
+			
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `userCard-${userId}.pdf`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		});
+		
+		// 다운로드 후 모달 닫기
+		closePrintPreview();
+	});
 
+	// 페이지네이션
 	btnPrintPrev?.addEventListener('click', () => {
 	  if (printPageIndex > 0) {
 	    printPageIndex--;
@@ -515,31 +721,114 @@ document.addEventListener("DOMContentLoaded", async () => {
 	    renderPrintPage();
 	  }
 	});
-	
-	
+
+
+
 	
 	/* ------------------------------------------------------------------
-	 * 11) Kakao Address API
+	 * 이력 모달 - 인쇄 
 	 * ------------------------------------------------------------------ */
-	function findAddress() {
-	  new daum.Postcode({
-	    oncomplete: function (data) {
-	      // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
 
-	      // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
-	      // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
-	      let roadAddr = data.roadAddress; // 도로명 주소 변수
-	      let zonecode = data.zonecode; // 도로명 주소 변수
+	const btnHistoryPrint = document.querySelector("#btnHistoryPrint");
 
-	      // 우편번호와 주소 정보를 해당 필드에 넣는다.
-	      document.getElementById("address").value = roadAddr;
-	      document.getElementById("zipCode").value = zonecode;
-	    }
-	  }).open();
+	if (btnHistoryPrint) {
+	  btnHistoryPrint.addEventListener("click", () => {
+	    window.print();
+	  });
+	}
+	
+	
+	
+	
+
+
+
+	/* ------------------------------------------------------------------
+	 * 4) 저장(등록/수정)
+	 * ------------------------------------------------------------------ */
+/*	const btnSave = $("#btnSave");
+	if (btnSave) {
+		btnSave.addEventListener("click", async () => {
+			const payload = {
+				empNo: $("#empNo")?.value ?? "",
+				empName: $("#empName")?.value ?? "",
+				phone: $("#phone")?.value ?? "",
+				email: $("#email")?.value ?? "",
+				hireDate: $("#hireDate")?.value ?? "",
+				hireType: $("#hireType")?.value ?? "NEW",
+				deptCode: $("#deptCode")?.value ?? "",
+				positionCode: $("#positionCode")?.value ?? "",
+				dutyCode: $("#dutyCode")?.value ?? "",
+				workStatus: $("#workStatus")?.value ?? "WORK",
+				zip: $("#zip")?.value ?? "",
+				addr: $("#addr")?.value ?? "",
+				retireDate: $("#retireDate")?.value ?? "",
+				reason: $("#reason")?.value ?? "",
+				bankName: $("#bankName")?.value ?? "",
+				accountNo: $("#accountNo")?.value ?? "",
+				remark: $("#remark")?.value ?? "",
+			};
+
+			const res = await fetch("/hr/emp", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
+
+			if (res.ok) {
+				alert("저장 완료");
+				loadList();
+			} else {
+				alert("저장 실패");
+			}
+		});
+	}*/
+
+
+
+
+
+
+
+	/* ------------------------------------------------------------------
+	 * (옵션) 엑셀 export/upload 버튼이 나중에 다시 생기면 여기만 살리면 됨
+	 * 현재 HTML에는 없으므로 null 가드만 둠
+	 * ------------------------------------------------------------------ */
+/*	const exportBtn = $("#exportBtn");
+	if (exportBtn) {
+		exportBtn.addEventListener("click", () => {
+			const now = new Date();
+			const y = now.getFullYear();
+			const m = String(now.getMonth() + 1).padStart(2, "0");
+			const d = String(now.getDate()).padStart(2, "0");
+			const today = `${y}${m}${d}`;
+
+			grid.export("xlsx", {
+				fileName: `사원목록_${today}`,
+				useFormattedValue: true,
+			});
+		});
 	}
 
-	// 지도 검색을 눌렀을 때 Kakao Address API 켜지도록 설정
-	document.getElementById("btnZipSearch").addEventListener('click', findAddress);
+	const excelUploadBtn = $("#excelUploadBtn");
+	const excelFileInput = $("#excelFileInput");
+	if (excelUploadBtn && excelFileInput) {
+		excelUploadBtn.addEventListener("click", () =>
+			excelFileInput.click()
+		);
+		excelFileInput.addEventListener("change", (e) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+			alert(`선택된 파일: ${file.name}`);
+		});
+	}
+	*/
+	
+	
+	
+
+	
+
 
 	
 	/* ------------------------------------------------------------------

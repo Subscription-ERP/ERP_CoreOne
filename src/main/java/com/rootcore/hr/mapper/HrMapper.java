@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.rootcore.hr.vo.CertificationVO;
 import com.rootcore.hr.vo.DeptVO;
 import com.rootcore.hr.vo.UserHistoryVO;
+import com.rootcore.hr.vo.UserSearchVO;
 import com.rootcore.hr.vo.UserVO;
 import com.rootcore.hr.vo.WorkExperienceVO;
 
@@ -20,5 +21,6 @@ public interface HrMapper {
 	List<WorkExperienceVO> selectUserWorkExperience(String userId);  // 상세조회 - 경력사항
 	List<UserHistoryVO> selectUserHistory(String userId);            // 상세조회 - 이력
 	List<DeptVO> selectDeptMaster();                                 // 부서조회
+	List<UserVO> selectUserSearch(UserSearchVO userSearchVO);        // 검색
 
 }

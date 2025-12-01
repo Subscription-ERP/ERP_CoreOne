@@ -26,32 +26,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable());
+        http.csrf(csrf -> csrf.disable())
+		    // iframe 허용 (같은 도메인에서만)
+		    .headers(headers ->
+		      headers.frameOptions(frame -> frame.sameOrigin())
+		     );
 
         http.authorizeHttpRequests(auth -> auth
-
-                // 🔹 정적 리소스는 항상 허용
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-
-                // 🔹 로그인 이전 모든 기능은 /auth/ 로 통일 → 전체 허용
                 .requestMatchers("/auth/**").permitAll()
-
-                // 🔹 ERP 내부 경로는 모두 로그인 필요
-                .requestMatchers(
-                        "/cm/**",
-                        "/fi/**",
-                        "/hr/**",
-                        "/sd/**",
-                        "/pm/**",
-                        "/mes/**",
-                        "/system/**"
-                ).authenticated()
-
-                // 🔹 그 외 모든 요청은 인증 필요
+                .requestMatchers("/cm/**", "/fi/**", "/hr/**", "/sd/**", "/pm/**", "/mes/**", "/system/**").authenticated()
                 .anyRequest().authenticated()
         );
 
-        // 🔹 로그인 설정
         http.formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/doLogin")
@@ -62,7 +49,6 @@ public class SecurityConfig {
                 .permitAll()
         );
 
-        // 🔹 Remember-Me 설정
         http.rememberMe(me -> me
                 .key("coreone-remember-key")
                 .rememberMeParameter("rememberId")

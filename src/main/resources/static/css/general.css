@@ -408,6 +408,135 @@ input[type="checkbox"]:checked {
   display: block;
 }
 
+
+/* Toast 알림  ---------------------------------------------------------------
+	사용방법 : js에서 아래와 같이 작성 
+	showToast('인쇄할 사원을 먼저 선택해 주세요.', 'warning');
+	showToast('저장되었습니다.', 'success');
+	showToast('권한이 없습니다.', 'error');
+	showToast('데이터를 불러오는 중입니다.', 'info');
+ */
+.rc-toast {
+  position: fixed;
+  right: 24px;
+  top: 24px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 260px;
+  max-width: 380px;
+  padding: 16px 20px;
+
+  border-radius: 12px;
+  background: rgba(34, 34, 34, 0.92);
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 3000;
+
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* 나타날 때 */
+.rc-toast--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 아이콘 스타일 */
+.rc-toast__icon {
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 16px;
+}
+
+/* 텍스트 영역 */
+.rc-toast__message {
+  flex: 1;
+  word-break: keep-all;
+}
+
+/* 타입별 강조(왼쪽 굵은 바) */
+.rc-toast--info {
+  border-left: 6px solid #0d6efd;
+}
+.rc-toast--success {
+  border-left: 6px solid #198754;
+}
+.rc-toast--warning {
+  border-left: 6px solid #ffc107;
+}
+.rc-toast--error {
+  border-left: 6px solid #dc3545;
+}
+
+/* 아이콘 컬러 (조화롭게!) */
+.rc-toast--info .rc-toast__icon {
+  color: #0d6efd;
+}
+.rc-toast--success .rc-toast__icon {
+  color: #198754;
+}
+.rc-toast--warning .rc-toast__icon {
+  color: #ffc107;
+}
+.rc-toast--error .rc-toast__icon {
+  color: #dc3545;
+}
+
+
+/* Fullscreen Loader ---------------------------------------------------------- */
+
+.rc-loader-overlay {
+  position: fixed;
+  inset: 0; /* 화면 전체 덮기 */
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(2px);
+  display: none;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 중앙 스피너 */
+.rc-loader-spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(255,255,255,0.4);
+  border-top-color: #5D72B6;   /* 네가 지정한 기본 색상 */
+  border-radius: 50%;
+  animation: rcSpin 0.8s linear infinite;
+}
+
+@keyframes rcSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+
+
+
+
 /* input[type="file"] 스타일 조정(포기상태) -------------------------------------------------- */
 /* .form-grid input[type="file"] {
   width: 100%;
