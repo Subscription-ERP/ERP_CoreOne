@@ -1,5 +1,6 @@
 package com.rootcore.auth.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,30 +8,66 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.rootcore.auth.security.CustomAuthenticationFailureHandler;
+import com.rootcore.auth.security.CustomAuthenticationSuccessHandler;
+
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    /**
-     * 비밀번호 암호화를 위한 PasswordEncoder Bean 등록
-     * BCrypt 방식 사용
-     */
+    private final CustomAuthenticationFailureHandler failureHandler;
+    private final CustomAuthenticationSuccessHandler successHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * 기본 Security 설정
-     * 지금은 개발 단계이므로 모든 요청 허용
-     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http
-            .csrf(csrf -> csrf.disable())   // POST 요청 편하게 하기 위해 CSRF 비활성화 (개발 단계)
-            .authorizeHttpRequests(auth -> auth
-                    .anyRequest().permitAll()
-            );
+        http.csrf(csrf -> csrf.disable());
+
+        http.authorizeHttpRequests(auth -> auth
+
+                // 🔹 정적 리소스는 항상 허용
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+
+                // 🔹 로그인 이전 모든 기능은 /auth/ 로 통일 → 전체 허용
+                .requestMatchers("/auth/**").permitAll()
+
+                // 🔹 ERP 내부 경로는 모두 로그인 필요
+                .requestMatchers(
+                        "/cm/**",
+                        "/fi/**",
+                        "/hr/**",
+                        "/sd/**",
+                        "/pm/**",
+                        "/mes/**",
+                        "/system/**"
+                ).authenticated()
+
+                // 🔹 그 외 모든 요청은 인증 필요
+                .anyRequest().authenticated()
+        );
+
+        // 🔹 로그인 설정
+        http.formLogin(form -> form
+                .loginPage("/auth/login")
+                .loginProcessingUrl("/auth/doLogin")
+                .usernameParameter("userId")
+                .passwordParameter("password")
+                .failureHandler(failureHandler)
+                .successHandler(successHandler)
+                .permitAll()
+        );
+
+        // 🔹 Remember-Me 설정
+        http.rememberMe(me -> me
+                .key("coreone-remember-key")
+                .rememberMeParameter("rememberId")
+                .tokenValiditySeconds(60 * 60 * 24 * 30)
+        );
 
         return http.build();
     }
