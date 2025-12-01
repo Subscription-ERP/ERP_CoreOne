@@ -70,7 +70,7 @@
 						<div
 							class="rounded-circle border d-flex align-items-center justify-content-center"
 							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
-						<div class="mt-2">구독 정보</div>
+						<div class="mt-2">회사 등록</div>
 					</div>
 
 					<!-- 2단계 -->
@@ -78,7 +78,7 @@
 						<div
 							class="rounded-circle border d-flex align-items-center justify-content-center"
 							style="width: 40px; height: 40px; background: #f8f9fa;">2</div>
-						<div class="mt-2">사용자 정보</div>
+						<div class="mt-2">플랜 선택</div>
 					</div>
 
 					<!-- 3단계: 현재 단계 -->
@@ -118,16 +118,7 @@
 				</div>
 			</div>
 
-			<!-- 하단 이전/다음 버튼 -->
-			<div class="row mt-4">
-				<div class="col-12 d-flex justify-content-center gap-3">
-					<a th:href="@{/subscribe/step2}"
-						class="btn btn-outline-secondary px-4"> 이전으로 </a>
-					<!-- 동의 버튼은 모달 안에도 한 번 더 있음 -->
-					<a th:href="@{/subscribe/step4}" class="btn btn-dark px-4">
-						다음으로 </a>
-				</div>
-			</div>
+			
 
 		</div>
 
@@ -189,11 +180,61 @@
 							<hr />
 
 							<p class="mt-3">
-								계약일자 : 20__년 __월 __일<br /> 회사명 : ____________________________<br />
-								대표자 : ____________________________ (서명)
-							</p>
+    계약일자 :
+    <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy년 MM월 dd일')}">
+        20__년 __월 __일
+    </span>
+    <br />
+
+    회사명 :
+    <span th:text="${company.companyName}">
+        ____________________________
+    </span>
+    <br />
+
+    대표자 :
+    <span th:text="${company.ceoName}">
+        ____________________________
+    </span>
+    (서명)
+</p>
+
+<hr />
+
+<p class="mt-3">
+    <strong>선택한 플랜</strong>
+</p>
+<ul>
+
+    <!-- modules 가 List<ModuleVO> 인 경우 -->
+    <li th:each="m : ${plan}"
+        th:text="${plan.planName}">
+        플랜명
+    </li>
+    <li th:each="m : ${plan}"
+        th:text="${plan.subsPeriod + '개월'}">
+        구독기간
+    </li>
+    <li th:each="m : ${plan}"
+        th:text="${plan.userCount + '명'}">
+        사용자 수
+    </li>
+    <li>
+        <p>
+    총 결제금액 :
+    <strong th:text="${#numbers.formatInteger(totalPrice, 3, 'COMMA')}">0</strong> 원
+</p>
+    </li>
+
+    <!-- 만약 List<String> 이라면 위 대신 이렇게:
+    <li th:each="m : ${modules}"
+        th:text="${m}">
+        모듈명
+    </li>
+    -->
+</ul>
 							<!-- 서명 영역 -->
-							<div class="mt-4">
+							<!-- <div class="mt-4">
 								<label class="form-label d-block mb-2">대표자 서명</label>
 								<div class="border rounded p-2 text-center">
 									<canvas id="signatureCanvas" width="300" height="150"
@@ -203,9 +244,9 @@
 									class="btn btn-sm btn-outline-secondary mt-2"
 									id="clearSignature">서명 지우기</button>
 
-								<!-- 서명 이미지를 Base64로 담을 hidden input -->
+								서명 이미지를 Base64로 담을 hidden input
 								<input type="hidden" name="signatureData" id="signatureData">
-							</div>
+							</div> -->
 						</div>
 
 						<div class="form-check mt-3">
@@ -221,7 +262,7 @@
 							data-bs-dismiss="modal">닫기</button>
 
 						<!-- 동의 시 결제 페이지로 이동 -->
-						<a th:href="@{/step4}" class="btn btn-dark"
+						<a th:href="@{/payment}" class="btn btn-dark"
 							onclick="return document.getElementById('agreeCheck').checked;">
 							동의하고 결제 단계로 이동 </a>
 					</div>
@@ -234,7 +275,7 @@
 </body>
 </html>
 <script>
-  (function () {
+  /* (function () {
     const canvas = document.getElementById('signatureCanvas');
     if (!canvas) return;
 
@@ -297,6 +338,6 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       document.getElementById('signatureData').value = '';
     });
-  })();
+  })(); */
 </script>
 

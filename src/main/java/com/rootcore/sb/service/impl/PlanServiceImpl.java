@@ -1,7 +1,8 @@
 package com.rootcore.sb.service.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -11,41 +12,42 @@ import com.rootcore.sb.vo.PlanVO;
 
 @Service
 public class PlanServiceImpl implements PlanService {
-	  private final PlanMapper planMapper;
+	private static final BigDecimal VAT_RATE = new BigDecimal("0.10");
+	private final PlanMapper planMapper;
 
-	    public PlanServiceImpl(PlanMapper planMapper) {
-	        this.planMapper = planMapper;
-	    }
-	    
-	    @Override
-	    public List<PlanVO> getPlanList() {
-	        List<PlanVO> planList = planMapper.selectPlanList();
+	public PlanServiceImpl(PlanMapper planMapper) {
+		this.planMapper = planMapper;
+	}
 
-	        return planList.stream().map(p -> {
-	            PlanVO vo = new PlanVO();
-	            vo.setPlanCode(p.getPlanCode());
-	            vo.setPlanName(p.getPlanName());
-	            vo.setPlanInfo(p.getPlanInfo());
-	            vo.setPrice(p.getPrice());
-	            vo.setSubsPeriod(p.getSubsPeriod());
-	            vo.setUserCount(p.getUserCount());
-	            return vo;
-	        }).collect(Collectors.toList());
-	    }
-	    
-	    @Override
-	    public PlanVO getPlanDetail(String planCode) {
-	        PlanVO p = planMapper.selectPlanByCode(planCode);
-	        if (p == null) return null;
+	@Override
+	public List<PlanVO> getPlanList() {
+		return planMapper.selectPlanList();
 
-	        PlanVO vo = new PlanVO();
-	        vo.setPlanCode(p.getPlanCode());
-	        vo.setPlanName(p.getPlanName());
-	        vo.setPlanInfo(p.getPlanInfo());
-	        vo.setPrice(p.getPrice());
-	        vo.setSubsPeriod(p.getSubsPeriod());
-	        vo.setUserCount(p.getUserCount());
-	        return vo;
-	    }
+	}
 
+	@Override
+	public PlanVO getPlanDetail(String planCode) {
+		PlanVO p = planMapper.selectPlanByCode(planCode);
+
+		return p;
+	}
+
+	private BigDecimal calculateBaseTotal(PlanVO plan) {
+	    BigDecimal price = plan.getPrice();
+	    Integer subsPeriod = plan.getSubsPeriod();
+	    return price.multiply(BigDecimal.valueOf(subsPeriod)); // 월요금 × 개월수
+	}
+	@Override
+	public BigDecimal calculateVat(PlanVO plan) {
+	    BigDecimal baseTotal = calculateBaseTotal(plan);
+	    BigDecimal vat = baseTotal.multiply(VAT_RATE);
+	    return vat.setScale(0, RoundingMode.HALF_UP);
+	}
+	@Override
+	public BigDecimal calculateTotalPrice(PlanVO plan) {
+	    BigDecimal baseTotal = calculateBaseTotal(plan);
+	    BigDecimal vat = baseTotal.multiply(VAT_RATE);
+	    BigDecimal finalPrice = baseTotal.add(vat);
+	    return finalPrice.setScale(0, RoundingMode.HALF_UP);
+	}
 }
