@@ -163,7 +163,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		custModal.hidden = false;
 		custModal.classList.remove('hidden');
 
-		custModal.dispatchEvent(new Event('modalopen'));
+		if (window.custModalGrid) {
+			window.custModalGrid.refreshLayout();
+		}
 	}
 
 	function closeCustModal() {
@@ -179,7 +181,5 @@ document.addEventListener("DOMContentLoaded", function () {
 	btnCustCancel.addEventListener('click', closeCustModal);
 
 	// 배경 클릭 시 닫기 (옵션)
-	backdrop.addEventListener('click', function (e) {
-		closeCustModal();
-	});
+	backdrop.addEventListener('click', closeCustModal);
 });
