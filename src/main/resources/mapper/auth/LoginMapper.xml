@@ -77,12 +77,24 @@
         WHERE USER_ID = #{userId}
     </update>
 
-    <!-- 8. 실패 횟수 0 + 마지막 로그인 동시에 업데이트 -->
+    <!-- 8. 실패 횟수 0 + 마지막 로그인 동시에 -->
     <update id="resetFailCountAndLastLogin">
         UPDATE TB_LOGIN_MASTER
         SET 
             FAIL_COUNT = 0,
             LAST_LOGIN = SYSDATE,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <!-- 9. ★ 계정 잠금 해제 (자동 unlock + 관리자 unlock 공통 사용) -->
+    <update id="unlockUserAccount">
+        UPDATE TB_LOGIN_MASTER
+        SET 
+            STATUS = 'ACTIVE',
+            FAIL_COUNT = 0,
+            LOCKED_DATE = NULL,
             UPDATED_BY = 'SYSTEM',
             UPDATE_DATE = SYSDATE
         WHERE USER_ID = #{userId}
