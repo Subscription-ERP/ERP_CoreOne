@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class PayrollVO {
 	
-	private String payrollCode; // 신고귀속코드
+	private String payrollCode; // 급여대장코드
 	private String companyCode; // 회사코드
 	private String payrollPeriod; // 귀속연월
 	private String payrollType; // 급여구분
@@ -26,5 +26,5 @@ public class PayrollVO {
 	private String userId; // 사원ID
 	private String paymentStartDate; // 지급시작일
 	private String paymentEndDate; // 지급종료일
-	
+	private String payrollPeriodCode; // 귀속연월코드
 }

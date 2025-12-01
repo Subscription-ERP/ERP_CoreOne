@@ -15,4 +15,7 @@ public interface PayrollMapper {
 	
 	// 급여대장-상여등록
 	int insertBonusPayrollOne(PayrollVO param);
+	
+	// 신고귀속코드
+	String selectNewPeriodCode();
 }
