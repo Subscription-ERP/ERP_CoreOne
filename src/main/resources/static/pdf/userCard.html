@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>사원 카드</title>
+
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            font-size: 10px;
+            margin: 35px 25px;
+        }
+
+		/* 상단 제목 테이블 */
+		.title-table {
+		    width: 100%;
+		    border-collapse: collapse;
+		    margin-bottom: 20px;
+		}
+		
+		/* 왼쪽 큰 "사원카드" 박스 */
+		.title-cell {
+		    border: 0.5px solid #bbb;
+		    text-align: center;
+		    font-size: 20px;
+		    font-weight: bold;
+		    padding: 8px 0;
+		    letter-spacing: 0.5em; 
+		}
+		
+		/* 오른쪽 위 "사원번호" 라벨 – 여기만 배경색 */
+		.title-label {
+		    border: 0.5px solid #bbb;
+		    text-align: center;
+		    width: 130px;
+		    font-size: 10px;
+		    font-weight: bold;
+		    background-color: #f5f5f5;  
+		}
+		
+		/* 오른쪽 아래 실제 사원번호 값 */
+		.title-value {
+		    border: 0.5px solid #bbb;
+		    text-align: center;
+		    font-size: 10px;
+		    padding: 6px 0;
+		}
+
+        .card-wrapper {
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            /* 2. 전체 테두리 얇게 */
+            border: 0.5px solid #bbb;
+            padding: 6px 8px;
+            vertical-align: middle;
+            word-break: break-all;
+        }
+        th{
+            text-align: center;
+        }
+
+        .photo-area {
+            width: 90px;
+            text-align: center;
+        }
+
+        .photo-box {
+            width: 70px;
+            height: 90px;
+            border: none;
+            margin: 0 auto;
+            font-size: 10px;
+            text-align: center;
+            /* 5. 세로/가로 중앙 정렬 (flex 대신 line-height 사용) */
+            line-height: 90px;
+        }
+
+        .side-title {
+            width: 24px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
+
+        .side-title.vertical {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .label {
+            background-color: #f5f5f5;
+            width: 80px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.5em;
+        }
+        .sub-table-title{
+        	background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+
+<body>
+<!-- 상단 제목 + 사원번호 영역 -->
+<table class="title-table">
+    <tr>
+        <!-- 왼쪽: 사원카드 (2줄 합치기) -->
+        <td class="title-cell" rowspan="2">사원카드</td>
+
+        <!-- 오른쪽 위: 사원번호 라벨 (배경색) -->
+        <td class="title-label">사원번호</td>
+    </tr>
+    <tr>
+        <!-- 오른쪽 아래: 실제 사원번호 값 -->
+        <td class="title-value" id="headerEmpNo">EMP25010100001</td>
+    </tr>
+</table>
+
+<div class="card-wrapper">
+
+    <!-- 기본 정보 -->
+    <table>
+        <tr>
+            <td rowspan="8" class="photo-area">
+                <div class="photo-box" id="photoArea">사진</div>
+            </td>
+            <td class="side-title vertical" rowspan="8">기<br>본<br>정<br>보</td>
+            <td class="label">사원번호</td>
+            <td id="empNo"></td>
+            <td class="label">성명</td>
+            <td id="empName"></td>
+        </tr>
+
+        <tr>
+            <td class="label">연락처</td>
+            <td id="phone"></td>
+            <td class="label">이메일</td>
+            <td id="email"></td>
+        </tr>
+
+        <tr>
+            <td class="label">입사일</td>
+            <td id="hireDate"></td>
+            <td class="label">인사구분</td>
+            <td id="hireTypeName"></td>
+        </tr>
+
+        <tr>
+            <td class="label">부서</td>
+            <td id="deptName"></td>
+            <td class="label">직위/직급</td>
+            <td id="jobTitle"></td>
+        </tr>
+
+        <tr>
+            <td class="label">직책</td>
+            <td id="position"></td>
+            <td class="label">세대주 여부</td>
+            <td id="householder"></td>
+        </tr>
+
+        <tr>
+            <td class="label">우편번호</td>
+            <td id="zipCode"></td>
+            <td class="label">주소</td>
+            <td id="address"></td>
+        </tr>
+
+        <tr>
+            <td class="label">가족수</td>
+            <td id="familyCnt"></td>
+            <td class="label">자녀수</td>
+            <td id="childrenCnt"></td>
+        </tr>
+
+        <tr>
+            <td class="label">퇴사일</td>
+            <td id="leaveDate"></td>
+            <td class="label">퇴사사유</td>
+            <td id="leaveReason"></td>
+        </tr>
+    </table>
+
+    <!-- 급여 정보 -->
+    <table>
+        <tr>
+            <td class="side-title vertical" rowspan="2">급여</td>
+            <td class="label">은행</td>
+            <td id="bankName"></td>
+            <td class="label">계좌번호</td>
+            <td id="accountNo"></td>
+        </tr>
+        <tr>
+            <td class="label">예금주</td>
+            <td id="accountHolder"></td>
+            <td class="label">급여</td>
+            <td id="salary"></td>
+        </tr>
+    </table>
+
+    <!-- 자격증 -->
+    <table>
+        <tr>
+            <td class="section-title" colspan="6">자격증</td>
+        </tr>
+        <tr class="sub-table-title">
+            <th>자격증명</th>
+            <th>발급기관</th>
+            <th>취득일자</th>
+            <th>자격번호</th>
+            <th>유효/만료일</th>
+            <th>비고</th>
+        </tr>
+
+        <tbody id="licenseList">
+        <!-- JSoup로 <tr> 추가 -->
+        </tbody>
+    </table>
+
+    <!-- 경력사항 -->
+    <table>
+        <tr>
+            <td class="section-title" colspan="7">경력사항</td>
+        </tr>
+        <tr class="sub-table-title">
+            <th>회사명</th>
+            <th>부서명</th>
+            <th>직위/직급</th>
+            <th>입사일자</th>
+            <th>퇴사일자</th>
+            <th>담당업무</th>
+            <th>최종연봉</th>
+        </tr>
+
+        <tbody id="careerList">
+        <!-- JSoup로 <tr> 추가 -->
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

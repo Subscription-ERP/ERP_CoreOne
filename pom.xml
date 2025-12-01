@@ -114,8 +114,14 @@
 			<artifactId>thymeleaf-layout-dialect</artifactId>
 		</dependency>
 
+		<!-- JSoup(값읽기) -->
+		<dependency>
+		    <groupId>org.jsoup</groupId>
+		    <artifactId>jsoup</artifactId>
+		    <version>1.17.2</version>
+		</dependency>
 
-		<!-- OpenHTMLtoPDF -->
+		<!-- OpenHTMLtoPDF(PDF 출력) -->
 		<dependency>
 			<groupId>com.openhtmltopdf</groupId>
 			<artifactId>openhtmltopdf-core</artifactId>
@@ -126,7 +132,7 @@
 			<groupId>com.openhtmltopdf</groupId>
 			<artifactId>openhtmltopdf-pdfbox</artifactId>
 			<version>1.0.10</version>
-		</dependency>
+		</dependency>	
 
 		<!-- CoolSMS(Java/Kotlin) SDK (상준) -->
 		<dependency>
@@ -162,6 +168,7 @@
 			<artifactId>ojdbc11</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+	
 
 
 	</dependencies>
