@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const Grid = tui.Grid;
   const form = document.getElementById('custForm');
+  const btnSearch = document.getElementById("btnSearch");
   const btnSave = document.getElementById('btnSave');
 
   // toast grid 색상 변경
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rowHeaders: ['rowNum'],
     bodyHeight: 300,
     scrollX: false,
-    scrollY: false,
+    scrollY: true,
     columns: [
       { header: '거래처코드', name: 'custCode', align: 'center' },
       { header: '거래처명', name: 'custName' },
@@ -55,7 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
   custTypeListData();
 
   // 검색 눌렀을 때 검색 함수 실행
-  document.getElementById("btnSearch").addEventListener('click', searchCust);
+  btnSearch.addEventListener('click', searchCust);
+
+  // Enter 눌렀을 때 검색
+  document.getElementById('searchCustCode').addEventListener('keydown', handleEnter);
+  document.getElementById('searchCustName').addEventListener('keydown', handleEnter);
 
   // 사용중단 포함 체크 변경 시 바로 검색
   document.getElementById("includeStopped").addEventListener('change', searchCust);
@@ -64,12 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("btnReset").addEventListener('click', resetData);
 
   // 지도 검색을 눌렀을 때 Kakao Address API 실행
-  document.getElementById("btnZipSearch").addEventListener('click', findAddress);
+  document.getElementById("btnOfficeSearch").addEventListener('click', findAddress);
 
   // 행 클릭시 상세정보 보기
   grid.on('click', (e) => {
     const rowKey = e.rowKey;
-
     if (rowKey == null) return;
 
     const row = grid.getRow(rowKey);
@@ -137,11 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 거래처 검색
   function searchCust() {
+    const custCode = document.getElementById('searchCustCode').value.trim();
     const custName = document.getElementById('searchCustName').value.trim();
-    const custType = document.getElementById('searchCustType').value;
+    const custTypeCode = document.getElementById('searchCustType').value;
     const includeStopped = document.getElementById('includeStopped').checked;
 
-    const params = { custName, custType, includeStopped };
+    const params = { custCode, custName, custTypeCode, includeStopped };
 
     fetch('/api/sd/searchCust', {
       method: 'POST',
@@ -266,6 +271,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     return true;
+  }
+
+  // Enter 입력 시 검색
+  function handleEnter(e) {
+    if(e.key === 'Enter') {
+      e.preventDefault();
+      btnSearch.click();
+    }
   }
 
   // Kakao Address API

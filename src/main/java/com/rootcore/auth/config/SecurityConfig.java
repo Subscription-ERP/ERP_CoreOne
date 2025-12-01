@@ -28,7 +28,7 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
 
-        http.authorizeHttpRequests(auth -> auth
+        /*http.authorizeHttpRequests(auth -> auth
 
                 // 🔹 정적 리소스는 항상 허용
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
@@ -67,8 +67,7 @@ public class SecurityConfig {
                 .key("coreone-remember-key")
                 .rememberMeParameter("rememberId")
                 .tokenValiditySeconds(60 * 60 * 24 * 30)
-        );
-
+        );*/
         return http.build();
     }
 }

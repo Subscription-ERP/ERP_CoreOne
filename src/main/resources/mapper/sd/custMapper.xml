@@ -29,11 +29,14 @@
         JOIN tb_cm_code cmCode
         ON cust.cust_type = cmcode.code
         <where>
+            <if test="custCode != null and custCode != ''">
+                AND cust.cust_code LIKE '%' || #{custCode} || '%'
+            </if>
             <if test="custName != null and custName != ''">
                 AND cust.cust_name LIKE '%' || #{custName} || '%'
             </if>
-            <if test="custType != null and custType != ''">
-                AND cmCode.code = #{custType}
+            <if test="custTypeCode != null and custTypeCode != ''">
+                AND cmCode.code = #{custTypeCode}
             </if>
             <if test="includeStopped == null or includeStopped == false">
                 AND cust.use_status = 'Y'

@@ -1,0 +1,5 @@
+.is-disabled {
+    pointer-events: none;
+    caret-color: transparent;
+    background-color: #f6f6f6;
+}

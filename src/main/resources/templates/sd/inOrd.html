@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>수주등록</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/sd/inOrd.css}">
+</head>
+
+<body layout:fragment="content">
+    <div class="page page-fluid">
+        <form id="inOrdForm" action="/sd/inOrd/save" method="post">
+            <!-- ================= 기본 정보 ================= -->
+            <section class="card-ui card-ui--detail section-fixed" style="margin-top: 10px; display: flex;">
+                <header class="card-ui__header d-flex justify-content-end">
+                    <!-- 우측 액션 -->
+                    <div class="toolbar">
+                        <button id="btnReset" type="button" class="btn btn-white btn-inner">
+                            초기화
+                        </button>
+                        <button id="btnSave" type="submit" class="btn btn-color btn-inner">
+                            저장
+                        </button>
+                    </div>
+                </header>
+
+                <div class="card-ui__body">
+                    <!-- ===== 기본정보 탭 ===== -->
+                    <div id="tab-basic" class="tab-panel active">
+
+                        <!-- 상단 기본 정보 폼 -->
+                        <div class="form-grid">
+                            <!-- row 1: 수주번호 / 수주일 / 납기일 -->
+                            <div class="form-grid__row form-grid__row--3col">
+                                <div class="form-grid__label">수주번호</div>
+                                <div class="form-grid__field">
+                                    <input id="inordNo" name="inordNo" class="form-control form-control-sm input-base is-disabled" readonly placeholder="자동생성" />
+                                </div>
+
+                                <div class="form-grid__label">수주일</div>
+                                <div class="form-grid__field">
+                                    <input id="inordDate" name="inordDate" type="date" class="form-control form-control-sm input-base is-disabled" readonly />
+                                </div>
+
+                                <div class="form-grid__label">납기일</div>
+                                <div class="form-grid__field">
+                                    <input id="dueDate" name="dueDate" type="date" class="form-control form-control-sm input-base" />
+                                </div>
+                            </div>
+
+                            <!-- row 2: 작성자 / 부서 / 거래처 -->
+                            <div class="form-grid__row form-grid__row--3col">
+                                <div class="form-grid__label">작성자</div>
+                                <div class="form-grid__field">
+                                    <input id="createdBy" name="createdBy" type="text" class="form-control form-control-sm input-base" />
+                                </div>
+
+                                <div class="form-grid__label">부서</div>
+                                <div class="form-grid__field">
+                                    <input id="dept" name="dept" type="text" class="form-control form-control-sm input-base" />
+                                </div>
+
+                                <div class="form-grid__label">거래처</div>
+                                <div class="form-grid__field">
+                                    <div th:replace="modal/custModal :: custModal"></div>
+                                    <input id="custSearch" name="custSearch" type="text" class="form-control form-control-sm input-base" />
+                                    <button type="button" id="btnOpenCustModal"
+                                            class="btn-grid">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <script th:src="@{/js/sd/inOrd.js}"></script>
+</body>
+
+</html>

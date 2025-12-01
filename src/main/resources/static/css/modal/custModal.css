@@ -1,51 +1,9 @@
-/* 공통 레이아웃은 사원 이력조회 모달과 동일 가정 */
+/* 모달 너비 */
 .modal-layer__dialog--lg {
   max-width: 900px;
 }
 
-/* 검색 영역 정리 */
-.modal-search__row {
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.modal-search__field .form-label {
-  min-width: 70px;
-  font-size: 0.875rem;
-}
-
-/* 그리드 영역 */
-.sub-grid {
-  margin-top: 8px;
-}
-.sub-grid__body {
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background-color: #fff;
-  padding: 4px;
-}
-
-/* 푸터 정렬 */
-.modal-card__footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 16px;
-  border-top: 1px solid #e5e7eb;
-}
-.modal-card__footer-right > .btn + .btn {
-  margin-left: 4px;
-}
-
-/* 검색 영역 전체 wrapper → 예시 코드의 상단 정보영역과 동일한 패턴 */
-.modal-search__wrapper {
-  padding: 12px 16px;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-  background: #fafafa;
-  margin-bottom: 12px;
-}
-
-/* label 스타일 — 예시 코드의 .modal-history__label 느낌을 유지 */
+/* label 공통 스타일 */
 .modal-history__label {
   display: inline-block;
   width: 70px;
@@ -53,29 +11,28 @@
   font-size: 0.9rem;
   color: #333;
   margin-right: 8px;
+  white-space: nowrap;
 }
 
-/* input/select 값 부분 — 예시 코드의 value 스타일에 맞춤 */
-.modal-history__value-input {
+/* 값(input/select) 래퍼 */
+.modal-history__value {
   flex: 1;
   min-width: 0;
 }
 
-/* 조회 버튼 예시 디자인 매칭 */
+/* input/select */
+.modal-history__value-input {
+  width: 100%;
+}
+
+/* 조회 버튼 */
 .modal-history__btn-print {
-  padding: 6px 16px;
+  padding: 4px 14px;
   border: 1px solid #ccc;
   background-color: #fff;
   font-size: 0.9rem;
   border-radius: 4px;
 }
-
 .modal-history__btn-print:hover {
   background-color: #f2f2f2;
 }
-
-/* 필드 간 여백 */
-.modal-search__field {
-  margin-bottom: 4px;
-}
-

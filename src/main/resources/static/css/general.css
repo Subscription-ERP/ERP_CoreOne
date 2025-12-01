@@ -356,6 +356,17 @@ input[type="checkbox"]:checked {
   font-size: var(--fs-n);
   font-weight: 700;
 }
+.modal-card__btn-close {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .modal-card__btn-close i {
   font-size: 16px;
 }
