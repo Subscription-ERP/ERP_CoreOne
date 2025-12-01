@@ -1,113 +1,127 @@
 <!doctype html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>RootCore 로그인</title>
+<meta charset="UTF-8">
+<title>RootCore 로그인</title>
 
-    <!-- Bootstrap / AdminLTE 기본 CSS -->
-    <link rel="stylesheet" href="/css/adminlte.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+<link rel="stylesheet" href="/css/adminlte.css" />
+<link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #1d3557, #457b9d);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Pretendard', sans-serif;
-            color: #fff;
-        }
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: #343B43;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Pretendard', sans-serif;
+    color: #E2ECFF;
+}
 
-        .login-card {
-            width: 420px;
-            padding: 40px 45px 45px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.45);
-            text-align: center;
-        }
+/* 패널 */
+.login-card {
+    width: 420px;
+    padding: 42px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 35px rgba(0,0,0,0.45);
+}
 
-        .login-title {
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 25px;
-        }
+/* 타이틀 */
+.login-title {
+    font-size: 30px;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 28px;
+    color: #E2ECFF;
+}
 
-        .input-wrap {
-            width: 100%;
-            margin-bottom: 18px;
-            text-align: left;
-        }
+/* Input Floating Label */
+.form-group {
+    position: relative;
+    margin-bottom: 24px;
+}
+.form-input {
+    width: 100%;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 15px 48px 15px 15px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+}
+.form-input::placeholder { color: transparent; }
+.form-input:focus {
+    outline: none;
+    border-color: #8EA6C9;
+    box-shadow: 0 0 0 3px rgba(142,166,201,0.35);
+}
+.form-group label {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #C4D6F3;
+    pointer-events: none;
+    transition: 0.2s;
+}
+.form-input:focus + label,
+.form-input:not(:placeholder-shown) + label {
+    top: -9px;
+    left: 10px;
+    font-size: 13px;
+    padding: 0 6px;
+    background: rgba(52,59,67,0.9);
+    color: #D7E6FF;
+}
+.form-group i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: #AFC4DF;
+}
 
-        .input-wrap label {
-            font-size: 14px;
-            margin-bottom: 5px;
-            display: block;
-            font-weight: 600;
-        }
+/* 버튼 */
+.login-btn {
+    width: 100%;
+    height: 48px;
+    background: #3F4750;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    margin-bottom: 25px;
+    margin-top: 5px;
+    transition: 0.2s;
+}
+.login-btn:hover { background: #4B5561; }
 
-        .input-wrap input {
-            width: 100%;
-            height: 44px;
-            padding: 0 12px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.25);
-            color: #fff;
-            outline: none;
-            font-size: 15px;
-        }
+.etc-menu {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+.etc-menu a {
+    color: #AFC5E6;
+    text-decoration: underline;
+}
 
-        .input-wrap input::placeholder {
-            color: #ddd;
-        }
-
-        .remember-wrap {
-            margin: 10px 0 20px;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        .remember-wrap input[type="checkbox"] {
-            margin-right: 6px;
-            transform: scale(1.1);
-        }
-
-        .login-btn {
-            width: 100%;
-            height: 48px;
-            background: #1d3557;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            cursor: pointer;
-            margin-bottom: 18px;
-            transition: 0.25s;
-        }
-
-        .login-btn:hover {
-            background: #16324f;
-        }
-
-        .etc-menu {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        .etc-menu a {
-            color: #fff;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-    </style>
+.error-text {
+    color: #ffb4b4;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 18px;
+}
+</style>
 
 </head>
 <body>
@@ -116,39 +130,46 @@
 
     <div class="login-title">RootCore 로그인</div>
 
-    <!-- 로그인 FORM -->
     <form method="post" action="/auth/doLogin">
 
-
-        <!-- ID 입력 -->
-        <div class="input-wrap">
+        <div class="form-group">
+            <input type="text" class="form-input" id="userId" name="userId"
+                   th:value="${'EMP25112700001'}"
+                   placeholder=" " required>
             <label for="userId">아이디</label>
-            <input type="text" id="userId" name="userId" th:value="${savedId}" placeholder="아이디를 입력하세요" required />
+            <i class="bi bi-person-fill"></i>
         </div>
 
-        <!-- PW 입력 -->
-        <div class="input-wrap">
+        <div class="form-group">
+            <input type="password" class="form-input" id="password" name="password"
+                   placeholder=" " required>
             <label for="password">비밀번호</label>
-            <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required />
+            <i class="bi bi-lock-fill"></i>
         </div>
 
-        <!-- 아이디 기억하기 -->
-        <div class="remember-wrap">
-            <!-- ★ 수정된 부분: name="rememberId" 추가됨 -->
-            <input type="checkbox" id="rememberId" name="rememberId" 
-                   th:checked="${savedId != null}" />
-            <label for="rememberId">아이디 기억하기</label>
+        <div style="margin-bottom: 18px; font-size: 14px;">
+            <input type="checkbox" id="rememberId" name="rememberId"
+                   th:checked="${savedId != null}">
+            <label for="rememberId" style="margin-left: 5px;">아이디 기억하기</label>
         </div>
 
-        <!-- 로그인 버튼 -->
         <button type="submit" class="login-btn">로그인</button>
 
     </form>
 
-    <!-- 아이디 / 비밀번호 찾기 -->
     <div class="etc-menu">
         <a th:href="@{/auth/find_id}">아이디 찾기</a>
         <a th:href="@{/auth/password_reset/send}">비밀번호 재설정</a>
+    </div>
+
+    <div class="error-text">
+        <span th:if="${param.error == 'noUser'}">존재하지 않는 사용자입니다.</span>
+        <span th:if="${param.error == 'locked'}">잠긴 계정입니다. 관리자에게 문의하세요.</span>
+        <span th:if="${param.error != null and #strings.startsWith(param.error, 'wrong')}">
+            아이디 또는 비밀번호가 틀립니다.
+            (<span th:text="${param.remain}"></span>회 남음)
+        </span>
+        <span th:if="${param.error == 'fail'}">로그인 중 오류가 발생했습니다.</span>
     </div>
 
 </div>

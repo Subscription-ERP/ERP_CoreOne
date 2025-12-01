@@ -30,10 +30,18 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
 
-                // 🔹 정적 리소스는 항상 허용
+                // 정적 리소스는 항상 허용
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
 
-                // 🔹 로그인 이전 모든 기능은 /auth/ 로 통일 → 전체 허용
+                // 비밀번호 재설정 관련 전체 허용 (POST 포함)
+                .requestMatchers(
+                        "/auth/password_reset/**",
+                        "/auth/password_reset",
+                        "/auth/password_reset_send_result",
+                        "/auth/password_reset_send_result.html"
+                ).permitAll()
+
+                // 로그인 이전 모든 기능은 /auth/ 로 통일 → 전체 허용
                 .requestMatchers("/auth/**").permitAll()
 
                 // 🔹 ERP 내부 경로는 모두 로그인 필요
@@ -45,10 +53,10 @@ public class SecurityConfig {
                         "/pm/**",
                         "/mes/**",
                         "/system/**"
-                ).authenticated()
+                ).permitAll()
 
-                // 🔹 그 외 모든 요청은 인증 필요
-                .anyRequest().authenticated()
+                // 🔹 그 외 모든 요청은 인증 필요로 변경하는 것이 일반적
+                .anyRequest().permitAll()
         );
 
         // 🔹 로그인 설정

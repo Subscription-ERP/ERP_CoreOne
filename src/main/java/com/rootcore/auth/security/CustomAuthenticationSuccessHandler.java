@@ -37,7 +37,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             cookie.setPath("/");
             response.addCookie(cookie);
         }
-
+        
         try {
             response.sendRedirect("/"); // 로그인 성공 → 메인화면 이동
         } catch (Exception e) {

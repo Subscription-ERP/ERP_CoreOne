@@ -8,8 +8,10 @@ import java.util.Map;
 @Mapper
 public interface PasswordResetMapper {
 
-    Map<String, Object> findUserByIdAndEmail(@Param("userId") String userId,
-                                             @Param("email") String email);
+    Map<String, Object> findUserByIdAndEmail(
+            @Param("userId") String userId,
+            @Param("email") String email
+    );
 
     void invalidateOldToken(@Param("userId") String userId);
 
