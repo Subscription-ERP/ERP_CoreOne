@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.rootcore.sb.service.CompanyService;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 public class CompanyController {
 
-	private final CompanyService companyService;
+	private final CompanyService companyService;	//생성자 주입 service 준비상태 실제로 호출하는건 메소드
 	private final PlanService planService;
 	private final ContractService contractService;
 	
@@ -39,6 +40,7 @@ public class CompanyController {
 	// 1단계 회사등록 + 플랜선택화면이동
 	@PostMapping("/companies")
 	public String registerCompany(@ModelAttribute CompanyVO requestVO, HttpSession session) {
+		String StringCode = companyService.registerCompany(requestVO);
 		session.setAttribute("company", requestVO);
 		// GET /{companyCode}/plans 으로 redirect
 		return "redirect:/plans";
@@ -62,15 +64,14 @@ public class CompanyController {
 	/* 2단계 
 	 * 플랜 등록 후 계약서 작성 화면으로 이동 (POST: 회사코드 + 플랜코드)
 	 */
-	@PostMapping("/company/plans/select")
-	public String selectPlan(PlanSelectRequestVO requestVO, RedirectAttributes redirectAttributes, HttpSession session) {
-		session.setAttribute("plan", requestVO);
+	@GetMapping("/company/plans/select")
+	public String selectPlan(@RequestParam String planCode, RedirectAttributes redirectAttributes, HttpSession session) {
+		List<PlanVO> plan = planService.getPlanList();
+		session.setAttribute("plan", plan);
+		CompanyVO companycode = (CompanyVO)session.getAttribute("companyCode");
 		// companyCode, planCode를 계약 작성 화면으로 넘김
-		redirectAttributes.addAttribute("planCode", requestVO.getPlanCode());
-		redirectAttributes.addAttribute("subsPeriod", requestVO.getSubsPeriod());
-		redirectAttributes.addAttribute("userCount", requestVO.getUserCount());
-		redirectAttributes.addAttribute("totalPrice", 90000);
-
+		
+		
 		// 예: /contract/new?companyCode=XXX&planCode=YYY
 		return "redirect:/contract/new";
 	}
