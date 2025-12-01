@@ -17,5 +17,6 @@ public class PlanVO {
     private Date createDate;     // CREATE_DATE
     private String updatedBy;    // UPDATED_BY
     private Date updateDate;     // UPDATE_DATE
+    
 
 }

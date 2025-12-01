@@ -26,6 +26,7 @@ public class ContractVO {
     private Integer userCount;
 
     private BigDecimal totalPrice;
+    private BigDecimal vat;
     private BigDecimal discountAmount;
 
     private String status;

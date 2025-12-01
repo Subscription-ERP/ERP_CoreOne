@@ -4,6 +4,7 @@
 	layout:decorate="~{layout/layout}">
 
 <head>
+       <script src="https://js.tosspayments.com/v2/standard"></script>
 <meta charset="UTF-8">
 <title>결제 진행</title>
 <style>
@@ -76,8 +77,11 @@
 <body>
 	<div layout:fragment="content">
 		<div class="subscription-container">
-[[${session.company}]]
-[[${session.plan}]]
+		<!-- 	[[${session.company}]]
+			<hr>
+			[[${session.plan}]]
+			<hr>
+			[[${session.contract}]]===== -->
 			<!-- 상단 단계 표시 -->
 			<div class="row step-header">
 				<div class="col-12 d-flex justify-content-center step-header-inner">
@@ -87,7 +91,7 @@
 						<div
 							class="rounded-circle border d-flex align-items-center justify-content-center"
 							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
-						<div class="mt-2">구독 정보</div>
+						<div class="mt-2">회사 등록</div>
 					</div>
 
 					<!-- 2단계 -->
@@ -95,7 +99,7 @@
 						<div
 							class="rounded-circle border d-flex align-items-center justify-content-center"
 							style="width: 40px; height: 40px; background: #f8f9fa;">2</div>
-						<div class="mt-2">사용자 정보</div>
+						<div class="mt-2">플랜 선택</div>
 					</div>
 
 					<!-- 3단계 -->
@@ -131,20 +135,22 @@
 
 						<!-- 요금제명 -->
 						<div class="summary-title">
-							<span th:text="${planName}">Professional</span>
+							<span th:text="${session.plan.planName}">Professional</span>
 						</div>
 
 						<!-- 상단 정보 -->
 						<div class="summary-row">
-							<span>구독기간</span> <span th:text="${periodLabel}">3개월</span>
+							<span>구독기간</span> <span
+								th:text="${session.contract.subsPeriod + '개월'}">개월</span>
 						</div>
 
 						<div class="summary-row">
-							<span>사용자 수</span> <span th:text="${userCountLabel}">50명</span>
+							<span>사용자 수</span> <span
+								th:text="${session.contract.userCount + '명'}">50명</span>
 						</div>
 
 						<div class="summary-row">
-							<span>포함 기능</span> <span th:text="${includedFeatures}">인사,
+							<span>포함 기능</span> <span th:text="${session.plan.planInfo}">인사,
 								영업, 회계, 공통</span>
 						</div>
 
@@ -152,18 +158,20 @@
 
 						<!-- 금액 정보 -->
 						<div class="summary-row">
-							<span>월 구독료</span> <span th:text="${monthlyFee}">₩13,000</span>
+							<span>월 구독료</span> <span th:text="${session.plan.price + '원'}">₩13,000</span>
 						</div>
 
 						<div class="summary-row">
-							<span>부가세(10%)</span> <span th:text="${taxAmount}">₩1,300</span>
+							<span>부가세(10%)</span> <span
+								th:text="${session.contract.vat + '원'}">₩1,300</span>
 						</div>
 
 						<div class="summary-divider"></div>
 
 						<div class="summary-row summary-total">
-							<span>총 금액(<span th:text="${periodLabel}">3개월</span>)
-							</span> <span th:text="${totalAmount}">₩42,900</span>
+							<span>총 금액(<span
+								th:text="${session.contract.subsPeriod + '개월'}">3개월</span>)
+							</span> <span th:text="${session.contract.totalPrice + '원'}">₩42,900</span>
 						</div>
 
 					</div>
@@ -173,21 +181,80 @@
 			<!-- 하단 버튼 -->
 			<div class="row mt-4">
 				<div class="col-12 d-flex justify-content-center gap-3">
-					<a th:href="@{/subscribe/step3}"
+					<a th:href="@{/contract/new}"
 						class="btn btn-outline-secondary px-5"> 이전으로 </a>
 
 					<!-- 실제 결제 요청 보낼 곳으로 action/href 변경 -->
-					<form th:action="@{/test}" method="post">
-						<button type="submit" id="pay-button" class="btn btn-dark px-5">결제하기</button>
-					</form>
+					<button type="button" id="payment-button" class="btn btn-dark px-5">
+						결제하기</button>
+					<!-- 결제 UI -->
+					<div id="payment-method"></div>
+					<!-- 이용약관 UI -->
+					<div id="agreement"></div>
 				</div>
 			</div>
 
 		</div>
+
+	<script>
+	 main();
+
+     async function main() {
+       const button = document.getElementById("payment-button");
+       const coupon = document.getElementById("coupon-box");
+       
+       // ⭐ 서버로 결제 준비 요청 보냄 (orderId 생성됨)
+       const response = await fetch("/api/payments/request", {
+         method: "GET",
+         headers: { "Content-Type": "application/json" },
+       	 
+       });
+       const data = await response.json(); // ⭐ 서버 응답값
+       
+       // ------  결제위젯 초기화 ------
+       const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+       const tossPayments = TossPayments(clientKey);
+       // 회원 결제
+       const customerKey = "qcE3458DWgfhY2eSgXQot";
+       const widgets = tossPayments.widgets({
+         customerKey,
+       });
+       // 비회원 결제
+       // const widgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
+
+       // ------ 주문의 결제 금액 설정 ------
+       await widgets.setAmount({
+         currency: "KRW",
+         value: data.amount,
+       });
+
+       await Promise.all([
+         // ------  결제 UI 렌더링 ------
+         widgets.renderPaymentMethods({
+           selector: "#payment-method",
+           variantKey: "DEFAULT",
+         }),
+         // ------  이용약관 UI 렌더링 ------
+         widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+       ]);
+
+
+
+       // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
+       button.addEventListener("click", async function () {
+         await widgets.requestPayment({
+           orderId: data.orderId,
+           orderName: data.orderName,
+           successUrl: data.successUrl,
+           failUrl: data.failUrl,
+          
+         });
+       });
+     }
+</script>
 	</div>
+
 </body>
 </html>
 
-<script>
 
-</script>

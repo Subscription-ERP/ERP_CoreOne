@@ -3,8 +3,6 @@ package com.rootcore.sb.web;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +13,7 @@ import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PlanSelectRequestVO;
+import com.rootcore.sb.vo.PlanVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
 
@@ -37,11 +36,17 @@ public class PaymentController {
      *    - 클라이언트가 상품명/금액 등을 보내면 orderId를 만들고 DB에 저장한 뒤,
      *      Toss 위젯에 넘겨줄 값들을 응답합니다.
      */
-    @PostMapping("/request")
+    @GetMapping("/request")
     public ResponseEntity<PaymentReadyResponseVO> insertOrder(
-            @RequestBody OrderVO requestDto
+             HttpSession session
     ) {
-        PaymentReadyResponseVO responseDto = paymentService.insertOrder(requestDto);
+    	OrderVO ordervo = new OrderVO();
+    	ContractVO contract = (ContractVO)session.getAttribute("contract");
+    	PlanVO plan = (PlanVO)session.getAttribute("plan");
+    	ordervo.setAmount(contract.getTotalPrice().longValue());
+    	ordervo.setOrderName(plan.getPlanName());
+    	
+        PaymentReadyResponseVO responseDto = paymentService.insertOrder(ordervo);
         return ResponseEntity.ok(responseDto);
     }
     
