@@ -15,7 +15,6 @@ public class OrderVO {
     private LocalDateTime billingEnd;    // BILLING_END
     private String subCode;        // SUB_CODE
     private String planCode;       // PLAN_CODE
-    private Long amount;
     private String companyCode;
     
     private String createdBy;      // CREATED_BY

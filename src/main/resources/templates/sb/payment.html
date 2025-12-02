@@ -1,260 +1,274 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 
 <head>
-       <script src="https://js.tosspayments.com/v2/standard"></script>
-<meta charset="UTF-8">
-<title>결제 진행</title>
-<style>
-.subscription-container {
-	max-width: 900px;
-	margin: 0 auto;
-	padding-top: 20px;
-}
+    <meta charset="UTF-8">
+    <title>결제 진행</title>
+    <script src="https://js.tosspayments.com/v2/standard"></script>
 
-.step-header {
-	max-width: 800px;
-	margin: 0 auto 40px auto;
-}
+    <style>
+        .subscription-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding-top: 20px;
+        }
 
-.step-header-inner {
-	column-gap: 80px;
-}
+        .step-header {
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+        }
 
-.section-title {
-	margin-bottom: 25px;
-}
+        .step-header-inner {
+            column-gap: 80px;
+        }
 
-.summary-card {
-	background: #fff;
-	border-radius: 8px;
-	border: 1px solid #ddd;
-	padding: 24px 28px;
-	font-size: 0.95rem;
-}
+        .section-title {
+            margin-bottom: 25px;
+        }
 
-.summary-title {
-	font-weight: 700;
-	text-align: center;
-	margin-bottom: 16px;
-	border-bottom: 1px solid #ccc;
-	padding-bottom: 8px;
-}
+        /* 결제 요약 카드 */
+        .summary-card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 24px 28px;
+            font-size: 0.95rem;
+        }
 
-.summary-row {
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 6px;
-}
+        .summary-title {
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 8px;
+        }
 
-.summary-row strong {
-	font-weight: 600;
-}
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
 
-.summary-divider {
-	border-top: 1px solid #ccc;
-	margin: 14px 0;
-}
+        .summary-row strong {
+            font-weight: 600;
+        }
 
-.summary-total {
-	font-weight: 700;
-}
+        .summary-divider {
+            border-top: 1px solid #ccc;
+            margin: 14px 0;
+        }
 
-.btn-dark {
-	background: #000;
-	border-color: #000;
-}
+        .summary-total {
+            font-weight: 700;
+        }
 
-.btn-dark:hover {
-	background: #222;
-	border-color: #222;
-}
-</style>
+        /* 결제 패널 */
+        .payment-panel {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 24px 28px;
+        }
+
+        .btn-dark {
+            background: #000;
+            border-color: #000;
+        }
+
+        .btn-dark:hover {
+            background: #222;
+            border-color: #222;
+        }
+    </style>
 </head>
 
 <body>
-	<div layout:fragment="content">
-		<div class="subscription-container">
-		<!-- 	[[${session.company}]]
-			<hr>
-			[[${session.plan}]]
-			<hr>
-			[[${session.contract}]]===== -->
-			<!-- 상단 단계 표시 -->
-			<div class="row step-header">
-				<div class="col-12 d-flex justify-content-center step-header-inner">
+<div layout:fragment="content">
+    <div class="subscription-container">
 
-					<!-- 1단계 -->
-					<div class="text-center text-secondary">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
-						<div class="mt-2">회사 등록</div>
-					</div>
+        <!-- 상단 단계 표시 -->
+        <div class="row step-header">
+            <div class="col-12 d-flex justify-content-center step-header-inner">
 
-					<!-- 2단계 -->
-					<div class="text-center text-secondary">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">2</div>
-						<div class="mt-2">플랜 선택</div>
-					</div>
+                <!-- 1단계 -->
+                <div class="text-center text-secondary">
+                    <div class="rounded-circle border d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; background: #f8f9fa;">1
+                    </div>
+                    <div class="mt-2">회사 등록</div>
+                </div>
 
-					<!-- 3단계 -->
-					<div class="text-center text-secondary">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">3</div>
-						<div class="mt-2">계약서</div>
-					</div>
+                <!-- 2단계 -->
+                <div class="text-center text-secondary">
+                    <div class="rounded-circle border d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; background: #f8f9fa;">2
+                    </div>
+                    <div class="mt-2">플랜 선택</div>
+                </div>
 
-					<!-- 4단계: 현재 단계 -->
-					<div class="text-center">
-						<div
-							class="rounded-circle d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
-							4</div>
-						<div class="mt-2 fw-bold">결제 완료</div>
-					</div>
-				</div>
-			</div>
+                <!-- 3단계 -->
+                <div class="text-center text-secondary">
+                    <div class="rounded-circle border d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; background: #f8f9fa;">3
+                    </div>
+                    <div class="mt-2">계약서</div>
+                </div>
 
-			<!-- 제목 -->
-			<div class="row section-title">
-				<div class="col-12">
-					<h5 class="fw-bold mb-2">최종 결제 정보</h5>
-				</div>
-			</div>
+                <!-- 4단계: 현재 단계 -->
+                <div class="text-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
+                        4
+                    </div>
+                    <div class="mt-2 fw-bold">결제</div>
+                </div>
+            </div>
+        </div>
 
-			<!-- 최종 결제 요약 카드 -->
-			<div class="row">
-				<div class="col-12">
-					<div class="summary-card">
+        <!-- 제목 -->
+        <div class="row section-title">
+            <div class="col-12">
+                <h5 class="fw-bold mb-2">최종 결제 정보</h5>
+            </div>
+        </div>
 
-						<!-- 요금제명 -->
-						<div class="summary-title">
-							<span th:text="${session.plan.planName}">Professional</span>
-						</div>
+        <!-- 본문: 왼쪽 요약 / 오른쪽 결제 UI -->
+        <div class="row g-4">
+            <!-- 왼쪽: 결제 요약 카드 -->
+            <div class="col-12 col-lg-6">
+                <div class="summary-card">
 
-						<!-- 상단 정보 -->
-						<div class="summary-row">
-							<span>구독기간</span> <span
-								th:text="${session.contract.subsPeriod + '개월'}">개월</span>
-						</div>
+                    <!-- 요금제명 -->
+                    <div class="summary-title">
+                        <span th:text="${session.plan.planName}">Professional</span>
+                    </div>
 
-						<div class="summary-row">
-							<span>사용자 수</span> <span
-								th:text="${session.contract.userCount + '명'}">50명</span>
-						</div>
+                    <!-- 상단 정보 -->
+                    <div class="summary-row">
+                        <span>구독기간</span>
+                        <span th:text="${session.contract.subsPeriod + '개월'}">3개월</span>
+                    </div>
 
-						<div class="summary-row">
-							<span>포함 기능</span> <span th:text="${session.plan.planInfo}">인사,
-								영업, 회계, 공통</span>
-						</div>
+                    <div class="summary-row">
+                        <span>사용자 수</span>
+                        <span th:text="${session.contract.userCount + '명'}">100명</span>
+                    </div>
 
-						<div class="summary-divider"></div>
+                    <div class="summary-row">
+                        <span>포함 기능</span>
+                        <span th:text="${session.plan.planInfo}">중간 등급 플랜</span>
+                    </div>
 
-						<!-- 금액 정보 -->
-						<div class="summary-row">
-							<span>월 구독료</span> <span th:text="${session.plan.price + '원'}">₩13,000</span>
-						</div>
+                    <div class="summary-divider"></div>
 
-						<div class="summary-row">
-							<span>부가세(10%)</span> <span
-								th:text="${session.contract.vat + '원'}">₩1,300</span>
-						</div>
+                    <!-- 금액 정보 -->
+                    <div class="summary-row">
+                        <span>월 구독료</span>
+                        <span th:text="${session.plan.price + '원'}">20,000원</span>
+                    </div>
 
-						<div class="summary-divider"></div>
+                    <div class="summary-row">
+                        <span>부가세(10%)</span>
+                        <span th:text="${session.contract.vat + '원'}">6,000원</span>
+                    </div>
 
-						<div class="summary-row summary-total">
-							<span>총 금액(<span
-								th:text="${session.contract.subsPeriod + '개월'}">3개월</span>)
-							</span> <span th:text="${session.contract.totalPrice + '원'}">₩42,900</span>
-						</div>
+                    <div class="summary-divider"></div>
 
-					</div>
-				</div>
-			</div>
+                    <div class="summary-row summary-total">
+                        <span>
+                            총 금액(
+                            <span th:text="${session.contract.subsPeriod + '개월'}">3개월</span>
+                            )
+                        </span>
+                        <span th:text="${session.contract.totalPrice + '원'}">66,000원</span>
+                    </div>
 
-			<!-- 하단 버튼 -->
-			<div class="row mt-4">
-				<div class="col-12 d-flex justify-content-center gap-3">
-					<a th:href="@{/contract/new}"
-						class="btn btn-outline-secondary px-5"> 이전으로 </a>
+                </div>
+            </div>
 
-					<!-- 실제 결제 요청 보낼 곳으로 action/href 변경 -->
-					<button type="button" id="payment-button" class="btn btn-dark px-5">
-						결제하기</button>
-					<!-- 결제 UI -->
-					<div id="payment-method"></div>
-					<!-- 이용약관 UI -->
-					<div id="agreement"></div>
-				</div>
-			</div>
+            <!-- 오른쪽: 결제 수단 + 약관 -->
+            <div class="col-12 col-lg-6">
+                <div class="payment-panel">
+                    <div class="mb-2 fw-bold">결제 방법</div>
+                    <div id="payment-method"></div>
 
-		</div>
+                    <!-- <div class="mt-4">
+                        <div class="fw-bold mb-2">이용 약관</div>
+                        <div id="agreement"></div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
 
-	<script>
-	 main();
+        <!-- 하단 버튼 -->
+        <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-center gap-3">
+                <a th:href="@{/contract/new}" class="btn btn-outline-secondary px-5">
+                    이전으로
+                </a>
 
-     async function main() {
-       const button = document.getElementById("payment-button");
-       const coupon = document.getElementById("coupon-box");
-       
-       // ⭐ 서버로 결제 준비 요청 보냄 (orderId 생성됨)
-       const response = await fetch("/api/payments/request", {
-         method: "GET",
-         headers: { "Content-Type": "application/json" },
-       	 
-       });
-       const data = await response.json(); // ⭐ 서버 응답값
-       
-       // ------  결제위젯 초기화 ------
-       const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-       const tossPayments = TossPayments(clientKey);
-       // 회원 결제
-       const customerKey = "qcE3458DWgfhY2eSgXQot";
-       const widgets = tossPayments.widgets({
-         customerKey,
-       });
-       // 비회원 결제
-       // const widgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
+                <button type="button" id="payment-button" class="btn btn-dark px-5">
+                    결제하기
+                </button>
+            </div>
+        </div>
 
-       // ------ 주문의 결제 금액 설정 ------
-       await widgets.setAmount({
-         currency: "KRW",
-         value: data.amount,
-       });
+    </div>
 
-       await Promise.all([
-         // ------  결제 UI 렌더링 ------
-         widgets.renderPaymentMethods({
-           selector: "#payment-method",
-           variantKey: "DEFAULT",
-         }),
-         // ------  이용약관 UI 렌더링 ------
-         widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
-       ]);
+    <!-- Toss Payments 스크립트 -->
+    <script>
+        main();
 
+        async function main() {
+            const button = document.getElementById("payment-button");
 
+            // 서버에서 주문 정보 가져오기 (orderId, amount 등)
+            const response = await fetch("/api/payments/request", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
 
-       // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
-       button.addEventListener("click", async function () {
-         await widgets.requestPayment({
-           orderId: data.orderId,
-           orderName: data.orderName,
-           successUrl: data.successUrl,
-           failUrl: data.failUrl,
-          
-         });
-       });
-     }
-</script>
-	</div>
+            // ------ 결제위젯 초기화 ------
+            const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+            const tossPayments = TossPayments(clientKey);
 
+            // 회원 결제 (비회원이면 ANONYMOUS 사용)
+            const customerKey = "qcE3458DWgfhY2eSgXQot";
+            const widgets = tossPayments.widgets({ customerKey });
+
+            // ------ 주문 금액 설정 ------
+            await widgets.setAmount({
+                currency: "KRW",
+                value: data.amount,
+            });
+
+            await Promise.all([
+                // 결제 수단 영역 렌더링
+                widgets.renderPaymentMethods({
+                    selector: "#payment-method",
+                    variantKey: "DEFAULT",
+                }),
+                // 이용약관 영역 렌더링
+                widgets.renderAgreement({
+                    selector: "#agreement",
+                    variantKey: "AGREEMENT",
+                }),
+            ]);
+
+            // ------ '결제하기' 버튼 클릭 시 결제 요청 ------
+            button.addEventListener("click", async function () {
+                await widgets.requestPayment({
+                    orderId: data.orderId,
+                    orderName: data.orderName,
+                    successUrl: data.successUrl,
+                    failUrl: data.failUrl,
+                });
+            });
+        }
+    </script>
+</div>
 </body>
 </html>
-
-

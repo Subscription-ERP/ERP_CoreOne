@@ -8,14 +8,15 @@ import com.rootcore.sb.vo.OrderVO;
 @Mapper
 public interface OrderMapper {
 
-    void insertOrder(OrderVO order);
+	void insertOrder(OrderVO order);
 
-    OrderVO selectByOrderId(@Param("orderId") String orderId);
+	OrderVO selectByOrderId(@Param("orderId") String orderId);
 
-    void updateOrderStatus(@Param("orderId") String orderId,
-                           @Param("orderStatus") String orderStatus);
+	void updateOrderStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
 
-    void updateOrderSubCode(@Param("orderId") String orderId,
-                            @Param("subCode") String subCode,
-                            @Param("updatedBy") String updatedBy);
+	void updateOrderSubCode(@Param("orderId") String orderId, @Param("subCode") String subCode,
+			@Param("updatedBy") String updatedBy);
+
+	int updateOrderCompanyCode(@Param("orderId") String orderId, @Param("companyCode") String companyCode,
+			@Param("updatedBy") String updatedBy);
 }
