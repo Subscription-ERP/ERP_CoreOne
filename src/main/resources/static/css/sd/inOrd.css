@@ -3,3 +3,11 @@
     caret-color: transparent;
     background-color: #f6f6f6;
 }
+
+.card-ui__search {
+    height: 60px;
+}
+
+.form-grid__row--4col {
+    grid-template-columns: 1fr 1.2fr 1fr 1.2fr 1fr 1.2fr 1fr 1.1fr;
+}

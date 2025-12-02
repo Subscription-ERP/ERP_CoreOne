@@ -18,6 +18,7 @@
                cust.address_detail,
                cmCode.code "custTypeCode",
                cmCode.code_name "cust_type",
+               credit.credit_max,
                cust.dept,
                cust.user_name,
                cust.use_status,
@@ -28,6 +29,10 @@
         FROM tb_cust_master cust
         JOIN tb_cm_code cmCode
         ON cust.cust_type = cmcode.code
+        LEFT JOIN tb_credit_master credit
+        ON cust.company_code = credit.company_code
+        AND cust.cust_code = credit.cust_code
+        AND credit.credit_type = 'SELL_CREDIT'
         <where>
             <if test="custCode != null and custCode != ''">
                 AND cust.cust_code LIKE '%' || #{custCode} || '%'
@@ -66,7 +71,7 @@
                                     use_status,
                                     created_by,
                                     create_date)
-        VALUES ('SAMPLE_COMPANY',
+        VALUES ('0000',
                 FN_MAKE_CUST_CODE,
                 #{custName},
                 #{ceoName},

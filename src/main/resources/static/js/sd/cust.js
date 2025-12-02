@@ -4,30 +4,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSearch = document.getElementById("btnSearch");
   const btnSave = document.getElementById('btnSave');
 
-  // toast grid 색상 변경
-  Grid.applyTheme('default', {
-    cell: {
-      header: {
-        background: '#fafafa'
-      },
-      normal: {
-        background: '#ffffff',
-      },
-      rowHead: {
-        background: '#ffffff',
-      }
-    },
-  });
+  // toast grid 테마 변경
+  Grid.applyTheme('clean');
 
   // grid 정보
   const grid = new tui.Grid({
     el: document.getElementById('grid'),
     rowHeaders: ['rowNum'],
-    bodyHeight: 300,
+    bodyHeight: 'fitToParent',
     scrollX: false,
     scrollY: true,
     columns: [
-      { header: '거래처코드', name: 'custCode', align: 'center' },
+      {
+        header: '거래처코드',
+        name: 'custCode',
+        align: 'center',
+        sortingType: 'asc',
+        sortable: true
+      },
       { header: '거래처명', name: 'custName' },
       { header: '대표자명', name: 'ceoName' },
       { header: '연락처', name: 'phone' },

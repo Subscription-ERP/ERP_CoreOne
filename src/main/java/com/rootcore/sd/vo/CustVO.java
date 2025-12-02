@@ -27,4 +27,5 @@ public class CustVO {
     private String createdBy;
     private Date createDate;
     private Boolean includeStopped; // 검색조건
+    private int creditMax;          // 여신 한도
 }
