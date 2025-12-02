@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.auth.mapper.MenuPermissionMapper">
+
+    <!-- ====================== 사용자 목록 ====================== -->
+    <select id="selectUserList" resultType="com.rootcore.auth.vo.MenuPermissionUserVO">
+        SELECT
+            L.COMPANY_CODE,
+            L.USER_ID,
+            U.USER_NAME,
+            U.DEPT_NAME,
+            U.POSITION,
+            L.STATUS
+        FROM TB_LOGIN_MASTER L
+        JOIN TB_USER_MASTER U
+          ON L.COMPANY_CODE = U.COMPANY_CODE
+         AND L.USER_ID = U.USER_ID
+        WHERE L.COMPANY_CODE = #{companyCode}
+        <if test="userName != null and userName != ''">
+            AND U.USER_NAME LIKE '%' || #{userName} || '%'
+        </if>
+        <if test="deptCode != null and deptCode != ''">
+            AND U.DEPT_CODE = #{deptCode}
+        </if>
+        <if test="positionCode != null and positionCode != ''">
+            AND U.POSITION = #{positionCode}
+        </if>
+        ORDER BY U.USER_NAME
+    </select>
+
+    <!-- ====================== 메뉴 트리 조회 ====================== -->
+    <select id="selectMenuTree" resultType="com.rootcore.auth.vo.MenuTreeVO">
+        SELECT 
+            M.MENU_CODE,
+            M.PARENT_MENU_CODE,
+            M.MENU_NAME,
+            M.MENU_URL,
+            M.MENU_LEVEL,
+            M.SORT_ORDER,
+            NVL(A.READ_AUTH, 'N') AS READ_AUTH,
+            NVL(A.CREATE_AUTH, 'N') AS CREATE_AUTH,
+            NVL(A.UPDATE_AUTH, 'N') AS UPDATE_AUTH,
+            NVL(A.DELETE_AUTH, 'N') AS DELETE_AUTH
+        FROM TB_MENU_MASTER M
+        LEFT JOIN TB_USER_MENU_AUTH A
+          ON A.COMPANY_CODE = #{companyCode}
+         AND A.USER_ID = #{userId}
+         AND A.MENU_CODE = M.MENU_CODE
+        WHERE M.USE_YN = 'Y'
+          AND M.MENU_GROUP = #{menuGroup}
+        ORDER BY M.MENU_LEVEL, M.SORT_ORDER
+    </select>
+
+    <!-- ====================== 기존 권한 삭제 ====================== -->
+    <delete id="deleteUserMenuAuth">
+        DELETE FROM TB_USER_MENU_AUTH
+        WHERE COMPANY_CODE = #{companyCode}
+          AND USER_ID = #{userId}
+    </delete>
+
+    <!-- ====================== 권한 Insert ====================== -->
+    <insert id="insertUserMenuAuth">
+        INSERT INTO TB_USER_MENU_AUTH (
+            COMPANY_CODE, USER_ID, MENU_CODE,
+            READ_AUTH, CREATE_AUTH, UPDATE_AUTH, DELETE_AUTH,
+            UPDATED_BY, UPDATE_DATE
+        ) VALUES (
+            #{companyCode},
+            #{userId},
+            #{menuCode},
+            #{readAuth},
+            #{createAuth},
+            #{updateAuth},
+            #{deleteAuth},
+            #{updatedBy},
+            SYSDATE
+        )
+    </insert>
+
+</mapper>
