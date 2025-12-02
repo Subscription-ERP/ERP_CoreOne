@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>사원 이력 카드</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: "Malgun Gothic", sans-serif;
+      font-size: 12px;
+      color: #222;
+      background-color: #ffffff;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+
+    /* 공통 테이블 스타일 */
+    .history-table th,
+    .history-table td {
+      border: 0.5px solid #888;
+      padding: 6px 8px;
+      font-size: 11px;
+      vertical-align: middle;
+    }
+
+    /* 1) 상단 헤더 테이블 */
+    .header-table th,
+    .header-table td {
+      border: 0.5px solid #888;
+      padding: 10px 12px;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    .title-cell {
+      font-size: 23px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .basic-info-cell {
+      font-size: 12px;
+    }
+
+    .basic-info-row {
+      margin: 2px 0;
+    }
+
+    .basic-info-label {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    /* 섹션 제목 (부서 이력 / 급여 이력) */
+    .section-row th {
+      background-color: #f5f5f5;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* 부서/급여 이력 컬럼 헤더 */
+    .history-header-row th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .text-center { text-align: center; }
+  </style>
+</head>
+
+<body>
+<div class="card">
+
+	<table class="header-table" style="width:100%; border-collapse:collapse;">
+	  <tr>
+	    <!-- 왼쪽: 제목, 세로 2칸 병합 -->
+	    <th rowspan="2"
+	        style="border:0.5px solid #888; padding:20px; font-size:20px; text-align:center;">
+	      사원 이력 카드
+	    </th>
+	
+	    <!-- 오른쪽 상단: 성명 라벨 -->
+	    <th style="border:0.5px solid #888; width:100px; background-color: #f5f5f5">
+	      성명
+	    </th>
+	    <!-- 오른쪽 상단: 성명 값 -->
+	    <td style="border:0.5px solid #888;" th:text="${user.userName}"></td>
+	  </tr>
+	
+	  <tr>
+	    <!-- 오른쪽 하단: 사원번호 라벨 -->
+	    <th style="border:0.5px solid #888; background-color: #f5f5f5">
+	      사원번호
+	    </th>
+	    <!-- 오른쪽 하단: 사원번호 값 -->
+	    <td style="border:0.5px solid #888;" th:text="${user.userId}"></td>
+	  </tr>
+	</table>
+
+  <!-- 여백 약간 -->
+  <div style="height: 15px;"></div>
+
+  <!-- 2. 부서 이력 (테이블 2) -->
+  <table class="history-table">
+    <!-- 섹션 제목 -->
+    <tr class="section-row">
+      <th colspan="6">부서 이력</th>
+    </tr>
+
+    <!-- 컬럼 헤더 -->
+    <tr class="history-header-row">
+      <th>적용일자</th>
+      <th>이전 부서</th>
+      <th>이전 직위/직급</th>
+      <th>변경 부서</th>
+      <th>변경 직위/직급</th>
+      <th>변경 사유</th>
+    </tr>
+
+    <!-- 데이터 -->
+    <tr th:if="${#lists.isEmpty(deptHistoryList)}">
+      <td colspan="6" class="text-center">부서 이력이 없습니다.</td>
+    </tr>
+
+    <tr th:each="h : ${deptHistoryList}">
+      <td th:text="${h.applyDate != null ? #dates.format(h.applyDate, 'yyyy-MM-dd') : ''}"></td>
+      <td th:text="${h.prevDeptName}"></td>
+      <td th:text="${h.prevJobTitleName}"></td>
+      <td th:text="${h.newDeptName}"></td>
+      <td th:text="${h.newJobTitleName}"></td>
+      <td th:text="${h.deptChangeReason}"></td>
+    </tr>
+  </table>
+
+  <!-- 3. 급여 이력 (테이블 3) -->
+  <table class="history-table">
+    <!-- 섹션 제목 -->
+    <tr class="section-row">
+      <th colspan="6">급여 이력</th>
+    </tr>
+
+    <!-- 컬럼 헤더 -->
+    <tr class="history-header-row">
+      <th>적용일자</th>
+      <th>기본급</th>
+      <th>총급여</th>
+      <th>지급유형</th>
+      <th>변경사유</th>
+      <th>변경자</th>
+    </tr>
+
+    <!-- 데이터 -->
+    <tr th:if="${#lists.isEmpty(salaryHistoryList)}">
+      <td colspan="6" class="text-center">급여 이력이 없습니다.</td>
+    </tr>
+
+    <tr th:each="h : ${salaryHistoryList}">
+      <td th:text="${h.applyDate != null ? #dates.format(h.applyDate, 'yyyy-MM-dd') : ''}"></td>
+      <td th:text="${#numbers.formatInteger(h.baseSalary, 3, 'COMMA')}"></td>
+      <td th:text="${#numbers.formatInteger(h.totalSalary, 3, 'COMMA')}"></td>
+      <td th:text="${h.payTypeName}"></td>
+      <td th:text="${h.salaryChangeReason}"></td>
+      <td th:text="${h.updatedBy ?: h.createdBy}"></td>
+    </tr>
+  </table>
+
+</div>
+</body>
+</html>
