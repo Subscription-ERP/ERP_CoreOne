@@ -417,8 +417,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				name: "salaryCalculation",
 				align: "center",
 				formatter: function(data) {
-					const payrollCode = data.row.payrollCode;
-					return `<a class="btn-calculate" href=# data-paroll-code="${payrollCode}">계산하기</a>`;
+					const payrollPeriodCode = data.row.payrollPeriodCode;
+					return `<a class="btn-calculate" href=# data-payroll-period-code="${payrollPeriodCode}">계산하기</a>`;
 				},
 			},
 			{ header: "지급총액", name: "totalAmount" },
@@ -427,15 +427,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	/* 계산하기 클릭했을때 모달창이 나타나게 */
 	document.querySelector('#payrollGrid').addEventListener('click', function(event) {
+
 		const targetElement = event.target;
 		// 클릭된 요소가 'btn-calculate' 클래스를 가졌는지 확인
 		if (targetElement.classList.contains('btn-calculate')) {
 			event.preventDefault(); // href="#"의 기본 동작(페이지 상단 이동)을 막습니다.
 
 			// 데이터(payrollCode)를 가져옵니다.
-			const payrollCode = targetElement.dataset.payrollCode;
+			const payrollPeriodCode = targetElement.dataset.payrollPeriodCode;
 
-			console.log(`[급여계산 클릭] 대상 Payroll Code: ${payrollCode}`);
+			console.log(`[급여계산 클릭] 대상 Payroll Code: ${payrollPeriodCode}`);
 
 			// 모달 열기
 			const payrollManageModal = document.querySelector('#payrollManageModal');
@@ -446,20 +447,35 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 
 			payrollDetailGrid.refreshLayout();
-			totalAllowances.refreshLayout();
-
-			// 3. 모달 Grid에 데이터 로드 (API 호출 필요)
-			// 실제 API 경로와 파라미터는 백엔드에 맞게 수정해야 합니다.
-			/*fetch(`/api/hr/payrollDetailList?payrollCode=${payrollCode}`)
-				.then(res => res.json())
+			// totalAllowances.refreshLayout();
+			
+			// 3. ✨ 급여 계산 API 호출 및 Grid 데이터 로드 로직 추가 ✨
+			// 백엔드 컨트롤러(/api/hr/UserPayList)에 정의한 API 경로와 파라미터를 사용합니다.
+			fetch(`/api/hr/UserPayList?payroll_period_code=${payrollPeriodCode}`)
+				.then(res => {
+					// HTTP 응답이 200 OK가 아니면 에러 처리
+					if (!res.ok) {
+						throw new Error(`HTTP error! status: ${res.status}`);
+					}
+					return res.json();
+				})
 				.then(data => {
-					// Tui Grid에 데이터 설정
+					console.log("[급여계산 결과]", data);
+
+					// Tui Grid에 계산된 사원별 급여 결과 데이터 설정
+					// 가정: 계산된 결과는 payrollDetailGrid에 표시됩니다.
 					payrollDetailGrid.resetData(data);
 
-					// 선택된 행의 상세 수당/공제 정보도 업데이트하는 로직이 여기에 추가되어야 함
-					// (예: 첫 번째 행을 자동으로 선택하고 하단 테이블 업데이트)
+					// 필요하다면, 첫 번째 행을 선택하고 상세 정보를 업데이트하는 로직 추가
+					if (data.length > 0) {
+						// (예시) totalAllowances Grid에 첫 번째 사원의 상세 데이터를 로드하는 추가 로직
+						// totalAllowances.resetData([data[0].allowanceDetails]);
+					}
 				})
-				.catch(error => console.error("Error loading payroll detail:", error));*/
+				.catch(error => {
+					console.error("Error loading payroll calculation result:", error);
+					alert("급여 계산 결과를 불러오는 중 오류가 발생했습니다.");
+				});
 		}
 	}); // end of payrollGrid 클릭 이벤트
 
@@ -475,14 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		el: document.getElementById("payrollDetailGrid"),
 		scrollX: true,
 		scrollY: true,
-		data: {
-			api: {
-				readData: {
-					url: "/api/hr/payrollList",
-					method: "GET",
-				},
-			},
-		}, // 초기 데이터는 비어있음
+		data: [], // 초기 데이터는 비어있음
 		bodyHeight: 200, // HTML에서 설정한 높이와 일치시킵니다.
 		rowKey: "userId",
 		columns: [
@@ -499,5 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			{ header: "실 수령액", name: "netPay", align: "right", formatter: 'money' }
 		],
 	}); // end of payrollDetailGrid
+
+
 
 }); // end of DOMContentLoaded

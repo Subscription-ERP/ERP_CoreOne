@@ -9,6 +9,7 @@ import com.rootcore.hr.mapper.PayrollMapper;
 import com.rootcore.hr.service.PayrollService;
 import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
+import com.rootcore.hr.vo.UserPayManageVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +52,11 @@ public class PayrollServiceImpl implements PayrollService {
 			}
 		}
 		return count; // 총 등록된 건수 반환
+	}
+
+	@Override
+	public List<UserPayManageVO> selectUserPayManageList(String payroll_period_code) {
+		return payrollMapper.selectUserPayManageList(payroll_period_code);
 	}
 
 	
