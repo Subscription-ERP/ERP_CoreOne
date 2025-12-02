@@ -1,325 +1,334 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 
 <head>
-<meta charset="UTF-8">
-<title>사용자 정보</title>
-<style>
-.subscription-container {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding-top: 20px;
-}
+    <meta charset="UTF-8">
+    <title>사용자 정보</title>
+    <style>
+        .subscription-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 20px;
+        }
 
-/* 상단 단계 영역 */
-.step-header {
-	max-width: 900px;
-	margin: 0 auto 40px auto;
-}
+        /* 상단 단계 영역 */
+        .step-header {
+            max-width: 900px;
+            margin: 0 auto 40px auto;
+        }
 
-.step-header-inner {
-	column-gap: 80px;
-}
+        .step-header-inner {
+            column-gap: 80px;
+        }
 
-.section-title {
-	margin-bottom: 25px;
-}
+        .section-title {
+            margin-bottom: 25px;
+        }
 
-/* 폼 카드 */
-.user-form-card {
-	background: #fff;
-	border-radius: 8px;
-	padding: 30px 32px;
-	box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-}
+        /* 폼 카드 */
+        .user-form-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px 32px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
 
-.required-star {
-	color: #dc3545;
-	font-size: 0.9rem;
-	margin-left: 4px;
-}
+        .required-star {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-left: 4px;
+        }
 
-.helper-text {
-	font-size: 0.8rem;
-	color: #888;
-}
+        .helper-text {
+            font-size: 0.8rem;
+            color: #888;
+        }
 
-.btn-dark {
-	background: #000;
-	border-color: #000;
-}
+        .btn-dark {
+            background: #000;
+            border-color: #000;
+        }
 
-.btn-dark:hover {
-	background: #222;
-	border-color: #222;
-}
+        .btn-dark:hover {
+            background: #222;
+            border-color: #222;
+        }
 
-html, body {
-	overflow: hidden !important; /* 전체 스크롤 제거 */
-	height: 100%;
-}
-</style>
+        html, body {
+            overflow: hidden !important; /* 전체 스크롤 제거 */
+            height: 100%;
+        }
+    </style>
 </head>
 
 <body>
-	<div layout:fragment="content">
-		<div class="subscription-container">
+<div layout:fragment="content">
+    <div class="subscription-container">
 
-			<!-- 상단 단계 표시 -->
-			<div class="row step-header">
-				<div class="col-12 d-flex justify-content-center step-header-inner">
+        <!-- 상단 단계 표시 -->
+        <div class="row step-header">
+            <div class="col-12 d-flex justify-content-center step-header-inner">
 
-					<!-- 1단계 -->
-					<div class="text-center text-secondary">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">1</div>
-						<div class="mt-2">회사 등록</div>
-					</div>
+                <!-- 1단계 -->
+                <div class="text-center text-secondary">
+                    <div
+                            class="rounded-circle border d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
+                        1
+                    </div>
+                    <div class="mt-2">회사 등록</div>
+                </div>
 
-					<!-- 2단계: 현재 단계 -->
-					<div class="text-center">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">
-							2</div>
-						<div class="mt-2 fw-bold">플랜 선택</div>
-					</div>
+                <!-- 2단계: 현재 단계 -->
+                <div class="text-center">
+                    <div
+                            class="rounded-circle border d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px; background: #f8f9fa;">
+                        2
+                    </div>
+                    <div class="mt-2 fw-bold">플랜 선택</div>
+                </div>
 
-					<!-- 3단계 -->
-					<div class="text-center text-secondary">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">3</div>
-						<div class="mt-2">계약서</div>
-					</div>
+                <!-- 3단계 -->
+                <div class="text-center text-secondary">
+                    <div
+                            class="rounded-circle border d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px; background: #f8f9fa;">
+                        3
+                    </div>
+                    <div class="mt-2">계약서</div>
+                </div>
 
-					<!-- 4단계 -->
-					<div class="text-center text-secondary">
-						<div
-							class="rounded-circle border d-flex align-items-center justify-content-center"
-							style="width: 40px; height: 40px; background: #f8f9fa;">4</div>
-						<div class="mt-2">결제 완료</div>
-					</div>
-				</div>
-			</div>
+                <!-- 4단계 -->
+                <div class="text-center text-secondary">
+                    <div
+                            class="rounded-circle border d-flex align-items-center justify-content-center"
+                            style="width: 40px; height: 40px; background: #f8f9fa;">
+                        4
+                    </div>
+                    <div class="mt-2">결제 완료</div>
+                </div>
+            </div>
+        </div>
 
-			<!-- 제목 -->
-			<div class="row section-title">
-				<div class="col-12 text-center">
-					<h4 class="fw-bold mb-1">사용자 정보 입력</h4>
-					<div class="text-secondary">필수 정보를 입력해 ERP 계정 및 담당자 정보를
-						등록합니다.</div>
-				</div>
-			</div>
+        <!-- 제목 -->
+        <div class="row section-title">
+            <div class="col-12 text-center">
+                <h4 class="fw-bold mb-1">사용자 정보 입력</h4>
+                <div class="text-secondary">
+                    필수 정보를 입력해 ERP 계정 및 담당자 정보를 등록합니다.
+                </div>
+            </div>
+        </div>
+        <!-- 폼 카드 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="user-form-card">
+                    <form th:action="@{/companies}"
+                          th:object="${companyRequest}" method="post">
 
-			<!-- 폼 카드 -->
-			<div class="row">
-				<div class="col-12">
-					<div class="user-form-card">
-						<form th:action="@{/companies}"
-							th:object="${companyRequest}" method="post"> 
+                        <div class="row g-4">
 
-							<div class="row g-4">
+                            <!-- ===== 왼쪽 컬럼 ===== -->
+                            <div class="col-md-6">
 
-								<!-- ===== 왼쪽 컬럼 ===== -->
-								<div class="col-md-6">
+                                <!-- 회사명 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">
+                                        회사명<span class="required-star">*</span>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               th:field="*{companyName}" placeholder="회사명을 입력하세요">
+                                    </div>
+                                </div>
 
-									<!-- 회사명 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label"> 회사명<span
-											class="required-star">*</span>
-										</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control"
-												th:field="*{companyName}" placeholder="회사명을 입력하세요">
-										</div>
-									</div>
+                                <!-- 대표자명 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">
+                                        대표자명<span class="required-star">*</span>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               th:field="*{ceoName}" placeholder="대표자명을 입력하세요">
+                                    </div>
+                                </div>
 
-									<!-- 대표자명 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label"> 대표자명<span
-											class="required-star">*</span>
-										</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control" th:field="*{ceoName}"
-												placeholder="대표자명을 입력하세요">
-										</div>
-									</div>
+                                <!-- 휴대폰번호 + 본인인증 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">
+                                        휴대폰번호<span class="required-star">*</span>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control"
+                                                   th:field="*{ceoPhone}" placeholder="'-' 없이 숫자만 입력">
+                                            <button type="button" class="btn btn-dark">본인인증</button>
+                                        </div>
+                                        <div class="helper-text mt-1">
+                                            인증번호 전송 후 본인 인증을 진행합니다.
+                                        </div>
+                                    </div>
+                                </div>
 
-									<!-- 휴대폰번호 + 본인인증 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label"> 휴대폰번호<span
-											class="required-star">*</span>
-										</label>
-										<div class="col-sm-8">
-											<div class="input-group">
-												<input type="text" class="form-control"
-													th:field="*{ceoPhone}" placeholder="'-' 없이 숫자만 입력">
-												<button type="button" class="btn btn-dark">본인인증</button>
-											</div>
-											<div class="helper-text mt-1">인증번호 전송 후 본인 인증을 진행합니다.</div>
-										</div>
-									</div>
+                                <!-- 회사 E-mail + 중복확인 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">회사 E-mail</label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <input type="email" class="form-control"
+                                                   th:field="*{companyEmail}"
+                                                   placeholder="example@company.com">
+                                            <button type="button" class="btn btn-outline-secondary">중복확인</button>
+                                        </div>
+                                    </div>
+                                </div>
 
-									<!-- 회사 E-mail + 중복확인 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">회사 E-mail</label>
-										<div class="col-sm-8">
-											<div class="input-group">
-												<input type="email" class="form-control"
-													th:field="*{companyEmail}"
-													placeholder="example@company.com">
-												<button type="button" class="btn btn-outline-secondary">중복확인</button>
-											</div>
-										</div>
-									</div>
+                                <!-- 아이디 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">아이디</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               placeholder="로그인에 사용할 아이디">
+                                        <div class="helper-text mt-1">
+                                            영문/숫자 조합, 6~20자 이내로 입력하세요.
+                                        </div>
+                                    </div>
+                                </div>
 
-									<!-- 아이디 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">아이디</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control"
-												placeholder="로그인에 사용할 아이디">
-											<div class="helper-text mt-1">영문/숫자 조합, 6~20자 이내로
-												입력하세요.</div>
-										</div>
-									</div>
+                                <!-- 비밀번호 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">비밀번호</label>
+                                    <div class="col-sm-8">
+                                        <input type="password" class="form-control"
+                                               placeholder="비밀번호">
+                                        <div class="helper-text mt-1">
+                                            영문/숫자/특수문자 조합 8자리 이상
+                                        </div>
+                                    </div>
+                                </div>
 
-									<!-- 비밀번호 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">비밀번호</label>
-										<div class="col-sm-8">
-											<input type="password" class="form-control"
-												placeholder="비밀번호">
-											<div class="helper-text mt-1">영문/숫자/특수문자 조합 8자리 이상</div>
-										</div>
-									</div>
+                                <!-- 비밀번호 확인 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">비밀번호 확인</label>
+                                    <div class="col-sm-8">
+                                        <input type="password" class="form-control"
+                                               placeholder="비밀번호 확인">
+                                    </div>
+                                </div>
 
-									<!-- 비밀번호 확인 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">비밀번호 확인</label>
-										<div class="col-sm-8">
-											<input type="password" class="form-control"
-												placeholder="비밀번호 확인">
-										</div>
-									</div>
+                                <!-- 업종 / 업태 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">업종 / 업태</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               th:field="*{industryType}" placeholder="예: 제조 / 도매">
+                                    </div>
+                                </div>
 
-									<!-- 업종 / 업태 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">업종 / 업태</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control"
-												th:field="*{industryType}" placeholder="예: 제조 / 도매">
-										</div>
-									</div>
+                            </div>
 
+                            <!-- ===== 오른쪽 컬럼 ===== -->
+                            <div class="col-md-6">
 
+                                <!-- 사업자등록번호 + 중복확인 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">
+                                        사업자등록번호<span class="required-star">*</span>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control"
+                                                   th:field="*{bno}" placeholder="'-' 없이 숫자만 입력">
+                                            <button type="button" class="btn btn-outline-secondary">중복확인</button>
+                                        </div>
+                                        <div class="helper-text mt-1">
+                                            국세청 등록정보와 일치 여부를 확인합니다.
+                                        </div>
+                                    </div>
+                                </div>
 
-								</div>
+                                <!-- 인증번호 + 확인 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">인증번호</label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control"
+                                                   th:field="*{checkNo}" placeholder="수신한 인증번호 입력">
+                                            <button type="button" class="btn btn-dark">확인</button>
+                                        </div>
+                                    </div>
+                                </div>
 
-								<!-- ===== 오른쪽 컬럼 ===== -->
-								<div class="col-md-6">
+                                <!-- 회사 주소 + 검색 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">회사 주소</label>
+                                    <div class="col-sm-8">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control"
+                                                   th:field="*{companyAddress}" placeholder="주소를 검색해주세요">
+                                            <button type="button" class="btn btn-outline-secondary">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
 
-									<!-- 사업자등록번호 + 중복확인 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label"> 사업자등록번호<span
-											class="required-star">*</span>
-										</label>
-										<div class="col-sm-8">
-											<div class="input-group">
-												<input type="text" class="form-control" th:field="*{bno}"
-													placeholder="'-' 없이 숫자만 입력">
-												<button type="button" class="btn btn-outline-secondary">중복확인</button>
-											</div>
-											<div class="helper-text mt-1">국세청 등록정보와 일치 여부를 확인합니다.</div>
-										</div>
-									</div>
+                                <!-- 회사 전화번호 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">회사 전화번호</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               th:field="*{companyPhone}" placeholder="예: 02-123-4567">
+                                    </div>
+                                </div>
 
-									<!-- 인증번호 + 확인 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">인증번호</label>
-										<div class="col-sm-8">
-											<div class="input-group">
-												<input type="text" class="form-control"
-													th:field="*{checkNo}" placeholder="수신한 인증번호 입력">
-												<button type="button" class="btn btn-dark">확인</button>
-											</div>
-										</div>
-									</div>
+                                <!-- 담당자 연락처 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">담당자 연락처</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               th:field="*{managerPhone}" placeholder="예: 010-1234-5678">
+                                    </div>
+                                </div>
 
-									<!-- 회사 주소 + 검색 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">회사 주소</label>
-										<div class="col-sm-8">
-											<div class="input-group">
-												<input type="text" class="form-control"
-													th:field="*{companyAddress}" placeholder="주소를 검색해주세요">
-												<button type="button" class="btn btn-outline-secondary">
-													<i class="bi bi-search"></i>
-												</button>
-											</div>
-										</div>
-									</div>
+                                <!-- 담당자 명 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">담당자 명</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control"
+                                               th:field="*{managerName}" placeholder="담당자 이름">
+                                    </div>
+                                </div>
 
-									<!-- 회사 전화번호 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">회사 전화번호</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control"
-												th:field="*{companyPhone}" placeholder="예: 02-123-4567">
-										</div>
-									</div>
+                                <!-- 직원 수 -->
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label">직원 수</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" th:field="*{employeeCount}">
+                                            <option value="">선택</option>
+                                            <option value="under10">10명 이하</option>
+                                            <option value="10-50">10 ~ 50명</option>
+                                            <option value="50-100">50 ~ 100명</option>
+                                            <option value="over100">100명 이상</option>
+                                        </select>
+                                    </div>
+                                </div>
 
-									<!-- 담당자 연락처 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">담당자 연락처</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control"
-												th:field="*{managerPhone}" placeholder="예: 010-1234-5678">
-										</div>
-									</div>
+                            </div>
+                        </div>
 
+                        <!-- 하단 버튼 -->
+                        <button type="submit" class="btn btn-dark px-4">다음으로</button>
 
-									<!-- 담당자 명 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">담당자 명</label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control"
-												th:field="*{managerName}" placeholder="담당자 이름">
-										</div>
-									</div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-									<!-- 직원 수 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">직원 수</label>
-										<div class="col-sm-8">
-											<select class="form-select" th:field="*{employeeCount}">
-												<option value="">선택</option>
-												<option value="under10">10명 이하</option>
-												<option value="10-50">10 ~ 50명</option>
-												<option value="50-100">50 ~ 100명</option>
-												<option value="over100">100명 이상</option>
-											</select>
-										</div>
-									</div>
-
-								</div>
-
-							</div>
-
-							<!-- 하단 버튼 -->
-								<button type="submit" class="btn btn-dark px-4">다음으로</button>
-							</div>
-
-						</form>
-					</div>
-				</div>
-			</div>
-
-		</div>
-	</div>
+    </div>
+</div>
 </body>
 </html>

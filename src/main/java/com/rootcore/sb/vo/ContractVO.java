@@ -1,6 +1,7 @@
 package com.rootcore.sb.vo;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import lombok.Data;
@@ -32,9 +33,9 @@ public class ContractVO {
     private String status;
 
     private String createdBy;
-    private Date createDate;
+    private LocalDateTime createDate;
     private String updatedBy;
-    private Date updateDate;
+    private LocalDateTime updateDate;
 
 	
 }

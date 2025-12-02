@@ -1,5 +1,6 @@
 package com.rootcore.sb.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
@@ -16,7 +17,8 @@ import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PaymentVO;
-import com.rootcore.sb.vo.PlanSelectRequestVO;
+import com.rootcore.sb.vo.PlanVO;
+import com.rootcore.sb.vo.SubscribeVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
 
@@ -30,6 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private final PaymentMapper paymentMapper; // 결제이력
 	private final ContractMapper contractMapper; // 계약서
 	
+	
 	private final SubscribeMapper subscribeMapper; // 구독
 	private final CompanyMapper companyMapper; // 회사 (상태 변경 정도용)
 	private final TossPaymentClient tossPaymentClient;
@@ -40,28 +43,29 @@ public class PaymentServiceImpl implements PaymentService {
 	 * 회사 등록이 끝난 상태에서: 회사코드 + 플랜정보 + 금액을 가지고 주문을 생성하고 프론트에서 Toss 위젯을 띄울 수 있도록 값 반환
 	 */
 	@Override
-	public PaymentReadyResponseVO insertOrder(OrderVO requestVO) {
+	public PaymentReadyResponseVO insertOrder(OrderVO ordervo, PlanVO plan) {
 
 		// 주문번호 생성 (예: UUID 사용, 실제로는 규칙 정해서 사용)
 
 		// ✅ 주문 정보 ORDER 테이블에 저장
-		OrderVO order = new OrderVO();
-		order.setOrderName(requestVO.getOrderName());
-		order.setOrderAmount(requestVO.getAmount());
-		order.setOrderStatus("READY"); // 주문 상태
-		order.setOrderType("NORMAL"); // 필요시 상수/enum 처리
-		order.setCreateDate(LocalDateTime.now());
-		order.setUpdateDate(LocalDateTime.now());
-		order.setCreatedBy("SYSTEM"); // 나중에 로그인 사용자로 교체
-		order.setUpdatedBy("SYSTEM");
+		ordervo.setOrderName(ordervo.getOrderName());
+		ordervo.setOrderAmount(ordervo.getOrderAmount());
+		ordervo.setOrderStatus("READY"); // 주문 상태
+		ordervo.setOrderType("NORMAL"); // 필요시 상수/enum 처리
+		ordervo.setCreateDate(LocalDateTime.now());
+		ordervo.setUpdateDate(LocalDateTime.now());
+		ordervo.setCreatedBy("SYSTEM"); // 나중에 로그인 사용자로 교체
+		ordervo.setUpdatedBy("SYSTEM");
+		ordervo.setCompanyCode("0000");
+		ordervo.setPlanCode(plan.getPlanCode());
 
-		orderMapper.insertOrder(order);
+		orderMapper.insertOrder(ordervo);
 
 		// 프론트에서 Toss 위젯 호출할 때 필요한 값들 내려줌
 		PaymentReadyResponseVO responseVO = new PaymentReadyResponseVO();
-		responseVO.setOrderId(order.getOrderId());
-		responseVO.setOrderName(requestVO.getOrderName());
-		responseVO.setAmount(requestVO.getAmount());
+		responseVO.setOrderId(ordervo.getOrderId());
+		responseVO.setOrderName(ordervo.getOrderName());
+		responseVO.setAmount(ordervo.getOrderAmount());
 
 		responseVO.setSuccessUrl("http://localhost:8080/api/payments/success"); // 예시
 		responseVO.setFailUrl("http://localhost:8080/api/payments/fail"); // 예시
@@ -72,7 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO,
 
-			CompanyVO company, PlanSelectRequestVO plan, ContractVO contract) {
+			CompanyVO company, PlanVO plan, ContractVO contract) {
 
 		// 1. ORDER 테이블에서 주문 조회 및 금액 검증
 		OrderVO order = orderMapper.selectByOrderId(requestVO.getOrderId());
@@ -89,13 +93,43 @@ public class PaymentServiceImpl implements PaymentService {
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmPayment(requestVO);
 
 		//회사등록
-		companyMapper.insertCompany(company);
+        company.setCreatedBy("SYSTEM");
+        company.setCreateDate(LocalDateTime.now());
+        company.setUpdatedBy("SYSTEM");
+        company.setUpdateDate(LocalDateTime.now());
+		companyMapper.insertCompany(company);	//세션정보를 불러와 insert 매퍼실행
 		
 		//계약서 등록
+		
+		contract.setCompanyCode(company.getCompanyCode());
+		contract.setPlanCode(plan.getPlanCode());
+		contract.setCreatedBy("SYSTEM");
+		contract.setCreateDate(LocalDateTime.now());
+		contract.setUpdatedBy("SYSTEM");
+		contract.setUpdateDate(LocalDateTime.now());
 		contractMapper.insertContract(contract);
+		
+		//구독생성
+		 SubscribeVO subscribe = new SubscribeVO();
+		subscribe.setCompanyCode(company.getCompanyCode());
+		subscribe.setSubsStatus("ACTIVE");
+		subscribe.setSubsStart(LocalDate.now());
+		subscribe.setSubsEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
+		subscribe.setCreatedBy("SYSTEM");
+		subscribe.setCreateDate(LocalDateTime.now());
+		subscribe.setUpdatedBy("SYSTEM");
+		subscribe.setUpdateDate(LocalDateTime.now());
+		subscribe.setPlanCode(plan.getPlanCode());
+		subscribe.setContractCode(contract.getContractCode());
+		//subscribe.setBillingPeriod();
+		subscribe.setCurrentUserCount(contract.getUserCount());
+		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
+	
+		subscribeMapper.insertSubscribe(subscribe);
+		
 		// 3. PAYMENT 테이블에 결제 이력 INSERT
-		PaymentVO payment = new PaymentVO();
 		// payment 객체생성
+		 PaymentVO payment = new PaymentVO();
 		payment.setOrderId(order.getOrderId());
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
@@ -105,21 +139,27 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setCreateDate(LocalDateTime.now());
 		payment.setUpdatedBy("SYSTEM");
 		payment.setUpdateDate(LocalDateTime.now());
-		payment.setCompanyCode("COM25112700001");
+		payment.setCompanyCode(company.getCompanyCode());
 		// 고정데이터로 들어감
-		payment.setSubCode("SUB25112700001");
+		payment.setSubCode(subscribe.getSubCode());
 		// payment객체안에 값들을 채워넣음
 //		paymentMapper.insertPayment(payment);
 		// 셋팅된 payment객체를 mapper로 전달
+		paymentMapper.insertPayment(payment);
 
 		// ORDER 업데이트
 		orderMapper.updateOrderSubCode(payment.getOrderId(), payment.getSubCode(), "SYSTEM");
+		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
 
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
+		
 		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
 
 		// 5. 그대로 Toss 응답 반환 (프론트가 필요로 하는 경우)
 		return tossResponse;
 
 	}
+
+
+	
 }

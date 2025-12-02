@@ -40,7 +40,7 @@ public class CompanyController {
 	// 1단계 회사등록 + 플랜선택화면이동
 	@PostMapping("/companies")
 	public String registerCompany(@ModelAttribute CompanyVO requestVO, HttpSession session) {
-		String StringCode = companyService.registerCompany(requestVO);
+//		String StringCode = companyService.registerCompany(requestVO);
 		session.setAttribute("company", requestVO);
 		// GET /{companyCode}/plans 으로 redirect
 		return "redirect:/plans";
@@ -63,14 +63,16 @@ public class CompanyController {
 	/*
 	 * 2단계 플랜 조회 후 계약서 작성 화면으로 이동 (POST: 회사코드 + 플랜코드)
 	 */
-	@GetMapping("/company/plans/select") // 화면에서 넘겨준값이 plancode뿐이라서 나머지 필드는 null값인 상태
-	public String selectPlan(PlanVO plan, RedirectAttributes redirectAttributes, HttpSession session) {
-		PlanVO result = planService.getPlanDetail(plan.getPlanCode());
-
-		plan.setPrice(result.getPrice());
+	@GetMapping("/company/plans/select") // 화면에서 넘겨준값이 플랜코드,기간,사용자수,회사코드 나머지 필드는 null값인 상태
+	public String selectPlan(PlanVO plan, RedirectAttributes redirectAttributes, HttpSession session) { 
+		PlanVO result = planService.getPlanDetail(plan.getPlanCode()); //넘어온 플랜코드로 단건조회
+		//DB에서 조회한 데이터 복사
+		plan.setPrice(result.getPrice());	
 		plan.setPlanName(result.getPlanName());
 		plan.setPlanInfo(result.getPlanInfo());
+		
 		session.setAttribute("plan", plan);
+		//세션에는 플랜정보,가격,플랜명,플랜코드,기간,사용자수,회사코드이 담겨져있음
 		// companyCode, planCode를 계약 작성 화면으로 넘김
 
 		// 예: /contract/new?companyCode=XXX&planCode=YYY
@@ -94,7 +96,7 @@ public class CompanyController {
 		contractReq.setTotalPrice(totalPrice);
 		contractReq.setVat(vat);
 
-		session.setAttribute("contract", contractReq);
+		session.setAttribute("contract", contractReq);	
 
 		model.addAttribute("company", company);
 		model.addAttribute("totalPrice", totalPrice);

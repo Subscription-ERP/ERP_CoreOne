@@ -15,6 +15,7 @@
 		INSERT INTO TB_PAYMENT_ORDER
 		(
 		ORDER_ID,
+		COMPANY_CODE,
 		ORDER_AMOUNT,
 		ORDER_STATUS,
 		ORDER_NAME,
@@ -31,6 +32,7 @@
 		VALUES
 		(
 		#{orderId},
+		#{companyCode},
 		#{orderAmount},
 		#{orderStatus},
 		#{orderName},
@@ -64,12 +66,14 @@
 		UPDATED_BY,
 		UPDATE_DATE
 		FROM TB_PAYMENT_ORDER
-		WHERE ORDER_ID = #{orderId}
+		WHERE ORDER_ID
+		= #{orderId}
 	</select>
 
 	<update id="updateOrderStatus">
 		UPDATE TB_PAYMENT_ORDER
-		SET ORDER_STATUS = #{orderStatus},
+		SET ORDER_STATUS =
+		#{orderStatus},
 		UPDATE_DATE = SYSDATE
 		WHERE ORDER_ID = #{orderId}
 	</update>
@@ -79,7 +83,16 @@
 		SET SUB_CODE = #{subCode},
 		UPDATED_BY = #{updatedBy},
 		UPDATE_DATE = SYSDATE
-		WHERE ORDER_ID = #{orderId}
+		WHERE ORDER_ID =
+		#{orderId}
 	</update>
-
+	<update id="updateOrderCompanyCode">
+		UPDATE TB_PAYMENT_ORDER
+		SET
+		COMPANY_CODE = #{companyCode},
+		UPDATED_BY = #{updatedBy},
+		UPDATE_DATE = SYSDATE
+		WHERE
+		ORDER_ID = #{orderId}
+	</update>
 </mapper>

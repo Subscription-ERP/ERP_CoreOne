@@ -4,47 +4,57 @@
 
 <mapper namespace="com.rootcore.sb.mapper.PaymentMapper">
 
-	 <!-- 신규 구독 + 결제 -->
-    <update id="callNewSubsAndPayment" parameterType="com.rootcore.sb.vo.NewSubsPaymentVO" statementType="CALLABLE">
-        { call PRC_NEW_SUBS_AND_PAYMENT(
-            #{companyName,    mode=IN, jdbcType=VARCHAR},
-            #{ceoName,        mode=IN, jdbcType=VARCHAR},
-            #{ceoPhone,       mode=IN, jdbcType=VARCHAR},
-            #{companyEmail,   mode=IN, jdbcType=VARCHAR},
-            #{industryType,   mode=IN, jdbcType=VARCHAR},
-            #{businessType,   mode=IN, jdbcType=VARCHAR},
-            #{managerName,    mode=IN, jdbcType=VARCHAR},
-            #{employeeCount,  mode=IN, jdbcType=NUMERIC},
-            #{bno,            mode=IN, jdbcType=VARCHAR},
-            #{checkNo,        mode=IN, jdbcType=VARCHAR},
-            #{companyAddress, mode=IN, jdbcType=VARCHAR},
-            #{companyPhone,   mode=IN, jdbcType=VARCHAR},
-            #{managerPhone,   mode=IN, jdbcType=VARCHAR},
+	<!-- 결제 이력 INSERT -->
+<insert id="insertPayment" parameterType="com.rootcore.sb.vo.PaymentVO">
 
-            #{planCode,       mode=IN, jdbcType=VARCHAR},
-            #{subsStart,      mode=IN, jdbcType=TIMESTAMP},
-            #{subsEnd,        mode=IN, jdbcType=TIMESTAMP},
+    <!-- PAYMENT_CODE 생성 -->
+    <selectKey resultType="String" order="BEFORE" keyProperty="paymentCode">
+        SELECT FN_MAKE_PAYMENT_CODE() FROM DUAL
+    </selectKey>
 
-            #{totalPrice,     mode=IN, jdbcType=NUMERIC},
-            #{paymentMethod,  mode=IN, jdbcType=VARCHAR},
-            #{paymentKey,     mode=IN, jdbcType=VARCHAR},
-            #{orderId,        mode=IN, jdbcType=VARCHAR},
-            #{cardCompany,    mode=IN, jdbcType=VARCHAR}
-        )}
-    </update>
-
-    <!-- 기존 구독 결제 -->
-    <update id="callExistSubsPayment" parameterType="com.rootcore.sb.vo.ExistSubsPaymentVO" statementType="CALLABLE">
-        { call PRC_EXIST_SUBS_PAYMENT(
-            #{subCode,       mode=IN, jdbcType=VARCHAR},
-            #{totalPrice,    mode=IN, jdbcType=NUMERIC},
-            #{paymentMethod, mode=IN, jdbcType=VARCHAR},
-            #{paymentKey,    mode=IN, jdbcType=VARCHAR},
-            #{orderId,       mode=IN, jdbcType=VARCHAR},
-            #{cardCompany,   mode=IN, jdbcType=VARCHAR}
-        )}
-    </update>
-
+    INSERT INTO TB_PAYMENT
+    (
+        PAYMENT_CODE,
+        SUB_CODE,
+        COMPANY_CODE,
+        TOTAL_PRICE,
+        PAYMENT_STAT,
+        PAYMENT_METHOD,
+        PAYMENT_DATE,
+        CARD_COMPANY,
+        RECENT_PAYMENT,
+        NEXT_PAYMENT,
+        BILLING_START,
+        BILLING_END,
+        PAYMENT_KEY,
+        ORDER_ID,
+        CREATED_BY,
+        CREATE_DATE,
+        UPDATED_BY,
+        UPDATE_DATE
+    )
+    VALUES
+    (
+        #{paymentCode},
+        #{subCode},
+        #{companyCode},
+        #{totalPrice},
+        #{paymentStat},
+        #{paymentMethod},
+        #{paymentDate},
+        #{cardCompany},
+        #{recentPayment},
+        #{nextPayment},
+        #{billingStart},
+        #{billingEnd},
+        #{paymentKey},
+        #{orderId},
+        #{createdBy},
+        #{createDate},
+        #{updatedBy},
+        #{updateDate}
+    )
+</insert>
 	<update id="updateOrderSubCode">
 		UPDATE TB_PAYMENT_ORDER
 		SET SUB_CODE = #{subCode},
