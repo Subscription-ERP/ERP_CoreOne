@@ -1,6 +1,8 @@
 package com.rootcore.hr.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,10 +58,14 @@ public class PayrollServiceImpl implements PayrollService {
 
 	@Override
 	public List<UserPayManageVO> selectUserPayManageList(String payroll_period_code) {
-		return payrollMapper.selectUserPayManageList(payroll_period_code);
+
+	    Map<String, Object> param = new HashMap<>();
+	    param.put("payrollPeriodCode", payroll_period_code);
+	    param.put("cursor", null); // 반드시 필요!
+	    
+	    System.out.println("serviceImpl payroll_period_code: " + payroll_period_code);
+	    System.out.println("payrollMapper.selectUserPayManageList(param): " + payrollMapper.selectUserPayManageList(param));
+	    
+	    return payrollMapper.selectUserPayManageList(param);
 	}
-
-	
-
-	
 }

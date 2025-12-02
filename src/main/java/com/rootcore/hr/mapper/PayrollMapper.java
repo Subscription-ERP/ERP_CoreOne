@@ -1,6 +1,7 @@
 package com.rootcore.hr.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
@@ -21,5 +22,5 @@ public interface PayrollMapper {
 	String selectNewPeriodCode();
 	
 	// 급여대장-대장조회-계산하기-급여계산
-	List<UserPayManageVO> selectUserPayManageList(String payroll_period_code);
+	List<UserPayManageVO> selectUserPayManageList(Map<String, Object> param);
 }
