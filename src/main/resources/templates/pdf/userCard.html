@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>사원 카드</title>
+
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            font-size: 10px;
+            margin: 35px 25px;
+        }
+
+        /* 상단 제목 테이블 */
+        .title-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        /* 왼쪽 큰 "사원카드" 박스 */
+        .title-cell {
+            border: 0.5px solid #bbb;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 8px 0;
+            letter-spacing: 0.5em;
+        }
+
+        /* 오른쪽 위 "사원번호" 라벨 – 여기만 배경색 */
+        .title-label {
+            border: 0.5px solid #bbb;
+            text-align: center;
+            width: 130px;
+            font-size: 10px;
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
+
+        /* 오른쪽 아래 실제 사원번호 값 */
+        .title-value {
+            border: 0.5px solid #bbb;
+            text-align: center;
+            font-size: 10px;
+            padding: 6px 0;
+        }
+
+        .card-wrapper {
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 0.5px solid #bbb;
+            padding: 6px 8px;
+            vertical-align: middle;
+            word-break: break-all;
+        }
+
+        th {
+            text-align: center;
+        }
+
+        .photo-area {
+            width: 90px;
+            text-align: center;
+        }
+
+        .photo-box {
+            width: 70px;
+            height: 90px;
+            border: none;
+            margin: 0 auto;
+            font-size: 10px;
+            text-align: center;
+            line-height: 90px;
+        }
+
+        .side-title {
+            width: 24px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
+
+        .side-title.vertical {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .label {
+            background-color: #f5f5f5;
+            width: 80px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.5em;
+        }
+
+        .sub-table-title {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body>
+<!-- 상단 제목 + 사원번호 영역 -->
+<table class="title-table">
+    <tr>
+        <!-- 왼쪽: 사원카드 (2줄 합치기) -->
+        <td class="title-cell" rowspan="2">사원카드</td>
+
+        <!-- 오른쪽 위: 사원번호 라벨 (배경색) -->
+        <td class="title-label">사원번호</td>
+    </tr>
+    <tr>
+        <!-- 오른쪽 아래: 실제 사원번호 값 -->
+        <td class="title-value"
+            id="headerEmpNo"
+            th:text="${user.userId}">
+            EMP25010100001
+        </td>
+    </tr>
+</table>
+
+<div class="card-wrapper">
+
+    <!-- 기본 정보 -->
+    <table>
+        <tr>
+            <td rowspan="8" class="photo-area">
+                <!-- 사진 경로가 있으면 넣고, 없으면 '사진' 표시 -->
+                <div class="photo-box"
+                     id="photoArea"
+                     th:text="${user.userPhoto != null ? '' : '사진'}">
+                    사진
+                </div>
+            </td>
+            <td class="side-title vertical" rowspan="8">
+                기<br />본<br />정<br />보
+            </td>
+            <td class="label">사원번호</td>
+            <td id="empNo" th:text="${user.userId}"></td>
+            <td class="label">성명</td>
+            <td id="empName" th:text="${user.userName}"></td>
+        </tr>
+
+        <tr>
+            <td class="label">연락처</td>
+            <td id="phone" th:text="${user.tel}"></td>
+            <td class="label">이메일</td>
+            <td id="email" th:text="${user.email}"></td>
+        </tr>
+
+        <tr>
+            <td class="label">입사일</td>
+            <td id="hireDate"
+                th:text="${user.hireDate != null ? #dates.format(user.hireDate, 'yyyy-MM-dd') : ''}">
+            </td>
+            <td class="label">인사구분</td>
+            <td id="hireTypeName" th:text="${user.hireTypeName}"></td>
+        </tr>
+
+        <tr>
+            <td class="label">부서</td>
+            <td id="deptName" th:text="${user.deptName}"></td>
+            <td class="label">직위/직급</td>
+            <td id="jobTitle" th:text="${user.jobTitleName}"></td>
+        </tr>
+
+        <tr>
+            <td class="label">직책</td>
+            <td id="position" th:text="${user.positionName}"></td>
+            <td class="label">세대주 여부</td>
+            <td id="householder"
+                th:text="${#strings.equalsIgnoreCase(user.householder, 'Y') ? 'Y' : '해당사항없음'}">
+            </td>
+        </tr>
+
+        <tr>
+            <td class="label">우편번호</td>
+            <td id="zipCode" th:text="${user.zipCode}"></td>
+            <td class="label">주소</td>
+            <td id="address" th:text="${user.address}"></td>
+        </tr>
+
+        <tr>
+            <td class="label">가족수</td>
+            <td id="familyCnt" th:text="${user.familyCount}"></td>
+            <td class="label">자녀수</td>
+            <td id="childrenCnt" th:text="${user.childrenCount}"></td>
+        </tr>
+
+        <tr>
+            <td class="label">퇴사일</td>
+            <td id="leaveDate"
+                th:text="${user.leaveDate != null ? #dates.format(user.leaveDate, 'yyyy-MM-dd') : ''}">
+            </td>
+            <td class="label">퇴사사유</td>
+            <td id="leaveReason" th:text="${user.leaveReason}"></td>
+        </tr>
+    </table>
+
+    <!-- 급여 정보 -->
+    <table>
+        <tr>
+            <td class="side-title vertical" rowspan="2">급여</td>
+            <td class="label">은행</td>
+            <td id="bankName" th:text="${user.bankName}"></td>
+            <td class="label">계좌번호</td>
+            <td id="accountNo" th:text="${user.accountNo}"></td>
+        </tr>
+        <tr>
+            <td class="label">예금주</td>
+            <td id="accountHolder" th:text="${user.accountHolder}"></td>
+            <td class="label">급여</td>
+            <td id="salary"
+                th:text="${user.salary != null ? #numbers.formatInteger(user.salary, 3, 'COMMA') : ''}">
+            </td>
+        </tr>
+    </table>
+
+    <!-- 자격증 -->
+    <table>
+        <tr>
+            <td class="section-title" colspan="6">자격증</td>
+        </tr>
+        <tr class="sub-table-title">
+            <th>자격증명</th>
+            <th>발급기관</th>
+            <th>취득일자</th>
+            <th>자격번호</th>
+            <th>유효/만료일</th>
+            <th>비고</th>
+        </tr>
+
+        <tbody id="licenseList">
+        <!-- 자격증 없을 때 -->
+        <tr th:if="${#lists.isEmpty(user.certificationList)}">
+            <td colspan="6" class="text-center">등록된 자격증이 없습니다.</td>
+        </tr>
+        <!-- 자격증 목록 -->
+        <tr th:each="cert : ${user.certificationList}"
+            th:if="${cert != null}">
+            <td th:text="${cert.certiName}"></td>
+            <td th:text="${cert.issueOrgName}"></td>
+            <td th:text="${cert.getDate != null ? #dates.format(cert.getDate, 'yyyy-MM-dd') : ''}"></td>
+            <td th:text="${cert.licenseNo}"></td>
+            <td th:text="${cert.expireDate != null ? #dates.format(cert.expireDate, 'yyyy-MM-dd') : ''}"></td>
+            <td th:text="${cert.remark}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 경력사항 -->
+    <table>
+        <tr>
+            <td class="section-title" colspan="7">경력사항</td>
+        </tr>
+        <tr class="sub-table-title">
+            <th>회사명</th>
+            <th>부서명</th>
+            <th>직위/직급</th>
+            <th>입사일자</th>
+            <th>퇴사일자</th>
+            <th>담당업무</th>
+            <th>최종연봉</th>
+        </tr>
+
+        <tbody id="careerList">
+        <!-- 경력 없을 때 -->
+        <tr th:if="${#lists.isEmpty(user.workExperienceList)}">
+            <td colspan="7">경력사항이 없습니다.</td>
+        </tr>
+        <!-- 경력 목록 -->
+        <tr th:each="wex : ${user.workExperienceList}" th:if="${wex != null}">
+            <td th:text="${wex.wexCompanyName}"></td>
+            <td th:text="${wex.wexDept}"></td>
+            <td th:text="${wex.wexJobTitle}"></td>
+            <td th:text="${wex.wexHireDate != null ? #dates.format(wex.wexHireDate, 'yyyy-MM-dd') : ''}"></td>
+            <td th:text="${wex.wexLeaveDate != null ? #dates.format(wex.wexLeaveDate, 'yyyy-MM-dd') : ''}"></td>
+            <td th:text="${wex.wexMainDuty}"></td>
+            <td th:text="${wex.wexSalary != null ? #numbers.formatInteger(wex.wexSalary, 3, 'COMMA') : ''}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>사원 카드</title>
+
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            font-size: 10px;
+            margin: 35px 25px;
+        }
+
+		/* 상단 제목 테이블 */
+		.title-table {
+		    width: 100%;
+		    border-collapse: collapse;
+		    margin-bottom: 20px;
+		}
+		
+		/* 왼쪽 큰 "사원카드" 박스 */
+		.title-cell {
+		    border: 0.5px solid #bbb;
+		    text-align: center;
+		    font-size: 20px;
+		    font-weight: bold;
+		    padding: 8px 0;
+		    letter-spacing: 0.5em; 
+		}
+		
+		/* 오른쪽 위 "사원번호" 라벨 – 여기만 배경색 */
+		.title-label {
+		    border: 0.5px solid #bbb;
+		    text-align: center;
+		    width: 130px;
+		    font-size: 10px;
+		    font-weight: bold;
+		    background-color: #f5f5f5;  
+		}
+		
+		/* 오른쪽 아래 실제 사원번호 값 */
+		.title-value {
+		    border: 0.5px solid #bbb;
+		    text-align: center;
+		    font-size: 10px;
+		    padding: 6px 0;
+		}
+
+        .card-wrapper {
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            /* 2. 전체 테두리 얇게 */
+            border: 0.5px solid #bbb;
+            padding: 6px 8px;
+            vertical-align: middle;
+            word-break: break-all;
+        }
+        th{
+            text-align: center;
+        }
+
+        .photo-area {
+            width: 90px;
+            text-align: center;
+        }
+
+        .photo-box {
+            width: 70px;
+            height: 90px;
+            border: none;
+            margin: 0 auto;
+            font-size: 10px;
+            text-align: center;
+            /* 5. 세로/가로 중앙 정렬 (flex 대신 line-height 사용) */
+            line-height: 90px;
+        }
+
+        .side-title {
+            width: 24px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
+
+        .side-title.vertical {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .label {
+            background-color: #f5f5f5;
+            width: 80px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.5em;
+        }
+        .sub-table-title{
+        	background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+
+<body>
+상단 제목 + 사원번호 영역
+<table class="title-table">
+    <tr>
+        왼쪽: 사원카드 (2줄 합치기)
+        <td class="title-cell" rowspan="2">사원카드</td>
+
+        오른쪽 위: 사원번호 라벨 (배경색)
+        <td class="title-label">사원번호</td>
+    </tr>
+    <tr>
+        오른쪽 아래: 실제 사원번호 값
+        <td class="title-value" id="headerEmpNo">EMP25010100001</td>
+    </tr>
+</table>
+
+<div class="card-wrapper">
+
+    기본 정보
+    <table>
+        <tr>
+            <td rowspan="8" class="photo-area">
+                <div class="photo-box" id="photoArea">사진</div>
+            </td>
+            <td class="side-title vertical" rowspan="8">기<br>본<br>정<br>보</td>
+            <td class="label">사원번호</td>
+            <td id="empNo"></td>
+            <td class="label">성명</td>
+            <td id="empName"></td>
+        </tr>
+
+        <tr>
+            <td class="label">연락처</td>
+            <td id="phone"></td>
+            <td class="label">이메일</td>
+            <td id="email"></td>
+        </tr>
+
+        <tr>
+            <td class="label">입사일</td>
+            <td id="hireDate"></td>
+            <td class="label">인사구분</td>
+            <td id="hireTypeName"></td>
+        </tr>
+
+        <tr>
+            <td class="label">부서</td>
+            <td id="deptName"></td>
+            <td class="label">직위/직급</td>
+            <td id="jobTitle"></td>
+        </tr>
+
+        <tr>
+            <td class="label">직책</td>
+            <td id="position"></td>
+            <td class="label">세대주 여부</td>
+            <td id="householder"></td>
+        </tr>
+
+        <tr>
+            <td class="label">우편번호</td>
+            <td id="zipCode"></td>
+            <td class="label">주소</td>
+            <td id="address"></td>
+        </tr>
+
+        <tr>
+            <td class="label">가족수</td>
+            <td id="familyCnt"></td>
+            <td class="label">자녀수</td>
+            <td id="childrenCnt"></td>
+        </tr>
+
+        <tr>
+            <td class="label">퇴사일</td>
+            <td id="leaveDate"></td>
+            <td class="label">퇴사사유</td>
+            <td id="leaveReason"></td>
+        </tr>
+    </table>
+
+    급여 정보
+    <table>
+        <tr>
+            <td class="side-title vertical" rowspan="2">급여</td>
+            <td class="label">은행</td>
+            <td id="bankName"></td>
+            <td class="label">계좌번호</td>
+            <td id="accountNo"></td>
+        </tr>
+        <tr>
+            <td class="label">예금주</td>
+            <td id="accountHolder"></td>
+            <td class="label">급여</td>
+            <td id="salary"></td>
+        </tr>
+    </table>
+
+    자격증
+    <table>
+        <tr>
+            <td class="section-title" colspan="6">자격증</td>
+        </tr>
+        <tr class="sub-table-title">
+            <th>자격증명</th>
+            <th>발급기관</th>
+            <th>취득일자</th>
+            <th>자격번호</th>
+            <th>유효/만료일</th>
+            <th>비고</th>
+        </tr>
+
+        <tbody id="licenseList">
+        JSoup로 <tr> 추가
+        </tbody>
+    </table>
+
+    경력사항
+    <table>
+        <tr>
+            <td class="section-title" colspan="7">경력사항</td>
+        </tr>
+        <tr class="sub-table-title">
+            <th>회사명</th>
+            <th>부서명</th>
+            <th>직위/직급</th>
+            <th>입사일자</th>
+            <th>퇴사일자</th>
+            <th>담당업무</th>
+            <th>최종연봉</th>
+        </tr>
+
+        <tbody id="careerList">
+        JSoup로 <tr> 추가
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
+ -->

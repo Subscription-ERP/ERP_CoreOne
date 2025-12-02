@@ -649,7 +649,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	  // 2) 각 사원의 userId 로 PDF URL 만들기 → iframe HTML 생성
 	  printPages = checkedRows.map(row => {
 	    const userId = row.userId;
-	    const url = `/api/hr/userCard?userId=${encodeURIComponent(userId)}`;
+	    const url = `/api/hr/userCard/preview?userId=${encodeURIComponent(userId)}`;
 
 	    return `
 	      <iframe
@@ -693,7 +693,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		// 각 사원에 대해 a 태그를 만들어 클릭 -> 브라우저가 다운로드 처리
 		checkedRows.forEach(row => {
 			const userId = row.userId;
-			const url = `/api/hr/userCard?userId=${encodeURIComponent(userId)}`;
+			const url = `/api/hr/userCard/download?userId=${encodeURIComponent(userId)}`;
 			
 			const a = document.createElement('a');
 			a.href = url;
@@ -733,7 +733,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	if (btnHistoryPrint) {
 	  btnHistoryPrint.addEventListener("click", () => {
-	    window.print();
+		const userId = currentUserDetail.userId;
+		window.open(`/api/hr/userHistory/preview?userId=${encodeURIComponent(userId)}`, "_blank");
 	  });
 	}
 	
