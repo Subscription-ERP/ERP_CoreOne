@@ -101,9 +101,10 @@
               <tr>
                 <th class="bg-light text-center">상호</th>
                 <td>
+							<div th:replace="modal/custModal :: custModal"></div>
                   <div class="input-group">
                     <input type="text" class="form-control input-base-icon">
-                    <button class="btn btn-icon"><i class="bi bi-search"></i></button>
+                    <button class="btn btn-icon" id="btnOpenCustModal"><i class="bi bi-search"></i></button>
                   </div>
                 </td>
               </tr>
@@ -135,37 +136,37 @@
       </div>
 
 
-
-<!-- ================= 공급가액 / 세액 (table 적용) ================= -->
-<div class="row mt-3">
-
-  <div class="col-md-6">
-    <table class="form-grid table-bordered" style="width:100%;">
-      <tbody>
-        <tr>
-          <th class="bg-light text-center" style="width:160px;">공급가액</th>
-          <td>
-            <input type="text" id="supplyAmount" class="form-control input-base" readonly>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="col-md-6">
-    <table class="form-grid table-bordered" style="width:100%;">
-      <tbody>
-        <tr>
-          <th class="bg-light text-center" style="width:160px;">세액</th>
-          <td>
-            <input type="text" id="taxAmount" class="form-control input-base" readonly>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-</div>
+		
+		<!-- ================= 공급가액 / 세액 (table 적용) ================= -->
+		<div class="row mt-3">
+		
+		  <div class="col-md-6">
+		    <table class="form-grid table-bordered" style="width:100%;">
+		      <tbody>
+		        <tr>
+		          <th class="bg-light text-center" style="width:160px;">공급가액</th>
+		          <td>
+		            <input type="text" id="supplyAmount" class="form-control input-base" readonly>
+		          </td>
+		        </tr>
+		      </tbody>
+		    </table>
+		  </div>
+		
+		  <div class="col-md-6">
+		    <table class="form-grid table-bordered" style="width:100%;">
+		      <tbody>
+		        <tr>
+		          <th class="bg-light text-center" style="width:160px;">세액</th>
+		          <td>
+		            <input type="text" id="taxAmount" class="form-control input-base" readonly>
+		          </td>
+		        </tr>
+		      </tbody>
+		    </table>
+		  </div>
+		
+		</div>
 
 
 
@@ -180,31 +181,7 @@
 </div>
 
 
-<!-- GRID SCRIPT -->
-<script>
-  const grid = new tui.Grid({
-    el: document.getElementById('invoice-grid'),
-    scrollX: true,
-    scrollY: true,
-    bodyHeight: 'fitToParent',
-    rowHeaders: ['rowNum'],
-
-    data: [
-      { 품번:'2025-HR-001', 품명:'AAA', 출고일자:'2025-01-02', 출고수량:10, 단가:500, 공급가액:5000, 세액:500 },
-      { 품번:'2025-FI-001', 품명:'BBB', 출고일자:'2015-11-02', 출고수량:120, 단가:100, 공급가액:12000, 세액:1200 }
-    ],
-
-    columns: [
-      { header:'품번', name:'품번', minWidth:150 },
-      { header:'품명', name:'품명', minWidth:150 },
-      { header:'출고일자', name:'출고일자', minWidth:140 },
-      { header:'출고수량', name:'출고수량', minWidth:120, align:'right' },
-      { header:'단가', name:'단가', minWidth:120, align:'right' },
-      { header:'공급가액', name:'공급가액', minWidth:140, align:'right' },
-      { header:'세액', name:'세액', minWidth:120, align:'right' }
-    ]
-  });
-</script>
+<script th:src="@{/js/fi/taxInvoice.js}"></script>
 
 </div>
 </body>
