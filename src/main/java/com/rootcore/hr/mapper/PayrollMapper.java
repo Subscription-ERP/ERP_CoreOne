@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
+import com.rootcore.hr.vo.UserPayManageVO;
 
 public interface PayrollMapper {
 	
@@ -18,4 +19,7 @@ public interface PayrollMapper {
 	
 	// 신고귀속코드
 	String selectNewPeriodCode();
+	
+	// 급여대장-대장조회-계산하기-급여계산
+	List<UserPayManageVO> selectUserPayManageList(String payroll_period_code);
 }

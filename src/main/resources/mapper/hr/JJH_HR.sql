@@ -318,10 +318,38 @@ FROM   tb_payroll;
 UPDATE tb_payroll
 SET company_code = '0000';
 
+-- 컬렉션
+CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
+    user_id                     VARCHAR2(50),
+    salary                      NUMBER,
+    bonus                       NUMBER,
+    overtime                    NUMBER,
+    night                       NUMBER,
+    holiday                     NUMBER,
+    family                      NUMBER,
+    meal                        NUMBER,
+    annual_leave                NUMBER,
+    total_allowance             NUMBER,
+    total_payment_amount        NUMBER,
+    national_pension            NUMBER,
+    employment_insurance        NUMBER,
+    health_insurance            NUMBER,
+    long_time_care_insurance    NUMBER,
+    total_deduction_amount      NUMBER,
+    net_pay                     NUMBER
+);
+/
+CREATE OR REPLACE TYPE T_PAYROLL_RESULTS_TAB IS TABLE OF T_PAYROLL_RESULT_REC;
+/   
+-- SQL 타입 컬렉션 조회
+SELECT t.col1, c.column_value
+FROM your_table t, TABLE(t.collection_column) c;
+
 -- 급여 계산 프로시저
 CREATE OR REPLACE PROCEDURE sp_calculate_payroll(
     -- 어떤 대장을 급여계산할건지 선언
-    p_payroll_period_code IN VARCHAR2 -- 계산할 대장 코드
+    p_payroll_period_code IN VARCHAR2, -- 계산할 대장 코드
+    p_out_results OUT SYS_REFCURSOR -- Ref Cursor 반환
 )
 IS
     -- 1) 커서 정의
@@ -348,20 +376,21 @@ IS
                       FROM   tb_attendance ad -- 근태관리 테이블
                              JOIN tb_payroll pr -- 급여대장 테이블
                              ON ad.user_id = pr.user_id
-                      WHERE  ad.work_date >= pr.payroll_start_date
-                        AND  ad.work_date <= pr.payroll_end_date
+                      WHERE  pr.payroll_period_code = 'PAY2510_MONTHLY'
+                      AND    ad.work_date >= pr.payroll_start_date
+                      AND    ad.work_date <= pr.payroll_end_date
                       GROUP BY ad.user_id
                 ) ad 
                 ON ad.user_id = pr.user_id
-                JOIN tb_annual_leave al
+                LEFT JOIN tb_annual_leave al
                 ON al.user_id = pr.user_id
-         WHERE  pr.payroll_period_code = p_payroll_period_code;
+         WHERE  pr.payroll_period_code = 'PAY2510_MONTHLY';
         
     -- 변수선언
     v_uid tb_payroll.user_id%TYPE; -- 사용자id
     v_sal tb_user_master.salary%TYPE; -- 기본급여
     v_br tb_payroll.bonus_rate%TYPE; -- 지급율
-    v_ba tb_paryoll.bonus_amount%TYPE; -- 지급액
+    v_ba tb_payroll.bonus_amount%TYPE; -- 지급액
     v_bonus NUMBER; -- 상여금
     v_ordinary_wage NUMBER; -- 통상임금
     v_overtime NUMBER; -- 연장근로수당
@@ -371,7 +400,21 @@ IS
     v_meal NUMBER; -- 식대
     v_annual_leave NUMBER; -- 연차휴가수당
     v_total_allowance NUMBER; -- 총수당총액
+    v_earnings NUMBER; -- 소득
+    v_national_pension NUMBER; -- 국민연금
+    v_employment_insurance NUMBER; -- 고용보험
+    v_health_insurance NUMBER; -- 건강보험
+    v_long_time_care_insurance NUMBER; -- 장기요양보험
+    v_net_pay  NUMBER; -- 실수령액
+    v_total_payment_amount NUMBER; -- 총 지급액(상여포함)
+    v_total_deduction_amount NUMBER; -- 총 4대보험
+    
+    -- 결과 컬렉션 변수 선언
+    v_results T_PAYROLL_RESULTS_TAB;
 BEGIN
+    -- ORA-06530 오류 방지를 위해 BEGIN 블록 시작 시 컬렉션을 명시적으로 초기화합니다.
+    v_results := T_PAYROLL_RESULTS_TAB();
+    
     -- 2) 커서 실행
     -- 3) 데이터 확인 및 인출
     FOR user_info IN user_cursor LOOP        
@@ -381,11 +424,12 @@ BEGIN
         v_br := user_info.bonus_rate; -- 상여 지급율
         v_ba := user_info.bonus_amount; -- 상여 지급액
         -- 위에서 fetch into해서 실행한거 결과 출력
-        DBMS_OUTPUT.PUT_LINE(v_uid); -- 사용자id
-        DBMS_OUTPUT.PUT_LINE(','||v_sal); -- 급여
+        DBMS_OUTPUT.PUT_LINE('v_uid:'||v_uid); -- 사용자id
+        DBMS_OUTPUT.PUT_LINE(',v_sal:'||v_sal); -- 급여
         
         -- 시간당 통상임금 := 기본급 / 209
-        v_ordinary_wage := v_sal / 209;
+        v_ordinary_wage := ROUND(v_sal / 209);
+        DBMS_OUTPUT.PUT_LINE(',v_ordinary_wage:'||v_ordinary_wage);
         
         -- 상여금
         IF v_br > 0 THEN
@@ -397,6 +441,7 @@ BEGIN
         ELSE
             v_bonus := 0;
         END IF;
+        DBMS_OUTPUT.PUT_LINE(',v_bonus:'||v_bonus);
         
         -- 연장근로수당
         IF user_info.total_over_work_time > 0 THEN   
@@ -405,6 +450,7 @@ BEGIN
         ELSE
             v_overtime := 0;
         END IF;
+        DBMS_OUTPUT.PUT_LINE(',v_overtime:'||v_overtime);
                 
         -- 야간근로수당
         IF user_info.total_night_work_time > 0 THEN
@@ -413,6 +459,7 @@ BEGIN
         ELSE
             v_night := 0;
         END IF;
+        DBMS_OUTPUT.PUT_LINE(',v_night:'||v_night);
         
         -- 휴일근로수당
         IF user_info.total_holiday_work_time > 0 THEN
@@ -421,6 +468,7 @@ BEGIN
         ELSE
             v_holiday := 0;
         END IF;
+        DBMS_OUTPUT.PUT_LINE(',v_holiday:'||v_holiday);
                 
         -- 가족수당
         IF user_info.family_count > 0 THEN
@@ -433,10 +481,12 @@ BEGIN
         ELSE
             v_family := 0;
         END IF;
+        DBMS_OUTPUT.PUT_LINE(',v_family:'||v_family);
         
         -- 식대(월)
         v_meal := 200000;
-
+        DBMS_OUTPUT.PUT_LINE(',v_meal:'||v_meal);
+        
         -- 연차휴가수당
         -- 미사용연차일수 * 1일 통상임금(통상시급 * 8)
         -- 25년에서 26년으로 넘어갔어 그럼 연차도 26년1월1일에 생기겠지 그럼 비교를 해야하네
@@ -446,22 +496,107 @@ BEGIN
             v_annual_leave := (user_info.remaining_days) * (v_ordinary_wage * 8);
         ELSE
             v_annual_leave := 0;
+        END IF;
+        DBMS_OUTPUT.PUT_LINE(',v_annual_leave:'||v_annual_leave);
         
-        -- 총 수당총액
+        -- 총 수당총액(상여미포함)
         v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
+        DBMS_OUTPUT.PUT_LINE(',v_total_allowance:'||v_total_allowance);
         
-        -- 소득세
+        -- 총 지급액(상여포함)
+        v_total_payment_amount := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave + v_bonus;
+        DBMS_OUTPUT.PUT_LINE(',v_total_payment_amount:'||v_total_payment_amount);
+        
+        -- 소득 := 근로소득 - 비과세근로소득
+        v_earnings := v_total_allowance + v_bonus - v_meal;
+        DBMS_OUTPUT.PUT_LINE(',v_earnings:'||v_earnings);
         
         -- 국민연금
-        -- 고용보험
-        -- 건강보험
-        -- 장기요양보험
-        -- 지방소득세
-        -- 총 공제총액
-        -- 실 수령액
+        -- 계산법 : 소득 * 0.045(4.5%)
+        -- 1000원 미만은 제외(절사)하고 계산
+        -- 예시) 15,123원 -> 15,000원
+        v_national_pension := TRUNC(v_earnings, -3) * 0.045;
+        DBMS_OUTPUT.PUT_LINE(',v_national_pension:'||v_national_pension);
         
+        -- 고용보험
+        -- 계산법 : 소득 * 0.009(0.9%)
+        -- 1의자리수, 소수점은 제외
+        v_employment_insurance := TRUNC((v_earnings * 0.009) , -1);
+        DBMS_OUTPUT.PUT_LINE(',v_employment_insurance:'||v_employment_insurance);
+        
+        -- 건강보험
+        -- 계산법 : 소득 * 0.03545(3.545%)
+        -- 1의자리수, 소수점은 제외
+        v_health_insurance := TRUNC((v_earnings * 0.03545) , -1);
+        DBMS_OUTPUT.PUT_LINE(',v_health_insurance:'||v_health_insurance);
+        
+        -- 장기요양보험
+        -- 계산법 : 소득 * 0.004591(0.4591%)
+        -- 1의자리수, 소수점은 제외
+        v_long_time_care_insurance := TRUNC((v_earnings * 0.004591) , -1);
+        DBMS_OUTPUT.PUT_LINE(',v_long_time_care_insurance:'||v_long_time_care_insurance);
+        
+        --=======
+        -- 소득세
+        --=======
+        -- ???
+                
+        -- 지방소득세
+        -- 계산법 : 소득세 * 0.1
+        
+        -- 총 공제총액
+        -- 총 4대보험 := 국민연금 + 고용보험 + 건강보험 + 장기요양보험
+        v_total_deduction_amount := v_national_pension + v_employment_insurance + v_health_insurance + v_long_time_care_insurance;
+        DBMS_OUTPUT.PUT_LINE(',v_total_deduction_amount:'||v_total_deduction_amount);
+        
+        -- 실 수령액
+        v_net_pay := v_total_payment_amount - v_total_deduction_amount;
+        DBMS_OUTPUT.PUT_LINE(',v_net_pay:'||v_net_pay);
+        
+        -- 3) 계산 완료 후 결과를 컬렉션에 추가
+        v_results.EXTEND;
+        v_results(v_results.LAST) := T_PAYROLL_RESULT_REC();
+        v_results(v_results.LAST).user_id := v_uid; -- 사용자id
+        v_results(v_results.LAST).salary := v_sal; -- 사용자 기본급여
+        v_results(v_results.LAST).bonus := v_bonus; -- 상여
+        v_results(v_results.LAST).overtime := v_overtime; -- 연장근로수당
+        v_results(v_results.LAST).night := v_night; -- 야간근로수당
+        v_results(v_results.LAST).holiday := v_holiday; -- 휴일근로수당
+        v_results(v_results.LAST).family := v_family; -- 가족수당
+        v_results(v_results.LAST).meal := v_meal; -- 식대
+        v_results(v_results.LAST).annual_leave := v_annual_leave; -- 연차휴가수당
+        v_results(v_results.LAST).total_allowance := v_total_allowance; -- 총수당총액
+        v_results(v_results.LAST).total_payment_amount := v_total_payment_amount; -- 총지급액
+        v_results(v_results.LAST).national_pension := v_national_pension; -- 국민연금
+        v_results(v_results.LAST).employment_insurance := v_employment_insurance; -- 고용보험
+        v_results(v_results.LAST).health_insurance := v_health_insurance; -- 건강보험
+        v_results(v_results.LAST).long_time_care_insurance := v_long_time_care_insurance; -- 장기요양보험
+        v_results(v_results.LAST).total_deduction_amount := v_total_deduction_amount; -- 총공제금액
+        v_results(v_results.LAST).net_pay := v_net_pay; -- 실 수령액
     END LOOP;
     -- 4) 커서 종료
+    
+    -- 계산된 컬렉션 데이터를 Ref Cursor에 담아 외부에 반환
+    OPEN p_out_results FOR
+        SELECT user_id,
+               salary,
+               bonus,
+               overtime,
+               night,
+               holiday,
+               family,
+               meal,
+               annual_leave,
+               total_allowance,
+               total_payment_amount,
+               national_pension,
+               employment_insurance,
+               health_insurance,
+               long_time_care_insurance,
+               total_deduction_amount,
+               net_pay
+        FROM TABLE(v_results);
+            
 END;
 /
 
@@ -471,3 +606,230 @@ EXEC sp_calculate_payroll('PRP25113000001');
 SELECT *
 FROM   tb_user_master;
     
+SELECT *
+FROM   tb_attendance;
+SELECT *
+FROM   tb_annual_leave;
+
+-- ========================================
+-- TB_ATTENDANCE 샘플 데이터
+-- ========================================
+-- TB_ATTENDANCE 테이블에 삽입할 10개의 샘플 데이터입니다.
+
+-- 1. 김사원 (EMP25010200001): 2025-12-02, 정상 근무 (9시간 근무, 1시간 휴게 제외 -> 8시간 총 근무)
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251201', 'EMP25010200001', TO_DATE('20251202', 'YYYYMMDD'), '정상근무',
+    TO_DATE('20251202 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251202 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 0.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 2. 김사원 (EMP25010200001): 2025-12-03, 연장 근무 (18시 퇴근 후 2시간 연장) -> 총 연장 2.00
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251202', 'EMP25010200001', TO_DATE('20251203', 'YYYYMMDD'), '연장근무',
+    TO_DATE('20251203 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251203 20:00', 'YYYYMMDD HH24:MI'), 
+    2.00, 0.00, 0.00, 
+    10.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 3. 박과장 (EMP23030100003): 2025-12-05, 정상 근무
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251203', 'EMP23030100003', TO_DATE('20251205', 'YYYYMMDD'), '정상근무',
+    TO_DATE('20251205 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251205 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 0.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 4. 박과장 (EMP23030100003): 2025-12-07 (일요일), 야간 근무 (22:00 ~ 익일 06:00, 야간 8시간 가정) -> 총 야간 8.00
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251204', 'EMP23030100003', TO_DATE('20251207', 'YYYYMMDD'), '야간근무',
+    TO_DATE('20251207 22:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251208 06:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 8.00, 0.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 5. 최부장 (EMP19100100004): 2025-12-13 (토요일), 휴일 근무 (8시간) -> 총 휴일 8.00
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251205', 'EMP19100100004', TO_DATE('20251213', 'YYYYMMDD'), '휴일근무',
+    TO_DATE('20251213 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251213 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 8.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 6. 정주임 (EMP25041000005): 2025-12-15, 정상 근무
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251206', 'EMP25041000005', TO_DATE('20251215', 'YYYYMMDD'), '정상근무',
+    TO_DATE('20251215 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251215 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 0.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 7. 정주임 (EMP25041000005): 2025-12-17, 연장+야간 근무 (18시 퇴근, 22시까지 연장(4h), 22시~24시 야간(2h)) -> 연장 4.00, 야간 2.00
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251207', 'EMP25041000005', TO_DATE('20251217', 'YYYYMMDD'), '연장/야간근무',
+    TO_DATE('20251217 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251218 00:00', 'YYYYMMDD HH24:MI'), 
+    4.00, 2.00, 0.00, 
+    14.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 8. 문과장 (EMP22090100007): 2025-12-19, 정상 근무
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251208', 'EMP22090100007', TO_DATE('20251219', 'YYYYMMDD'), '정상근무',
+    TO_DATE('20251219 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251219 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 0.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 9. 한대리 (EMP23112000008): 2025-12-23, 정상 근무
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251209', 'EMP23112000008', TO_DATE('20251223', 'YYYYMMDD'), '정상근무',
+    TO_DATE('20251223 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251223 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 0.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 10. 윤사원 (EMP25070100006): 2025-12-25 (크리스마스), 휴일 근무 (8시간) -> 총 휴일 8.00
+INSERT INTO TB_ATTENDANCE (
+    COMPANY_CODE, ATTEN_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, 
+    IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, 
+    TOTAL_WORK_TIME, CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE
+) VALUES (
+    'ROOT', 'ATN251210', 'EMP25070100006', TO_DATE('20251225', 'YYYYMMDD'), '휴일근무',
+    TO_DATE('20251225 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251225 18:00', 'YYYYMMDD HH24:MI'), 
+    0.00, 0.00, 8.00, 
+    8.00, 'ADMIN', SYSDATE, 'ADMIN', SYSDATE
+);
+
+-- 커밋 (선택 사항이지만 테스트 시 반영을 위해 권장)
+-- COMMIT;
+
+-- TB_PAYROLL 테이블에 삽입할 샘플 데이터 (2025년 10월 급여 대장)
+-- p_payroll_period_code: 'PAY2510_MONTHLY'
+
+-- 급여 대장 기간 설정
+-- 시작일: 2025-10-01, 종료일: 2025-10-31, 지급일: 2025-11-10
+
+-- 1. 김사원 (EMP25010200001)
+INSERT INTO TB_PAYROLL (
+    PAYROLL_CODE, COMPANY_CODE, USER_ID, PAYROLL_PERIOD, PAYROLL_TYPE, 
+    BONUS_METHOD, BONUS_RATE, BONUS_AMOUNT, PAYROLL_NAME, PAYROLL_START_DATE, 
+    PAYROLL_END_DATE, PAYROLL_DATE, PAYROLL_PERIOD_CODE
+) VALUES (
+    'PRL2510001', 'ROOT', 'EMP25010200001', '202510', '월급',
+    '없음', 0, 0.00, '2025년 10월 월급 - 김사원', TO_DATE('20251001', 'YYYYMMDD'), 
+    TO_DATE('20251031', 'YYYYMMDD'), TO_DATE('20251110', 'YYYYMMDD'), 'PAY2510_MONTHLY'
+);
+
+-- 2. 박과장 (EMP23030100003)
+INSERT INTO TB_PAYROLL (
+    PAYROLL_CODE, COMPANY_CODE, USER_ID, PAYROLL_PERIOD, PAYROLL_TYPE, 
+    BONUS_METHOD, BONUS_RATE, BONUS_AMOUNT, PAYROLL_NAME, PAYROLL_START_DATE, 
+    PAYROLL_END_DATE, PAYROLL_DATE, PAYROLL_PERIOD_CODE
+) VALUES (
+    'PRL2510003', 'ROOT', 'EMP23030100003', '202510', '월급',
+    '없음', 0, 0.00, '2025년 10월 월급 - 박과장', TO_DATE('20251001', 'YYYYMMDD'), 
+    TO_DATE('20251031', 'YYYYMMDD'), TO_DATE('20251110', 'YYYYMMDD'), 'PAY2510_MONTHLY'
+);
+
+-- 3. 최부장 (EMP19100100004)
+INSERT INTO TB_PAYROLL (
+    PAYROLL_CODE, COMPANY_CODE, USER_ID, PAYROLL_PERIOD, PAYROLL_TYPE, 
+    BONUS_METHOD, BONUS_RATE, BONUS_AMOUNT, PAYROLL_NAME, PAYROLL_START_DATE, 
+    PAYROLL_END_DATE, PAYROLL_DATE, PAYROLL_PERIOD_CODE
+) VALUES (
+    'PRL2510004', 'ROOT', 'EMP19100100004', '202510', '월급',
+    '없음', 0, 0.00, '2025년 10월 월급 - 최부장', TO_DATE('20251001', 'YYYYMMDD'), 
+    TO_DATE('20251031', 'YYYYMMDD'), TO_DATE('20251110', 'YYYYMMDD'), 'PAY2510_MONTHLY'
+);
+
+-- 커밋 (테스트 시 데이터 반영을 위해 권장)
+-- COMMIT;
+
+SELECT *
+FROM   tb_payroll;
+SELECT *
+FROM   tb_attendance;
+
+-- TB_ATTENDANCE 테이블에 삽입할 샘플 데이터 (2025년 10월)
+-- 5명의 사원에 대해 정상, 연장, 야간, 휴일 근무를 포함
+
+-- 1. 김사원 (EMP25010200001) - 정상 근무
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100001', 'ROOT', 'EMP25010200001', TO_DATE('20251001', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251001 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251001 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100002', 'ROOT', 'EMP25010200001', TO_DATE('20251002', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251002 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251002 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+
+-- 2. 이대리 (EMP24051500002) - 연장 근무 포함
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100003', 'ROOT', 'EMP24051500002', TO_DATE('20251006', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251006 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251006 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100004', 'ROOT', 'EMP24051500002', TO_DATE('20251007', 'YYYYMMDD'), '정상/연장', 
+    TO_DATE('20251007 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251007 21:00', 'YYYYMMDD HH24:MI'), 3.00, 0.00, 0.00, 11.00); -- 18시 이후 3시간 연장
+
+-- 3. 박과장 (EMP23030100003) - 야간 근무 포함
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100005', 'ROOT', 'EMP23030100003', TO_DATE('20251008', 'YYYYMMDD'), '정상/연장/야간', 
+    TO_DATE('20251008 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251008 23:00', 'YYYYMMDD HH24:MI'), 5.00, 1.00, 0.00, 13.00); -- 18시 이후 5시간 연장, 22시 이후 1시간 야간
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100006', 'ROOT', 'EMP23030100003', TO_DATE('20251010', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251010 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251010 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+
+-- 4. 최부장 (EMP19100100004) - 휴일 근무 포함 (10/3 개천절)
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100007', 'ROOT', 'EMP19100100004', TO_DATE('20251001', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251001 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251001 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100008', 'ROOT', 'EMP19100100004', TO_DATE('20251003', 'YYYYMMDD'), '휴일근무', 
+    TO_DATE('20251003 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251003 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 8.00, 8.00); -- 10/3 (금) 개천절, 8시간 휴일 근무
+
+-- 5. 정주임 (EMP25041000005) - 연차/휴무 포함
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100009', 'ROOT', 'EMP25041000005', TO_DATE('20251013', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251013 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251013 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100010', 'ROOT', 'EMP25041000005', TO_DATE('20251014', 'YYYYMMDD'), '연차', 
+    NULL, NULL, 0.00, 0.00, 0.00, 0.00); -- 연차 사용
+INSERT INTO TB_ATTENDANCE (ATTEN_CODE, COMPANY_CODE, USER_ID, WORK_DATE, ATTEND_TYPE, IN_TIME, OUT_TIME, OVER_WORK_TIME, NIGHT_WORK_TIME, HOLIDAY_WORK_TIME, TOTAL_WORK_TIME) 
+VALUES ('ATT25100011', 'ROOT', 'EMP25041000005', TO_DATE('20251015', 'YYYYMMDD'), '정상', 
+    TO_DATE('20251015 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251015 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
+    
+-- COMMIT;

@@ -48,6 +48,7 @@
 		         pr.payroll_name,
 		         pr.payroll_date,
 		         pr.create_date,
+		         pr.payroll_period_code,
 		         COUNT(*) AS peopleNumber
 		FROM     tb_payroll pr
 		         JOIN tb_cm_code cc
@@ -69,7 +70,8 @@
 		         cc.code_name,
 		         pr.payroll_name, 
 		         pr.payroll_date, 
-		         pr.create_date
+		         pr.create_date,
+		         pr.payroll_period_code
 	</select>
 
 	<!-- 급여대장-상여등록-사원조회 -->
@@ -96,6 +98,33 @@
 		<if test="payrollEmpEndDate != null and payrollEmpEndDate != '' ">
 			AND hire_date &lt;= TO_DATE(#{payrollEmpEndDate}, 'YYYY-MM-DD')
 		</if> --><!-- 임시제거 -->
+	</select>
+		
+	<resultMap id="userPayManageResultMap" type="UserPayManageVO">
+	    <result column="user_id"                    property="user_id"/>
+	    <result column="salary"                     property="salary"/>
+	    <result column="bonus"                      property="bonus"/>
+	    <result column="overtime"                   property="overtime"/>
+	    <result column="night"                      property="night"/>
+	    <result column="holiday"                    property="holiday"/>
+	    <result column="family"                     property="family"/>
+	    <result column="meal"                       property="meal"/>
+	    <result column="annual_leave"               property="annual_leave"/>
+	    <result column="total_allowance"            property="total_allowance"/>
+	    <result column="total_payment_amount"       property="total_payment_amount"/>
+	    <result column="national_pension"           property="national_pension"/>
+	    <result column="employment_insurance"       property="employment_insurance"/>
+	    <result column="health_insurance"           property="health_insurance"/>
+	    <result column="long_time_care_insurance"   property="long_time_care_insurance"/>
+	    <result column="total_deduction_amount"     property="total_deduction_amount"/>
+	    <result column="net_pay"                    property="net_pay"/>
+	</resultMap>
+		
+	<select id="selectUserPayManageList" statementType="CALLABLE" resultMap="userPayManageResultMap">
+		{CALL sp_calculate_payroll(
+			#{payrollPeriodCode, mode=IN, jdbcType=VARCHAR},
+			#{results, mode=OUT, jdbcType=CURSOR, javaType=ResultSet, resultMap=userPayManageResultMap}
+		)}
 	</select>
 
 </mapper>
