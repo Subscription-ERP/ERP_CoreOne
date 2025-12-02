@@ -1,11 +1,16 @@
 package com.rootcore.common.service.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.rootcore.common.mapper.CommonMapper;
 import com.rootcore.common.service.CommonService;
 import com.rootcore.common.vo.CommonVO;
@@ -16,12 +21,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommonServiceImpl implements CommonService {
 
-    final CommonMapper commonMapper;
+	final CommonMapper commonMapper;
+	final SpringTemplateEngine templateEngine;
 
-    @Override
-    public List<CommonVO> selectType(String groupCode) {
-        return commonMapper.selectType(groupCode);
-    }
+	// 공통코드
+	@Override
+	public List<CommonVO> selectType(String groupCode) {
+		return commonMapper.selectType(groupCode);
+	}
 
 	@Override
 	public List<CommonVO> selectCode(String common) {
@@ -36,4 +43,33 @@ public class CommonServiceImpl implements CommonService {
 		}
 		return map;
 	}
+
+	// PDF
+	@Override
+	public String renderHtmlTemplate(String templateName, Map<String, Object> data) {
+		Context context = new Context();
+		context.setVariables(data);
+		return templateEngine.process(templateName, context);
+	}
+
+	@Override
+	public byte[] generatePdfFromHTML(String htmlContent) throws Exception {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+		PdfRendererBuilder builder = new PdfRendererBuilder();
+
+		// 폰트설정
+		builder.useFont(
+				new ClassPathResource("static/font/malgun.ttf").getFile(),
+				"Malgun Gothic"
+		);
+
+		// base URI
+		builder.withHtmlContent(htmlContent, null);
+		builder.toStream(os);
+		builder.run();
+
+		return os.toByteArray();
+	}
+
 }
