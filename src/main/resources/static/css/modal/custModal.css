@@ -36,3 +36,9 @@
 .modal-history__btn-print:hover {
   background-color: #f2f2f2;
 }
+
+.form_grid {
+  border: 1px solid var(--mid-light-gray-color);
+  border-radius: 6px;
+  overflow: hidden;
+}

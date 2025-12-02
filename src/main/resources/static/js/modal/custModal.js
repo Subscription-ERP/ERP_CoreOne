@@ -1,16 +1,22 @@
+// 전역 변수
+const custModal = document.getElementById('custModal');
+const schCustCode = document.getElementById('schCustCode');
+const schCustName = document.getElementById('schCustName');
+const btnSearch = document.getElementById("btnCustSearch");
+let custModalGrid;
+
+// 모달 실행
 document.addEventListener('DOMContentLoaded', () => {
-  const custModal = document.getElementById('custModal');
+  const gridEl = document.getElementById('custModalGrid');
+  if (!gridEl) return;
 
-  let custModalGrid;
-  const btnSearch = document.getElementById("btnCustSearch");
-  console.log('btnSearch =', btnSearch);
-  const schCustCode = document.getElementById('schCustCode');
-  const schCustName = document.getElementById('schCustName');
+  const Grid = tui.Grid;
+  Grid.applyTheme('clean');
 
-  custModalGrid = new tui.Grid({
-    el: document.getElementById('custModalGrid'),
+  custModalGrid = new Grid({
+    el: gridEl,
     rowHeaders: ['rowNum'],
-    bodyHeight: 210,
+    bodyHeight: 430,
     scrollX: false,
     scrollY: true,
     columns: [
@@ -39,71 +45,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const row = custModalGrid.getRow(rowKey);
     console.log(row);
+
+    // window.handleSelectedCust = function(row) {} 선언시 선택한 row 값을 내보냄
+    if (typeof window.handleSelectedCust === 'function') {
+      window.handleSelectedCust(row);
+    }
+
     closeCustModal();
 
   })
+});
 
-  // 함수 영역 ==================================================================
+// 함수 영역 (전역함수)
 
-  // 거래처 정보 불러오기
-  function getCustList() {
-    fetch('/api/sd/cust')
+// 거래처 정보 불러오기
+function getCustList() {
+  if (!window.custModalGrid) return;
+
+  fetch('/api/sd/cust')
+    .then(res => res.json())
+    .then(result => {
+      window.custModalGrid.resetData(result);
+    })
+    .catch(err => console.error(err));
+}
+
+// 거래처 검색
+function searchCust() {
+  const custCode = document.getElementById('schCustCode').value.trim();
+  const custName = document.getElementById('schCustName').value.trim();
+
+  const params = { custCode, custName };
+
+  if (!window.custModalGrid) return;
+
+  fetch('/api/sd/searchCust', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params)
+  })
       .then(res => res.json())
       .then(result => {
-        console.log(result);
+        window.custModalGrid.resetData(result);
 
-        custModalGrid.resetData(result);
-      })
-      .catch(err => console.error(err));
-  }
+        if (result.length === 1) {
+          const row = result[0];
 
-  // 거래처 검색
-  function searchCust() {
-    const custCode = document.getElementById('schCustCode').value.trim();
-    const custName = document.getElementById('schCustName').value.trim();
-
-    const params = {
-      custCode,
-      custName
-    };
-
-    fetch('/api/sd/searchCust', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    })
-        .then(res => res.json())
-        .then(result => {
-          custModalGrid.resetData(result);
-
-          if (result.length === 1) {
-            const row = result[0];
-
-            // 부모에 값 넘기는 함수
+          // 부모에 값 넘기는 함수
+          if (typeof handleSelectedCust === 'function') {
             handleSelectedCust(row);
-
-            closeCustModal();
           }
 
-          custModalGrid.refreshLayout();
-        })
-        .catch(err => console.error(err));
-  }
+          closeCustModal();
+        }
 
-  // Enter 입력 시 검색
-  function handleEnter(e) {
-    if(e.key === 'Enter') {
-      e.preventDefault();
-      btnSearch.click();
-    }
-  }
+        window.custModalGrid.refreshLayout();
+      })
+      .catch(err => console.error(err));
+}
 
-  // 모달 닫기
-  function closeCustModal() {
-    custModal.hidden = true;
-    custModal.classList.add('hidden');
+// Enter 입력 시 검색
+function handleEnter(e) {
+  if(e.key === 'Enter') {
+    e.preventDefault();
+    if (btnSearch) btnSearch.click();
   }
-});
+}
+
+// 거래처 모달
+function openCustModal(e) {
+  if (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+  custModal.hidden = false;
+  custModal.classList.remove('hidden');
+
+  if (window.custModalGrid) {
+    window.custModalGrid.refreshLayout();
+  }
+}
+
+// 모달 닫기
+function closeCustModal() {
+  if (!window.custModalGrid) return;
+
+  custModal.hidden = true;
+  custModal.classList.add('hidden');
+}
 
 
 

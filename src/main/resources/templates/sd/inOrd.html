@@ -14,70 +14,159 @@
 <body layout:fragment="content">
     <div class="page page-fluid">
         <form id="inOrdForm" action="/sd/inOrd/save" method="post">
-            <!-- ================= 기본 정보 ================= -->
-            <section class="card-ui card-ui--detail section-fixed" style="margin-top: 10px; display: flex;">
-                <header class="card-ui__header d-flex justify-content-end">
-                    <!-- 우측 액션 -->
-                    <div class="toolbar">
-                        <button id="btnReset" type="button" class="btn btn-white btn-inner">
-                            초기화
-                        </button>
-                        <button id="btnSave" type="submit" class="btn btn-color btn-inner">
-                            저장
-                        </button>
-                    </div>
-                </header>
+            <div class="page page-fluid">
+                <!-- ================= 기본 정보 ================= -->
+                <section class="card-ui card-ui--detail" style="margin-top: 10px; display: flex;">
+                    <header class="card-ui__header d-flex justify-content-end">
+                        <!-- 우측 액션 -->
+                        <div class="toolbar">
+                            <button id="btnReset" type="button" class="btn btn-white btn-inner">
+                                초기화
+                            </button>
+                            <button id="btnSave" type="submit" class="btn btn-color btn-inner">
+                                저장
+                            </button>
+                        </div>
+                    </header>
 
-                <div class="card-ui__body">
-                    <!-- ===== 기본정보 탭 ===== -->
-                    <div id="tab-basic" class="tab-panel active">
+                    <div class="card-ui__body">
+                        <!-- ===== 기본정보 탭 ===== -->
+                        <div id="tab-basic" class="tab-panel active">
 
-                        <!-- 상단 기본 정보 폼 -->
-                        <div class="form-grid">
-                            <!-- row 1: 수주번호 / 수주일 / 납기일 -->
-                            <div class="form-grid__row form-grid__row--3col">
-                                <div class="form-grid__label">수주번호</div>
-                                <div class="form-grid__field">
-                                    <input id="inordNo" name="inordNo" class="form-control form-control-sm input-base is-disabled" readonly placeholder="자동생성" />
+                            <!-- 상단 기본 정보 폼 -->
+                            <div class="form-grid">
+                                <!-- row 1: 수주번호 / 수주일 / 납기일 -->
+                                <div class="form-grid__row form-grid__row--3col">
+                                    <div class="form-grid__label">수주번호</div>
+                                    <div class="form-grid__field">
+                                        <input id="inordNo" name="inordNo" class="form-control form-control-sm input-base is-disabled" readonly placeholder="자동생성" />
+                                    </div>
+
+                                    <div class="form-grid__label">수주일</div>
+                                    <div class="form-grid__field">
+                                        <input id="inordDate" name="inordDate" type="date" class="form-control form-control-sm input-base is-disabled" readonly
+                                               th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" />
+                                    </div>
+
+                                    <div class="form-grid__label">납기일</div>
+                                    <div class="form-grid__field">
+                                        <input id="dueDate" name="dueDate" type="date" class="form-control form-control-sm input-base" />
+                                    </div>
                                 </div>
 
-                                <div class="form-grid__label">수주일</div>
-                                <div class="form-grid__field">
-                                    <input id="inordDate" name="inordDate" type="date" class="form-control form-control-sm input-base is-disabled" readonly />
-                                </div>
+                                <!-- row 2: 작성자 / 부서 / 거래처코드 / 거래처명 -->
+                                <div class="form-grid__row form-grid__row--4col">
+                                    <div class="form-grid__label">작성자</div>
+                                    <div class="form-grid__field">
+                                        <input id="createdBy" name="createdBy" type="text" class="form-control form-control-sm input-base is-disabled" />
+                                    </div>
 
-                                <div class="form-grid__label">납기일</div>
-                                <div class="form-grid__field">
-                                    <input id="dueDate" name="dueDate" type="date" class="form-control form-control-sm input-base" />
-                                </div>
-                            </div>
+                                    <div class="form-grid__label">부서</div>
+                                    <div class="form-grid__field">
+                                        <input id="dept" name="dept" type="text" class="form-control form-control-sm input-base is-disabled" />
+                                    </div>
 
-                            <!-- row 2: 작성자 / 부서 / 거래처 -->
-                            <div class="form-grid__row form-grid__row--3col">
-                                <div class="form-grid__label">작성자</div>
-                                <div class="form-grid__field">
-                                    <input id="createdBy" name="createdBy" type="text" class="form-control form-control-sm input-base" />
-                                </div>
+                                    <div class="form-grid__label">거래처코드</div>
+                                    <div class="form-grid__field">
+                                        <div th:replace="modal/custModal :: custModal"></div>
+                                        <input id="custCodeSearch" name="custSearchKeyword" type="text" class="form-control form-control-sm input-base" />
+                                        <button type="button" id="btnOpenCustModal"
+                                                class="btn-grid">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
 
-                                <div class="form-grid__label">부서</div>
-                                <div class="form-grid__field">
-                                    <input id="dept" name="dept" type="text" class="form-control form-control-sm input-base" />
-                                </div>
+                                    <div class="form-grid__label">거래처명</div>
+                                    <div class="form-grid__field">
+                                        <input id="custNameSearch" name="custSearchKeyword" type="text" class="form-control form-control-sm input-base" />
+                                    </div>
 
-                                <div class="form-grid__label">거래처</div>
-                                <div class="form-grid__field">
-                                    <div th:replace="modal/custModal :: custModal"></div>
-                                    <input id="custSearch" name="custSearch" type="text" class="form-control form-control-sm input-base" />
-                                    <button type="button" id="btnOpenCustModal"
-                                            class="btn-grid">
-                                        <i class="bi bi-search"></i>
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+
+                <!-- ================= 여신 조회 ================= -->
+                <section class="card-ui card-ui__search">
+                    <div class="card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+                        <div class="filter-bar row g-4 align-items-center col-md-12">
+                            <!-- 여신한도 -->
+                            <div class="col-12 col-md-2">
+                                <div class="field-inline">
+                                    <label for="creditMax" class="field-inline__label">여신한도</label>
+                                    <input id="creditMax" name="custCode" type="text" class="form-control input-base is-disabled" disabled style="flex: 1; min-width: 0"
+                                           th:text="${#numbers.formatInteger(creditMax, 3, 'COMMA')}" />
+                                </div>
+                            </div>
+
+                            <!-- 잔여여신한도 -->
+                            <div class="col-12 col-md-2">
+                                <div class="field-inline">
+                                    <label for="creditRemain" class="field-inline__label">잔여여신한도</label>
+                                    <input id="creditRemain" name="custName" type="text" class="form-control input-base is-disabled" disabled style="flex: 1; min-width: 0"
+                                           th:text="${#numbers.formatInteger(creditRemain, 3, 'COMMA')}" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 수주 총 금액 ================= -->
+                <section class="card-ui card-ui__search">
+                    <div class="card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+                        <div class="filter-bar row g-4 align-items-center col-md-12">
+
+                            <!-- 공급가액 -->
+                            <div class="col-12 col-md-2">
+                                <div class="field-inline">
+                                    <label for="totalSupplyPrice" class="field-inline__label">공급가액</label>
+                                    <input id="totalSupplyPrice" name="custCode" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0"
+                                           th:text="${#numbers.formatInteger(totalSupplyPrice, 3, 'COMMA')}" />
+                                </div>
+                            </div>
+
+                            <!-- 부가세 -->
+                            <div class="col-12 col-md-2">
+                                <div class="field-inline">
+                                    <label for="totalSurtax" class="field-inline__label">부가세</label>
+                                    <input id="totalSurtax" name="custName" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0"
+                                           th:text="${#numbers.formatInteger(totalSurtax, 3, 'COMMA')}" />
+                                </div>
+                            </div>
+
+                            <!-- 총액 -->
+                            <div class="col-12 col-md-2">
+                                <div class="field-inline">
+                                    <label for="totalPrice" class="field-inline__label">총액</label>
+                                    <input id="totalPrice" name="custName" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0"
+                                           th:text="${#numbers.formatInteger(totalPrice, 3, 'COMMA')}" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 수주 품목 등록 ================= -->
+                <section class="card-ui card-ui--grid section-flex">
+                    <header class="card-ui__header">
+                        <h6 class="card-ui__title">품목</h6>
+                        <div class="toolbar">
+                            <button id="s" type="button" class="btn btn-white btn-inner">
+                                삭제
+                            </button>
+                            <button id="f" type="button" class="btn btn-color btn-inner">
+                                추가
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="card-ui__body p-0">
+                        <div id="inOrdGrid" class="grid-root"></div>
+                    </div>
+                </section>
+            </div>
         </form>
     </div>
     <script th:src="@{/js/sd/inOrd.js}"></script>
