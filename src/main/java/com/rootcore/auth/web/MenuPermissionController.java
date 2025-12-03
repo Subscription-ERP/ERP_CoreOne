@@ -2,51 +2,67 @@ package com.rootcore.auth.web;
 
 import java.util.List;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.rootcore.auth.service.MenuPermissionService;
+import com.rootcore.auth.vo.MenuAuthSaveVO;
 import com.rootcore.auth.vo.MenuPermissionUserVO;
 import com.rootcore.auth.vo.MenuTreeVO;
-import com.rootcore.auth.vo.MenuAuthSaveVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
-@RestController
-@RequestMapping("/auth/menu_permission")
+@Controller
 @RequiredArgsConstructor
+@RequestMapping("/auth/menu_permission")
 public class MenuPermissionController {
 
     private final MenuPermissionService service;
 
-    private String getCompanyCode() { return "ROOT"; }
-    private String getLoginUser() { return "ADMIN"; }
+    /** 화면 이동 */
+    @GetMapping
+    public String menuPermissionPage() {
+        return "auth/menu_permission";
+    }
 
-    /** 사용자 목록 조회 */
-    @GetMapping("/users")
-    public List<MenuPermissionUserVO> getUsers(
+    /** 사용자 리스트 조회 (왼쪽 Grid) */
+    @GetMapping("/user")
+    @ResponseBody
+    public List<MenuPermissionUserVO> getUserList(
+            @RequestParam String companyCode,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String dept,
             @RequestParam(required = false) String position
     ) {
-        return service.getUserList(getCompanyCode(), userName, dept, position);
+        return service.getUserList(companyCode, userName, dept, position);
     }
 
-    /** 메뉴 트리 조회 */
-    @GetMapping("/tree")
+    /** 메뉴트리 조회 (오른쪽 트리) */
+    @GetMapping("/menu")
+    @ResponseBody
     public List<MenuTreeVO> getMenuTree(
+            @RequestParam String companyCode,
             @RequestParam String userId,
             @RequestParam String menuGroup
     ) {
-        return service.getMenuTree(getCompanyCode(), userId, menuGroup);
+        return service.getMenuTree(companyCode, userId, menuGroup);
     }
 
-    /** 메뉴권한 저장 */
+    /** 권한 저장 */
     @PostMapping("/save")
+    @ResponseBody
     public String saveMenuAuth(
+            @RequestParam String companyCode,
+            @RequestParam String userId,
             @RequestBody List<MenuAuthSaveVO> authList,
-            @RequestParam String userId
+            HttpSession session
     ) {
-        service.saveUserAuth(getCompanyCode(), userId, authList, getLoginUser());
-        return "OK";
+        String updatedBy = (String) session.getAttribute("LOGIN_USER_ID");
+        if (updatedBy == null) updatedBy = "SYSTEM";
+
+        service.saveUserAuth(companyCode, userId, authList, updatedBy);
+
+        return "SUCCESS";
     }
 }

@@ -1,47 +1,49 @@
 package com.rootcore.auth.security;
 
-import com.rootcore.auth.mapper.LoginMapper;
-import jakarta.servlet.http.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-@Slf4j
+import com.rootcore.auth.mapper.MenuPermissionMapper;
+import com.rootcore.auth.vo.MenuTreeRowVO;
+import com.rootcore.auth.vo.UserMenuAuthVO;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final LoginMapper loginMapper;
+    private final MenuPermissionMapper menuPermissionMapper;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication) {
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) throws IOException, ServletException {
 
-        String userId = request.getParameter("userId");
+        HttpSession session = request.getSession();
 
-        // 실패 횟수 초기화
-        loginMapper.resetFailCount(userId);
+        String userId = authentication.getName();
+        String companyCode = "ROOT";   // TODO: 로그인한 회사코드로 변경
 
-        // last login 업데이트
-        loginMapper.updateLastLogin(userId);
+        // ★ 사용자 메뉴 권한 조회
+        List<UserMenuAuthVO> authList =
+                menuPermissionMapper.selectUserAuthList(companyCode, userId);
 
-        // remember-id 쿠키 저장
-        boolean remember = "on".equals(request.getParameter("rememberId"));
+        // 세션 저장
+        session.setAttribute("LOGIN_USER_ID", userId);
+        session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
+        session.setAttribute("USER_MENU_AUTH", authList);
 
-        if (remember) {
-            Cookie cookie = new Cookie("rememberId", userId);
-            cookie.setMaxAge(60 * 60 * 24 * 30); // 30일
-            cookie.setPath("/");
-            response.addCookie(cookie);
-        }
-        
-        try {
-            response.sendRedirect("/"); // 로그인 성공 → 메인화면 이동
-        } catch (Exception e) {
-            log.error("로그인 성공 redirect 오류", e);
-        }
+        // 로그인 후 메인으로 이동
+        response.sendRedirect("/");
     }
 }

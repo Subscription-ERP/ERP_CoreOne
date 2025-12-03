@@ -1,6 +1,7 @@
 package com.rootcore.auth.mapper;
 
 import com.rootcore.auth.vo.LoginVO;
+import com.rootcore.auth.vo.LoginUserVO;   
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -32,6 +33,11 @@ public interface LoginMapper {
     /** 8) 성공 로그인 - 실패 0 + 마지막 로그인 동시에 */
     int resetFailCountAndLastLogin(@Param("userId") String userId);
 
-    /** 9) ★ 계정 잠금 해제 (자동 unlock / 관리자 unlock 공통) */
+    /** 9) ★ 계정 잠금 해제 */
     int unlockUserAccount(@Param("userId") String userId);
+
+    // -------------------------------------------------------------
+    // ⭐⭐ 10) 로그인 성공 후 세션 저장용 사용자 정보 조회
+    // -------------------------------------------------------------
+    LoginUserVO selectLoginUser(@Param("userId") String userId);
 }

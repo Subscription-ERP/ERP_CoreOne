@@ -1,21 +1,21 @@
 package com.rootcore.auth.vo;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Data;
 
 @Data
-public class MenuTreeVO {
+public class MenuTreeRowVO {
 
     private String menuCode;
     private String menuName;
     private String parentMenuCode;
     private String menuGroup;
     private String menuUrl;
-
     private Integer menuLevel;
     private Integer sortOrder;
 
-    private List<MenuActionVO> actions = new ArrayList<>();
-    private List<MenuTreeVO> children = new ArrayList<>();
+    // ★ 메뉴 권한
+    private String readAuth;     // 'Y' / 'N'
+    private String createAuth;   // 'Y' / 'N'
+    private String updateAuth;   // 'Y' / 'N'
+    private String deleteAuth;   // 'Y' / 'N'
 }
