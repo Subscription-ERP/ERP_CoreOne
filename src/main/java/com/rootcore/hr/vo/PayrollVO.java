@@ -27,4 +27,10 @@ public class PayrollVO {
 	private String paymentStartDate; // 지급시작일
 	private String paymentEndDate; // 지급종료일
 	private String payrollPeriodCode; // 귀속연월코드
+	
+	
+	
+
+
+	
 }

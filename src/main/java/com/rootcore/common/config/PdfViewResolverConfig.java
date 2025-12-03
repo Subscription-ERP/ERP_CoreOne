@@ -1,4 +1,4 @@
-package com.rootcore.auth.config;
+package com.rootcore.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -22,5 +22,21 @@ public interface HrMapper {
 	List<UserHistoryVO> selectUserHistory(String userId);            // 상세조회 - 이력
 	List<DeptVO> selectDeptMaster();                                 // 부서조회
 	List<UserVO> selectUserSearch(UserSearchVO userSearchVO);        // 검색
+	int insertUserBasic(UserVO userVO);                              // 등록 - 기본정보
+	int insertCertification(CertificationVO certificationVO);        // 등록 - 자격증
+	int insertWorkExprience(WorkExperienceVO workExperienceVO);      // 등록 - 경력사항 
+	int updateUser(UserVO userVO);                                   // 수정 - 기본정보
+	int updateCertification(CertificationVO certificationVO);        // 수정 - 자격증
+	int updateWorkExperience(WorkExperienceVO workExperienceVO);     // 수정 - 경력사항
+	int insertUserHistory(UserHistoryVO userHistoryVO);              // 등록 - 이력
+	int deleteCetification(String userId, String companyCode);       // 삭제 - 자격증
+	int deleteWorkExperience(String userId, String companyCode);     // 삭제 - 경력사항
+	
+	
+	
+	
+	
+	
+	
 
 }
