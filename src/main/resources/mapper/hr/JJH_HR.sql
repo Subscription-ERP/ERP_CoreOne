@@ -319,8 +319,11 @@ UPDATE tb_payroll
 SET company_code = '0000';
 
 -- 컬렉션
+-- 컬렉션 레코드 타입 생성(결과를 담을 한 행의 구조 정의)
+-- T_PAYROLL_RESULT_REC는 급여 계산 결과의 '한 행(ROW)' 또는 '한 레코드(RECORD)'의 구조를 정의함
+-- 데이터베이스의 테이블을 생성할 때 각 컬럼을 정의하는것과 같다.
 CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
-    user_id                     VARCHAR2(50),
+    user_id                     VARCHAR2(20),
     salary                      NUMBER,
     bonus                       NUMBER,
     overtime                    NUMBER,
@@ -339,17 +342,23 @@ CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
     net_pay                     NUMBER
 );
 /
+
+-- 테이블 타입(위 레코드 타입을 여러 개 담을 수 있는 목록 구조 정의)
 CREATE OR REPLACE TYPE T_PAYROLL_RESULTS_TAB IS TABLE OF T_PAYROLL_RESULT_REC;
 /   
--- SQL 타입 컬렉션 조회
-SELECT t.col1, c.column_value
-FROM your_table t, TABLE(t.collection_column) c;
+
+-- 정리해보자면 여러개의 T_PAYROLL_RESULT_REC 컬렉션 레코드가 하나의 테이블타입 T_PAYROLL_RESULTS_TAB 여기에 저장
 
 -- 급여 계산 프로시저
 CREATE OR REPLACE PROCEDURE sp_calculate_payroll(
     -- 어떤 대장을 급여계산할건지 선언
     p_payroll_period_code IN VARCHAR2, -- 계산할 대장 코드
     p_out_results OUT SYS_REFCURSOR -- Ref Cursor 반환
+    -- 줄여서 간단하게 말하자면 결과 반환 통로다. 결과를 외부로 내보내는 통로
+    -- 여기서 OUT이 프로시저가 실행된 후에 값을 반환한다~ 라는 의미임 > 말그대로 출력용
+    -- SYS_REFCURSOR은 ORACLE에서 제공하는 특별한 데이터 타입임
+    -- 일반적인 변수(VARCHAR2, NUMBER)는 하나의 값만 담는다면 REF CURSOR는 여러행과 열로 이루어진 데이터 셋 자체를 담아서 반환함
+    -- JAVA에서 프로시저를 호출하면 p_our_results를 통해서 전달받은 커서를 SELECT문을 실행한 것처럼 순회하면서 데이터를 읽어 올 수 있음.
 )
 IS
     -- 1) 커서 정의
@@ -376,7 +385,7 @@ IS
                       FROM   tb_attendance ad -- 근태관리 테이블
                              JOIN tb_payroll pr -- 급여대장 테이블
                              ON ad.user_id = pr.user_id
-                      WHERE  pr.payroll_period_code = 'PAY2510_MONTHLY'
+                      WHERE  pr.payroll_period_code = p_payroll_period_code
                       AND    ad.work_date >= pr.payroll_start_date
                       AND    ad.work_date <= pr.payroll_end_date
                       GROUP BY ad.user_id
@@ -384,7 +393,7 @@ IS
                 ON ad.user_id = pr.user_id
                 LEFT JOIN tb_annual_leave al
                 ON al.user_id = pr.user_id
-         WHERE  pr.payroll_period_code = 'PAY2510_MONTHLY';
+         WHERE  pr.payroll_period_code = p_payroll_period_code;
         
     -- 변수선언
     v_uid tb_payroll.user_id%TYPE; -- 사용자id
@@ -411,9 +420,19 @@ IS
     
     -- 결과 컬렉션 변수 선언
     v_results T_PAYROLL_RESULTS_TAB;
+    -- 프로시저 내에서 계산된 수많은 사원의 급여 데이터를 임시로 저장하고 관리하기 위해서는 컬렉션(COLLECTION)이라는 PL/SQL 내부 데이터 구조를 사용
+    -- v_results : 컬랙션 변수 이름
+    -- T_PAYROLL_RESULTS_TAB : 미리 데이터베이스에 정의된 '중첩테이블타입'임
+    -- 계산 결과를 담을 수 있는 구조화된 목록(리스트) 라고 생각하면 됨
+    -- 이걸 사용할려면 반드시 레코드타입과, 테이블 타입이 미리 선언되어 있어야 함
 BEGIN
-    -- ORA-06530 오류 방지를 위해 BEGIN 블록 시작 시 컬렉션을 명시적으로 초기화합니다.
+    -- BEGIN 블록 시작 시 컬렉션을 명시적으로 초기화
     v_results := T_PAYROLL_RESULTS_TAB();
+    -- 단순 변수 선언만으로는 메모리에 공간이 할당되지 않음
+    -- 예시) 자바에서 arraylist객체를 선언하고 new arraylist()를 안한것과 비슷한거임
+    -- T_PAYROLL_RESULTS_TAB() : 컬렉션의 생성자 함수를 호출해서 메모리에 컬렉션 객체를 생성
+    -- 이 객체를 v_results 변수에 할당(초기화)
+    -- 만약에 이 명시적 초기화를 안하면 나중에 .EXTEND나 .LAST를 사용할때 오류가 발생함
     
     -- 2) 커서 실행
     -- 3) 데이터 확인 및 인출
@@ -554,29 +573,37 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE(',v_net_pay:'||v_net_pay);
         
         -- 3) 계산 완료 후 결과를 컬렉션에 추가
-        v_results.EXTEND;
-        v_results(v_results.LAST) := T_PAYROLL_RESULT_REC();
-        v_results(v_results.LAST).user_id := v_uid; -- 사용자id
-        v_results(v_results.LAST).salary := v_sal; -- 사용자 기본급여
-        v_results(v_results.LAST).bonus := v_bonus; -- 상여
-        v_results(v_results.LAST).overtime := v_overtime; -- 연장근로수당
-        v_results(v_results.LAST).night := v_night; -- 야간근로수당
-        v_results(v_results.LAST).holiday := v_holiday; -- 휴일근로수당
-        v_results(v_results.LAST).family := v_family; -- 가족수당
-        v_results(v_results.LAST).meal := v_meal; -- 식대
-        v_results(v_results.LAST).annual_leave := v_annual_leave; -- 연차휴가수당
-        v_results(v_results.LAST).total_allowance := v_total_allowance; -- 총수당총액
-        v_results(v_results.LAST).total_payment_amount := v_total_payment_amount; -- 총지급액
-        v_results(v_results.LAST).national_pension := v_national_pension; -- 국민연금
-        v_results(v_results.LAST).employment_insurance := v_employment_insurance; -- 고용보험
-        v_results(v_results.LAST).health_insurance := v_health_insurance; -- 건강보험
-        v_results(v_results.LAST).long_time_care_insurance := v_long_time_care_insurance; -- 장기요양보험
-        v_results(v_results.LAST).total_deduction_amount := v_total_deduction_amount; -- 총공제금액
-        v_results(v_results.LAST).net_pay := v_net_pay; -- 실 수령액
+        v_results.EXTEND; 
+        -- 컬렉션의 크기를 1만큼 늘려서 새로운 빈 공간을 만듬
+        -- 새로운 배열 칸을 추가한다고 생각하면 됨
+        
+        v_results(v_results.LAST) := T_PAYROLL_RESULT_REC(
+        -- v_results(v_results.LAST) 방금 .EXTEND로 추가된 마지막 위치를 가리킴
+        -- T_PAYROLL_RESULT_REC 타입의 레코드를 생성
+            v_uid, 
+            v_sal, 
+            v_bonus, 
+            v_overtime, 
+            v_night, 
+            v_holiday, 
+            v_family, 
+            v_meal, 
+            v_annual_leave, 
+            v_total_allowance, 
+            v_total_payment_amount, 
+            v_national_pension, 
+            v_employment_insurance, 
+            v_health_insurance, 
+            v_long_time_care_insurance, 
+            v_total_deduction_amount, 
+            v_net_pay
+        );
     END LOOP;
     -- 4) 커서 종료
     
     -- 계산된 컬렉션 데이터를 Ref Cursor에 담아 외부에 반환
+    -- 이 부분은 프로시저 내부의 PL/SQL 데이터(v_results 컬렉션)을 외부SQL환경으로 전달하기 위한 형식 변환 및 반환 과정
+    -- 외부시스템은 SQL결과 집합(SELECT 쿼리의 결과) 형태로 데이터를 받아야 함
     OPEN p_out_results FOR
         SELECT user_id,
                salary,
@@ -596,7 +623,11 @@ BEGIN
                total_deduction_amount,
                net_pay
         FROM TABLE(v_results);
-            
+        -- TABLE()함수는 타입 컬렉션(v_results)을 마치 데이터베이스의 일반적인 테이블처럼 SQL문에서 조회 할 수 있도록 변환해 주는 특수 함수
+        -- 정확히는 컬렉션을 관계형 테이블로 변환하는 기능
+    -- 원레는 CLOSE CURSOR를 해줘야하는데 하면은 외부로 전달될 데이터 통로를 닫아버리는 것임
+    -- CLOSE CURSOR를 JAVA에서 닫아줘야함
+           
 END;
 /
 

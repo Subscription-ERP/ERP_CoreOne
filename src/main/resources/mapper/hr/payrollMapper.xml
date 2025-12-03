@@ -100,7 +100,7 @@
 		</if> --><!-- 임시제거 -->
 	</select>
 		
-	<resultMap id="userPayManageResultMap" type="UserPayManageVO">
+	<resultMap id="payrollResultMap" type="UserPayManageVO">
 	    <result column="user_id"                    property="user_id"/>
 	    <result column="salary"                     property="salary"/>
 	    <result column="bonus"                      property="bonus"/>
@@ -119,12 +119,13 @@
 	    <result column="total_deduction_amount"     property="total_deduction_amount"/>
 	    <result column="net_pay"                    property="net_pay"/>
 	</resultMap>
-		
-	<select id="selectUserPayManageList" statementType="CALLABLE" resultMap="userPayManageResultMap">
-		{CALL sp_calculate_payroll(
-			#{payrollPeriodCode, mode=IN, jdbcType=VARCHAR},
-			#{results, mode=OUT, jdbcType=CURSOR, javaType=ResultSet, resultMap=userPayManageResultMap}
-		)}
+	
+	
+	<select id="selectUserPayManageList" statementType="CALLABLE">
+	    {call sp_calculate_payroll(
+	        #{payrollPeriodCode, mode=IN, jdbcType=VARCHAR},
+	        #{cursor, mode=OUT, jdbcType=CURSOR, resultMap=payrollResultMap}
+	    )}
 	</select>
 
 </mapper>

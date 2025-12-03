@@ -394,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	/* 급여대장-조회 */
 	const payrollGrid = new tui.Grid({
 		el: document.getElementById("payrollGrid"),
-		scrollX: false,
+		scrollX: true,
 		scrollY: true,
 
 		data: {
