@@ -1,5 +1,7 @@
 package com.rootcore.sb.mapper;
 
+import java.time.LocalDateTime;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,4 +21,7 @@ public interface OrderMapper {
 
 	int updateOrderCompanyCode(@Param("orderId") String orderId, @Param("companyCode") String companyCode,
 			@Param("updatedBy") String updatedBy);
+	void updateOrderBilling( @Param("orderId") String orderId,
+	        @Param("billingStart") LocalDateTime billingStart,
+	        @Param("billingEnd") LocalDateTime billingEnd);
 }

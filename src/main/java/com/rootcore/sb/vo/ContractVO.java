@@ -2,7 +2,6 @@ package com.rootcore.sb.vo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import lombok.Data;
 
@@ -11,7 +10,7 @@ public class ContractVO {
 	
 	private String contractCode;
     private String companyCode;
-    private Date contractDate;
+    private LocalDateTime contractDate;
 
     private String companyName;
     private String ceoName;
@@ -20,8 +19,8 @@ public class ContractVO {
 
     private String planCode;
 
-    private Date contractStart;
-    private Date contractEnd;
+    private LocalDateTime contractStart;
+    private LocalDateTime contractEnd;
 
     private Integer subsPeriod;
     private Integer userCount;

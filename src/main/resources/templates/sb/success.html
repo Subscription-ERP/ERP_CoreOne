@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,12 @@
   <p>주문번호: <span th:text="${payment.orderId}"></span></p>
   <p>결제금액: <span th:text="${payment.totalAmount}"></span>원</p>
   <p>승인일시: <span th:text="${payment.approvedAt}"></span></p>
+  <p>결제수단: <span th:text="${payment.method}"></span></p>
+  <p>카드사명: <span th:text="${payment.cardCompany}"></span></p>
 
   <a href="/">홈으로 돌아가기</a>
 </body>
-</html>
+</html> 
+
+
+
