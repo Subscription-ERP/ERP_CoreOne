@@ -55,17 +55,19 @@ public class PayrollServiceImpl implements PayrollService {
 		}
 		return count; // 총 등록된 건수 반환
 	}
-
+	
+	// 급여대장-계산하기-모달창-계산된내용조회
 	@Override
-	public List<UserPayManageVO> selectUserPayManageList(String payroll_period_code) {
+	public List<UserPayManageVO> selectUserPayManageList(Map<String, Object> map) {
 
-	    Map<String, Object> param = new HashMap<>();
-	    param.put("payrollPeriodCode", payroll_period_code);
-	    param.put("cursor", null); // 반드시 필요!
+		payrollMapper.selectUserPayManageList(map);
+
+		@SuppressWarnings("unchecked")
+		List<UserPayManageVO> UserPayManage = (List<UserPayManageVO>)map.get("key");
 	    
-	    System.out.println("serviceImpl payroll_period_code: " + payroll_period_code);
-	    System.out.println("payrollMapper.selectUserPayManageList(param): " + payrollMapper.selectUserPayManageList(param));
+		System.out.println("serviceImpl payrollPeriodCode: " + map.get("payrollPeriodCode"));
+		System.out.println("UserPayManage: " + UserPayManage);
 	    
-	    return payrollMapper.selectUserPayManageList(param);
+	    return UserPayManage;
 	}
 }

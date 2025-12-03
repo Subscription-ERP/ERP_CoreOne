@@ -22,5 +22,5 @@ public interface PayrollMapper {
 	String selectNewPeriodCode();
 	
 	// 급여대장-대장조회-계산하기-급여계산
-	List<UserPayManageVO> selectUserPayManageList(Map<String, Object> param);
+	List<UserPayManageVO> selectUserPayManageList(Map<String, Object> map);
 }
