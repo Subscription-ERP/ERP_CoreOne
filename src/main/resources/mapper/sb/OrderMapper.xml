@@ -95,4 +95,11 @@
 		WHERE
 		ORDER_ID = #{orderId}
 	</update>
+	<update id="updateOrderBilling">
+    UPDATE TB_PAYMENT_ORDER
+    SET
+        billing_start = #{billingStart},
+        billing_end = #{billingEnd}
+    WHERE order_id = #{orderId}
+</update>
 </mapper>

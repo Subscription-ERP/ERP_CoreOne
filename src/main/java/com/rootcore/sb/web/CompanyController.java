@@ -8,17 +8,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.rootcore.sb.service.CompanyService;
-import com.rootcore.sb.service.ContractService;
 import com.rootcore.sb.service.PlanService;
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.PlanVO;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +25,6 @@ public class CompanyController {
 
 	private final CompanyService companyService; // 생성자 주입 service 준비상태 실제로 호출하는건 메소드
 	private final PlanService planService;
-	private final ContractService contractService;
 
 	// 1단계 회사 등록화면
 	@GetMapping("/company")
@@ -120,9 +116,6 @@ public class CompanyController {
 //        model.addAttribute("page", "subscribe");
 //        return "sb/payment";
 //    }
-	@PostMapping("/test")
-	public String test() {
-		return "sb/PayTest";
-	}
+	
 
 }

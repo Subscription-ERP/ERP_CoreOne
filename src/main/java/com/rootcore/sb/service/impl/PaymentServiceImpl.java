@@ -31,13 +31,10 @@ public class PaymentServiceImpl implements PaymentService {
 	private final OrderMapper orderMapper; // 주문
 	private final PaymentMapper paymentMapper; // 결제이력
 	private final ContractMapper contractMapper; // 계약서
-	
-	
+
 	private final SubscribeMapper subscribeMapper; // 구독
 	private final CompanyMapper companyMapper; // 회사 (상태 변경 정도용)
 	private final TossPaymentClient tossPaymentClient;
-
-
 
 	/**
 	 * 회사 등록이 끝난 상태에서: 회사코드 + 플랜정보 + 금액을 가지고 주문을 생성하고 프론트에서 Toss 위젯을 띄울 수 있도록 값 반환
@@ -91,26 +88,34 @@ public class PaymentServiceImpl implements PaymentService {
 		System.out.println(requestVO);
 		// 2. 토스 결제 승인 API 호출
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmPayment(requestVO);
+		// 🔹 여기서 화면에 쓸 cardCompany 세팅
+		if (tossResponse.getCard() != null) {
+			tossResponse.setCardCompany(tossResponse.getCard().getDisplayName());
+		}
 
-		//회사등록
-        company.setCreatedBy("SYSTEM");
-        company.setCreateDate(LocalDateTime.now());
-        company.setUpdatedBy("SYSTEM");
-        company.setUpdateDate(LocalDateTime.now());
-		companyMapper.insertCompany(company);	//세션정보를 불러와 insert 매퍼실행
-		
-		//계약서 등록
-		
+		// 회사등록
+		company.setCreatedBy("SYSTEM");
+		company.setCreateDate(LocalDateTime.now());
+		company.setUpdatedBy("SYSTEM");
+		company.setUpdateDate(LocalDateTime.now());
+		companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
+
+		// 계약서 등록
+
 		contract.setCompanyCode(company.getCompanyCode());
 		contract.setPlanCode(plan.getPlanCode());
+		contract.setCompanyName(company.getCompanyName());
+		contract.setCeoName(company.getCeoName());
 		contract.setCreatedBy("SYSTEM");
 		contract.setCreateDate(LocalDateTime.now());
 		contract.setUpdatedBy("SYSTEM");
 		contract.setUpdateDate(LocalDateTime.now());
+		contract.setContractStart(LocalDateTime.now());
+		contract.setContractEnd(contract.getContractStart().plusMonths(contract.getSubsPeriod()));
 		contractMapper.insertContract(contract);
-		
-		//구독생성
-		 SubscribeVO subscribe = new SubscribeVO();
+
+		// 구독생성
+		SubscribeVO subscribe = new SubscribeVO();
 		subscribe.setCompanyCode(company.getCompanyCode());
 		subscribe.setSubsStatus("ACTIVE");
 		subscribe.setSubsStart(LocalDate.now());
@@ -121,24 +126,29 @@ public class PaymentServiceImpl implements PaymentService {
 		subscribe.setUpdateDate(LocalDateTime.now());
 		subscribe.setPlanCode(plan.getPlanCode());
 		subscribe.setContractCode(contract.getContractCode());
-		//subscribe.setBillingPeriod();
+		// subscribe.setBillingPeriod();
 		subscribe.setCurrentUserCount(contract.getUserCount());
 		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
-	
+
 		subscribeMapper.insertSubscribe(subscribe);
-		
+
 		// 3. PAYMENT 테이블에 결제 이력 INSERT
 		// payment 객체생성
-		 PaymentVO payment = new PaymentVO();
+		PaymentVO payment = new PaymentVO();
+
 		payment.setOrderId(order.getOrderId());
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
+		payment.setPaymentMethod(tossResponse.getMethod());
+		if (tossResponse.getCard() != null) {
+			payment.setCardCompany(tossResponse.getCard().getDisplayName());
+		}
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
 		payment.setRecentPayment(LocalDate.now());
-		payment.setNextPayment(LocalDate.now().plusMonths(contract.getSubsPeriod()));
+		payment.setNextPayment(payment.getBillingEnd().plusDays(1));
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
 		payment.setUpdatedBy("SYSTEM");
@@ -154,9 +164,9 @@ public class PaymentServiceImpl implements PaymentService {
 		// ORDER 업데이트
 		orderMapper.updateOrderSubCode(payment.getOrderId(), payment.getSubCode(), "SYSTEM");
 		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
-
+		orderMapper.updateOrderBilling(order.getOrderId(), contract.getContractStart(), contract.getContractEnd());
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
-		
+
 		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
 
 		// 5. 그대로 Toss 응답 반환 (프론트가 필요로 하는 경우)
@@ -164,6 +174,4 @@ public class PaymentServiceImpl implements PaymentService {
 
 	}
 
-
-	
 }
