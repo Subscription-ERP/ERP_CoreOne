@@ -2,7 +2,6 @@ package com.rootcore.auth.web;
 
 import java.util.List;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.rootcore.auth.service.MenuPermissionService;
@@ -13,9 +12,9 @@ import com.rootcore.auth.vo.MenuTreeVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth/menu_permission")
+@RequestMapping("/api/auth/menu_permission")
 public class MenuPermissionController {
 
     private final MenuPermissionService service;
