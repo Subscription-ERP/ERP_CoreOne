@@ -135,6 +135,10 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
+		payment.setBillingStart(LocalDate.now());
+		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
+		payment.setRecentPayment(LocalDate.now());
+		payment.setNextPayment(LocalDate.now().plusMonths(contract.getSubsPeriod()));
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
 		payment.setUpdatedBy("SYSTEM");

@@ -1,224 +1,218 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>결제 진행</title>
-    <script src="https://js.tosspayments.com/v2/standard"></script>
+<meta charset="UTF-8">
+<title>결제 진행</title>
+<script src="https://js.tosspayments.com/v2/standard"></script>
 
-    <style>
-        .subscription-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding-top: 20px;
-        }
+<style>
+.subscription-container {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding-top: 20px;
+}
 
-        .step-header {
-            max-width: 800px;
-            margin: 0 auto 40px auto;
-        }
+.step-header {
+	max-width: 800px;
+	margin: 0 auto 40px auto;
+}
 
-        .step-header-inner {
-            column-gap: 80px;
-        }
+.step-header-inner {
+	column-gap: 80px;
+}
 
-        .section-title {
-            margin-bottom: 25px;
-        }
+.section-title {
+	margin-bottom: 25px;
+}
 
-        /* 결제 요약 카드 */
-        .summary-card {
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 24px 28px;
-            font-size: 0.95rem;
-        }
+/* 결제 요약 카드 */
+.summary-card {
+	background: #fff;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	padding: 24px 28px;
+	font-size: 0.95rem;
+}
 
-        .summary-title {
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 16px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 8px;
-        }
+.summary-title {
+	font-weight: 700;
+	text-align: center;
+	margin-bottom: 16px;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 8px;
+}
 
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
+.summary-row {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
 
-        .summary-row strong {
-            font-weight: 600;
-        }
+.summary-row strong {
+	font-weight: 600;
+}
 
-        .summary-divider {
-            border-top: 1px solid #ccc;
-            margin: 14px 0;
-        }
+.summary-divider {
+	border-top: 1px solid #ccc;
+	margin: 14px 0;
+}
 
-        .summary-total {
-            font-weight: 700;
-        }
+.summary-total {
+	font-weight: 700;
+}
 
-        /* 결제 패널 */
-        .payment-panel {
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 24px 28px;
-        }
+/* 결제 패널 */
+.payment-panel {
+	background: #fff;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	padding: 24px 28px;
+}
 
-        .btn-dark {
-            background: #000;
-            border-color: #000;
-        }
+.btn-dark {
+	background: #000;
+	border-color: #000;
+}
 
-        .btn-dark:hover {
-            background: #222;
-            border-color: #222;
-        }
-    </style>
+.btn-dark:hover {
+	background: #222;
+	border-color: #222;
+}
+</style>
 </head>
 
 <body>
-<div layout:fragment="content">
-    <div class="subscription-container">
+	<div layout:fragment="content">
+		<div class="subscription-container">
 
-        <!-- 상단 단계 표시 -->
-        <div class="row step-header">
-            <div class="col-12 d-flex justify-content-center step-header-inner">
+			<!-- 상단 단계 표시 -->
+			<div class="row step-header">
+				<div class="col-12 d-flex justify-content-center step-header-inner">
 
-                <!-- 1단계 -->
-                <div class="text-center text-secondary">
-                    <div class="rounded-circle border d-flex align-items-center justify-content-center"
-                         style="width: 40px; height: 40px; background: #f8f9fa;">1
-                    </div>
-                    <div class="mt-2">회사 등록</div>
-                </div>
+					<!-- 1단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
+						<div class="mt-2">회사 등록</div>
+					</div>
 
-                <!-- 2단계 -->
-                <div class="text-center text-secondary">
-                    <div class="rounded-circle border d-flex align-items-center justify-content-center"
-                         style="width: 40px; height: 40px; background: #f8f9fa;">2
-                    </div>
-                    <div class="mt-2">플랜 선택</div>
-                </div>
+					<!-- 2단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">2</div>
+						<div class="mt-2">플랜 선택</div>
+					</div>
 
-                <!-- 3단계 -->
-                <div class="text-center text-secondary">
-                    <div class="rounded-circle border d-flex align-items-center justify-content-center"
-                         style="width: 40px; height: 40px; background: #f8f9fa;">3
-                    </div>
-                    <div class="mt-2">계약서</div>
-                </div>
+					<!-- 3단계 -->
+					<div class="text-center text-secondary">
+						<div
+							class="rounded-circle border d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #f8f9fa;">3</div>
+						<div class="mt-2">계약서</div>
+					</div>
 
-                <!-- 4단계: 현재 단계 -->
-                <div class="text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center"
-                         style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
-                        4
-                    </div>
-                    <div class="mt-2 fw-bold">결제</div>
-                </div>
-            </div>
-        </div>
+					<!-- 4단계: 현재 단계 -->
+					<div class="text-center">
+						<div
+							class="rounded-circle d-flex align-items-center justify-content-center"
+							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
+							4</div>
+						<div class="mt-2 fw-bold">결제</div>
+					</div>
+				</div>
+			</div>
 
-        <!-- 제목 -->
-        <div class="row section-title">
-            <div class="col-12">
-                <h5 class="fw-bold mb-2">최종 결제 정보</h5>
-            </div>
-        </div>
+			<!-- 제목 -->
+			<div class="row section-title">
+				<div class="col-12">
+					<h5 class="fw-bold mb-2">최종 결제 정보</h5>
+				</div>
+			</div>
 
-        <!-- 본문: 왼쪽 요약 / 오른쪽 결제 UI -->
-        <div class="row g-4">
-            <!-- 왼쪽: 결제 요약 카드 -->
-            <div class="col-12 col-lg-6">
-                <div class="summary-card">
+			<!-- 본문: 왼쪽 요약 / 오른쪽 결제 UI -->
+			<div class="row g-4">
+				<!-- 왼쪽: 결제 요약 카드 -->
+				<div class="col-12 col-lg-6">
+					<div class="summary-card">
 
-                    <!-- 요금제명 -->
-                    <div class="summary-title">
-                        <span th:text="${session.plan.planName}">Professional</span>
-                    </div>
+						<!-- 요금제명 -->
+						<div class="summary-title">
+							<span th:text="${session.plan.planName}">Professional</span>
+						</div>
 
-                    <!-- 상단 정보 -->
-                    <div class="summary-row">
-                        <span>구독기간</span>
-                        <span th:text="${session.contract.subsPeriod + '개월'}">3개월</span>
-                    </div>
+						<!-- 상단 정보 -->
+						<div class="summary-row">
+							<span>구독기간</span> <span
+								th:text="${session.contract.subsPeriod + '개월'}">3개월</span>
+						</div>
 
-                    <div class="summary-row">
-                        <span>사용자 수</span>
-                        <span th:text="${session.contract.userCount + '명'}">100명</span>
-                    </div>
+						<div class="summary-row">
+							<span>사용자 수</span> <span
+								th:text="${session.contract.userCount + '명'}">100명</span>
+						</div>
 
-                    <div class="summary-row">
-                        <span>포함 기능</span>
-                        <span th:text="${session.plan.planInfo}">중간 등급 플랜</span>
-                    </div>
+						<div class="summary-row">
+							<span>포함 기능</span> <span th:text="${session.plan.planInfo}">중간
+								등급 플랜</span>
+						</div>
 
-                    <div class="summary-divider"></div>
+						<div class="summary-divider"></div>
 
-                    <!-- 금액 정보 -->
-                    <div class="summary-row">
-                        <span>월 구독료</span>
-                        <span th:text="${session.plan.price + '원'}">20,000원</span>
-                    </div>
+						<!-- 금액 정보 -->
+						<div class="summary-row">
+							<span>월 구독료</span> <span th:text="${session.plan.price + '원'}">20,000원</span>
+						</div>
 
-                    <div class="summary-row">
-                        <span>부가세(10%)</span>
-                        <span th:text="${session.contract.vat + '원'}">6,000원</span>
-                    </div>
+						<div class="summary-row">
+							<span>부가세(10%)</span> <span
+								th:text="${session.contract.vat + '원'}">6,000원</span>
+						</div>
 
-                    <div class="summary-divider"></div>
+						<div class="summary-divider"></div>
 
-                    <div class="summary-row summary-total">
-                        <span>
-                            총 금액(
-                            <span th:text="${session.contract.subsPeriod + '개월'}">3개월</span>
-                            )
-                        </span>
-                        <span th:text="${session.contract.totalPrice + '원'}">66,000원</span>
-                    </div>
+						<div class="summary-row summary-total">
+							<span> 총 금액( <span
+								th:text="${session.contract.subsPeriod + '개월'}">3개월</span> )
+							</span> <span th:text="${session.contract.totalPrice + '원'}">66,000원</span>
+						</div>
 
-                </div>
-            </div>
+					</div>
+				</div>
 
-            <!-- 오른쪽: 결제 수단 + 약관 -->
-            <div class="col-12 col-lg-6">
-                <div class="payment-panel">
-                    <div class="mb-2 fw-bold">결제 방법</div>
-                    <div id="payment-method"></div>
+				<!-- 오른쪽: 결제 수단 + 약관 -->
+				<div class="col-12 col-lg-6">
+					<div class="payment-panel">
+						<div class="mb-2 fw-bold">결제 방법</div>
+						<div id="payment-method"></div>
 
-                    <!-- <div class="mt-4">
-                        <div class="fw-bold mb-2">이용 약관</div>
-                        <div id="agreement"></div>
-                    </div> -->
-                </div>
-            </div>
-        </div>
+						<div class="mt-4">
+							<div class="fw-bold mb-2">이용 약관</div>
+							<div id="agreement"></div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-        <!-- 하단 버튼 -->
-        <div class="row mt-4">
-            <div class="col-12 d-flex justify-content-center gap-3">
-                <a th:href="@{/contract/new}" class="btn btn-outline-secondary px-5">
-                    이전으로
-                </a>
+			<!-- 하단 버튼 -->
+			<div class="row mt-4">
+				<div class="col-12 d-flex justify-content-center gap-3">
+					<a th:href="@{/contract/new}"
+						class="btn btn-outline-secondary px-5"> 이전으로 </a>
 
-                <button type="button" id="payment-button" class="btn btn-dark px-5">
-                    결제하기
-                </button>
-            </div>
-        </div>
+					<button type="button" id="payment-button" class="btn btn-dark px-5">
+						결제하기</button>
+				</div>
+			</div>
 
-    </div>
+		</div>
 
-    <!-- Toss Payments 스크립트 -->
-    <script>
+		<!-- Toss Payments 스크립트 -->
+		<script>
         main();
 
         async function main() {
@@ -269,6 +263,6 @@
             });
         }
     </script>
-</div>
+	</div>
 </body>
 </html>

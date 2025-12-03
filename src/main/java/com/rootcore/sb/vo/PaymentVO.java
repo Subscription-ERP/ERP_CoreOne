@@ -1,5 +1,6 @@
 package com.rootcore.sb.vo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -12,8 +13,6 @@ public class PaymentVO {
 	private String orderId;
 
 	private String subsStatus;   // SUBS_STATUS (구독상태)
-	private LocalDateTime subsStart; // SUBS_START
-	private LocalDateTime subsEnd;   // SUBS_END
 	private String planCode;     // PLAN_CODE
 
 	private Long totalPrice;
@@ -22,10 +21,10 @@ public class PaymentVO {
 	private LocalDateTime paymentDate;
 	private String cardCompany;
 	private String paymentKey;
-	private LocalDateTime recentPayment;
-	private LocalDateTime nextPayment;
-	private LocalDateTime billingStart;
-	private LocalDateTime billingEnd;
+	private LocalDate recentPayment;
+	private LocalDate nextPayment;
+	private LocalDate billingStart;
+	private LocalDate billingEnd;
 	private String createdBy;
 	private LocalDateTime createDate;
 	private String updatedBy;
