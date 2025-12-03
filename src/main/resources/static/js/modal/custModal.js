@@ -44,9 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rowKey == null) return;
 
     const row = custModalGrid.getRow(rowKey);
-    console.log(row);
 
-    // window.handleSelectedCust = function(row) {} 선언시 선택한 row 값을 내보냄
+    // 전역 함수로 handleSelectedCust = function(row) {} 선언시 선택한 row 값을 내보냄
     if (typeof window.handleSelectedCust === 'function') {
       window.handleSelectedCust(row);
     }
@@ -95,8 +94,9 @@ function searchCust() {
           if (typeof handleSelectedCust === 'function') {
             handleSelectedCust(row);
           }
-
           closeCustModal();
+        } else {
+          openCustModal();
         }
 
         window.custModalGrid.refreshLayout();

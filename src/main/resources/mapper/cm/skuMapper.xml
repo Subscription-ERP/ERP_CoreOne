@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.cm.mapper.SkuMapper">
+    <!-- 수주 상품 조회 -->
+    <select id="selectAllSku">
+        SELECT  sku.sku,
+                sku.sku_name,
+                sku.spec,
+                sku.unit,
+                unitPrice.unit_price_type,
+                unitPrice.unit_price
+        FROM tb_sku_master sku
+        JOIN tb_unit_price_master unitPrice
+          ON sku.company_code = unitprice.company_code
+         AND sku.sku = unitPrice.sku
+        WHERE sku.sku_type = 'ITEM'
+        <where>
+            <if test="unitPriceType == 'SELL_UNIT' ">
+                AND unit_price_type = 'SELL_UNIT'
+            </if>
+            <if test="unitPriceType == 'BUY_UNIT' ">
+                AND unit_price_type = 'BUY_UNIT'
+            </if>
+        </where>
+    </select>
+
+</mapper>
