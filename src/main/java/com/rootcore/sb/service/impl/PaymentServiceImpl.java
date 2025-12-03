@@ -88,11 +88,11 @@ public class PaymentServiceImpl implements PaymentService {
 		System.out.println(requestVO);
 		// 2. 토스 결제 승인 API 호출
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmPayment(requestVO);
-		// 🔹 여기서 화면에 쓸 cardCompany 세팅
-		if (tossResponse.getCard() != null) {
-			tossResponse.setCardCompany(tossResponse.getCard().getDisplayName());
-		}
+		String displayName = tossResponse.getCard().getDisplayName();
+		tossResponse.setCardCompany(displayName); // 화면용
 
+		String code = paymentMapper.findCardCompanyCode("OP", displayName);
+		tossResponse.setCardCompanyCode(code); // DB용
 		// 회사등록
 		company.setCreatedBy("SYSTEM");
 		company.setCreateDate(LocalDateTime.now());
@@ -141,9 +141,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentMethod(tossResponse.getMethod());
-		if (tossResponse.getCard() != null) {
-			payment.setCardCompany(tossResponse.getCard().getDisplayName());
-		}
+		payment.setCardCompany(tossResponse.getCardCompanyCode());
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
