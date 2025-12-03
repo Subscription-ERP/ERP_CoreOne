@@ -8,10 +8,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -159,6 +163,53 @@ public class HrRestController {
 
 	    return mav;
 	}
+	
+	
+	// 사원등록
+	@PostMapping("/userRegister")
+	public ResponseEntity<?> registerUser(@RequestPart("user") UserVO userVO,
+			@RequestPart(value = "userPhoto", required = false) MultipartFile userPhoto,
+			@RequestPart(value = "userFile", required = false) MultipartFile userFile,
+			@RequestPart(value = "certiFiles", required = false) List<MultipartFile> certiFiles
+			) throws Exception {
+		// ResponseEntity<?> : Spring에서 HTTP응답(Response)전체를 표현하고 다루는데 사용되는 클래스
+		// HTTP 응답본문(데이터), 응답상태코드, 헤더를 제어하고 클라이언트에게 보내줄 수 있도록 해줌
+		//   상태코드 : 200, 400, 500... 
+		//   헤더 : Content-Type, Location 등
+		//   바디 : JSON, 텍스트, HTML 등 실제 내용
+		
+		int result = hrService.insertUser(userVO, userPhoto, userFile, certiFiles);
+		
+		if(result == 1) {
+			return ResponseEntity.ok("success");
+		}else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("fail");
+			// 200 -> 정상 / 400 BAD_REQUEST -> 클라이언트가 잘못 요청 / 404 NOT_FOUND -> 리소스 없음
+			// 500 INTERNAL... -> 서버쪽에서 예기치 못한 에러가 난 경우
+		}
+		
+	}
+	
+	// 사원수정
+	@PostMapping("/userModify")
+	public ResponseEntity<?> modifyUser(@RequestPart("user") UserVO userVO,
+			@RequestPart(value = "userPhoto", required = false) MultipartFile userPhoto,
+			@RequestPart(value = "userFile", required = false) MultipartFile userFile,
+			@RequestPart(value = "certiFiles", required = false) List<MultipartFile> certiFiles
+			) throws Exception {
+		
+		int result = hrService.updateUser(userVO, userPhoto, userFile, certiFiles);
+		
+		if(result == 1) {
+			return ResponseEntity.ok("success");
+		}else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("fail");
+		}
+		
+	}
+
+	
+	
 	
 	
 }

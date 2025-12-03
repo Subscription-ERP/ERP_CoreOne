@@ -174,8 +174,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 		fr.querySelector("#accountHolder").value = data.accountHolder;
 		fr.querySelector("#salary").value = data.salary;
 		fr.querySelector("#userStatus").value = data.userStatus;
-		fr.querySelector("#userFile").value = data.userFile;
-		fr.querySelector("#remark").value = data.remark;	
+		//fr.querySelector("#userFile").value = data.userFile;
+		fr.querySelector("#remark").value = data.remark;
+		
+		
+		// DB 사원사진 보여주기
+		const photoPreview = document.querySelector("#photoPreview");
+		const photoPlaceholder = document.querySelector(".photo-uploader__placeholder");
+
+		if (photoPreview) {
+		  if (data.userPhoto) {
+		    // 예: data.userPhoto = "user/photo/uuid_abc.jpg"
+		    photoPreview.src = `/upload/${data.userPhoto}`;
+		    photoPreview.classList.remove("d-none");
+		    photoPlaceholder?.classList.add("d-none");
+		  } else {
+		    photoPreview.src = "";
+		    photoPreview.classList.add("d-none");
+		    photoPlaceholder?.classList.remove("d-none");
+			
+		  }
+		}
+		
+		  // 첨부파일 정보 표시 (버튼에 경로/파일명 저장)
+		  const fileDownloadEl = document.querySelector("#userFileDownload");
+
+		  if (fileDownloadEl) {
+		    if (data.userFile) {
+		      // data.userFile 예: "user/file/uuid_이력서.pdf"
+		      const filePath = `/upload/${data.userFile}`;
+
+		      // 클릭 시 사용할 실제 URL을 dataset에 저장
+		      fileDownloadEl.dataset.filePath = filePath;
+		      fileDownloadEl.classList.remove("d-none");
+
+		      // 옵션: 호버 시 파일명 보이게 (툴팁)
+		      const fileName = data.userFile.split('/').pop();
+		      fileDownloadEl.title = fileName;
+		    } else {
+		      // 파일 없으면 버튼 숨기고 관련 데이터 제거
+		      fileDownloadEl.dataset.filePath = "";
+		      fileDownloadEl.classList.add("d-none");
+		      fileDownloadEl.removeAttribute("title");
+		    }
+		  }
+			
 		
 	}
 	
@@ -240,6 +283,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 	    row.querySelector('input[name="licenseNo"]').value    = item.licenseNo    ?? '';
 	    row.querySelector('input[name="expireDate"]').value   = item.expireDate   ?? '';
 	    row.querySelector('input[name="remark"]').value       = item.remark       ?? '';
+		
+		// 첨부파일 있을시 다운로드버튼 생성
+		const fileBtn = row.querySelector('.cert-file-download');
+
+		if (fileBtn) {
+		  if (item.certiFile) {                    
+		    const filePath = item.certiFile;       // 예: "cert/uuid_자격증.pdf"
+
+		    // 버튼 보이게
+		    fileBtn.classList.remove('d-none');
+
+		    // 나중에 클릭 시 사용할 수 있도록 경로 저장
+		    fileBtn.dataset.filePath = `/upload/${filePath}`;
+
+		    // 옵션: 호버 시 파일명 보이게 (툴팁)
+		    const fileName = filePath.split('/').pop();
+		    fileBtn.title = fileName;
+		  } else {
+		    // 파일 없으면 버튼 숨기기 + 이전 정보 제거
+		    fileBtn.classList.add('d-none');
+		    fileBtn.removeAttribute('data-file-path');
+		    fileBtn.removeAttribute('title');
+		  }
+		}
+		
 
 	    tbody.appendChild(fragment);
 	  });
@@ -738,57 +806,222 @@ document.addEventListener("DOMContentLoaded", async () => {
 	  });
 	}
 	
-	
-	
-	
-
-
-
 	/* ------------------------------------------------------------------
-	 * 4) 저장(등록/수정)
+	 * 저장(등록/수정)
 	 * ------------------------------------------------------------------ */
-/*	const btnSave = $("#btnSave");
+	const btnSave = $("#btnSave");
 	if (btnSave) {
-		btnSave.addEventListener("click", async () => {
-			const payload = {
-				empNo: $("#empNo")?.value ?? "",
-				empName: $("#empName")?.value ?? "",
-				phone: $("#phone")?.value ?? "",
-				email: $("#email")?.value ?? "",
-				hireDate: $("#hireDate")?.value ?? "",
-				hireType: $("#hireType")?.value ?? "NEW",
-				deptCode: $("#deptCode")?.value ?? "",
-				positionCode: $("#positionCode")?.value ?? "",
-				dutyCode: $("#dutyCode")?.value ?? "",
-				workStatus: $("#workStatus")?.value ?? "WORK",
-				zip: $("#zip")?.value ?? "",
-				addr: $("#addr")?.value ?? "",
-				retireDate: $("#retireDate")?.value ?? "",
-				reason: $("#reason")?.value ?? "",
-				bankName: $("#bankName")?.value ?? "",
-				accountNo: $("#accountNo")?.value ?? "",
-				remark: $("#remark")?.value ?? "",
-			};
+	  btnSave.addEventListener("click", async () => {
+	    const fr = document.querySelector(".form-allwrapper");
 
-			const res = await fetch("/hr/emp", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
+	    // 1) 기본정보 수집
+	    const householderChecked = fr.querySelector("#householder").checked ? "Y" : "N";
 
-			if (res.ok) {
-				alert("저장 완료");
-				loadList();
-			} else {
-				alert("저장 실패");
-			}
-		});
-	}*/
+	    const userPayload = {
+	      companyCode: "0000",  // TODO: 나중에 로그인 회사코드로 대체
+	      userId: fr.querySelector("#userId")?.value ?? "",
+	      userName: fr.querySelector("#userName")?.value ?? "",
+	      tel: fr.querySelector("#tel")?.value ?? "",
+	      email: fr.querySelector("#email")?.value ?? "",
+	      hireDate: fr.querySelector("#hireDate")?.value ?? "",
+	      hireType: fr.querySelector("#hireType")?.value ?? "",
+	      leaveDate: fr.querySelector("#leaveDate")?.value ?? "",
+	      leaveReason: fr.querySelector("#leaveReason")?.value ?? "",
+	      zipCode: fr.querySelector("#zipCode")?.value ?? "",
+	      address: fr.querySelector("#address")?.value ?? "",
+	      dept: fr.querySelector("#dept")?.value ?? "",
+	      jobTitle: fr.querySelector("#jobTitle")?.value ?? "",
+	      position: fr.querySelector("#position")?.value ?? "",
+	      familyCount: fr.querySelector("#familyCount")?.value || null,
+	      childrenCount: fr.querySelector("#childrenCount")?.value || null,
+	      householder: householderChecked,
+	      bankName: fr.querySelector("#bankName")?.value ?? "",
+	      accountNo: fr.querySelector("#accountNo")?.value ?? "",
+	      accountHolder: fr.querySelector("#accountHolder")?.value ?? "",
+	      salary: fr.querySelector("#salary")?.value || null,
+	      userStatus: fr.querySelector("#userStatus")?.value ?? "",
+	      remark: fr.querySelector("#remark")?.value ?? "",
+	      // userPhoto / userFile 컬럼은 파일 업로드 후 서버에서 path 세팅
+	    };
+
+	    // 2) 자격증 리스트
+	    const certificationList = [];
+	    document
+	      .querySelectorAll("#certTbody tr:not(.empty-row)")
+	      .forEach(tr => {
+	        const certiName    = tr.querySelector('input[name="certiName"]')?.value.trim() ?? "";
+	        const issueOrgName = tr.querySelector('input[name="issueOrgName"]')?.value.trim() ?? "";
+	        const getDate      = tr.querySelector('input[name="getDate"]')?.value.trim() ?? "";
+	        const licenseNo    = tr.querySelector('input[name="licenseNo"]')?.value.trim() ?? "";
+	        const expireDate   = tr.querySelector('input[name="expireDate"]')?.value.trim() ?? "";
+	        const remark       = tr.querySelector('input[name="remark"]')?.value.trim() ?? "";
+
+	        if (!certiName && !issueOrgName && !getDate &&
+	            !licenseNo && !expireDate && !remark) {
+	          return; // 완전 빈 행은 스킵
+	        }
+
+	        certificationList.push({
+	          certiName,
+	          issueOrgName,
+	          getDate,
+	          licenseNo,
+	          expireDate,
+	          remark
+	        });
+	      });
+
+	    // 3) 경력사항 리스트
+	    const workExperienceList = [];
+	    document
+	      .querySelectorAll("#careerTbody tr:not(.empty-row)")
+	      .forEach(tr => {
+	        const wexCompanyName = tr.querySelector('input[name="wexCompanyName"]')?.value.trim() ?? "";
+	        const wexDept        = tr.querySelector('input[name="wexDept"]')?.value.trim() ?? "";
+	        const wexJobTitle    = tr.querySelector('input[name="wexJobTitle"]')?.value.trim() ?? "";
+	        const wexHireDate    = tr.querySelector('input[name="wexHireDate"]')?.value.trim() ?? "";
+	        const wexLeaveDate   = tr.querySelector('input[name="wexLeaveDate"]')?.value.trim() ?? "";
+	        const wexMainDuty    = tr.querySelector('input[name="wexMainDuty"]')?.value.trim() ?? "";
+	        const wexSalary      = tr.querySelector('input[name="wexSalary"]')?.value.trim() ?? "";
+
+	        if (!wexCompanyName && !wexDept && !wexJobTitle &&
+	            !wexHireDate && !wexLeaveDate && !wexMainDuty && !wexSalary) {
+	          return;
+	        }
+
+	        workExperienceList.push({
+	          wexCompanyName,
+	          wexDept,
+	          wexJobTitle,
+	          wexHireDate,
+	          wexLeaveDate,
+	          wexMainDuty,
+	          wexSalary
+	        });
+	      });
+
+	    // 4) 최종 JSON 객체
+	    const payload = {
+	      ...userPayload,
+	      certificationList,
+	      workExperienceList
+	    };
+
+	    // 5) FormData 생성
+	    const formData = new FormData();
+
+	    // (1) user JSON을 하나의 Part로 넣기
+	    formData.append(
+	      "user", // @RequestPart("user") 와 매칭
+	      new Blob([JSON.stringify(payload)], { type: "application/json" })
+	    );
+
+	    // (2) 기본정보 파일들
+	    const photoFile = document.querySelector("#userPhoto")?.files[0];
+	    if (photoFile) {
+	      formData.append("userPhoto", photoFile); // @RequestPart("userPhoto")
+	    }
+
+	    const attachFile = document.querySelector("#userFile")?.files[0];
+	    if (attachFile) {
+	      formData.append("userFile", attachFile); // @RequestPart("userFile")
+	    }
+
+	    // (3) 자격증 파일들 (여러 개 가능)
+	    const certRows = document.querySelectorAll("#certTbody tr:not(.empty-row)");
+	    certRows.forEach(tr => {
+	      const fileInput = tr.querySelector('input[type="file"][name="certiFile"]');
+	      if (!fileInput || !fileInput.files[0]) return;
+
+	      const file = fileInput.files[0];
+	      // 같은 key로 여러 번 append → List<MultipartFile> certiFiles 로 바인딩
+	      formData.append("certiFiles", file);  // @RequestPart("certiFiles")
+	    });
+
+		
+		// userId 유무로 신규/수정 구분
+		const isNew = !payload.userId || payload.userId.trim() === "";
+		const url = isNew ? "/api/hr/userRegister" : "/api/hr/userModify";
+		
+	    try {
+	      const res = await fetch(url, {
+	        method: "POST",
+	        body: formData,   // ⚠ 여기서 절대 headers에 Content-Type 넣지 말기!
+	      });
+
+		  if (res.ok) {
+		      const text = await res.text();
+		      if (text === "success") {
+		        showToast(
+		          isNew ? "사원 정보가 등록되었습니다." : "사원 정보가 수정되었습니다.",
+		          "success"
+		        );
+		        loadUserList();
+		        btnReset?.click();
+		      } else {
+		        showToast(
+		          isNew ? "등록 처리에 실패했습니다." : "수정 처리에 실패했습니다.",
+		          "error"
+		        );
+		      }
+		    } else {
+		      showToast("서버 오류가 발생했습니다.", "error");
+		    }
+		  } catch (err) {
+		    console.error(err);
+		    showToast("통신 중 오류가 발생했습니다.", "error");
+		  }
+		  
+		  
+	  });
+	}
 
 
+	
+	
+	
+	/* ------------------------------------------------------------------
+	 * 사원-기본정보 첨부파일 / 자격증 첨부파일 다운로드 
+	 * ------------------------------------------------------------------ */
+	document.addEventListener("click", (e) => {
+	  const btn = e.target.closest("#userFileDownload");
+	  if (!btn) return;
 
+	  const filePath = btn.dataset.filePath;
+	  if (!filePath) return;
 
+	  // 파일명 추출 (예: /upload/user/file/uuid_이력서.pdf -> uuid_이력서.pdf)
+	  const fileName = filePath.split("/").pop() || "download";
 
+	  // 가상의 <a> 태그를 만들어 강제 다운로드
+	  const a = document.createElement("a");
+	  a.href = filePath;
+	  a.download = fileName;   // 다운로드 시 저장될 파일명
+	  document.body.appendChild(a);
+	  a.click();
+	  document.body.removeChild(a);
+	});
+
+	// 자격증 첨부파일 다운로드 버튼 클릭 핸들러 (무조건 다운로드)
+	const certTbodyEl = document.querySelector("#certTbody");
+	if (certTbodyEl) {
+	  certTbodyEl.addEventListener("click", (e) => {
+	    const btn = e.target.closest(".cert-file-download");
+	    if (!btn) return;
+
+	    const filePath = btn.dataset.filePath;
+	    if (!filePath) return;
+
+	    const fileName = filePath.split("/").pop() || "download";
+
+	    const a = document.createElement("a");
+	    a.href = filePath;
+	    a.download = fileName;
+	    document.body.appendChild(a);
+	    a.click();
+	    document.body.removeChild(a);
+	  });
+	}	
 
 
 	/* ------------------------------------------------------------------
@@ -827,28 +1060,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 	
 	
 	
-
-	
-
-
-	
-	/* ------------------------------------------------------------------
-	 * 12) 사원번호 생성
-	 * ------------------------------------------------------------------ */
-/*	const datePart = formatDate(orderDate);
-	const lastList = await conn.query(sqlList.selectLastOutordNo, [`OO${datePart}%`]);
-	let seq = 1;
-	if (lastList.length > 0) {
-	  const lastNo = lastList[0].OUTORD_NO;
-	  const lastSeq = parseInt(lastNo.slice(-5)); // 마지막 5자리 추출
-	  seq = lastSeq + 1;
-	}
-	let outordDate = formatFullDate(orderDate);
-	let outdelDate = formatFullDate(deliveryDate);
-
-	// 신규 발주번호 생성 (EMP + YYMMDD + 5자리SEQ)
-	// 00 -> EMP (사원번호)
-	const outordNo = `EMP${datePart}${String(seq).padStart(5, "0")}`;*/
 
 	
 

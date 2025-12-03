@@ -544,7 +544,10 @@ input[type="checkbox"]:checked {
 }
 
 
-
+/* 숨기기 첨부파일 */
+.d-none {
+  display: none !important;
+}
 
 
 

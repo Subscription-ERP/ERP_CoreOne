@@ -226,166 +226,277 @@
 	<!-- 사원 등록 -->
 	<insert id="insertUserBasic" parameterType="UserVO">
 		<!-- 사원번호 -->
-		<selectKey keyProperty="userId" order="BEFORE" resultType="String">
-			SELECT 
-			    'EMP'
-			    || TO_CHAR(TO_DATE(#{hireDate}, 'YYYY-MM-DD'), 'YYMMDD')
-			    || LPAD( NVL(MAX(TO_NUMBER(SUBSTR(user_id, 10, 5))) + 1, 1), 5, '0' ) AS user_id
-			FROM tb_user_master
-			WHERE hire_date = TO_DATE(#{hireDate}, 'YYYY-MM-DD')
+		<selectKey keyProperty="userId" order="BEFORE" resultType="string">
+		    SELECT 
+		        'EMP'
+		        || TO_CHAR(#{hireDate}, 'YYMMDD')
+		        || LPAD(
+		             NVL(MAX(TO_NUMBER(SUBSTR(user_id, 10, 5))) + 1, 1),
+		             5,
+		             '0'
+		           ) AS user_id
+		    FROM tb_user_master
+		    WHERE TRUNC(hire_date) = TRUNC(#{hireDate})
 		</selectKey>
 	
-	INSERT INTO tb_user_master (
-	    company_code,
-	    user_id,
-	    user_name,
-	    tel,
-	    email,
-	    hire_date,
-	    hire_type,
-	    leave_date,
-	    leave_reason,
-	    zip_code,
-	    address,
-	    dept,
-	    job_title,
-	    position,
-	    family_count,
-	    children_count,
-	    householder,
-	    bank_name,
-	    account_no,
-	    account_holder,
-	    salary,
-	    user_status,
-	    user_photo,
-	    user_file,
-	    remark,
-	    created_by,
-	    create_date,
-	    updated_by,
-	    update_date)
-	VALUES(
-        '0000',
-        #{userId},
-        #{userName},
-        #{tel},
-        #{email},
-        #{hireDate},
-        #{hireType},
-        #{leaveDate},
-        #{leaveReason},
-        #{zipCode},
-        #{address},
-        #{dept},
-        #{jobTitle},
-        #{position},
-        #{familyCount},
-        #{childrenCount},
-        #{householder},
-        #{bankName},
-        #{accountNo},
-        #{accountHolder},
-        #{salary},
-        #{userStatus},
-        #{userPhoto},
-        #{userFile},
-        #{remark},
-        #{createdBy},
-        #{createDate},
-        #{updatedBy},
-        #{updateDate}
-	)
+		INSERT INTO tb_user_master (
+		    company_code,
+		    user_id,
+		    user_name,
+		    tel,
+		    email,
+		    hire_date,
+		    hire_type,
+		    leave_date,
+		    leave_reason,
+		    zip_code,
+		    address,
+		    dept,
+		    job_title,
+		    position,
+		    family_count,
+		    children_count,
+		    householder,
+		    bank_name,
+		    account_no,
+		    account_holder,
+		    salary,
+		    user_status,
+		    user_photo,
+		    user_file,
+		    remark,
+		    created_by,
+		    create_date)
+		VALUES(
+	        '0000',
+	        #{userId},
+	        #{userName},
+	        #{tel},
+	        #{email},
+	        #{hireDate},
+	        #{hireType},
+	        #{leaveDate},
+	        #{leaveReason},
+	        #{zipCode},
+	        #{address},
+	        #{dept},
+	        #{jobTitle},
+	        #{position},
+	        #{familyCount},
+	        #{childrenCount},
+	        #{householder},
+	        #{bankName},
+	        #{accountNo},
+	        #{accountHolder},
+	        #{salary},
+	        #{userStatus},
+	        #{userPhoto},
+	        #{userFile},
+	        #{remark},
+	        #{createdBy},
+	        SYSDATE
+		)
 	</insert>
 	
 	<!-- 자격증 등록 -->
 	<insert id="insertCertification" parameterType="CertificationVO">
-		<selectKey keyProperty="certi_seq" order="BEFORE" resultType="long">
+		<selectKey keyProperty="certiSeq" order="BEFORE" resultType="long">
 			SELECT certi_seq.nextval
 			FROM dual
 		</selectKey>
 	
-	INSERT INTO tb_certification (
-	    certi_seq,
-	    company_code,
-	    user_id,
-	    certi_name,
-	    issue_org_name,
-	    get_date,
-	    license_no,
-	    expire_date,
-	    certi_file,
-	    remark,
-	    created_by,
-	    create_date,
-	    updated_by,
-	    update_date)
-	VALUES(
-	    #{certiSeq},
-	    #{companyCode},
-	    #{userId},
-	    #{certiName},
-	    #{issueOrgName},
-	    #{getDate},
-	    #{licenseNo},
-	    #{expireDate},
-	    #{certiFile},
-	    #{remark},
-	    #{createdBy},
-	    #{createDate},
-	    #{updatedBy},
-	    #{updateDate}
-	   )
+		INSERT INTO tb_certification (
+		    certi_seq,
+		    company_code,
+		    user_id,
+		    certi_name,
+		    issue_org_name,
+		    get_date,
+		    license_no,
+		    expire_date,
+		    certi_file,
+		    remark,
+		    created_by,
+		    create_date)
+		VALUES(
+		    #{certiSeq},
+		    #{companyCode},
+		    #{userId},
+		    #{certiName},
+		    #{issueOrgName},
+		    #{getDate},
+		    #{licenseNo},
+		    #{expireDate},
+		    #{certiFile},
+		    #{remark},
+		    #{createdBy},
+		    SYSDATE
+		   )
 	</insert>
 	
 	<!-- 경력사항 등록 -->
 	<insert id="insertWorkExprience" parameterType="WorkExperienceVO">
-		<selectKey keyProperty="wex_seq" order="BEFORE" resultType="long">
+		<selectKey keyProperty="wexSeq" order="BEFORE" resultType="long">
 			SELECT wex_seq.nextval
 			FROM dual
 		</selectKey>
 		
-	INSERT INTO tb_work_experience (
-	    wex_seq,
-	    company_code,
-	    user_id,
-	    wex_company_name,
-	    wex_dept,
-	    wex_job_title,
-	    wex_hire_date,
-	    wex_leave_date,
-	    wex_main_duty,
-	    wex_salary,
-	    remark,
-	    created_by,
-	    create_date,
-	    updated_by,
-	    update_date)
-	VALUES(
-	    #{wexSeq},
-	    #{companyCode},
-	    #{userId},
-	    #{wexCompanyName},
-	    #{wexDept},
-	    #{wexJobTitle},
-	    #{wexHireDate},
-	    #{wexLeaveDate},
-	    #{wexMainDuty},
-	    #{wexSalary},
-	    #{remark},
-	    #{createdBy},
-	    #{createDate},
-	    #{updatedBy},
-	    #{updateDate}
-	)
+		INSERT INTO tb_work_experience (
+		    wex_seq,
+		    company_code,
+		    user_id,
+		    wex_company_name,
+		    wex_dept,
+		    wex_job_title,
+		    wex_hire_date,
+		    wex_leave_date,
+		    wex_main_duty,
+		    wex_salary,
+		    remark,
+		    created_by,
+		    create_date)
+		VALUES(
+		    #{wexSeq},
+		    #{companyCode},
+		    #{userId},
+		    #{wexCompanyName},
+		    #{wexDept},
+		    #{wexJobTitle},
+		    #{wexHireDate},
+		    #{wexLeaveDate},
+		    #{wexMainDuty},
+		    #{wexSalary},
+		    #{remark},
+		    #{createdBy},
+		    SYSDATE
+		)
 	</insert>
+	
+	<!-- 사원 기본정보 수정 -->
+	<update id="updateUser" parameterType="UserVO">
+	    UPDATE tb_user_master
+	    SET 
+	        user_name      = #{userName},
+	        tel            = #{tel},
+	        email          = #{email},
+	        hire_date      = #{hireDate},
+	        hire_type      = #{hireType},
+	        leave_date     = #{leaveDate},
+	        leave_reason   = #{leaveReason},
+	        zip_code       = #{zipCode},
+	        address        = #{address},
+	        dept           = #{dept},
+	        job_title      = #{jobTitle},
+	        position       = #{position},
+	        family_count   = #{familyCount},
+	        children_count = #{childrenCount},
+	        householder    = #{householder},
+	        bank_name      = #{bankName},
+	        account_no     = #{accountNo},
+	        account_holder = #{accountHolder},
+	        salary         = #{salary},
+	        user_status    = #{userStatus},
+	        user_photo     = #{userPhoto},
+	        user_file      = #{userFile},
+	        remark         = #{remark},
+	        updated_by     = #{updatedBy},
+	        update_date    = SYSDATE
+	    WHERE user_id = #{userId}
+	</update>
+
+	<!-- 자격증 수정 -->
+	<update id="updateCertification" parameterType="CertificationVO">
+	    UPDATE tb_certification
+	    SET
+	        certi_name      = #{certiName},
+	        issue_org_name  = #{issueOrgName},
+	        get_date        = #{getDate},
+	        license_no      = #{licenseNo},
+	        expire_date     = #{expireDate},
+	        certi_file      = #{certiFile},
+	        remark          = #{remark},
+	        updated_by      = #{updatedBy},
+	        update_date     = SYSDATE
+	    WHERE user_id       = #{userId}
+	      AND certi_seq     = #{certiSeq}
+	</update>
+
+	<!-- 경력사항 수정 -->
+	<update id="updateWorkExperience" parameterType="WorkExperienceVO">
+		UPDATE tb_work_experience
+	    SET
+	        wex_company_name = #{wexCompanyName},
+	        wex_dept         = #{wexDept},
+	        wex_job_title    = #{wexJobTitle},
+	        wex_hire_date    = #{wexHireDate},
+	        wex_leave_date   = #{wexLeaveDate},
+	        wex_main_duty    = #{wexMainDuty},
+	        wex_salary       = #{wexSalary},
+	        remark           = #{remark},
+	        updated_by       = #{updatedBy},
+	        update_date      = SYSDATE
+	    WHERE user_id       = #{userId}
+	      AND wex_seq       = #{wexSeq}   
+	</update>
 	
 	<!-- 이력 등록 -->
-	<insert id="insertUserHistory">
-	
+	<insert id="insertUserHistory" parameterType="UserHistoryVO">
+		<selectKey keyProperty="ehistSeq" order="BEFORE" resultType="long">
+			SELECT ehist_seq.NEXTVAL
+			FROM   dual
+		</selectKey>
+		
+		INSERT INTO tb_user_history (
+	        ehist_seq,
+	        company_code,
+	        user_id,
+	        hist_type,
+	        apply_date,
+	        prev_dept,
+	        prev_job_title,
+	        new_dept,
+	        new_job_title,
+	        dept_change_reason,
+	        base_salary,
+	        total_salary,
+	        pay_type,
+	        salary_change_reason,
+	        created_by,
+	        create_date
+	    )
+	    VALUES (
+	        #{ehistSeq},
+	        #{companyCode},
+	        #{userId},
+	        #{histType},
+	        #{applyDate},
+	        #{prevDept},
+	        #{prevJobTitle},
+	        #{newDept},
+	        #{newJobTitle},
+	        #{deptChangeReason},
+	        #{baseSalary},
+	        #{totalSalary},
+	        #{payType},
+	        #{salaryChangeReason},
+	        #{createdBy},
+	        SYSDATE
+	    )
 	</insert>
 	
+	<!-- 자격증 전체삭제 -->
+	<delete id="deleteCetification" parameterType="String">
+		DELETE FROM tb_certification
+		WHERE company_code = #{companyCode}
+		  AND user_id      = #{userId}
+	</delete>
 	
+	<!-- 경력사항 전체삭제 -->
+	<delete id="deleteWorkExperience" parameterType="String">
+		DELETE FROM tb_work_experience
+		WHERE company_code = #{companyCode}
+		  AND user_id      = #{userId}
+	</delete>
 	
 
 </mapper>
