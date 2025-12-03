@@ -324,6 +324,9 @@ SET company_code = '0000';
 -- 데이터베이스의 테이블을 생성할 때 각 컬럼을 정의하는것과 같다.
 CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
     user_id                     VARCHAR2(20),
+    user_name                   VARCHAR2(20),
+    dept_name                   VARCHAR2(20),
+    payroll_date                DATE,
     salary                      NUMBER,
     bonus                       NUMBER,
     overtime                    NUMBER,
@@ -364,36 +367,57 @@ IS
     -- 1) 커서 정의
     -- 위에서 선언한 대장에 해당하는 사원조회
     CURSOR user_cursor IS -- 커서 선언
-        SELECT pr.user_id, -- 사용자 id
-               um.salary, -- 기본급여
-               pr.bonus_rate, -- 상여 지급율
-               pr.bonus_amount, -- 상여 지급액
-               ad.total_over_work_time, -- 총 연장근무시간
-               ad.total_night_work_time, -- 총 야간근무시간
-               ad.total_holiday_work_time, -- 총 휴일근무시간
-               um.family_count, -- 가족수
-               um.children_count, -- 자녀수
-               al.expiry_date, -- 소멸예정일
-               al.remaining_days -- 잔여연차
-        FROM   tb_payroll pr
-               JOIN tb_user_master um -- 사원관리 테이블
-               ON pr.user_id = um.user_id
-               JOIN ( SELECT ad.user_id,
-                             SUM(ad.over_work_time) as total_over_work_time,
-                             SUM(ad.night_work_time) as total_night_work_time,
-                             SUM(ad.holiday_work_time) as total_holiday_work_time
-                      FROM   tb_attendance ad -- 근태관리 테이블
-                             JOIN tb_payroll pr -- 급여대장 테이블
-                             ON ad.user_id = pr.user_id
-                      WHERE  pr.payroll_period_code = p_payroll_period_code
-                      AND    ad.work_date >= pr.payroll_start_date
-                      AND    ad.work_date <= pr.payroll_end_date
-                      GROUP BY ad.user_id
-                ) ad 
-                ON ad.user_id = pr.user_id
-                LEFT JOIN tb_annual_leave al
-                ON al.user_id = pr.user_id
-         WHERE  pr.payroll_period_code = p_payroll_period_code;
+        SELECT  pr_agg.user_id,             -- 사용자 id (하나의 행)
+                um.user_name,               -- 성명
+                dm.dept_name,               -- 부서명
+                pr_agg.payroll_date,        -- 지급일
+                um.salary,                  -- 기본급여
+                pr_agg.bonus_rate,          -- 상여 지급율 (MAX로 대표값 선택)
+                pr_agg.bonus_amount,        -- 상여 지급액 (SUM으로 합산)
+                ad.total_over_work_time,    -- 총 연장근무시간
+                ad.total_night_work_time,   -- 총 야간근무시간
+                ad.total_holiday_work_time, -- 총 휴일근무시간
+                um.family_count,            -- 가족수
+                um.children_count,          -- 자녀수
+                al.expiry_date,             -- 소멸예정일 (집계된 대표값)
+                al.remaining_days           -- 잔여연차 (집계된 합산값)
+        FROM   (SELECT  user_id, 
+                        payroll_date, 
+                        MAX(bonus_rate) AS bonus_rate,  -- 여러 행 중 NULL이 아닌 값 (상여 지급률) 선택
+                        SUM(bonus_amount) AS bonus_amount, -- 상여 지급액은 SUM하여 합산
+                        payroll_period_code
+                FROM    tb_payroll
+                WHERE   payroll_period_code = p_payroll_period_code -- 급여 대장 필터링
+                GROUP BY user_id, payroll_date, payroll_period_code
+                ) pr_agg 
+                JOIN tb_user_master um -- 사원관리 테이블
+                ON pr_agg.user_id = um.user_id
+                JOIN (SELECT atd.user_id,
+                             pr_sub.payroll_date,
+                             SUM(atd.over_work_time) AS total_over_work_time,
+                             SUM(atd.night_work_time) AS total_night_work_time,
+                             SUM(atd.holiday_work_time) AS total_holiday_work_time
+                      FROM   tb_attendance atd 
+                             JOIN tb_payroll pr_sub -- 급여대장 테이블
+                             ON atd.user_id = pr_sub.user_id
+                      WHERE  pr_sub.payroll_period_code = p_payroll_period_code
+                      AND    atd.work_date >= pr_sub.payroll_start_date
+                      AND    atd.work_date <= pr_sub.payroll_end_date
+                      GROUP BY atd.user_id, pr_sub.payroll_date
+                      ) ad 
+                ON ad.user_id = pr_agg.user_id
+                -- 연차 정보 집계 서브쿼리 (Alias AL) - 중복 방지 및 합산
+                LEFT JOIN (SELECT user_id, 
+                                  expiry_date,    -- 가장 늦은 소멸 예정일
+                                  SUM(remaining_days) AS remaining_days -- 잔여 연차는 모두 합산
+                           FROM   tb_annual_leave
+                           GROUP BY user_id, expiry_date
+                           ) al
+                ON al.user_id = pr_agg.user_id
+                JOIN tb_dept_master dm
+                ON dm.dept_code = um.dept
+        WHERE   pr_agg.payroll_date = ad.payroll_date
+        ORDER BY pr_agg.user_id;
         
     -- 변수선언
     v_uid tb_payroll.user_id%TYPE; -- 사용자id
@@ -516,44 +540,44 @@ BEGIN
         ELSE
             v_annual_leave := 0;
         END IF;
-        DBMS_OUTPUT.PUT_LINE(',v_annual_leave:'||v_annual_leave);
+        DBMS_OUTPUT.PUT_LINE('v_annual_leave:'||v_annual_leave);
         
-        -- 총 수당총액(상여미포함)
+        -- 총 수당총액(기본급, 상여미포함)
         v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
-        DBMS_OUTPUT.PUT_LINE(',v_total_allowance:'||v_total_allowance);
+        DBMS_OUTPUT.PUT_LINE('v_total_allowance:'||v_total_allowance);
         
-        -- 총 지급액(상여포함)
-        v_total_payment_amount := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave + v_bonus;
-        DBMS_OUTPUT.PUT_LINE(',v_total_payment_amount:'||v_total_payment_amount);
+        -- 총 지급액(기본급, 상여포함)
+        v_total_payment_amount := v_sal + v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave + v_bonus;
+        DBMS_OUTPUT.PUT_LINE('v_total_payment_amount:'||v_total_payment_amount);
         
         -- 소득 := 근로소득 - 비과세근로소득
-        v_earnings := v_total_allowance + v_bonus - v_meal;
-        DBMS_OUTPUT.PUT_LINE(',v_earnings:'||v_earnings);
+        v_earnings := v_total_payment_amount - v_meal;
+        DBMS_OUTPUT.PUT_LINE('v_earnings:'||v_earnings);
         
         -- 국민연금
         -- 계산법 : 소득 * 0.045(4.5%)
         -- 1000원 미만은 제외(절사)하고 계산
         -- 예시) 15,123원 -> 15,000원
         v_national_pension := TRUNC(v_earnings, -3) * 0.045;
-        DBMS_OUTPUT.PUT_LINE(',v_national_pension:'||v_national_pension);
+        DBMS_OUTPUT.PUT_LINE('v_national_pension:'||v_national_pension);
         
         -- 고용보험
         -- 계산법 : 소득 * 0.009(0.9%)
         -- 1의자리수, 소수점은 제외
         v_employment_insurance := TRUNC((v_earnings * 0.009) , -1);
-        DBMS_OUTPUT.PUT_LINE(',v_employment_insurance:'||v_employment_insurance);
+        DBMS_OUTPUT.PUT_LINE('v_employment_insurance:'||v_employment_insurance);
         
         -- 건강보험
         -- 계산법 : 소득 * 0.03545(3.545%)
         -- 1의자리수, 소수점은 제외
         v_health_insurance := TRUNC((v_earnings * 0.03545) , -1);
-        DBMS_OUTPUT.PUT_LINE(',v_health_insurance:'||v_health_insurance);
+        DBMS_OUTPUT.PUT_LINE('v_health_insurance:'||v_health_insurance);
         
         -- 장기요양보험
         -- 계산법 : 소득 * 0.004591(0.4591%)
         -- 1의자리수, 소수점은 제외
         v_long_time_care_insurance := TRUNC((v_earnings * 0.004591) , -1);
-        DBMS_OUTPUT.PUT_LINE(',v_long_time_care_insurance:'||v_long_time_care_insurance);
+        DBMS_OUTPUT.PUT_LINE('v_long_time_care_insurance:'||v_long_time_care_insurance);
         
         --=======
         -- 소득세
@@ -566,11 +590,11 @@ BEGIN
         -- 총 공제총액
         -- 총 4대보험 := 국민연금 + 고용보험 + 건강보험 + 장기요양보험
         v_total_deduction_amount := v_national_pension + v_employment_insurance + v_health_insurance + v_long_time_care_insurance;
-        DBMS_OUTPUT.PUT_LINE(',v_total_deduction_amount:'||v_total_deduction_amount);
+        DBMS_OUTPUT.PUT_LINE('v_total_deduction_amount:'||v_total_deduction_amount);
         
         -- 실 수령액
         v_net_pay := v_total_payment_amount - v_total_deduction_amount;
-        DBMS_OUTPUT.PUT_LINE(',v_net_pay:'||v_net_pay);
+        DBMS_OUTPUT.PUT_LINE('v_net_pay:'||v_net_pay);
         
         -- 3) 계산 완료 후 결과를 컬렉션에 추가
         v_results.EXTEND; 
@@ -581,6 +605,9 @@ BEGIN
         -- v_results(v_results.LAST) 방금 .EXTEND로 추가된 마지막 위치를 가리킴
         -- T_PAYROLL_RESULT_REC 타입의 레코드를 생성
             v_uid, 
+            user_info.user_name,
+            user_info.dept_name,
+            user_info.payroll_date,
             v_sal, 
             v_bonus, 
             v_overtime, 
@@ -598,6 +625,7 @@ BEGIN
             v_total_deduction_amount, 
             v_net_pay
         );
+        
     END LOOP;
     -- 4) 커서 종료
     
@@ -606,6 +634,9 @@ BEGIN
     -- 외부시스템은 SQL결과 집합(SELECT 쿼리의 결과) 형태로 데이터를 받아야 함
     OPEN p_out_results FOR
         SELECT user_id,
+               user_name,
+               dept_name,
+               payroll_date,
                salary,
                bonus,
                overtime,

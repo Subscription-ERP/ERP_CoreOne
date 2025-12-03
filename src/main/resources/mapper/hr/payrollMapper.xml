@@ -102,6 +102,9 @@
 		
 	<resultMap id="payrollResultMap" type="UserPayManageVO">
 	    <result column="user_id"                    property="user_id"/>
+	    <result column="user_name"                  property="user_name"/>
+	    <result column="dept_name"                  property="dept_name"/>
+	    <result column="payroll_date"               property="payroll_date"/>
 	    <result column="salary"                     property="salary"/>
 	    <result column="bonus"                      property="bonus"/>
 	    <result column="overtime"                   property="overtime"/>
@@ -124,7 +127,7 @@
 	<select id="selectUserPayManageList" statementType="CALLABLE">
 	    {call sp_calculate_payroll(
 	        #{payrollPeriodCode, mode=IN, jdbcType=VARCHAR},
-	        #{cursor, mode=OUT, jdbcType=CURSOR, resultMap=payrollResultMap}
+	        #{key, jdbcType=CURSOR, mode=OUT, javaType=java.sql.ResultSet, resultMap=payrollResultMap}
 	    )}
 	</select>
 
