@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/auth")  
+@RequestMapping("/auth")
 public class MenuPermissionPageController {
 
-    @GetMapping("/menu_permission")   // 브라우저에서 접근할 URL
+    @GetMapping("/menu_permission")
     public String menuPermissionPage() {
-        return "auth/menu_permission";  // templates/auth/menu_permission.html
+        return "auth/menu_permission";
     }
 }

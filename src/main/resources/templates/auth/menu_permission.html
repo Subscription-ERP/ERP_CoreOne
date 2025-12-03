@@ -6,113 +6,72 @@
 <head>
     <title>사용자별 메뉴권한 관리</title>
 
-    <!-- ToastUI Grid -->
     <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 
-    <!-- general.css -->
     <link th:href="@{/css/general.css}" rel="stylesheet"/>
 
     <style>
 
-        /* ======================= 검색영역 개선 CSS ======================= */
-
+        /* ======================= 검색영역 ======================= */
         .card-ui--search .card-ui__body {
-            padding: 10px 16px !important; 
-        }
-
-        .search-label {
-            width: 70px;                   /* 🔥 ERP 표준 label width */
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .search-field {
+            padding: 6px 14px !important;
+            height: 50px !important;
             display: flex;
             align-items: center;
-            gap: 6px;
         }
-
+        .search-label {
+            width: 70px; font-size: 13px; font-weight: 600;
+        }
+        .search-field { display: flex; align-items: center; gap: 6px; }
         .search-input {
-            height: 30px !important;        /* 🔥 input/select 줄임 */
-            padding: 2px 6px !important;
+            height: 28px !important; padding: 2px 6px !important;
             font-size: 13px !important;
         }
-
         #btnReset, #btnSearch {
-            height: 32px !important;
+            height: 30px !important;
             padding: 0 14px !important;
             font-size: 13px !important;
         }
 
-        .filter-bar {
-            row-gap: 6px !important;        /* 🔥 세로 간격 축소 */
-        }
-
-        /* ======================= 레이아웃 ======================= */
-
+        /* ======================= Layout ======================= */
         .menu-auth-container {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 14px;
-            height: calc(100vh - 160px);
+            display: grid; grid-template-columns: 380px 1fr;
+            gap: 14px; height: calc(100vh - 135px);
         }
-
-        .left-panel, .right-panel {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .grid-root {
-            height: calc(100% - 10px);
-        }
+        .left-panel, .right-panel { height: 100%; display: flex; flex-direction: column; }
+        .grid-root { height: calc(100% - 10px); }
 
         /* ======================= 메뉴트리 ======================= */
-
         .menu-tree {
-            padding: 14px;
-            overflow-y: auto;
+            padding: 14px; overflow-y: auto;
             max-height: calc(100vh - 260px);
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: #fff;
+            border: 1px solid #ddd; background: #fff; border-radius: 6px;
         }
 
-        .menu-item {
-            margin: 6px 0;
-        }
+        .menu-item { margin: 6px 0; }
+        .menu-item .title { font-weight: 600; }
+        .menu-children { margin-left: 20px; border-left: 1px dashed #bbb; padding-left: 12px; }
+        .auth-checks { display: inline-flex; gap: 10px; margin-left: 6px; }
 
-        .menu-item .title {
-            font-weight: 600;
-        }
+        /* ======================= 버튼 ======================= */
+        .toolbar .btn { height: 30px !important; padding: 0 12px !important; font-size: 13px !important; }
+        .toolbar { display: flex; gap: 8px; margin-left: auto; }
 
-        .menu-children {
-            margin-left: 20px;
-            border-left: 1px dashed #bbb;
-            padding-left: 12px;
-        }
-
-        .auth-checks {
-            margin-left: 6px;
-            display: inline-flex;
-            gap: 10px;
-        }
+        .card-ui__header { display: flex; align-items: center; justify-content: space-between; }
 
     </style>
 </head>
 
 <body>
-
 <div layout:fragment="content" class="page page-fluid">
 
-
     <!-- ==================== 🔍 검색영역 ==================== -->
-    <section class="card-ui card-ui--search" style="margin-top: 6px;">
-        <div class="card-ui__body">
-            <div class="filter-bar row g-2 align-items-center">
+    <section class="card-ui card-ui--search" style="margin-top: 10px;">
+        <div class="card-ui__body" style="flex:1;">
 
-                <!-- 사원명 -->
+            <div class="filter-bar row g-4 align-items-center col-md-12">
+
                 <div class="col-md-3">
                     <div class="field-inline search-field">
                         <label class="search-label">사원명</label>
@@ -120,7 +79,6 @@
                     </div>
                 </div>
 
-                <!-- 부서 -->
                 <div class="col-md-3">
                     <div class="field-inline search-field">
                         <label class="search-label">부서명</label>
@@ -130,7 +88,6 @@
                     </div>
                 </div>
 
-                <!-- 직급 -->
                 <div class="col-md-3">
                     <div class="field-inline search-field">
                         <label class="search-label">직급</label>
@@ -140,25 +97,27 @@
                     </div>
                 </div>
 
-                <!-- 버튼 -->
                 <div class="col-md-3 text-end">
                     <button id="btnReset" class="btn btn-white btn-inner me-1">초기화</button>
                     <button id="btnSearch" class="btn btn-color btn-inner">조회</button>
                 </div>
 
             </div>
+
         </div>
     </section>
 
 
-    <!-- ==================== 2-열 레이아웃 ==================== -->
+    <!-- ==================== 2-열 Layout ==================== -->
     <section class="menu-auth-container">
 
-        <!-- ========== LEFT : User Grid ========== -->
+        <!-- LEFT GRID -->
         <div class="left-panel card-ui card-ui--grid">
             <header class="card-ui__header">
-                <h6 class="card-ui__title">사원 목록</h6>
-                <small class="text-muted">선택한 사원의 메뉴권한이 오른쪽에 표시됩니다.</small>
+                <div>
+                    <h6 class="card-ui__title">사원 목록</h6>
+                    <small class="text-muted">선택한 사원의 메뉴권한이 오른쪽에 표시됩니다.</small>
+                </div>
             </header>
 
             <div class="card-ui__body p-0">
@@ -166,13 +125,19 @@
             </div>
         </div>
 
-        <!-- ========== RIGHT : Menu Permission ========== -->
+
+        <!-- RIGHT: MENU PERMISSION -->
         <div class="right-panel card-ui card-ui--detail">
 
             <header class="card-ui__header">
+
+                <!-- 탭 5개 (SYS/HR/SD/FI/SUB) -->
                 <ul class="nav nav-tabs ui-tabs" id="menuTabs">
                     <li class="nav-item">
-                        <button class="nav-link active menu-tab-btn" data-tab="tab-hr">인사관리</button>
+                        <button class="nav-link active menu-tab-btn" data-tab="tab-sys">시스템관리</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn" data-tab="tab-hr">인사관리</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link menu-tab-btn" data-tab="tab-sales">영업관리</button>
@@ -180,18 +145,28 @@
                     <li class="nav-item">
                         <button class="nav-link menu-tab-btn" data-tab="tab-fi">회계관리</button>
                     </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn" data-tab="tab-sub">구독관리</button>
+                    </li>
                 </ul>
 
+                <!-- 버튼 4개 -->
                 <div class="toolbar">
                     <button id="btnAllCheck" class="btn btn-white btn-inner">전체선택</button>
                     <button id="btnAllClear" class="btn btn-white btn-inner">전체해제</button>
+                    <button id="btnRevert" class="btn btn-white btn-inner">되돌리기</button>
                     <button id="btnSaveAuth" class="btn btn-color btn-inner">저장</button>
                 </div>
+
             </header>
 
             <div class="card-ui__body section-scroll">
 
-                <div id="tab-hr" class="tab-panel active">
+                <div id="tab-sys" class="tab-panel active">
+                    <div class="menu-tree" id="menuTreeSys"></div>
+                </div>
+
+                <div id="tab-hr" class="tab-panel">
                     <div class="menu-tree" id="menuTreeHr"></div>
                 </div>
 
@@ -203,14 +178,19 @@
                     <div class="menu-tree" id="menuTreeFi"></div>
                 </div>
 
-            </div>
+                <div id="tab-sub" class="tab-panel">
+                    <div class="menu-tree" id="menuTreeSub"></div>
+                </div>
 
+            </div>
         </div>
+
     </section>
+[[${session.USER_MENU_AUTH}]]============
+<script th:src="@{/js/auth/menuAuth.js}"></script>
 
 </div>
 
-<script th:src="@{/js/auth/menuAuth.js}"></script>
 
 </body>
 </html>

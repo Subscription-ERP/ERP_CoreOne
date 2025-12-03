@@ -8,9 +8,13 @@ import com.rootcore.auth.vo.MenuAuthSaveVO;
 
 public interface MenuPermissionService {
 
-    List<MenuPermissionUserVO> getUserList(String companyCode, String userName, String dept, String position);
+    List<MenuPermissionUserVO> getUserList(
+            String companyCode, String userName, String dept, String position);
 
     List<MenuTreeVO> getMenuTree(String companyCode, String userId, String menuGroup);
 
-    void saveUserAuth(String companyCode, String userId, List<MenuAuthSaveVO> authList, String loginUserId);
+    void saveUserAuth(
+            String companyCode, String userId,
+            List<MenuAuthSaveVO> authList, String updatedBy);
 }
+

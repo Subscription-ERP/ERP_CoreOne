@@ -1,230 +1,216 @@
-/*********************************
- * 사용자별 메뉴권한 관리 JS
- *********************************/
+/* ============================================================
+   메뉴권한 관리 JS (액션 기반 저장 방식)
+   상준 ERP 프로젝트 최종 버전
+============================================================ */
 
-// 전역 변수
-let userGrid;
-let selectedUserId = null;
+let currentUserId = null;
+let currentCompanyCode = "ROOT";  // 세션에 있으면 세션값 사용하도록 변경 가능
 
-// =========================
-// 1. 페이지 로드시 초기화
-// =========================
-window.onload = function () {
-    initUserGrid();
-    bindEvents();
-};
-
-
-// =========================
-// 2. 사용자 Grid 초기화
-// =========================
-function initUserGrid() {
-    userGrid = new tui.Grid({
-        el: document.getElementById('userGrid'),
-        scrollX: false,
-        scrollY: true,
-        bodyHeight: 480,
-        rowHeaders: ['rowNum'],
-        columns: [
-            { header: '사원ID', name: 'userId', width: 120 },
-            { header: '이름', name: 'userName', width: 100 },
-            { header: '부서', name: 'deptName', width: 100 },
-            { header: '직급', name: 'positionName', width: 100 },
-            { header: '상태', name: 'status', width: 80 }
-        ]
-    });
-
-    // 행 클릭 시 메뉴트리 조회
-    userGrid.on('click', ev => {
-        const row = userGrid.getRow(ev.rowKey);
-        if (!row) return;
-
-        selectedUserId = row.userId;
-        loadMenuTree('HR');
-        loadMenuTree('SALES');
-        loadMenuTree('FI');
-    });
-}
-
-
-// =========================
-// 3. 이벤트 바인딩
-// =========================
-function bindEvents() {
-
-    // 조회
-    document.getElementById('btnSearch').addEventListener('click', loadUserList);
-
-    // 초기화
-    document.getElementById('btnReset').addEventListener('click', () => {
-        document.getElementById('searchUserName').value = '';
-        document.getElementById('searchDept').value = '';
-        document.getElementById('searchPosition').value = '';
-    });
-
-    // 탭 클릭
-    document.querySelectorAll('.menu-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.menu-tab-btn').forEach(el => el.classList.remove('active'));
-            this.classList.add('active');
-
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(this.dataset.tab).classList.add('active');
-        });
-    });
-
-    // 전체 선택
-    document.getElementById('btnAllCheck').addEventListener('click', () => {
-        document.querySelectorAll('.auth-check input[type=checkbox]')
-            .forEach(chk => chk.checked = true);
-    });
-
-    // 전체 해제
-    document.getElementById('btnAllClear').addEventListener('click', () => {
-        document.querySelectorAll('.auth-check input[type=checkbox]')
-            .forEach(chk => chk.checked = false);
-    });
-
-    // 저장
-    document.getElementById('btnSaveAuth').addEventListener('click', saveMenuAuth);
-}
-
-
-
-// =========================
-// 4. 사원 목록 조회
-// =========================
+/* ============================================================
+   1) 유저 목록 조회
+============================================================ */
 function loadUserList() {
 
-    const params = {
-        userName: document.getElementById('searchUserName').value,
-        dept: document.getElementById('searchDept').value,
-        position: document.getElementById('searchPosition').value
-    };
+    const userName = $("#searchUserName").val();
+    const dept = $("#searchDept").val();
+    const position = $("#searchPosition").val();
 
-    fetch('/auth/menu-permission/users?' + new URLSearchParams(params))
-        .then(res => res.json())
-        .then(data => {
-            userGrid.resetData(data);
-        });
-}
-
-
-
-// =========================
-// 5. 메뉴 트리 조회
-// =========================
-function loadMenuTree(group) {
-
-    if (!selectedUserId) {
-        alert("먼저 사원을 선택해주세요.");
-        return;
-    }
-
-    const container = {
-        'HR': 'menuTreeHr',
-        'SALES': 'menuTreeSales',
-        'FI': 'menuTreeFi'
-    }[group];
-
-    fetch(`/auth/menu-permission/tree?userId=${selectedUserId}&menuGroup=${group}`)
-        .then(res => res.json())
-        .then(list => {
-            renderMenuTree(list, container);
-        });
-}
-
-
-// =========================
-// 6. 메뉴트리 HTML 렌더링
-// =========================
-function renderMenuTree(list, containerId) {
-
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-
-    const map = {};
-
-    list.forEach(item => {
-        if (!map[item.parentMenuCode]) map[item.parentMenuCode] = [];
-        map[item.parentMenuCode].push(item);
-    });
-
-    function drawTree(parentCode, parentEl) {
-
-        if (!map[parentCode]) return;
-
-        map[parentCode].forEach(menu => {
-            const div = document.createElement('div');
-            div.className = 'menu-item';
-
-            div.innerHTML = `
-                <span class="title">${menu.menuName}</span>
-                <span class="auth-checks">
-                    <label class="auth-check">조회 <input type="checkbox" data-menu="${menu.menuCode}" data-type="R" ${menu.readAuth === 'Y' ? 'checked':''}></label>
-                    <label class="auth-check">등록 <input type="checkbox" data-menu="${menu.menuCode}" data-type="C" ${menu.createAuth === 'Y' ? 'checked':''}></label>
-                    <label class="auth-check">수정 <input type="checkbox" data-menu="${menu.menuCode}" data-type="U" ${menu.updateAuth === 'Y' ? 'checked':''}></label>
-                    <label class="auth-check">삭제 <input type="checkbox" data-menu="${menu.menuCode}" data-type="D" ${menu.deleteAuth === 'Y' ? 'checked':''}></label>
-                </span>
-            `;
-
-            parentEl.appendChild(div);
-
-            const child = document.createElement('div');
-            child.className = 'menu-children';
-            div.appendChild(child);
-
-            drawTree(menu.menuCode, child);
-        });
-    }
-
-    drawTree(null, container);
-}
-
-
-
-// =========================
-// 7. 저장
-// =========================
-function saveMenuAuth() {
-
-    if (!selectedUserId) {
-        alert("먼저 사원을 선택해주세요.");
-        return;
-    }
-
-    const authList = [];
-
-    document.querySelectorAll('input[data-menu]').forEach(chk => {
-        const menu = chk.dataset.menu;
-        const type = chk.dataset.type;
-        const checked = chk.checked;
-
-        let target = authList.find(a => a.menuCode === menu);
-        if (!target) {
-            target = {
-                companyCode: "ROOT",
-                userId: selectedUserId,
-                menuCode: menu,
-                readAuth: "N",
-                createAuth: "N",
-                updateAuth: "N",
-                deleteAuth: "N"
-            };
-            authList.push(target);
+    $.ajax({
+        url: "/auth/menu_permission/user_list",
+        type: "GET",
+        data: {
+            companyCode: currentCompanyCode,
+            userName: userName,
+            dept: dept,
+            position: position
+        },
+        success: function (res) {
+            userGrid.resetData(res);
+        },
+        error: function () {
+            alert("사용자 조회 중 오류가 발생했습니다.");
         }
+    });
+}
 
-        if (type === 'R') target.readAuth = checked ? 'Y' : 'N';
-        if (type === 'C') target.createAuth = checked ? 'Y' : 'N';
-        if (type === 'U') target.updateAuth = checked ? 'Y' : 'N';
-        if (type === 'D') target.deleteAuth = checked ? 'Y' : 'N';
+/* ============================================================
+   2) 유저 선택 시 메뉴트리 로드
+============================================================ */
+function loadMenuTree(menuGroup) {
+
+    if (!currentUserId) return;
+
+    $.ajax({
+        url: "/auth/menu_permission/menu_tree",
+        type: "GET",
+        data: {
+            companyCode: currentCompanyCode,
+            userId: currentUserId,
+            menuGroup: menuGroup
+        },
+        success: function (tree) {
+            renderMenuTree(tree, menuGroup);
+        },
+        error: function () {
+            alert("메뉴트리 조회 중 오류가 발생했습니다.");
+        }
+    });
+}
+
+/* ============================================================
+   3) 메뉴트리 출력
+============================================================ */
+function renderMenuTree(tree, menuGroup) {
+
+    const containerId =
+        menuGroup === "HR" ? "#menuTreeHr" :
+        menuGroup === "SD" ? "#menuTreeSales" :
+        menuGroup === "FI" ? "#menuTreeFi" :
+        "#menuTreeSub";
+
+    const container = $(containerId);
+    container.empty();
+
+    tree.forEach(item => {
+        container.append(buildMenuNode(item));
+    });
+}
+
+/* ============================================================
+   4) 메뉴 노드 HTML 생성
+============================================================ */
+function buildMenuNode(node) {
+
+    let html = `
+        <div class="menu-item">
+            <div class="title">${node.menuName}</div>
+            <div class="auth-checks">
+    `;
+
+    node.actions.forEach(action => {
+        html += `
+            <label>
+                <input type="checkbox"
+                    class="auth-check"
+                    data-menu="${node.menuCode}"
+                    data-action="${action.actionCode}"
+                    ${action.checked ? "checked" : ""}>
+                ${action.actionCode}
+            </label>
+        `;
     });
 
-    fetch(`/auth/menu-permission/save?userId=${selectedUserId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(authList)
-    })
-        .then(res => res.text())
-        .then(() => alert("저장되었습니다."));
+    html += `</div>`;
+
+    if (node.children && node.children.length > 0) {
+        html += `<div class="menu-children">`;
+
+        node.children.forEach(child => {
+            html += buildMenuNode(child);
+        });
+
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+
+    return html;
 }
+
+/* ============================================================
+   5) 저장 버튼 클릭 시 액션 기반 JSON 구성
+============================================================ */
+$("#btnSaveAuth").on("click", function () {
+
+    if (!currentUserId) {
+        alert("사원을 먼저 선택하세요.");
+        return;
+    }
+
+    let saveList = [];
+
+    $(".auth-check").each(function () {
+        const menuCode = $(this).data("menu");
+        const actionCode = $(this).data("action");
+        const checked = $(this).is(":checked") ? "Y" : "N";
+
+        saveList.push({
+            menuCode: menuCode,
+            actionCode: actionCode,
+            authYn: checked,
+            companyCode: currentCompanyCode,
+            userId: currentUserId
+        });
+    });
+
+    $.ajax({
+        url: "/auth/menu_permission/save",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(saveList),
+        success: function () {
+            alert("메뉴권한이 저장되었습니다.");
+        },
+        error: function () {
+            alert("저장 중 오류가 발생했습니다.");
+        }
+    });
+});
+
+/* ============================================================
+   6) 전체선택 / 전체해제
+============================================================ */
+$("#btnAllCheck").on("click", function () {
+    $(".auth-check").prop("checked", true);
+});
+
+$("#btnAllClear").on("click", function () {
+    $(".auth-check").prop("checked", false);
+});
+
+/* ============================================================
+   7) 유저 그리드 클릭 이벤트
+============================================================ */
+const userGrid = new tui.Grid({
+    el: document.getElementById("userGrid"),
+    scrollX: false,
+    scrollY: true,
+    columns: [
+        { header: "사원ID", name: "userId", width: 100 },
+        { header: "이름", name: "userName", width: 120 },
+        { header: "부서", name: "deptName", width: 120 },
+        { header: "직급", name: "positionName", width: 100 }
+    ],
+    bodyHeight: "fitToParent"
+});
+
+userGrid.on("click", function (ev) {
+    if (!ev.rowKey) return;
+
+    const row = userGrid.getRow(ev.rowKey);
+    currentUserId = row.userId;
+
+    loadMenuTree("HR");
+});
+
+/* ============================================================
+   8) 탭 클릭 이벤트 처리
+============================================================ */
+$(".menu-tab-btn").on("click", function () {
+    const tab = $(this).data("tab");
+
+    $(".menu-tab-btn").removeClass("active");
+    $(this).addClass("active");
+
+    if (tab === "tab-hr") loadMenuTree("HR");
+    if (tab === "tab-sales") loadMenuTree("SD");
+    if (tab === "tab-fi") loadMenuTree("FI");
+    if (tab === "tab-sub") loadMenuTree("SUB");
+});
+
+/* ============================================================
+   9) 초기 데이터 로딩
+============================================================ */
+$(document).ready(function () {
+    loadUserList();
+});
