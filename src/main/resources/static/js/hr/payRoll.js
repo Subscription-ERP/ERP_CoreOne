@@ -128,23 +128,23 @@ function resetSummaryTables() {
 function updateRowDetailSummary(rowData) {
 	// ------------------ 수당 테이블 업데이트 ------------------
 	// 서버 응답 VO 필드명: overtime, night, holiday, family, meal, annual_leave, total_allowance
-	document.getElementById('overtime').textContent = rowData.overtime;
-	document.getElementById('night').textContent = rowData.night;
-	document.getElementById('holiday').textContent = rowData.holiday;
-	document.getElementById('family').textContent = rowData.family;
-	document.getElementById('meal').textContent = rowData.meal;
-	document.getElementById('annual_leave').textContent = rowData.annual_leave;
-	document.getElementById('total_allowance').textContent = rowData.total_allowance;
+	document.getElementById('overtime').textContent = rowData.overtime === null || rowData.overtime === undefined ? 0 : rowData.overtime;
+	document.getElementById('night').textContent = rowData.night === null || rowData.night === undefined ? 0 : rowData.night;
+	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : rowData.holiday;
+	document.getElementById('family').textContent = rowData.family === null || rowData.family === undefined ? 0 : rowData.family;
+	document.getElementById('meal').textContent = rowData.meal === null || rowData.meal === undefined ? 0 : rowData.meal;
+	document.getElementById('annual_leave').textContent = rowData.annual_leave === null || rowData.annual_leave === undefined ? 0 : rowData.annual_leave;
+	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : rowData.total_allowance;
 
 	// ------------------ 공제 테이블 업데이트 ------------------
 	// 서버 응답 VO 필드명: national_pension, employment_insurance, health_insurance, long_time_care_insurance, total_deduction_amount
 	// document.getElementById('sumIncomeTax').textContent = rawValue(rowData.income_tax || 0);  
 	// document.getElementById('sumLocalIncomeTax').textContent = rawValue(rowData.local_income_tax || 0);  
-	document.getElementById('national_pension').textContent = rowData.national_pension;
-	document.getElementById('employment_insurance').textContent = rowData.employment_insurance;
-	document.getElementById('health_insurance').textContent = rowData.health_insurance;
-	document.getElementById('long_time_care_insurance').textContent = rowData.long_time_care_insurance;
-	document.getElementById('total_deduction_amount').textContent = rowData.total_deduction_amount; // 총 공제 총액
+	document.getElementById('national_pension').textContent = rowData.national_pension === null || rowData.national_pension === undefined ? 0 : rowData.national_pension;
+	document.getElementById('employment_insurance').textContent = rowData.employment_insurance === null || rowData.employment_insurance === undefined ? 0 : rowData.employment_insurance;
+	document.getElementById('health_insurance').textContent = rowData.health_insurance === null || rowData.health_insurance === undefined ? 0 : rowData.health_insurance;
+	document.getElementById('long_time_care_insurance').textContent = rowData.long_time_care_insurance === null || rowData.long_time_care_insurance === undefined ? 0 : rowData.long_time_care_insurance;
+	document.getElementById('total_deduction_amount').textContent = rowData.total_deduction_amount === null || rowData.total_deduction_amount === undefined ? 0 : rowData.total_deduction_amount;
 }
 
 document.addEventListener("DOMContentLoaded", () => {

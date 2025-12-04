@@ -324,8 +324,8 @@ SET company_code = '0000';
 -- 데이터베이스의 테이블을 생성할 때 각 컬럼을 정의하는것과 같다.
 CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
     user_id                     VARCHAR2(20),
-    user_name                   VARCHAR2(20),
-    dept_name                   VARCHAR2(20),
+    user_name                   VARCHAR2(100),
+    dept_name                   VARCHAR2(100),
     payroll_date                DATE,
     salary                      NUMBER,
     bonus                       NUMBER,
@@ -367,57 +367,41 @@ IS
     -- 1) 커서 정의
     -- 위에서 선언한 대장에 해당하는 사원조회
     CURSOR user_cursor IS -- 커서 선언
-        SELECT  pr_agg.user_id,             -- 사용자 id (하나의 행)
-                um.user_name,               -- 성명
-                dm.dept_name,               -- 부서명
-                pr_agg.payroll_date,        -- 지급일
-                um.salary,                  -- 기본급여
-                pr_agg.bonus_rate,          -- 상여 지급율 (MAX로 대표값 선택)
-                pr_agg.bonus_amount,        -- 상여 지급액 (SUM으로 합산)
-                ad.total_over_work_time,    -- 총 연장근무시간
-                ad.total_night_work_time,   -- 총 야간근무시간
-                ad.total_holiday_work_time, -- 총 휴일근무시간
-                um.family_count,            -- 가족수
-                um.children_count,          -- 자녀수
-                al.expiry_date,             -- 소멸예정일 (집계된 대표값)
-                al.remaining_days           -- 잔여연차 (집계된 합산값)
-        FROM   (SELECT  user_id, 
-                        payroll_date, 
-                        MAX(bonus_rate) AS bonus_rate,  -- 여러 행 중 NULL이 아닌 값 (상여 지급률) 선택
-                        SUM(bonus_amount) AS bonus_amount, -- 상여 지급액은 SUM하여 합산
-                        payroll_period_code
-                FROM    tb_payroll
-                WHERE   payroll_period_code = p_payroll_period_code -- 급여 대장 필터링
-                GROUP BY user_id, payroll_date, payroll_period_code
-                ) pr_agg 
-                JOIN tb_user_master um -- 사원관리 테이블
-                ON pr_agg.user_id = um.user_id
-                JOIN (SELECT atd.user_id,
-                             pr_sub.payroll_date,
-                             SUM(atd.over_work_time) AS total_over_work_time,
-                             SUM(atd.night_work_time) AS total_night_work_time,
-                             SUM(atd.holiday_work_time) AS total_holiday_work_time
-                      FROM   tb_attendance atd 
-                             JOIN tb_payroll pr_sub -- 급여대장 테이블
-                             ON atd.user_id = pr_sub.user_id
-                      WHERE  pr_sub.payroll_period_code = p_payroll_period_code
-                      AND    atd.work_date >= pr_sub.payroll_start_date
-                      AND    atd.work_date <= pr_sub.payroll_end_date
-                      GROUP BY atd.user_id, pr_sub.payroll_date
-                      ) ad 
-                ON ad.user_id = pr_agg.user_id
-                -- 연차 정보 집계 서브쿼리 (Alias AL) - 중복 방지 및 합산
-                LEFT JOIN (SELECT user_id, 
-                                  expiry_date,    -- 가장 늦은 소멸 예정일
-                                  SUM(remaining_days) AS remaining_days -- 잔여 연차는 모두 합산
-                           FROM   tb_annual_leave
-                           GROUP BY user_id, expiry_date
-                           ) al
-                ON al.user_id = pr_agg.user_id
+        SELECT pr.user_id, -- 사용자 id
+               um.user_name, -- 성명
+               dm.dept_name, -- 부서명
+               pr.payroll_date, -- 지급일
+               um.salary, -- 기본급여
+               pr.bonus_rate, -- 상여 지급율
+               pr.bonus_amount, -- 상여 지급액
+               ad.total_over_work_time, -- 총 연장근무시간
+               ad.total_night_work_time, -- 총 야간근무시간
+               ad.total_holiday_work_time, -- 총 휴일근무시간
+               um.family_count, -- 가족수
+               um.children_count, -- 자녀수
+               al.expiry_date, -- 소멸예정일
+               al.remaining_days -- 잔여연차
+        FROM   tb_payroll pr
+               JOIN tb_user_master um -- 사원관리 테이블
+               ON pr.user_id = um.user_id
+               LEFT JOIN ( SELECT ad_sub.user_id,
+                                  SUM(ad_sub.over_work_time) as total_over_work_time,
+                                  SUM(ad_sub.night_work_time) as total_night_work_time,
+                                  SUM(ad_sub.holiday_work_time) as total_holiday_work_time
+                           FROM   tb_attendance ad_sub -- 근태관리 테이블
+                                  JOIN tb_payroll pr_sub -- 급여대장 테이블
+                                  ON ad_sub.user_id = pr_sub.user_id
+                           WHERE  pr_sub.payroll_period_code = p_payroll_period_code
+                           AND    ad_sub.work_date >= pr_sub.payroll_start_date
+                           AND    ad_sub.work_date <= pr_sub.payroll_end_date
+                           GROUP BY ad_sub.user_id
+                          ) ad 
+                ON ad.user_id = pr.user_id
+                LEFT JOIN tb_annual_leave al
+                ON al.user_id = pr.user_id
                 JOIN tb_dept_master dm
                 ON dm.dept_code = um.dept
-        WHERE   pr_agg.payroll_date = ad.payroll_date
-        ORDER BY pr_agg.user_id;
+         WHERE  pr.payroll_period_code = p_payroll_period_code;
         
     -- 변수선언
     v_uid tb_payroll.user_id%TYPE; -- 사용자id
@@ -474,92 +458,104 @@ BEGIN
         v_ordinary_wage := ROUND(v_sal / 209);
         DBMS_OUTPUT.PUT_LINE(',v_ordinary_wage:'||v_ordinary_wage);
         
-        -- 상여금
-        IF v_br > 0 THEN
-            -- 지급율(%)방식 : 기본급 * (상여 지급율 / 100)
-            v_bonus := v_sal * (v_br / 100);
-        ELSIF v_ba > 0 THEN
-            -- 지급액
-            v_bonus := v_ba;
-        ELSE
-            v_bonus := 0;
-        END IF;
-        DBMS_OUTPUT.PUT_LINE(',v_bonus:'||v_bonus);
-        
-        -- 연장근로수당
-        IF user_info.total_over_work_time > 0 THEN   
-            -- 연장근로수당 := 시간당 통상임금 * 총연장근무시간 * 1.5
-            v_overtime := v_ordinary_wage * user_info.total_over_work_time * 1.5;
-        ELSE
-            v_overtime := 0;
-        END IF;
-        DBMS_OUTPUT.PUT_LINE(',v_overtime:'||v_overtime);
-                
-        -- 야간근로수당
-        IF user_info.total_night_work_time > 0 THEN
-            -- 야간근로수당 := 시간당 통상임금 * 총야간근로수당 * 1.5
-            v_night := v_ordinary_wage * user_info.total_night_work_time * 1.5;
-        ELSE
-            v_night := 0;
-        END IF;
-        DBMS_OUTPUT.PUT_LINE(',v_night:'||v_night);
-        
-        -- 휴일근로수당
-        IF user_info.total_holiday_work_time > 0 THEN
-            -- 휴일근로수당 := 시간당 통상임금 * 총휴일근로수당 * 1.5
-            v_holiday := v_ordinary_wage * user_info.total_holiday_work_time * 1.5;
-        ELSE
-            v_holiday := 0;
-        END IF;
-        DBMS_OUTPUT.PUT_LINE(',v_holiday:'||v_holiday);
-                
-        -- 가족수당
-        IF user_info.family_count > 0 THEN
-            IF (user_info.family_count - user_info.children_count) > 1 THEN
-                -- 가족수당 := 40000 * 1명(배우자) + 50000 * 2명(자녀수)
-                v_family := 40000 * 1 + 50000 * user_info.children_count;
+        -- ===============================================================
+        -- payroll_type가 j1(상여)일 경우 지급액중에서는 상여만 나타나며
+        -- 공제에서는 소득세, 지방소득세, 건강보험, 고용보험, 장기요양 만 빠짐
+        -- 상여는 한마디로 국민연금은 계산안함(국민연금은 정기적 급여만)
+        -- ===============================================================
+        IF v_br > 0 OR v_ba > 0 THEN
+            -- 상여금
+            IF v_br > 0 THEN
+                -- 지급율(%)방식 : 기본급 * (상여 지급율 / 100)
+                v_bonus := v_sal * (v_br / 100);
+            ELSIF v_ba > 0 THEN
+                -- 지급액
+                v_bonus := v_ba;
             ELSE
-                v_family := 50000 * user_info.children_count;
+                v_bonus := 0;
             END IF;
+            DBMS_OUTPUT.PUT_LINE(',v_bonus:'||v_bonus);
+            
+            v_sal := 0;
+            v_earnings := v_bonus;
+            v_total_payment_amount := v_bonus;
+            v_national_pension := 0;
         ELSE
-            v_family := 0;
+            -- 연장근로수당
+            IF user_info.total_over_work_time > 0 THEN   
+                -- 연장근로수당 := 시간당 통상임금 * 총연장근무시간 * 1.5
+                v_overtime := v_ordinary_wage * user_info.total_over_work_time * 1.5;
+            ELSE
+                v_overtime := 0;
+            END IF;
+            DBMS_OUTPUT.PUT_LINE(',v_overtime:'||v_overtime);
+                    
+            -- 야간근로수당
+            IF user_info.total_night_work_time > 0 THEN
+                -- 야간근로수당 := 시간당 통상임금 * 총야간근로수당 * 1.5
+                v_night := v_ordinary_wage * user_info.total_night_work_time * 1.5;
+            ELSE
+                v_night := 0;
+            END IF;
+            DBMS_OUTPUT.PUT_LINE(',v_night:'||v_night);
+            
+            -- 휴일근로수당
+            IF user_info.total_holiday_work_time > 0 THEN
+                -- 휴일근로수당 := 시간당 통상임금 * 총휴일근로수당 * 1.5
+                v_holiday := v_ordinary_wage * user_info.total_holiday_work_time * 1.5;
+            ELSE
+                v_holiday := 0;
+            END IF;
+            DBMS_OUTPUT.PUT_LINE(',v_holiday:'||v_holiday);
+                    
+            -- 가족수당
+            IF user_info.family_count > 0 THEN
+                IF (user_info.family_count - user_info.children_count) > 1 THEN
+                    -- 가족수당 := 40000 * 1명(배우자) + 50000 * 2명(자녀수)
+                    v_family := 40000 * 1 + 50000 * user_info.children_count;
+                ELSE
+                    v_family := 50000 * user_info.children_count;
+                END IF;
+            ELSE
+                v_family := 0;
+            END IF;
+            DBMS_OUTPUT.PUT_LINE(',v_family:'||v_family);
+            
+            -- 식대(월)
+            v_meal := 200000;
+            DBMS_OUTPUT.PUT_LINE(',v_meal:'||v_meal);
+            
+            -- 연차휴가수당
+            -- 미사용연차일수 * 1일 통상임금(통상시급 * 8)
+            -- 25년에서 26년으로 넘어갔어 그럼 연차도 26년1월1일에 생기겠지 그럼 비교를 해야하네
+            -- 지금 시스템날짜랑 소멸예정일이 같아지면 계산하고 그에 해당하는 사원의 연차의 잔여연차가 미사용연차일수네
+            -- 그럼 필요한 데이터가 소멸예정일, 잔여연차
+            IF user_info.expiry_date <= SYSDATE THEN
+                v_annual_leave := (user_info.remaining_days) * (v_ordinary_wage * 8);
+            ELSE
+                v_annual_leave := 0;
+            END IF;
+            DBMS_OUTPUT.PUT_LINE('v_annual_leave:'||v_annual_leave);
+            
+            -- 총 수당총액(기본급 미포함)
+            v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
+            DBMS_OUTPUT.PUT_LINE('v_total_allowance:'||v_total_allowance);
+            
+            -- 총 지급액(기본급)
+            v_total_payment_amount := v_sal + v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
+            DBMS_OUTPUT.PUT_LINE('v_total_payment_amount:'||v_total_payment_amount);
+            
+            -- 소득 := 근로소득 - 비과세근로소득
+            v_earnings := v_total_payment_amount - v_meal;
+            DBMS_OUTPUT.PUT_LINE('v_earnings:'||v_earnings);
+            
+            -- 국민연금
+            -- 계산법 : 소득 * 0.045(4.5%)
+            -- 1000원 미만은 제외(절사)하고 계산
+            -- 예시) 15,123원 -> 15,000원
+            v_national_pension := TRUNC(v_earnings, -3) * 0.045;
+            DBMS_OUTPUT.PUT_LINE('v_national_pension:'||v_national_pension);
         END IF;
-        DBMS_OUTPUT.PUT_LINE(',v_family:'||v_family);
-        
-        -- 식대(월)
-        v_meal := 200000;
-        DBMS_OUTPUT.PUT_LINE(',v_meal:'||v_meal);
-        
-        -- 연차휴가수당
-        -- 미사용연차일수 * 1일 통상임금(통상시급 * 8)
-        -- 25년에서 26년으로 넘어갔어 그럼 연차도 26년1월1일에 생기겠지 그럼 비교를 해야하네
-        -- 지금 시스템날짜랑 소멸예정일이 같아지면 계산하고 그에 해당하는 사원의 연차의 잔여연차가 미사용연차일수네
-        -- 그럼 필요한 데이터가 소멸예정일, 잔여연차
-        IF user_info.expiry_date <= SYSDATE THEN
-            v_annual_leave := (user_info.remaining_days) * (v_ordinary_wage * 8);
-        ELSE
-            v_annual_leave := 0;
-        END IF;
-        DBMS_OUTPUT.PUT_LINE('v_annual_leave:'||v_annual_leave);
-        
-        -- 총 수당총액(기본급, 상여미포함)
-        v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
-        DBMS_OUTPUT.PUT_LINE('v_total_allowance:'||v_total_allowance);
-        
-        -- 총 지급액(기본급, 상여포함)
-        v_total_payment_amount := v_sal + v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave + v_bonus;
-        DBMS_OUTPUT.PUT_LINE('v_total_payment_amount:'||v_total_payment_amount);
-        
-        -- 소득 := 근로소득 - 비과세근로소득
-        v_earnings := v_total_payment_amount - v_meal;
-        DBMS_OUTPUT.PUT_LINE('v_earnings:'||v_earnings);
-        
-        -- 국민연금
-        -- 계산법 : 소득 * 0.045(4.5%)
-        -- 1000원 미만은 제외(절사)하고 계산
-        -- 예시) 15,123원 -> 15,000원
-        v_national_pension := TRUNC(v_earnings, -3) * 0.045;
-        DBMS_OUTPUT.PUT_LINE('v_national_pension:'||v_national_pension);
         
         -- 고용보험
         -- 계산법 : 소득 * 0.009(0.9%)
@@ -895,3 +891,66 @@ VALUES ('ATT25100011', 'ROOT', 'EMP25041000005', TO_DATE('20251015', 'YYYYMMDD')
     TO_DATE('20251015 09:00', 'YYYYMMDD HH24:MI'), TO_DATE('20251015 18:00', 'YYYYMMDD HH24:MI'), 0.00, 0.00, 0.00, 8.00);
     
 -- COMMIT;
+
+-- ==================================
+-- 2025-12-03
+-- ==================================
+-- 근태관리 어떻게 이루어지는지 확인해봐야 할듯, 결근관련해서 어떻게 관리되는지
+-- 매월 1일에 급여대장테이블에 전에 달의 급여대장이 저장되도록(5월1일은 4월급여대장이 만들어지도록)
+
+-- 매월 1일 급여 대장 생성 프로시저
+CREATE OR REPLACE PROCEDURE sp_insert_payroll_pay 
+
+IS
+    v_payroll_start_date DATE;
+    v_payroll_period VARCHAR2(20);
+    v_payroll_type VARCHAR2(20);
+    v_payroll_name VARCHAR2(100);
+    v_payroll_end_date DATE;
+    v_payroll_date DATE;
+BEGIN
+    -- payroll_start_date 대장기간 시작일
+    v_payroll_start_date := TRUNC(ADD_MONTHS(SYSDATE, -1),'MM'); -- 월의 첫날로 잘라내기
+    -- payroll_period 귀속연월
+    v_payroll_period := TO_CHAR(v_payroll_start_date, 'YYYY-MM');
+    -- payroll_type 급여구분
+    v_payroll_type := 'j1';
+    -- payroll_name 대장명칭
+    v_payroll_name := TO_CHAR(v_payroll_start_date, 'yyyy"년" MM"월"') || '정기급여';
+    -- payroll_end_date 대장기간종료일
+    v_payroll_end_date := LAST_DAY(ADD_MONTHS(SYSDATE, -1));
+    -- payroll_date 지급일
+    v_payroll_date := TRUNC(SYSDATE, 'MM') + 9;
+    
+    -- 급여대장에 INSERT
+    INSERT INTO tb_payroll (
+        payroll_code, -- 급여대장코드 함수
+        company_code, -- 회사코드
+        user_id, -- 사원번호
+        payroll_period, -- 귀속연월
+        payroll_type, -- j1 급여
+        payroll_name, -- 급여대장명칭
+        payroll_start_date, -- 대장기간시작일
+        payroll_end_date, -- 대장기간종료일
+        payroll_date, -- 지급일                            
+        payroll_period_code -- 신고귀속코드 함수
+    )
+    SELECT FN_MAKE_PAYROLL_CODE,
+           um.company_code,
+           um.user_id,
+           v_payroll_period,
+           v_payroll_type,
+           v_payroll_name,
+           v_payroll_start_date,
+           v_payroll_end_date,
+           v_payroll_date,
+           fn_make_payroll_period_code
+    FROM   tb_user_master um
+    WHERE  um.leave_date IS NULL;
+      
+     -- 5. 트랜잭션 처리 및 결과 출력
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE(TO_CHAR(SQL%ROWCOUNT) || ' 건의 급여 대장 (' || v_payroll_name || ')이 전체 사원을 대상으로 생성되었습니다.');                      
+END;
+/
