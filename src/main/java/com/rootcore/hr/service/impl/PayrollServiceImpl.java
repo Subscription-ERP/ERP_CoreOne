@@ -82,4 +82,10 @@ public class PayrollServiceImpl implements PayrollService {
 		}
 		return totalSuccessCount;
 	}
+
+	// 급여대장-계산하기-급여관리모달창-확정버튼-이미 있는 데이터인지 확인하는 select
+	@Override
+	public int checkUserPay(String payrollCode) {
+		return payrollMapper.checkUserPay(payrollCode);
+	}
 }

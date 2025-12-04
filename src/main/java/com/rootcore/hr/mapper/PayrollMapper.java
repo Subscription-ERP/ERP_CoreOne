@@ -26,4 +26,7 @@ public interface PayrollMapper {
 
 	// 급여대장-계산하기모달창-확정버튼
 	int insertUserPay(UserPayManageVO payVO);
+
+	// 급여대장-계산하기-급여관리모달창-확정버튼-이미 있는 데이터인지 확인하는 select
+	int checkUserPay(String payrollCode);
 }

@@ -175,7 +175,7 @@
 
 								<div class="col-12 col-md-4">
 									<div class="field-inline">
-										<label for="payrollType" class="field-inline__label">부서명</label> <select id="dept" class="form-select input-base" style="flex: 1; min-width: 0">
+										<label for="payrollType" class="field-inline__label">부서명</label> <select id="dept" class=" form-select input-base" style="flex: 1; min-width: 0">
 										</select>
 									</div>
 								</div>
@@ -307,9 +307,12 @@
 			</div>
 			<!-- // modal-layer__dialog -->
 		</div>
-		<script th:src="@{/js/hr/payRoll.js}"></script>
+		<!-- 전역 토스트 알림 -->
+		<div id="toastContainer" class="rc-toast"></div>
 		<!-- 공통코드 불러오는 스크립트 -->
-		<!-- <script th:src="@{/js/common.js}"></script> -->
+		<script th:src="@{/js/common.js}"></script>
+		<script th:src="@{/js/hr/payRoll.js}"></script>
+		
 	</div>
 </body>
 </html>

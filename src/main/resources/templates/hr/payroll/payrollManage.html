@@ -1,81 +1,136 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
 
 <head>
 <title>급여관리</title>
 <!-- TOAST UI CDN, SCRIPT -->
-<link rel="stylesheet"
-	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-<link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
 
 <style>
-.app-main {
-    overflow: visible !important;
+/* Tui Grid 데이터 없는 배경색과 유사한 밝은 회색 */
+.table-summary tbody td {
+    background-color: #f7f7f7 !important; /* !important를 사용하여 Bootstrap 기본 스타일을 덮어씁니다. */
 }
-#grid {
-    height: 600px !important;
+
+/* 임금 항목 셀은 배경색을 제거하여 왼쪽은 흰색으로 남깁니다 (선택 사항) */
+.table-summary tbody tr td:first-child {
+    background-color: transparent !important;
 }
-.content-wrapper, .content {
-    height: auto !important;
-    min-height: 100vh;
-}
+
 </style>
 </head>
 
 <body>
+	<div layout:fragment="content" class="page page-fluid">
+		<div class="row">
+			<div class="">
+				<!-- ==================== 조회 ================================================================== -->
+				<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
+					<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+						<div class="filter-bar row g-4 align-items-center col-md-12">
+							<div class="col-12 col-md-3">
+								<div class="field-inline">
+									<label for="payrollType" class="field-inline__label">급여구분</label> <select id="payrollType" class="form-select input-base" style="flex: 1; min-width: 0">
+									</select>
+								</div>
+							</div>
 
-	<div layout:fragment="content">
-		<h3>급여관리</h3>
-		<div id="grid"></div>
-		<div id="gridTest" style="height:500px; border:1px solid red;"></div>
-		<script>
-	document.addEventListener("DOMContentLoaded", () => {
-		new tui.Grid({
-	        el: document.getElementById('gridTest'),
-	        columns: [
-	            { header: 'A', name: 'a' },
-	            { header: 'B', name: 'b' }
-	        ],
-	        data: [{a:1, b:2}]
-	    });
-		const grid = new tui.Grid({
-			el : document.getElementById('grid'),
-			scrollX : false,
-			scrollY : false,
-			columns : [ {
-				header : '사원번호',
-				name : 'userId'
-			}, {
-				header : '성명',
-				name : 'userName'
-			}, {
-				header : '부서명',
-				name : 'dept'
-			}, {
-				header : '입사일',
-				name : 'hireDate'
-			}, {
-				header : '직위',
-				name : 'jobTitle'
-			} ],
-			data : [ {
-				userId : '10012',
-				userName : 'Seoul',
-				dept : 'South Korea'
-			}, {
-				userId : '10013',
-				userName : 'Tokyo',
-				dept : 'Japan'
-			} ]
-		});
-	});
-	</script>
+							<div class="col-12 col-md-3">
+								<div class="field-inline">
+									<label for="payrollName" class="field-inline__label">대장명칭</label> <input id="payrollName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
+							</div>
+
+							<!-- 지급일 범위 -->
+							<div class="col-12 col-md-3">
+								<div class="field-inline">
+									<label for="payrollDate" class="field-inline__label">지급일</label>
+									<!-- 범위 input -->
+									<input id="paymentStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />~<input id="paymentEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
+							</div>
+
+							<!-- 초기화 조회 버튼 -->
+							<div class="col-12 col-md-3 d-flex align-items-center justify-content-end gap-2">
+								<button id="btnPayrollReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">명세서출력</button>
+								<button id="btnPayrollReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
+								<button id="btnPayrollSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
+							</div>
+						</div>
+					</div>
+				</section>
+				<!-- ================= 목록(Grid) 섹션 ================= -->
+				<section class="card-ui section-flex" style="margin-top: 10px">
+					<header class="card-ui__header">
+						<h6 class="card-ui__title">사원급여조회</h6>
+					</header>
+					<!-- 급여대장목록조회 -->
+					<!-- 급여대장 나오는 테이블 -->
+					<div id="payrollDetailGrid" class="grid-root" style="height: 340px; margin-bottom: 20px;"></div>
+					<!-- 상세 수당총액 -->
+					<div style="padding-top: 10px; padding-bottom: 10px; padding-left: 12px; padding-right: 12px;">
+						<h6 class="card-ui__title mb-2">상세 수당 총액</h6>
+						<table class="table table-bordered table-sm table-summary">
+							<thead>
+								<tr style="text-align: center;">
+									<th>임금 항목</th>
+									<th>연장근로수당</th>
+									<th>야간근로수당</th>
+									<th>휴일근로수당</th>
+									<th>가족수당</th>
+									<th>식대 (비과세)</th>
+									<th>연차휴가수당</th>
+									<th>총 수당 총액</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td style="text-align: center;">지급 금액(원)</td>
+									<td class="text-end" id="overtime"></td>
+									<td class="text-end" id="night"></td>
+									<td class="text-end" id="holiday"></td>
+									<td class="text-end" id="family"></td>
+									<td class="text-end" id="meal"></td>
+									<td class="text-end" id="annual_leave"></td>
+									<td class="text-end" id="total_allowance"></td>
+								</tr>
+							</tbody>
+						</table>
+
+						<h6 class="card-ui__title mb-2 mt-4">상세 공제 총액</h6>
+						<table class="table table-bordered table-sm table-summary">
+							<thead>
+								<tr style="text-align: center;">
+									<th>임금 항목</th>
+									<th>소득세</th>
+									<th>국민연금</th>
+									<th>고용보험</th>
+									<th>건강보험</th>
+									<th>장기요양보험</th>
+									<th>지방소득세</th>
+									<th>총 수당 총액</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td style="text-align: center;">지급 금액(원)</td>
+									<td class="text-end" id=""></td>
+									<td class="text-end" id="national_pension"></td>
+									<td class="text-end" id="employment_insurance"></td>
+									<td class="text-end" id="health_insurance"></td>
+									<td class="text-end" id="long_time_care_insurance"></td>
+									<td class="text-end" id=""></td>
+									<td class="text-end" id="total_deduction_amount"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+			</div>
+		</div>
+		<script th:src="@{/js/hr/payRollManage.js}"></script>
 	</div>
-	
 </body>
 
 
