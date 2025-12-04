@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.AttendanceMapper">
+
+	<!-- 근태 Mapper -->
+	
+	<!-- 근태조회(월별)  -->
+	<select id="seletMonthAttendance" resultType="AttendanceVO" parameterType="String">
+		SELECT
+		    att.company_code,
+		    att.atten_code,
+		    att.user_id,
+		    att.work_date,
+		    att.attend_type,
+		    attendType.code_name AS attend_type_name,
+		    att.created_by,
+		    att.create_date,
+		    att.updated_by,
+		    att.update_date
+		FROM   tb_attendance att
+		JOIN   tb_cm_code attendType
+		  ON   att.attend_type = attendType.code
+		WHERE  work_date BETWEEN TO_DATE(#{month}, 'yyyy-MM')
+		  AND  LAST_DAY(TO_DATE(#{month}, 'yyyy-MM')) 
+		ORDER  BY work_date
+	</select>
+	
+	
+	
+	
+
+</mapper>
