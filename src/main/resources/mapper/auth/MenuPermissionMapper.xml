@@ -73,5 +73,29 @@
         VALUES
         (#{companyCode}, #{userId}, #{menuCode}, #{actionCode}, #{authYn}, #{updatedBy}, SYSDATE)
     </insert>
+<select id="selectUserAuthList" resultType="com.rootcore.auth.vo.UserMenuAuthVO">
+    SELECT
+        A.COMPANY_CODE,
+        A.USER_ID,
+        A.MENU_CODE,
+        M.MENU_NAME,
+        MAX(CASE WHEN ACTION_CODE='READ' THEN AUTH_YN END) AS readAuth,
+        MAX(CASE WHEN ACTION_CODE='CREATE' THEN AUTH_YN END) AS createAuth,
+        MAX(CASE WHEN ACTION_CODE='UPDATE' THEN AUTH_YN END) AS updateAuth,
+        MAX(CASE WHEN ACTION_CODE='DELETE' THEN AUTH_YN END) AS deleteAuth
+    FROM TB_USER_MENU_AUTH A
+    JOIN TB_MENU_MASTER M
+        ON A.COMPANY_CODE = M.COMPANY_CODE
+       AND A.MENU_CODE = M.MENU_CODE
+    WHERE A.COMPANY_CODE = #{companyCode}
+      AND A.USER_ID = #{userId}
+    GROUP BY
+        A.COMPANY_CODE,
+        A.USER_ID,
+        A.MENU_CODE,
+        M.MENU_NAME,
+        M.SORT_ORDER
+    ORDER BY M.SORT_ORDER
+</select>
 
 </mapper>
