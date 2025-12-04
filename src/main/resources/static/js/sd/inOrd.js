@@ -29,6 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
         bodyHeight: 300,
         scrollX: false,
         scrollY: true,
+        useOptions: {
+            editable: true
+        },
         columns: [
             {
                 sortingType: 'asc',
@@ -40,7 +43,8 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             {
                 header: '품목명',
-                name: 'skuName'
+                name: 'skuName',
+                editor: 'text'
             },
             {
                 header: '규격',
@@ -85,12 +89,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 name: 'surTax',
                 align: 'right'
             },
-            { header: '비고  ', name: 'remark' },
+            {
+                header: '비고  ',
+                name: 'remark',
+                editor: 'text'
+            },
         ],
         data: []
     });
 
     AddSkuRow();
+
+    // editor가 설정된 컬럼만 클릭시 편집 시작
+    inOrdGrid.on('click', (ev) => {
+        // editor가 설정된 컬럼만 클릭시 편집 시작
+        const column = inOrdGrid.getColumn(ev.columnName);
+        if (column.editor) {
+            inOrdGrid.startEditing(ev.rowKey, ev.columnName);
+        }
+    });
 
 });
 
@@ -175,7 +192,6 @@ function AddSkuRow() {
         console.log('columns:', inOrdGrid.getColumns());
 
         if (rowKey !== undefined) {
-            inOrdGrid.addCellClassName(rowKey, 'skuName', 'block');
             inOrdGrid.addCellClassName(rowKey, 'spec', 'block');
             inOrdGrid.addCellClassName(rowKey, 'unit', 'block');
             inOrdGrid.addCellClassName(rowKey, 'supplyPrice', 'block');
