@@ -1,15 +1,212 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 
 <head>
-    <title>증명서관리</title>
+  <title>증명서 관리</title>
+
+  <!-- SheetJS CDN (필요 시) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <!-- ToastUI Grid (미사용이면 삭제 가능) -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+
+  <!-- ToastUI Date/Time Picker CSS -->
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+  <link rel="stylesheet" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
+
+  <!-- ToastUI JS -->
+  <script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
+  <script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
+  <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+  <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+  <!-- general.css -->
+  <link th:href="@{/css/general.css}" rel="stylesheet" />
+
+  <style>
+    /* ================== 증명서 관리 전용 스타일 ================== */
+
+    .toolbar {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* 상단 필터 영역의 라벨/필드 정렬 */
+    .cert-filter-row .field-inline__label {
+      min-width: 80px;
+    }
+
+    /* 사원 검색 인풋 + 버튼 */
+    .cert-emp-search {
+      display: flex;
+      align-items: center;
+      flex: 1 1 auto;
+      min-width: 0;
+      gap: 4px;
+    }
+
+    .cert-emp-search .input-base {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .cert-emp-search-btn {
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--mid-light-gray-color);
+      background-color: #f6f6f6;
+      font-size: 14px;
+    }
+
+    .cert-emp-search-btn:hover {
+      background-color: var(--gray-color);
+    }
+
+    /* 증명서 미리보기 영역 */
+    .cert-preview-wrapper {
+      margin-top: 16px;
+      border: 1px solid var(--mid-light-gray-color);
+      border-radius: 6px;
+      background: #fff;
+      height: 430px;
+      overflow: hidden;
+    }
+
+    .cert-preview-scroll {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      padding: 12px;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    .cert-preview-page {
+      width: 420px;
+      aspect-ratio: 210/297; /* A4 비율 */
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--mid-light-gray-color);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--fs-s);
+      color: var(--disabled-color);
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    /* 저장 버튼 영역 */
+    .cert-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-start;
+    }
+  </style>
 </head>
 
 <body>
-    <div layout:fragment="content">
-        <h3>증명서관리</h3>
-    </div>
-</body>
+<div layout:fragment="content" class="page page-fluid">
 
+     <!-- ==================== 입력 ================================================================== -->
+		<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
+			<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+				<div class="filter-bar row g-4 align-items-center col-md-12">
+					
+					<div class="col-12 col-md-9" style="display: flex; gap:20px; flex-wrap: wrap;">
+						<!-- 증명서 -->
+						<div class="col-12 col-md-3">
+							<div class="field-inline">
+								<label for="doc-search" class="field-inline__label">증명서</label>
+								<select id="doc-search" class="form-select input-base" style="flex: 1; min-width: 0">
+								</select>
+							</div>
+						</div>
+						
+						<!-- 사원 -->
+						<div class="col-12 col-md-3">
+							<div class="field-inline">
+								<label for="keyName" class="field-inline__label">사원</label> 
+								<input id="keyName" type="text"
+									class="form-control input-base" style="flex: 1; min-width: 0" />
+							</div>
+						</div>
+						
+						<!-- 발급일 -->
+						<div class="col-12 col-md-3">
+							<div class="field-inline">
+								<label for="keyName" class="field-inline__label">발급일</label> 
+								<input id="keyName" type="Date"
+									class="form-control input-base" style="flex: 1; min-width: 0" />
+							</div>
+						</div>
+						
+						<!-- 용도 -->
+						<div class="col-12 col-md-10">
+							<div class="field-inline">
+								<label for="keyName" class="field-inline__label">용도</label> 
+								<input id="keyName" type="text"
+									class="form-control input-base" style="flex: 1; min-width: 0" />
+							</div>
+						</div>
+					
+					</div>
+					
+					<!-- 조회 버튼 -->
+					<div class="col-12 col-md-2 ms-auto text-end">
+						<button id="btnReset" type="button" class="btn btn-white btn-outer">초기화</button>
+						<button id="btnSearch" type="button" class="btn btn-color btn-outer">확인</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+
+
+
+  <!-- ================= 증명서 관리 메인 카드 ================= -->
+  <section class="card-ui section-flex" style="margin-top:10px;">
+
+    <div class="card-ui__body section-scroll">
+
+
+        <!-- ===== 증명서 미리보기 영역 ===== -->
+        <div class="cert-preview-wrapper">
+          <div class="cert-preview-scroll">
+            <!-- 실제 템플릿 HTML 또는 iframe 등을 이 div 안에 렌더링 -->
+            <div id="certPreviewPage" class="cert-preview-page">
+              증명서 미리보기 영역입니다.<br/>
+              상단에서 증명서 종류, 사원, 용도를 선택한 뒤<br/>
+              [증명서 확인] 버튼을 클릭하면<br/>
+              해당 증명서가 이 영역에 표시됩니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 하단 저장 버튼 ===== -->
+        <div class="cert-footer">
+          <button id="btnSave" type="button" class="btn btn-color btn-inner">저장</button>
+        </div>
+
+    </div>
+  </section>
+
+  <!-- 전역 토스트 알림 -->
+  <div id="toastContainer" class="rc-toast"></div>
+
+  <!-- 전역 로딩 스피너 -->
+  <div id="globalLoader" class="rc-loader-overlay" style="display:none;">
+    <div class="rc-loader-spinner"></div>
+  </div>
+
+  <!-- JS (필요 시 파일명 조정해서 사용) -->
+  <script th:src="@{/js/hr/certificateManage.js}"></script>
+  <script th:src="@{/js/common.js}"></script>
+</div>
+</body>
 </html>

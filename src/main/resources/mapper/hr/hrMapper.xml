@@ -4,6 +4,8 @@
 
 <mapper namespace="com.rootcore.hr.mapper.HrMapper">
 
+	<!-- 사원 Mapper -->
+
 	<!-- 사원 전체조회 -->
 	<select id="selectAllUserList" resultType="UserVO">
 		SELECT
@@ -497,6 +499,13 @@
 		WHERE company_code = #{companyCode}
 		  AND user_id      = #{userId}
 	</delete>
+	
+
+	
+	
+	
+	
+	
 	
 
 </mapper>
