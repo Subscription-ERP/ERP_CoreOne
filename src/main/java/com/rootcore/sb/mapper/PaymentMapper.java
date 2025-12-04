@@ -1,9 +1,13 @@
 package com.rootcore.sb.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.rootcore.sb.vo.PaymentVO;
+import com.rootcore.sb.vo.PlanVO;
+import com.rootcore.sb.vo.SubscribeVO;
 
 @Mapper
 public interface PaymentMapper {
@@ -11,7 +15,11 @@ public interface PaymentMapper {
 //	void insert(NewSubsPaymentVO vo);
 //    void callExistSubsPayment(ExistSubsPaymentVO vo);
 
-    // 🔹 토스에서 내려온 카드사명으로 우리 공통코드 CODE 찾기
-    String findCardCompanyCode(@Param("groupCode") String groupCode,
-                               @Param("displayName") String displayName);
+	  // 코드로 카드사명(한글) 조회
+    String findCardCompanyName(
+        @Param("groupCode") String groupCode,
+        @Param("code") String code
+    );
+    // 회사코드로 비활성 구독 이력 조회
+    List<SubscribeVO> selectInactiveSubListByComCode(@Param("comCode") String comCode);
 }

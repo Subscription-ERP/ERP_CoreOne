@@ -30,14 +30,14 @@ public class TossConfirmResponseVO {
 		private String issuerCode; // 발급사
 		private String acquirerCode; // 매입사
 
-		public String getDisplayName() {
-			if (company != null)
-				return company;
-			if (issuerCode != null)
-				return issuerCode;
-			if (acquirerCode != null)
-				return acquirerCode;
-			return "UNKNOWN";
-		}
+		  // ✔ 카드사 "이름"은 issuerCode를 기준으로 공통코드에서 조회해야 한다.
+	    public String getCardCompanyCode() {
+	        return issuerCode;  // 발급사 코드가 카드사 코드
+	    }
+
+	    // ✔ 회사명은 Toss가 줄 수도 있지만 대부분 null이므로 fallback이 있으면 안됨.
+	    public String getCardCompanyName() {
+	        return company;  // null이면 null
+	    }
 	}
 }
