@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.PayrollManageMapper">
+
+	<!-- 급여관리-급여 대장 목록 -->
+	<select id="selectPayrollManageList" resultType="UserPayManageVO">
+		SELECT user_pay_management_code
+		FROM   tb_user_pay_management
+	</select>
+<!-- ,
+			   upm.payroll_code,
+			   upm.company_code,
+			   upm.user_id,
+			   um.user_name,
+			   dm.dept_name,
+			   upm.pay_date, 
+			   upm.salary,
+			   upm.bonus,
+			   upm.overtime_allowance AS overtime,
+			   upm.night_allowance AS night,
+			   upm.holiday_allowance AS holiday,
+			   upm.family_allowance AS family,
+			   upm.meal_allowance AS meal,
+			   upm.annual_leave_allowance AS annual_leave,
+ 			   upm.total_allowance ,
+ 			   upm.total_payment AS total_payment_amount,
+			   upm.income_tax,
+			   upm.national_pension,
+			   upm.employment_insurance,
+			   upm.health_insurance,
+			   upm.long_time_care_insurance,
+			   upm.local_income_tax,
+			   upm.total_deduction AS total_deduction_amount,
+			   upm.net_pay 
+			    upm
+			   JOIN tb_user_master um 
+			   ON upm.user_id = um.user_id
+			   JOIN tb_dept_master dm 
+			   ON um.dept = dm.dept_code-->
+</mapper>

@@ -49,11 +49,12 @@
 		         pr.payroll_date,
 		         pr.create_date,
 		         pr.payroll_period_code,
-		         COUNT(*) AS peopleNumber
+		         COUNT(*) AS peopleNumber,
+		         SUM(upm.total_payment) AS totalPayment -- 지급총액
 		FROM     tb_payroll pr
 		         JOIN tb_cm_code cc
 		         ON pr.payroll_type = cc.code
-		         JOIN tb_user_pay_management upm
+		         LEFT JOIN tb_user_pay_management upm
 		         ON upm.payroll_code = pr.payroll_code
 		WHERE    1=1
 		<if test="payrollType != null and payrollType != '' ">
@@ -192,5 +193,13 @@
 		    #{net_pay}
 		)
 	</insert>
+	
+	<!-- 급여대장-계산하기-급여관리모달창-확정버튼-이미 있는 데이터인지 확인하는 select -->
+	<select id="checkUserPay" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM   tb_user_pay_management
+        WHERE  payroll_code = #{payrollCode}
+	</select>
+	
 	
 </mapper>

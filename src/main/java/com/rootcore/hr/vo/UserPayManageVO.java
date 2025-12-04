@@ -2,17 +2,19 @@ package com.rootcore.hr.vo;
 
 import java.sql.Date;
 
-import org.springframework.format.annotation.NumberFormat;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
 
 @Data
 public class UserPayManageVO {
+	private String user_pay_management_code; // 사원급여관리코드
+	private String company_code; // 회사코드
 	private String payroll_code; // 급여대장코드
 	private String user_id; // 사번
 	private String user_name; // 사원이름
+	private Long income_tax; // 소득세
+	private Long local_income_tax; // 지방소득세
 	private String dept_name; // 부서이름
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date payroll_date; // 지급일

@@ -2,9 +2,19 @@
  * payRoll.js
  */
 
-let currentPayrollPeriodCode = null; 
+/* ====================
+ * 전역 변수
+ * 현재 선택된 급여대상 코드 
+ * ====================*/
+let currentPayrollPeriodCode = null;
 
-/* 공통코드(선택박스) */
+// 숫자 한국형 포맷팅 함수
+function formatKoreanNumber(value) {
+    // Number()를 사용하여 value가 문자열인 경우에도 숫자로 변환을 시도합니다.
+    return new Intl.NumberFormat('ko-KR').format(Number(value));
+}
+
+// 공통코드(선택박스)
 function getCmCodeOptions(divId) {
 	const keys = Object.keys(divId);
 	const param = keys.map((k) => `code=${k}`).join("&");
@@ -81,30 +91,6 @@ function getCmCodeRadio(divIdRadio) {
 		.catch((err) => console.error(err));
 }
 
-/* 부서 기준정보 코드 */
-function getDeptOptions() {
-	fetch("/api/hr/getDeptName")
-		.then((res) => res.json())
-		.then((list) => {
-			const select = document.querySelector("#dept");
-
-			if (select) {
-				const optDefault = document.createElement("option");
-				optDefault.textContent = "전체";
-				optDefault.value = "";
-				select.appendChild(optDefault);
-
-				list.forEach((d) => {
-					const opt = document.createElement("option");
-					opt.value = d.deptCode;
-					opt.textContent = d.deptName;
-					select.appendChild(opt);
-				});
-			}
-		})
-		.catch((err) => console.error(err));
-}
-
 /* 상세수당총액, 상세공제총액 값 변수 초기화 */
 function resetSummaryTables() {
 	// 수당 항목 초기화
@@ -130,36 +116,36 @@ function resetSummaryTables() {
 function updateRowDetailSummary(rowData) {
 	// ------------------ 수당 테이블 업데이트 ------------------
 	// 서버 응답 VO 필드명: overtime, night, holiday, family, meal, annual_leave, total_allowance
-	document.getElementById('overtime').textContent = rowData.overtime === null || rowData.overtime === undefined ? 0 : rowData.overtime;
-	document.getElementById('night').textContent = rowData.night === null || rowData.night === undefined ? 0 : rowData.night;
-	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : rowData.holiday;
-	document.getElementById('family').textContent = rowData.family === null || rowData.family === undefined ? 0 : rowData.family;
-	document.getElementById('meal').textContent = rowData.meal === null || rowData.meal === undefined ? 0 : rowData.meal;
-	document.getElementById('annual_leave').textContent = rowData.annual_leave === null || rowData.annual_leave === undefined ? 0 : rowData.annual_leave;
-	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : rowData.total_allowance;
+	document.getElementById('overtime').textContent = rowData.overtime === null || rowData.overtime === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.overtime);
+	document.getElementById('night').textContent = rowData.night === null || rowData.night === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.night);
+	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.holiday);
+	document.getElementById('family').textContent = rowData.family === null || rowData.family === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.family);
+	document.getElementById('meal').textContent = rowData.meal === null || rowData.meal === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.meal);
+	document.getElementById('annual_leave').textContent = rowData.annual_leave === null || rowData.annual_leave === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.annual_leave);
+	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.total_allowance);
 
 	// ------------------ 공제 테이블 업데이트 ------------------
 	// 서버 응답 VO 필드명: national_pension, employment_insurance, health_insurance, long_time_care_insurance, total_deduction_amount
 	// document.getElementById('sumIncomeTax').textContent = rawValue(rowData.income_tax || 0);  
 	// document.getElementById('sumLocalIncomeTax').textContent = rawValue(rowData.local_income_tax || 0);  
-	document.getElementById('national_pension').textContent = rowData.national_pension === null || rowData.national_pension === undefined ? 0 : rowData.national_pension;
-	document.getElementById('employment_insurance').textContent = rowData.employment_insurance === null || rowData.employment_insurance === undefined ? 0 : rowData.employment_insurance;
-	document.getElementById('health_insurance').textContent = rowData.health_insurance === null || rowData.health_insurance === undefined ? 0 : rowData.health_insurance;
-	document.getElementById('long_time_care_insurance').textContent = rowData.long_time_care_insurance === null || rowData.long_time_care_insurance === undefined ? 0 : rowData.long_time_care_insurance;
-	document.getElementById('total_deduction_amount').textContent = rowData.total_deduction_amount === null || rowData.total_deduction_amount === undefined ? 0 : rowData.total_deduction_amount;
+	document.getElementById('national_pension').textContent = rowData.national_pension === null || rowData.national_pension === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.national_pension);
+	document.getElementById('employment_insurance').textContent = rowData.employment_insurance === null || rowData.employment_insurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employment_insurance);
+	document.getElementById('health_insurance').textContent = rowData.health_insurance === null || rowData.health_insurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.health_insurance);
+	document.getElementById('long_time_care_insurance').textContent = rowData.long_time_care_insurance === null || rowData.long_time_care_insurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.long_time_care_insurance);
+	document.getElementById('total_deduction_amount').textContent = rowData.total_deduction_amount === null || rowData.total_deduction_amount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.total_deduction_amount);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	// 급여구분 공통코드
+	// 급여구분 
 	const divId = { "0J": "payrollType" };
 	getCmCodeOptions(divId);
 
-	// 상여지급방법 공통코드 (라디오 버튼)
+	// 상여지급방법 (라디오 버튼)
 	const divIdRadio = { "0K": "bonusTypeContainer" };
 	getCmCodeRadio(divIdRadio);
 
-	// 부서 조회
-	getDeptOptions();
+	// 부서 조회(공통코드)
+	getDeptOptions2(["#dept"]);
 
 	/* 상여등록 후 초기화 하는 함수 */
 	function resetBonusRegisterForm() {
@@ -286,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const selectedRows = allUserGrid.getCheckedRows();
 
 			if (selectedRows.length === 0) {
-				alert("추가할 사원을 선택해주세요.");
+				showToast("추가할 사원을 선택해주세요.",'info');
 				return;
 			}
 
@@ -299,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 
 			if (newRowsToAdd.length === 0) {
-				alert("선택된 사원 중 추가할 수 있는 사원이 없습니다.");
+				showToast("선택된 사원 중 추가할 수 있는 사원이 없습니다.",'info');
 				allUserGrid.uncheckAll(); // 체크 해제
 				return;
 			}
@@ -322,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const checkedTargetRows = targetUserGrid.getCheckedRowKeys();
 
 			if (checkedTargetRows.length === 0) {
-				alert("제외할 대상 사원을 선택해주세요.");
+				showToast("제외할 대상 사원을 선택해주세요.",'info');
 				return;
 			}
 
@@ -357,17 +343,17 @@ document.addEventListener("DOMContentLoaded", () => {
 			allUserGrid.readData(1, data, true);
 		});
 
-	/* 
+	/* =======================================================================
 	 * 급여대장-상여등록
 	 * 저장버튼을 누르면 상여등록이 이루어진다.
-	 */
+	 * ======================================================================= */
 	document.getElementById("btnSave").addEventListener("click", function() {
 		// 대상 그리드(targetUserGrid)의 모든 사원을 가져옴
 		const checkedEmployees = targetUserGrid.getData();
 		const employeeIds = checkedEmployees.map((row) => row.userId);
 
 		if (employeeIds.length === 0) {
-			alert("상여 등록 대상 사원을 한 명 이상 추가해야 합니다.");
+			showToast("상여 등록 대상 사원을 한 명 이상 추가해야 합니다.", 'info');
 			return;
 		}
 
@@ -413,12 +399,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			.then((response) => response.json())
 			.then((result) => {
 				if (result.success) {
-					alert(result.count + "건의 상여 등록이 완료되었습니다.");
+					showToast(result.count + "건의 상여 등록이 완료되었습니다.", 'success');
 					targetUserGrid.resetData([]); // 성공 시 대상 목록 초기화
 					updatePeopleNumber();
 					resetBonusRegisterForm(); // 상여등록 폼 초기화
 				} else {
-					alert("등록 실패 : " + result.message);
+					showToast("등록 실패 : " + result.message,'error');
 				}
 			})
 			.catch((error) => console.error("Error:", error));
@@ -435,12 +421,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	targetUserGrid.on("afterRemoveRow", updatePeopleNumber);
 	targetUserGrid.on("afterAppendRow", updatePeopleNumber);
 
-	/* 급여대장-조회 */
+	/* 급여대장-조회, 급여 대장 목록 */
 	const payrollGrid = new tui.Grid({
 		el: document.getElementById("payrollGrid"),
 		scrollX: true,
 		scrollY: true,
-
 		data: {
 			api: {
 				readData: {
@@ -449,13 +434,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 			},
 		},
+		rowkey: "payrollPeriodCode",
 		bodyHeight: 570,
 		columns: [
-			{ header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
-			{ header: "급여구분", name: "payrollType", width: 70 },
-			{ header: "대장명칭", name: "payrollName", width: 200 },
-			{ header: "지급일", name: "payrollDate", align: "center" },
-			{ header: "인원수", name: "peopleNumber", width: 70, align: "right" },
+			{ header: "귀속연월", name: "payrollPeriod", align: "center", width: 80, sortable: true, },
+			{ header: "급여구분", name: "payrollType", width: 70, sortable: true, },
+			{ header: "대장명칭", name: "payrollName", width: 200, sortable: true, },
+			{ header: "지급일", name: "payrollDate", align: "center", sortable: true, },
+			{ header: "인원수", name: "peopleNumber", width: 70, align: "right", sortable: true, },
 			{
 				header: "급여계산",
 				name: "salaryCalculation",
@@ -465,22 +451,25 @@ document.addEventListener("DOMContentLoaded", () => {
 					return `<a class="btn-calculate" href=# data-payroll-period-code="${payrollPeriodCode}">계산하기</a>`;
 				},
 			},
-			{ header: "지급총액", name: "totalAmount" },
+			{
+				header: "지급총액", name: "totalPayment", align: "right", sortable: true, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				}
+			},
 		],
 	}); // end of payrollGrid
 
 	/* 계산하기 클릭했을때 모달창이 나타나게 */
 	document.querySelector('#payrollGrid').addEventListener('click', function(event) {
 
+		// 클릭된 요소
 		const targetElement = event.target;
 		// 클릭된 요소가 'btn-calculate' 클래스를 가졌는지 확인
 		if (targetElement.classList.contains('btn-calculate')) {
 			event.preventDefault(); // href="#"의 기본 동작(페이지 상단 이동)을 막습니다.
-
 			// 데이터(payrollCode)를 가져옵니다.
-			const payrollPeriodCode = targetElement.dataset.payrollPeriodCode;
-			currentPayrollPeriodCode = payrollPeriodCode;
-
+			const payrollPeriodCode = targetElement.dataset.payrollPeriodCode; // data-payroll-period-code 속성에서 값 추출
+			currentPayrollPeriodCode = payrollPeriodCode; // 전역 변수에 저장
 			console.log(`[급여계산 클릭] 대상 payrollPeriodCode: ${payrollPeriodCode}`);
 
 			// 모달 열기
@@ -488,13 +477,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (payrollManageModal) {
 				payrollManageModal.hidden = false;
 			} else {
-				console.error("Modal element #historyModal not found.");
+				console.error("모달창 태그 없음");
 			}
 
+			// 모달창의 Grid 초기화
 			payrollDetailGrid.refreshLayout();
-			// totalAllowances.refreshLayout();
 
-			// 3. 급여 계산 API 호출 및 Grid 데이터 로드 로직 추가
+			// 급여 계산 API 호출 및 Grid 데이터 로드 로직 추가
 			// 백엔드 컨트롤러(/api/hr/UserPayList)에 정의한 API 경로와 파라미터를 사용합니다.
 			fetch(`/api/hr/UserPayList?payroll_period_code=${payrollPeriodCode}`)
 				.then(res => {
@@ -516,20 +505,21 @@ document.addEventListener("DOMContentLoaded", () => {
 						payrollDetailGrid.resetData(payList); // 실제 데이터 리스트(payList)를 Grid에 설정
 
 						if (payList.length === 0) {
-							alert("계산된 급여 데이터가 없습니다.");
+							showToast("계산된 급여 데이터가 없습니다.",'info');
 						}
 					} else {
 						// 실패 시 처리 (result: false 인 경우)
-						alert("급여 계산 결과를 불러오는 데 실패했습니다: " + (responseMap.message || "알 수 없는 오류"));
+						showToast("급여 계산 결과를 불러오는 데 실패했습니다: " + (responseMap.message || "알 수 없는 오류"), 'error');
 						payrollDetailGrid.resetData([]); // Grid 초기화
 					}
 				})
 				.catch(error => {
 					console.error("Error loading payroll calculation result:", error);
-					alert("급여 계산 결과를 불러오는 중 오류가 발생했습니다.");
+					showToast("급여 계산 결과를 불러오는 중 오류가 발생했습니다.", 'error');
 				});
 		}
 	}); // end of payrollGrid 클릭 이벤트
+
 
 	/* 급여관리 모달창에서 x버튼 누르면 초기화 */
 	document.querySelector('#btnPayrollManageClose').addEventListener('click', function() {
@@ -541,7 +531,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		resetSummaryTables();
 	});
 
-	/* 급여관리 모달 - 사원별 급여 상세 Grid */
+	/* ======================================
+	 * 급여관리 모달창
+	 * 사원별 급여 상세 Grid
+	 * ====================================== */
 	const payrollDetailGrid = new tui.Grid({
 		el: document.getElementById("payrollDetailGrid"),
 		scrollX: true,
@@ -555,12 +548,24 @@ document.addEventListener("DOMContentLoaded", () => {
 			{ header: "성명", name: "user_name", width: 10 },
 			{ header: "부서명", name: "dept_name", width: 100 },
 			{ header: "지급일", name: "payroll_date", align: "center", width: 100 },
-			{ header: "기본급", name: "salary", align: "right", width: 100 },
-			{ header: "상여금", name: "bonus", align: "right", width: 100 },
-			{ header: "수당총액", name: "total_allowance", align: "right", width: 100 },
-			{ header: "총 지급액", name: "total_payment_amount", align: "right", width: 100 },
-			{ header: "공제 총액", name: "total_deduction_amount", align: "right", width: 100 },
-			{ header: "실 수령액", name: "net_pay", align: "right", width: 100 }
+			{ header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				} },
+			{ header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				} },
+			{ header: "수당총액", name: "total_allowance", align: "right", width: 100, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				} },
+			{ header: "총 지급액", name: "total_payment_amount", align: "right", width: 100, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				} },
+			{ header: "공제 총액", name: "total_deduction_amount", align: "right", width: 100, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				} },
+			{ header: "실 수령액", name: "net_pay", align: "right", width: 100, formatter: function(e) {
+					return formatKoreanNumber(e.value);
+				} }
 		],
 	}); // end of payrollDetailGrid
 
@@ -582,39 +587,53 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}); // end of payrollDetailGrid
 
-	// 확정 버튼을 눌렀을때 사원급여관리 테이블에 삽입
-	document.querySelector('#btnPayrollSave').addEventListener('click', function(){
-		
-		if (!currentPayrollPeriodCode) {
-			console.log("확정 대상 급여 대장을 찾을 수 없습니다. 다시 시도해 주세요.", currentPayrollPeriodCode);
-			return;
-		}
+	/* ==============================================================================
+	 * 확정 버튼
+	 * 급여대장-급여관리 모달창-확정버튼
+	 * 확정 버튼을 눌렀을때 사원급여관리 테이블에 삽입
+	 * 확정버튼 누르면 지급총액도 같이 나오게 만듬
+	 * ============================================================================== */
+	document.querySelector('#btnPayrollSave').addEventListener('click', function() {
+		// 급여관리 테이블 데이터 가져오기
 		const data = payrollDetailGrid.getData();
-		// console.log('a : ',a);
-		
-		fetch("/api/hr/registerUserPay", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
-		})
-			.then((response) => response.text())
-			.then((textresult) => {
-				// 텍스트를 정수로 변환
-    			const successCount = parseInt(textresult, 10);
-    			
-    			// 성공했을때
-				if (successCount > 0) {
-					alert(successCount + "건의 등록이 확정되었습니다.");
-					
+		console.log("data[0].payroll_code:", data[0].payroll_code);
+		// 지금 화면 데이터가 tb_user_pay_management에 있는 데이터인지 확인
+		fetch(`/api/hr/checkUserPay?payroll_code=${data[0].payroll_code}`)
+			.then(res => res.text())
+			.then(responsetext => {
+				if (parseInt(responsetext, 10) > 0) {
+					showToast("이미 확정된 급여대장입니다.", 'warning');
+					return;
 				} else {
-					alert("등록 실패 : " + textresult.message);
-					console.log(textresult.message);
+					// ajax로 데이터 전송
+					fetch("/api/hr/registerUserPay", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
+					})
+						.then((response) => response.text())
+						.then((textresult) => {
+							// 텍스트를 정수로 변환
+							const successCount = parseInt(textresult, 10);
+
+							// 성공했을때
+							if (successCount > 0) {
+								showToast("건의 등록이 확정되었습니다.", 'success');
+								// 성공하고나서 급여대장 그리드 새로고침
+								payrollGrid.reloadData();
+							} else {
+								showToast("등록 실패 : " + textresult.message, 'error');
+								console.log(textresult.message);
+							}
+						})
+						.catch((error) => console.error("Error:", error));
 				}
 			})
-			.catch((error) => console.error("Error:", error));
-		
-	})	
+
+	});
+
+
 
 }); // end of DOMContentLoaded

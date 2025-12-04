@@ -292,21 +292,28 @@ FROM   tb_user_master um
 SELECT *
 FROM   tb_dept_master;
 
--- 
+-- 급여 대장 목록 조회
 SELECT   pr.payroll_period,
          cc.code_name AS payroll_type,
          pr.payroll_name,
          pr.payroll_date,
          pr.create_date,
-         COUNT(*) AS peopleNumber
+         pr.payroll_period_code,
+         COUNT(*) AS peopleNumber,
+         SUM(upm.total_allowance) as totalAmount, -- 지급총액
+         pr.payroll_code
 FROM     tb_payroll pr
          JOIN tb_cm_code cc
          ON pr.payroll_type = cc.code
+         LEFT JOIN tb_user_pay_management upm
+         ON upm.payroll_code = pr.payroll_code
 GROUP BY pr.payroll_period, 
          cc.code_name,
          pr.payroll_name, 
          pr.payroll_date, 
-         pr.create_date;
+         pr.create_date,
+         pr.payroll_period_code,
+         pr.payroll_code;      
                  
 SELECT *
 FROM   tb_payroll;
@@ -457,6 +464,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE(',v_sal:'||v_sal); -- 급여
         
         -- 시간당 통상임금 := 기본급 / 209
+        -- 여
         v_ordinary_wage := ROUND(v_sal / 209);
         DBMS_OUTPUT.PUT_LINE(',v_ordinary_wage:'||v_ordinary_wage);
         
@@ -482,6 +490,7 @@ BEGIN
             v_earnings := v_bonus;
             v_total_payment_amount := v_bonus;
             v_national_pension := 0;
+            v_total_allowance := v_bonus; -- 수당총액
         ELSE
             -- 연장근로수당
             IF user_info.total_over_work_time > 0 THEN   
@@ -1105,4 +1114,65 @@ INSERT INTO tb_user_pay_management (
     #{net_pay}
 );
 
-
+-- 급여 대장 목록 수정중
+-- 지급총액 추가중...
+-- tb_user_pay_management테이블에서 total_allowance를 다 합해야하는데 조건이 있음!
+-- 조건은 
+SELECT   pr.payroll_period,
+         cc.code_name AS payroll_type,
+         pr.payroll_name,
+         pr.payroll_date,
+         pr.create_date,
+         pr.payroll_period_code,
+         COUNT(*) AS peopleNumber,
+         SUM(upm.total_payment) AS totalPayment -- 지급총액
+FROM     tb_payroll pr
+         JOIN tb_cm_code cc
+         ON pr.payroll_type = cc.code
+         LEFT JOIN tb_user_pay_management upm
+         ON upm.payroll_code = pr.payroll_code
+GROUP BY pr.payroll_period, 
+         cc.code_name,
+         pr.payroll_name, 
+         pr.payroll_date, 
+         pr.create_date,
+         pr.payroll_period_code; 
+         
+-- 급여관리-사원급여조회
+SELECT upm.user_pay_management_code,
+			   upm.payroll_code,
+			   upm.company_code,
+			   upm.user_id,
+			   um.user_name,
+			   dm.dept_name,
+			   upm.pay_date, 
+			   upm.salary,
+			   upm.bonus,
+			   upm.overtime_allowance AS overtime,
+			   upm.night_allowance AS night,
+			   upm.holiday_allowance AS holiday,
+			   upm.family_allowance AS family,
+			   upm.meal_allowance AS meal,
+			   upm.annual_leave_allowance AS annual_leave,
+ 			   upm.total_allowance ,
+ 			   upm.total_payment AS total_payment_amount,
+			   upm.income_tax,
+			   upm.national_pension,
+			   upm.employment_insurance,
+			   upm.health_insurance,
+			   upm.long_time_care_insurance,
+			   upm.local_income_tax,
+			   upm.total_deduction AS total_deduction_amount,
+			   upm.net_pay
+		FROM   tb_user_pay_management upm
+			   JOIN tb_user_master um 
+			   ON upm.user_id = um.user_id
+			   JOIN tb_dept_master dm 
+			   ON um.dept = dm.dept_code;
+               
+SELECT user_pay_management_code
+		FROM   tb_user_pay_management;
+			   JOIN tb_user_master um 
+			   ON upm.user_id = um.user_id
+			   JOIN tb_dept_master dm 
+			   ON um.dept = dm.dept_code;

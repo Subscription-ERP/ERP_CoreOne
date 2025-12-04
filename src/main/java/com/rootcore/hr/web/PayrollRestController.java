@@ -46,7 +46,7 @@ public class PayrollRestController {
 	public Map<String, Object> getUserList(PayrollUserVO param) {
 		// 사원조회
 		List<PayrollUserVO> list = payrollService.selectUserList(param);
-
+		
 		// RESULT에 실행결과 저장
 		Map<String, Object> result = new HashMap<>();
 		result.put("result", true);
@@ -66,7 +66,7 @@ public class PayrollRestController {
 	public Map<String, Object> getPayrollList(PayrollVO param) {
 		// 급여대장조회
 		List<PayrollVO> list = payrollService.selectPayrollList(param);
-
+		System.out.println("list>>>"+list);
 		// RESULT에 실행결과 저장
 		Map<String, Object> result = new HashMap<>();
 		result.put("result", true);
@@ -114,5 +114,11 @@ public class PayrollRestController {
 	@PostMapping("/registerUserPay")
 	public int registerUserPay(@RequestBody List<UserPayManageVO> userPayManageList) {
 		return payrollService.insertUserPay(userPayManageList);
+	}
+	
+	// 급여대장-계산하기-급여관리모달창-확정버튼-이미 있는 데이터인지 확인하는 select
+	@GetMapping("/checkUserPay")
+	public int checkUserPay(@RequestParam("payroll_code") String payrollCode) {
+		return payrollService.checkUserPay(payrollCode);
 	}
 }
