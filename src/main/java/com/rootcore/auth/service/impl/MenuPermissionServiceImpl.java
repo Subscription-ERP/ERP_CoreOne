@@ -1,12 +1,14 @@
 package com.rootcore.auth.service.impl;
 
-import java.util.*;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.rootcore.auth.mapper.MenuPermissionMapper;
 import com.rootcore.auth.service.MenuPermissionService;
-import com.rootcore.auth.vo.*;
+import com.rootcore.auth.vo.MenuAuthSaveVO;
+import com.rootcore.auth.vo.MenuPermissionUserVO;
+import com.rootcore.auth.vo.MenuTreeVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,81 +18,36 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
 
     private final MenuPermissionMapper mapper;
 
+    /** 1) 사용자 검색조건 조회 */
     @Override
-    public List<MenuPermissionUserVO> getUserList(
-            String companyCode, String userName, String dept, String position) {
-
+    public List<MenuPermissionUserVO> getUserList(String companyCode, String userName, String dept, String position) {
         return mapper.selectUserList(companyCode, userName, dept, position);
     }
 
+    /** 2) 메뉴트리 + 사용자 권한 */
     @Override
-    public List<MenuTreeVO> getMenuTree(String companyCode, String userId, String menuGroup) {
-
-        List<MenuTreeRowVO> rows = mapper.selectMenuTree(companyCode, userId, menuGroup);
-
-        Map<String, MenuTreeVO> map = new HashMap<>();
-
-        for (MenuTreeRowVO r : rows) {
-
-            MenuTreeVO node = map.getOrDefault(r.getMenuCode(), new MenuTreeVO());
-            node.setMenuCode(r.getMenuCode());
-            node.setMenuName(r.getMenuName());
-            node.setParentMenuCode(r.getParentMenuCode());
-            node.setMenuGroup(r.getMenuGroup());
-            node.setMenuUrl(r.getMenuUrl());
-            node.setMenuLevel(r.getMenuLevel());
-            node.setSortOrder(r.getSortOrder());
-
-            // 액션 리스트 구성
-            List<MenuActionVO> actions = new ArrayList<>();
-            actions.add(new MenuActionVO("READ",   "Y".equals(r.getReadAuth())));
-            actions.add(new MenuActionVO("CREATE", "Y".equals(r.getCreateAuth())));
-            actions.add(new MenuActionVO("UPDATE", "Y".equals(r.getUpdateAuth())));
-            actions.add(new MenuActionVO("DELETE", "Y".equals(r.getDeleteAuth())));
-
-            node.setActions(actions);
-
-            map.put(r.getMenuCode(), node);
-        }
-
-        // 부모-자식 트리 구성
-        List<MenuTreeVO> rootList = new ArrayList<>();
-
-        for (MenuTreeVO node : map.values()) {
-            if (node.getParentMenuCode() == null || node.getParentMenuCode().trim().isEmpty()) {
-                rootList.add(node);
-            } else {
-                MenuTreeVO parent = map.get(node.getParentMenuCode());
-                if (parent != null) parent.getChildren().add(node);
-            }
-        }
-
-        rootList.sort(Comparator.comparing(MenuTreeVO::getSortOrder));
-
-        return rootList;
+    public List<MenuTreeVO> getUserMenuTree(String companyCode, String userId) {
+        return mapper.selectUserMenuTree(companyCode, userId);
     }
 
-
-    /* ==============================
-        저장 (액션 한 줄씩 insert)
-    ================================= */
-    @Transactional
+    /** 3) 권한 저장 */
     @Override
-    public void saveUserAuth(
-            String companyCode, String userId,
-            List<MenuAuthSaveVO> authList, String updatedBy) {
+    public int saveMenuAuth(List<MenuAuthSaveVO> authList) {
 
-        mapper.deleteUserAuth(companyCode, userId);
+        if (authList == null || authList.isEmpty()) return 0;
 
+        String companyCode = authList.get(0).getCompanyCode();
+        String userId = authList.get(0).getUserId();
+
+        // 1) 기존 권한 삭제
+        mapper.deleteUserMenuAuth(companyCode, userId);
+
+        // 2) 새 권한 등록
+        int count = 0;
         for (MenuAuthSaveVO vo : authList) {
-            mapper.insertUserAuth(
-                    companyCode,
-                    userId,
-                    vo.getMenuCode(),
-                    vo.getActionCode(),
-                    vo.getAuthYn(),
-                    updatedBy
-            );
+            count += mapper.insertUserMenuAuth(vo);
         }
+
+        return count;
     }
 }

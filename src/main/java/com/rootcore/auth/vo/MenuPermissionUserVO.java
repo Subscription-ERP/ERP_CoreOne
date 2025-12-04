@@ -1,14 +1,15 @@
+// 패키지: com.rootcore.auth.vo
 package com.rootcore.auth.vo;
 
 import lombok.Data;
 
-//조회용 : 사용자 목록
 @Data
 public class MenuPermissionUserVO {
- private String companyCode;
- private String userId;
- private String userName;
- private String deptName;
- private String positionName;
- private String status;
+    private String companyCode;
+    private String userId;
+    private String userName;
+    private String dept;        // 부서명 또는 코드
+    private String jobTitle;    // 직급
+    private String position;    // 직책
+    private String userStatus;  // 재직상태 (0/1)
 }

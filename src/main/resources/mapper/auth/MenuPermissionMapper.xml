@@ -1,101 +1,95 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.rootcore.auth.mapper.MenuPermissionMapper">
 
-    <!-- 1. 사용자 목록 -->
+    <!-- 1) 사용자 목록 조회 (검색 조건 포함) -->
     <select id="selectUserList" resultType="com.rootcore.auth.vo.MenuPermissionUserVO">
         SELECT
-            U.COMPANY_CODE,
-            U.USER_ID,
-            U.USER_NAME,
-            U.DEPT_NAME AS deptName,
-            U.POSITION AS positionName,
-            L.STATUS
-        FROM TB_USER_MASTER U
-        JOIN TB_LOGIN_MASTER L
-          ON U.COMPANY_CODE = L.COMPANY_CODE
-         AND U.USER_ID = L.USER_ID
-        WHERE U.COMPANY_CODE = #{companyCode}
-          AND (#{userName} IS NULL OR U.USER_NAME LIKE '%' || #{userName} || '%')
-          AND (#{dept} IS NULL OR U.DEPT_NAME = #{dept})
-          AND (#{position} IS NULL OR U.POSITION = #{position})
-        ORDER BY U.USER_NAME
+            COMPANY_CODE,
+            USER_ID,
+            USER_NAME,
+            DEPT,
+            JOB_TITLE,
+            POSITION,
+            USER_STATUS
+        FROM TB_USER_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+
+        <if test="userName != null and userName != ''">
+            AND USER_NAME LIKE '%' || #{userName} || '%'
+        </if>
+
+        <if test="dept != null and dept != ''">
+            AND DEPT = #{dept}
+        </if>
+
+        <if test="position != null and position != ''">
+            AND POSITION = #{position}
+        </if>
+
+        ORDER BY USER_NAME
     </select>
 
-
-    <!-- 2. 메뉴트리 조회 + 액션별 권한 -->
-    <select id="selectMenuTree" resultType="com.rootcore.auth.vo.MenuTreeRowVO">
+    <!-- 2) 사용자 메뉴트리 + 권한 조회 -->
+    <select id="selectUserMenuTree" resultType="com.rootcore.auth.vo.MenuTreeVO">
         SELECT
             M.MENU_CODE,
             M.MENU_NAME,
-            M.PARENT_MENU_CODE,
-            M.MENU_GROUP,
-            M.MENU_URL,
-            M.MENU_LEVEL,
-            M.SORT_ORDER,
-            MAX(CASE WHEN A.ACTION_CODE = 'READ'   THEN A.AUTH_YN ELSE 'N' END) AS readAuth,
-            MAX(CASE WHEN A.ACTION_CODE = 'CREATE' THEN A.AUTH_YN ELSE 'N' END) AS createAuth,
-            MAX(CASE WHEN A.ACTION_CODE = 'UPDATE' THEN A.AUTH_YN ELSE 'N' END) AS updateAuth,
-            MAX(CASE WHEN A.ACTION_CODE = 'DELETE' THEN A.AUTH_YN ELSE 'N' END) AS deleteAuth
+            M.PARENT_CODE,
+            M.SYSTEM_TYPE,
+
+            -- 사용자 권한
+            MAX(CASE WHEN A.ACTION_CODE = 'READ' THEN A.AUTH_YN END) AS readAuth,
+            MAX(CASE WHEN A.ACTION_CODE = 'CREATE' THEN A.AUTH_YN END) AS createAuth,
+            MAX(CASE WHEN A.ACTION_CODE = 'UPDATE' THEN A.AUTH_YN END) AS updateAuth,
+            MAX(CASE WHEN A.ACTION_CODE = 'DELETE' THEN A.AUTH_YN END) AS deleteAuth
+
         FROM TB_MENU_MASTER M
         LEFT JOIN TB_USER_MENU_AUTH A
-          ON M.COMPANY_CODE = A.COMPANY_CODE
-         AND M.MENU_CODE = A.MENU_CODE
-         AND A.USER_ID = #{userId}
+            ON M.COMPANY_CODE = A.COMPANY_CODE
+           AND M.MENU_CODE    = A.MENU_CODE
+           AND A.USER_ID      = #{userId}
+
         WHERE M.COMPANY_CODE = #{companyCode}
-          AND M.MENU_GROUP = #{menuGroup}
-        GROUP BY
-            M.MENU_CODE,
-            M.MENU_NAME,
-            M.PARENT_MENU_CODE,
-            M.MENU_GROUP,
-            M.MENU_URL,
-            M.MENU_LEVEL,
-            M.SORT_ORDER
-        ORDER BY M.MENU_LEVEL, M.SORT_ORDER
+        ORDER BY M.SORT_ORDER
     </select>
 
-
-    <!-- 3. 기존 권한 삭제 -->
-    <delete id="deleteUserAuth">
+    <!-- 3) 기존 사용자 권한 삭제 -->
+    <delete id="deleteUserMenuAuth">
         DELETE FROM TB_USER_MENU_AUTH
         WHERE COMPANY_CODE = #{companyCode}
           AND USER_ID = #{userId}
     </delete>
 
-
-    <!-- 4. 액션별 권한 저장 -->
-    <insert id="insertUserAuth">
-        INSERT INTO TB_USER_MENU_AUTH
-        (COMPANY_CODE, USER_ID, MENU_CODE, ACTION_CODE, AUTH_YN, UPDATED_BY, UPDATE_DATE)
-        VALUES
-        (#{companyCode}, #{userId}, #{menuCode}, #{actionCode}, #{authYn}, #{updatedBy}, SYSDATE)
+    <!-- 4) 사용자 권한 INSERT -->
+    <insert id="insertUserMenuAuth">
+        INSERT INTO TB_USER_MENU_AUTH (
+            COMPANY_CODE,
+            USER_ID,
+            MENU_CODE,
+            ACTION_CODE,
+            AUTH_YN
+        ) VALUES (
+            #{companyCode},
+            #{userId},
+            #{menuCode},
+            #{actionCode},
+            #{authYn}
+        )
     </insert>
-<select id="selectUserAuthList" resultType="com.rootcore.auth.vo.UserMenuAuthVO">
-    SELECT
-        A.COMPANY_CODE,
-        A.USER_ID,
-        A.MENU_CODE,
-        M.MENU_NAME,
-        MAX(CASE WHEN ACTION_CODE='READ' THEN AUTH_YN END) AS readAuth,
-        MAX(CASE WHEN ACTION_CODE='CREATE' THEN AUTH_YN END) AS createAuth,
-        MAX(CASE WHEN ACTION_CODE='UPDATE' THEN AUTH_YN END) AS updateAuth,
-        MAX(CASE WHEN ACTION_CODE='DELETE' THEN AUTH_YN END) AS deleteAuth
-    FROM TB_USER_MENU_AUTH A
-    JOIN TB_MENU_MASTER M
-        ON A.COMPANY_CODE = M.COMPANY_CODE
-       AND A.MENU_CODE = M.MENU_CODE
-    WHERE A.COMPANY_CODE = #{companyCode}
-      AND A.USER_ID = #{userId}
-    GROUP BY
-        A.COMPANY_CODE,
-        A.USER_ID,
-        A.MENU_CODE,
-        M.MENU_NAME,
-        M.SORT_ORDER
-    ORDER BY M.SORT_ORDER
-</select>
+
+    <!-- 5) 로그인 시 사용자 권한 조회 -->
+    <select id="selectUserMenuAuth" resultType="map">
+        SELECT
+            MENU_CODE,
+            ACTION_CODE,
+            AUTH_YN
+        FROM TB_USER_MENU_AUTH
+        WHERE COMPANY_CODE = #{companyCode}
+          AND USER_ID      = #{userId}
+    </select>
 
 </mapper>

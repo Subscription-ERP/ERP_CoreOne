@@ -1,33 +1,24 @@
 package com.rootcore.auth.web;
 
-import java.util.List;
-
-import org.springframework.web.bind.annotation.*;
-
 import com.rootcore.auth.service.MenuPermissionService;
 import com.rootcore.auth.vo.MenuAuthSaveVO;
 import com.rootcore.auth.vo.MenuPermissionUserVO;
 import com.rootcore.auth.vo.MenuTreeVO;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth/menu_permission")
+@RequestMapping("/auth/menu_permission/api")
 public class MenuPermissionController {
 
     private final MenuPermissionService service;
 
-    /** 화면 이동 */
-    @GetMapping
-    public String menuPermissionPage() {
-        return "auth/menu_permission";
-    }
-
-    /** 사용자 리스트 조회 (왼쪽 Grid) */
+    /** 1) 사용자 검색 조회 */
     @GetMapping("/user")
-    @ResponseBody
     public List<MenuPermissionUserVO> getUserList(
             @RequestParam String companyCode,
             @RequestParam(required = false) String userName,
@@ -37,31 +28,18 @@ public class MenuPermissionController {
         return service.getUserList(companyCode, userName, dept, position);
     }
 
-    /** 메뉴트리 조회 (오른쪽 트리) */
+    /** 2) 선택한 사용자 메뉴 권한 조회 */
     @GetMapping("/menu")
-    @ResponseBody
-    public List<MenuTreeVO> getMenuTree(
+    public List<MenuTreeVO> getUserMenuAuth(
             @RequestParam String companyCode,
-            @RequestParam String userId,
-            @RequestParam String menuGroup
+            @RequestParam String userId
     ) {
-        return service.getMenuTree(companyCode, userId, menuGroup);
+        return service.getUserMenuTree(companyCode, userId);
     }
 
-    /** 권한 저장 */
+    /** 3) 권한 저장 */
     @PostMapping("/save")
-    @ResponseBody
-    public String saveMenuAuth(
-            @RequestParam String companyCode,
-            @RequestParam String userId,
-            @RequestBody List<MenuAuthSaveVO> authList,
-            HttpSession session
-    ) {
-        String updatedBy = (String) session.getAttribute("LOGIN_USER_ID");
-        if (updatedBy == null) updatedBy = "SYSTEM";
-
-        service.saveUserAuth(companyCode, userId, authList, updatedBy);
-
-        return "SUCCESS";
+    public int saveMenuAuth(@RequestBody List<MenuAuthSaveVO> authList) {
+        return service.saveMenuAuth(authList);
     }
 }

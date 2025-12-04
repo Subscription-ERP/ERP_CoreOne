@@ -1,20 +1,24 @@
 package com.rootcore.auth.service;
 
-import java.util.List;
-
+import com.rootcore.auth.vo.MenuAuthSaveVO;
 import com.rootcore.auth.vo.MenuPermissionUserVO;
 import com.rootcore.auth.vo.MenuTreeVO;
-import com.rootcore.auth.vo.MenuAuthSaveVO;
+
+import java.util.List;
 
 public interface MenuPermissionService {
 
+    /** 1) 검색조건 포함 사용자 목록 조회 */
     List<MenuPermissionUserVO> getUserList(
-            String companyCode, String userName, String dept, String position);
+            String companyCode,
+            String userName,
+            String dept,
+            String position
+    );
 
-    List<MenuTreeVO> getMenuTree(String companyCode, String userId, String menuGroup);
+    /** 2) 사용자 메뉴트리 조회 */
+    List<MenuTreeVO> getUserMenuTree(String companyCode, String userId);
 
-    void saveUserAuth(
-            String companyCode, String userId,
-            List<MenuAuthSaveVO> authList, String updatedBy);
+    /** 3) 권한 저장 */
+    int saveMenuAuth(List<MenuAuthSaveVO> authList);
 }
-

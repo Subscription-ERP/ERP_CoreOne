@@ -1,51 +1,42 @@
 package com.rootcore.auth.mapper;
 
-import java.util.List;
-
+import com.rootcore.auth.vo.MenuAuthSaveVO;
+import com.rootcore.auth.vo.MenuPermissionUserVO;
+import com.rootcore.auth.vo.MenuTreeVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.rootcore.auth.vo.MenuPermissionUserVO;
-import com.rootcore.auth.vo.MenuTreeRowVO;
-import com.rootcore.auth.vo.UserMenuAuthVO;
+import java.util.List;
 
 @Mapper
 public interface MenuPermissionMapper {
 
-    /** 사용자 목록 조회 */
+    /** 1) 검색조건 포함 사용자 목록 조회 */
     List<MenuPermissionUserVO> selectUserList(
-        @Param("companyCode") String companyCode,
-        @Param("userName") String userName,
-        @Param("dept") String dept,
-        @Param("position") String position
+            @Param("companyCode") String companyCode,
+            @Param("userName") String userName,
+            @Param("dept") String dept,
+            @Param("position") String position
     );
 
-    /** 메뉴트리 + 사용자 권한 조회 */
-    List<MenuTreeRowVO> selectMenuTree(
-        @Param("companyCode") String companyCode,
-        @Param("userId") String userId,
-        @Param("menuGroup") String menuGroup
+    /** 2) 사용자 + 메뉴트리 + 권한 조회 */
+    List<MenuTreeVO> selectUserMenuTree(
+            @Param("companyCode") String companyCode,
+            @Param("userId") String userId
     );
 
-    /** 기존 권한 삭제 */
-    void deleteUserAuth(
-        @Param("companyCode") String companyCode,
-        @Param("userId") String userId
+    /** 3) 기존 사용자 권한 삭제 */
+    int deleteUserMenuAuth(
+            @Param("companyCode") String companyCode,
+            @Param("userId") String userId
     );
 
-    /** 액션별 권한 INSERT */
-    void insertUserAuth(
-        @Param("companyCode") String companyCode,
-        @Param("userId") String userId,
-        @Param("menuCode") String menuCode,
-        @Param("actionCode") String actionCode,
-        @Param("authYn") String authYn,
-        @Param("updatedBy") String updatedBy
-    );
+    /** 4) 사용자 메뉴 권한 INSERT */
+    int insertUserMenuAuth(MenuAuthSaveVO vo);
 
-    /** 로그인 성공 시 세션에 담아 줄 사용자 전체 권한 조회 */
-    List<UserMenuAuthVO> selectUserAuthList(
-        @Param("companyCode") String companyCode,
-        @Param("userId") String userId
+    /** 5) 로그인 후 세션용 권한 조회 */
+    List<MenuAuthSaveVO> selectUserMenuAuth(
+            @Param("companyCode") String companyCode,
+            @Param("userId") String userId
     );
 }

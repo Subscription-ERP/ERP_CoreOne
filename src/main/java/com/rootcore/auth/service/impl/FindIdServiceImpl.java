@@ -30,10 +30,10 @@ public class FindIdServiceImpl implements FindIdService {
         String authCode = String.valueOf((int)(Math.random() * 900000 + 100000));
 
         Map<String, Object> param = new HashMap<>();
-        param.put("companyCode", "ROOT");   // ★ 필수 추가
+        param.put("companyCode", "0000");   // ★ 필수 추가
         param.put("phone", phone);
         param.put("authCode", authCode);
-        param.put("companyCode", "ROOT");   
+           
 
         smsAuthMapper.saveAuthCode(param);
         smsService.sendAuthCode(phone, authCode);
