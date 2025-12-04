@@ -222,29 +222,20 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // 모달에서 거래처 값 불러오기
-handleSelectedCust = function(row) {
+window.handleSelectedCust = function(row) {
     custCodeSearch.value = row.custCode;
     custNameSearch.value = row.custName;
 
     document.getElementById('creditMax').value = Number(row.creditMax).toLocaleString();
+    sumPrice();
 };
 
 window.afterCustSearch = function(result) {
-    const byEnter = window.custSearchByEnter === true;
-    window.custSearchByEnter = false;
+    const byEnter = custSearchByEnter === true;
+    custSearchByEnter = false;
 
     if (byEnter) {
-        if (result.length === 1) {
-            const row = result[0];
-
-            if (typeof handleSelectedCust === 'function') {
-                handleSelectedCust(row);
-            }
-            closeCustModal();
-        } else {
-            // 여러 건이면 모달 띄워서 사용자 선택
-            openCustModal();
-        }
+        returnOnlyOne(result);
     } else {
         // 버튼으로 모달을 열어 내부에서 검색한 경우 등: 그냥 모달 보여주기만
         openCustModal();
@@ -289,7 +280,7 @@ function searchCustModal() {
 
     // 2) 모달 JS의 검색 함수 호출
     if (typeof searchCust === 'function') {
-        window.custSearchByEnter = true;
+        custSearchByEnter = true;
         searchCust();
     }
 }
@@ -350,50 +341,38 @@ function resetData() {
 }
 
 // 총공급액/총부가세/총액/잔여여신 계산
+// 여신/합계 계산
 function sumPrice() {
     const rows = inOrdGrid.getData();
 
-    let totalSupply = 0;  // 총공급가액
-    let totalSurTax = 0;  // 총부가세
+    let totalSupply = 0;
+    let totalSurTax = 0;
 
     rows.forEach(row => {
-        // 공급가액 합계
-        if (row.supplyPrice) {
-            const sp = typeof row.supplyPrice === 'number'
-                ? row.supplyPrice
-                : Number(String(row.supplyPrice).replace(/,/g, ''));
-            if (!isNaN(sp)) totalSupply += sp;
-        }
-
-        // 부가세 합계
-        if (row.surTax) {
-            const st = typeof row.surTax === 'number'
-                ? row.surTax
-                : Number(String(row.surTax).replace(/,/g, ''));
-            if (!isNaN(st)) totalSurTax += st;
-        }
+        // sp: 공급가액, st: 부가세
+        const sp = Number(String(row.supplyPrice || 0).replace(/,/g, '')) || 0;
+        const st = Number(String(row.surTax || 0).replace(/,/g, '')) || 0;
+        totalSupply += sp;
+        totalSurTax += st;
     });
+    
+    // 총액
+    const totalPrice = totalSupply + totalSurTax;
 
-    const totalPrice = totalSupply + totalSurTax; // 총액
+    document.getElementById('totalSupplyPrice').value = totalSupply.toLocaleString();
+    document.getElementById('totalSurtax').value = totalSurTax.toLocaleString();
+    document.getElementById('totalPrice').value = totalPrice.toLocaleString();
 
-    const supplyInput   = document.getElementById('totalSupplyPrice');
-    const surtaxInput   = document.getElementById('totalSurtax');
-    const totalInput    = document.getElementById('totalPrice');
-    const creditMaxEl   = document.getElementById('creditMax');
-    const creditRemainEl= document.getElementById('creditRemain');
+    const creditMaxEl = document.getElementById('creditMax');
+    const creditRemainEl = document.getElementById('creditRemain');
 
-    // 합계 표시
-    if (supplyInput)   supplyInput.value    = totalSupply.toLocaleString();
-    if (surtaxInput)   surtaxInput.value    = totalSurTax.toLocaleString();
-    if (totalInput)    totalInput.value     = totalPrice.toLocaleString();
-
-    // 잔여여신 = 여신한도 - 총액
     if (creditMaxEl && creditRemainEl) {
         const max = Number(String(creditMaxEl.value).replace(/,/g, '')) || 0;
         const remain = max - totalPrice;
         creditRemainEl.value = remain.toLocaleString();
     }
 }
+
 
 
 // 나중에 삭제할 것!! ==============================================

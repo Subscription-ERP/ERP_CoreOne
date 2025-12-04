@@ -1,3 +1,26 @@
+/*
+* 거래처 모달
+* 담당자: 박봉근
+*
+* 사용법
+* 1. 모달 열기: openCustModal()
+*
+* 2. 거래처 정보 부르기: getCustList()
+*
+* 3. 검색: searchCust()
+* 3-1. 결과 값 가지고 오기
+*   a. 부모에서 지역 함수로 정의: window.handleSelectedCust = function(row) {}
+*   b. 값 가지고 오기: (input id).value = row.custCode / (input id).value = row.custName
+*   c. 부모에서 정의: afterCustSearch
+* 3-2. 커스텀
+*   a. 부모에서 지역함수로 정의: window.afterCustSearch = function(result) {}
+*   b. 값이 1개일 때 바로 return: returnOnlyOne(result)
+*
+* 4. 모달 닫기: closeCustModal()
+*
+* */
+
+
 // 전역 변수
 const custModal = document.getElementById('custModal');
 const schCustCode = document.getElementById('schCustCode');
@@ -29,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   getCustList();
-  window.custModalGrid = custModalGrid;
 
   btnSearch.addEventListener("click", function (e) {
     e.preventDefault();
@@ -59,12 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 거래처 정보 불러오기
 function getCustList() {
-  if (!window.custModalGrid) return;
+  if (!custModalGrid) return;
 
   fetch('/api/sd/custList')
     .then(res => res.json())
     .then(result => {
-      window.custModalGrid.resetData(result);
+      custModalGrid.resetData(result);
     })
     .catch(err => console.error(err));
 }
@@ -76,7 +98,7 @@ function searchCust() {
 
   const params = { custCode, custName };
 
-  if (!window.custModalGrid) return;
+  if (!custModalGrid) return;
 
   fetch('/api/sd/searchCust', {
     method: 'POST',
@@ -85,11 +107,11 @@ function searchCust() {
   })
       .then(res => res.json())
       .then(result => {
-        window.custModalGrid.resetData(result);
-        window.custModalGrid.refreshLayout();
+        custModalGrid.resetData(result);
+        custModalGrid.refreshLayout();
 
         // 부모에 값 넘기는 함수
-        if (typeof handleSelectedCust === 'function') {
+        if (typeof window.afterCustSearch === 'function') {
           window.afterCustSearch(result);
         }
       })
@@ -104,7 +126,21 @@ function handleEnter(e) {
   }
 }
 
-// 거래처 모달
+function returnOnlyOne(result) {
+  if (result.length === 1) {
+    const row = result[0];
+
+    if (typeof handleSelectedCust === 'function') {
+      handleSelectedCust(row);
+    }
+    closeCustModal();
+  } else {
+    // 여러 건이면 모달 띄워서 사용자 선택
+    openCustModal();
+  }
+}
+
+// 거래처 모달 열기
 function openCustModal(e) {
   if (e) {
     e.stopPropagation();
@@ -113,14 +149,14 @@ function openCustModal(e) {
   custModal.hidden = false;
   custModal.classList.remove('hidden');
 
-  if (window.custModalGrid) {
-    window.custModalGrid.refreshLayout();
+  if (custModalGrid) {
+    custModalGrid.refreshLayout();
   }
 }
 
 // 모달 닫기
 function closeCustModal() {
-  if (!window.custModalGrid) return;
+  if (!custModalGrid) return;
 
   custModal.hidden = true;
   custModal.classList.add('hidden');
