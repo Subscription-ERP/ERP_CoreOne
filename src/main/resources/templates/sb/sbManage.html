@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<head>
+<meta charset="UTF-8">
+<title>구독관리</title>
+<style>
+.sub-detail {
+  display: flex;
+  gap: 20px;
+}
+
+.sub-product,
+.sub-services,
+.sub-payment-info {
+  flex: 1;
+}
+</style>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="sub-detail">
+
+  <!-- 왼쪽: 구독상품 -->
+  <div class="sub-product">
+    <div class="product-name">
+      <span th:text="${plan.planName}">Essential</span>
+    </div>
+    <div class="product-price">
+      월 <span th:text="${plan.price}">9,900</span>원
+    </div>
+
+    <p>구독상태: <span th:text="${subscribe.subsStatus}">구독중</span></p>
+    <p>다음 결제일: <span th:text="${subscribe.nextPayment}">2025-11-24</span></p>
+    <p>사용자수: <span th:text="${subscribe.userCount}">50</span>명</p>
+    <p>구독 시작일: <span th:text="${subscribe.subsStart}"></span></p>
+    <p>구독 종료일: <span th:text="${subscribe.subsEnd}"></span></p>
+
+    <button type="button">결제하기</button>
+  </div>
+
+  <!-- 가운데: 핵심 서비스 -->
+  <div class="sub-services">
+    <button type="button">회계</button>
+    <button type="button">인사</button>
+    <button type="button">영업</button>
+    <button type="button">플랜변경</button>
+  </div>
+
+  <!-- 오른쪽: 결제정보 -->
+  <div class="sub-payment-info">
+    <p>결제수단: <span th:text="${payment.method}">토스</span></p>
+    <p>가격: <span th:text="${payment.totalPrice}">9,900</span>원</p>
+    <p>결제상태: <span th:text="${payment.paymentStat}">결제완료</span></p>
+    <p>최근 결제일: <span th:text="${payment.recentPayment}">2025-11-19</span></p>
+
+    <button type="button">영수증 보기</button>
+    <button type="button">매출전표 보기</button>
+  </div>
+
+</div>
+
+</div>
+</body>
+</html>

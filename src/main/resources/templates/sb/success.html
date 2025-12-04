@@ -1,21 +1,114 @@
- <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+
 <head>
-  <meta charset="UTF-8">
-  <title>결제 완료</title>
+<meta charset="UTF-8">
+<title>결제 완료</title>
+
+<style>
+/* 레이아웃의 body는 건들지 말고, 이 페이지만 따로 */
+.payment-page {
+  max-width: 520px;      /* 오른쪽 컨텐츠 영역 안에서 가로폭 */
+  margin: 40px auto;     /* 위쪽 여백 + 가운데 정렬 */
+}
+
+/* 제목 */
+.payment-page .title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+/* 데이터 박스 */
+.payment-page .table-box {
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: #fff;
+}
+
+/* 각 줄 */
+.payment-page .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.payment-page .row:last-child {
+  border-bottom: none;
+}
+
+/* 버튼 영역 */
+.payment-page .btn-area {
+  margin-top: 25px;
+  text-align: center;
+}
+
+/* 확인 버튼 */
+.payment-page .btn-confirm {
+  background: #000;
+  color: #fff;
+  padding: 12px 70px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.payment-page .btn-confirm:hover {
+  opacity: 0.9;
+}
+</style>
 </head>
+
 <body>
-  <h1>결제가 성공적으로 완료되었습니다!</h1>
+	<div layout:fragment="content">
+		<div class="payment-page">
 
-  <p>주문번호: <span th:text="${payment.orderId}"></span></p>
-  <p>결제금액: <span th:text="${payment.totalAmount}"></span>원</p>
-  <p>승인일시: <span th:text="${payment.approvedAt}"></span></p>
-  <p>결제수단: <span th:text="${payment.method}"></span></p>
-  <p>카드사명: <span th:text="${payment.cardCompany}"></span></p>
+			<div class="title">결제가 완료되었습니다.</div>
 
-  <a href="/">홈으로 돌아가기</a>
+			<div class="table-box">
+
+				<div class="row">
+					<div>주문번호</div>
+					<div th:text="${payment.orderId}"></div>
+				</div>
+
+				<div class="row">
+					<div>결제금액</div>
+					<div>
+						<span
+							th:text="${#numbers.formatInteger(payment.totalAmount, 0, 'COMMA')}"></span>원
+					</div>
+				</div>
+
+				<div class="row">
+					<div>승인일시</div>
+					<div th:text="${payment.approvedAt}"></div>
+				</div>
+
+				<div class="row">
+					<div>결제수단</div>
+					<div th:text="${payment.method}"></div>
+				</div>
+
+				<div class="row">
+					<div>카드사명</div>
+					<div th:text="${payment.cardCompany}"></div>
+				</div>
+
+			</div>
+
+			<div class="btn-area">
+				<a href="/" class="btn-confirm">확인</a>
+			</div>
+
+		</div>
+	</div>
 </body>
-</html> 
-
-
-
+</html>

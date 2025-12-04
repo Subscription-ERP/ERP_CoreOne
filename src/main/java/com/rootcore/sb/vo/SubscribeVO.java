@@ -10,6 +10,9 @@ public class SubscribeVO {
 	  private String subCode;          // SUB_CODE (PK, 구독코드)
 	    private String companyCode;      // COMPANY_CODE (회사코드 FK)
 	    private String subsStatus;       // SUBS_STATUS (구독상태)
+	    private String subsStatusName;       // 구독 활성 / 비활성      ← DB X, 조인값
+	    private String inactiveReason;       // CANCEL / EXPIRE / ...   ← DB 컬럼
+	    private String inactiveReasonName;   // 구독 해지 / 만료 / ...  ← DB X, 조인값
 	    private LocalDate subsStart;     // SUBS_START (구독시작일)
 	    private LocalDate subsEnd;       // SUBS_END (구독종료일)
 

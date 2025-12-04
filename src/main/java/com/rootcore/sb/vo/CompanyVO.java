@@ -23,6 +23,14 @@ public class CompanyVO {
     private String companyAddress;   // 회사 주소
     private String companyPhone;     // 회사 전화번호
     private String managerPhone;     // 담당자 연락처
+    
+    private String subsCode;
+    private String subsStatus;
+    private String subsStatusName;
+    
+    private String planCode;
+    private String planName;
+
     private String createdBy;        // 생성자
     private LocalDateTime createDate; // 생성일자
     private String updatedBy;        // 수정자

@@ -2,6 +2,7 @@ package com.rootcore.sb.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -88,11 +89,16 @@ public class PaymentServiceImpl implements PaymentService {
 		System.out.println(requestVO);
 		// 2. 토스 결제 승인 API 호출
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmPayment(requestVO);
-		String displayName = tossResponse.getCard().getDisplayName();
-		tossResponse.setCardCompany(displayName); // 화면용
+		System.out.println(tossResponse);
+		// ① Toss가 내려준 카드사 코드
+		String cardCode = tossResponse.getCard().getCardCompanyCode(); // issuerCode 그대로
 
-		String code = paymentMapper.findCardCompanyCode("OP", displayName);
-		tossResponse.setCardCompanyCode(code); // DB용
+		// ② 화면에 보여줄 카드사명 → 공통코드에서 조회
+		String cardName = paymentMapper.findCardCompanyName("OP", cardCode);
+//		System.out.println(">>> 조회된 코드 = " + code);
+
+		tossResponse.setCardCompany(cardName); // 화면용 한글 카드사명
+		tossResponse.setCardCompanyCode(cardCode); // DB용 코드
 		// 회사등록
 		company.setCreatedBy("SYSTEM");
 		company.setCreateDate(LocalDateTime.now());
@@ -141,7 +147,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentMethod(tossResponse.getMethod());
-		payment.setCardCompany(tossResponse.getCardCompanyCode());
+		payment.setCardCompany(cardCode);
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
@@ -171,5 +177,11 @@ public class PaymentServiceImpl implements PaymentService {
 		return tossResponse;
 
 	}
+	
+
+	 @Override
+	    public List<SubscribeVO> selectInactiveSubListByComCode(String comCode) {
+	        return paymentMapper.selectInactiveSubListByComCode(comCode);
+	    }
 
 }
