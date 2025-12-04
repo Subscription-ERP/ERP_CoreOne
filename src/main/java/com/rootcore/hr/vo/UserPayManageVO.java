@@ -10,6 +10,7 @@ import lombok.Data;
 
 @Data
 public class UserPayManageVO {
+	private String payroll_code; // 급여대장코드
 	private String user_id; // 사번
 	private String user_name; // 사원이름
 	private String dept_name; // 부서이름

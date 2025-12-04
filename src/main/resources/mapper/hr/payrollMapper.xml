@@ -26,7 +26,7 @@
 		)
 		VALUES (
 			FN_MAKE_PAYROLL_CODE(),
-			'ROOT',
+			'0000',
 			#{userId},
 			#{payrollPeriodCode},
 			#{payrollPeriod},
@@ -53,6 +53,8 @@
 		FROM     tb_payroll pr
 		         JOIN tb_cm_code cc
 		         ON pr.payroll_type = cc.code
+		         JOIN tb_user_pay_management upm
+		         ON upm.payroll_code = pr.payroll_code
 		WHERE    1=1
 		<if test="payrollType != null and payrollType != '' ">
             AND pr.payroll_type = #{payrollType}
@@ -101,6 +103,7 @@
 	</select>
 		
 	<resultMap id="payrollResultMap" type="UserPayManageVO">
+	    <result column="payroll_code"               property="payroll_code"/>
 	    <result column="user_id"                    property="user_id"/>
 	    <result column="user_name"                  property="user_name"/>
 	    <result column="dept_name"                  property="dept_name"/>
@@ -131,4 +134,63 @@
 	    )}
 	</select>
 
+	<!-- 급여대장-계산하기모달창-확정버튼 -->
+	<insert id="insertUserPay" parameterType="UserPayManageVO">
+		INSERT INTO tb_user_pay_management (
+		    user_pay_management_code,
+		    payroll_code,
+		    company_code,
+		    user_id,
+		    pay_period,
+		    pay_date,
+		    salary,
+		    bonus,
+		    overtime_allowance,
+		    night_allowance,
+		    holiday_allowance,
+		    family_allowance,
+		    meal_allowance,
+		    annual_leave_allowance,
+		    total_allowance,
+		    total_payment,
+		    <!-- income_tax, -->
+		    national_pension,
+		    employment_insurance,
+		    health_insurance,
+		    long_time_care_insurance,
+		    <!-- local_income_tax, -->
+		    total_deduction,
+		    net_pay
+		) VALUES (
+		    FN_MAKE_USER_PAY_MANAGEMENT,
+		    #{payroll_code},
+		    (SELECT company_code
+		     FROM   tb_user_master
+		     WHERE  user_id = #{user_id}),
+		    #{user_id},
+		    (SELECT payroll_period
+		     FROM   tb_payroll
+		     WHERE  payroll_code = #{payroll_code}),
+		    #{payroll_date},
+		    #{salary},
+		    #{bonus},
+		    #{overtime},
+		    #{night},
+		    #{holiday},
+		    #{family},
+		    #{meal},
+		    #{annual_leave},
+		    #{total_allowance},
+		    #{total_payment_amount},
+		    <!-- #{income_tax}, -->
+		    #{national_pension},
+		    #{employment_insurance},
+		    #{health_insurance},
+		    #{long_time_care_insurance},
+		    <!-- #{local_income_tax}, -->
+		    #{total_deduction_amount},
+		    #{net_pay}
+		)
+	</insert>
+	
 </mapper>
