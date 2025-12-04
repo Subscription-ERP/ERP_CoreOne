@@ -20,5 +20,8 @@ public interface PayrollService {
 	
 	// 급여대장-대장조회-계산하기-급여계산
 	List<UserPayManageVO> selectUserPayManageList(Map<String, Object> map);
+	
+	// 급여대장-계산하기모달창-확정버튼
+	int insertUserPay(List<UserPayManageVO> userPayManageList);
 
 }

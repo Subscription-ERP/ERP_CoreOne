@@ -70,4 +70,16 @@ public class PayrollServiceImpl implements PayrollService {
 	    
 	    return UserPayManage;
 	}
+	
+	// 급여대장-계산하기모달창-확정버튼
+	@Override
+	@Transactional 
+	public int insertUserPay(List<UserPayManageVO> userPayManageList) {
+		int totalSuccessCount = 0;
+		for (UserPayManageVO payVO : userPayManageList ) {
+			int insertedRows = payrollMapper.insertUserPay(payVO);
+			totalSuccessCount += insertedRows; 
+		}
+		return totalSuccessCount;
+	}
 }

@@ -109,4 +109,10 @@ public class PayrollRestController {
 
 		return result;
 	}
+	
+	// 급여대장-계산하기모달-확정버튼
+	@PostMapping("/registerUserPay")
+	public int registerUserPay(@RequestBody List<UserPayManageVO> userPayManageList) {
+		return payrollService.insertUserPay(userPayManageList);
+	}
 }

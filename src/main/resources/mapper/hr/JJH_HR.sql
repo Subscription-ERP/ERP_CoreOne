@@ -323,6 +323,7 @@ SET company_code = '0000';
 -- T_PAYROLL_RESULT_REC는 급여 계산 결과의 '한 행(ROW)' 또는 '한 레코드(RECORD)'의 구조를 정의함
 -- 데이터베이스의 테이블을 생성할 때 각 컬럼을 정의하는것과 같다.
 CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
+    payroll_code VARCHAR2(20),
     user_id                     VARCHAR2(20),
     user_name                   VARCHAR2(100),
     dept_name                   VARCHAR2(100),
@@ -367,7 +368,8 @@ IS
     -- 1) 커서 정의
     -- 위에서 선언한 대장에 해당하는 사원조회
     CURSOR user_cursor IS -- 커서 선언
-        SELECT pr.user_id, -- 사용자 id
+        SELECT pr.payroll_code, -- 급여대장코드
+               pr.user_id, -- 사용자 id
                um.user_name, -- 성명
                dm.dept_name, -- 부서명
                pr.payroll_date, -- 지급일
@@ -600,6 +602,7 @@ BEGIN
         v_results(v_results.LAST) := T_PAYROLL_RESULT_REC(
         -- v_results(v_results.LAST) 방금 .EXTEND로 추가된 마지막 위치를 가리킴
         -- T_PAYROLL_RESULT_REC 타입의 레코드를 생성
+            user_info.payroll_code,
             v_uid, 
             user_info.user_name,
             user_info.dept_name,
@@ -629,7 +632,8 @@ BEGIN
     -- 이 부분은 프로시저 내부의 PL/SQL 데이터(v_results 컬렉션)을 외부SQL환경으로 전달하기 위한 형식 변환 및 반환 과정
     -- 외부시스템은 SQL결과 집합(SELECT 쿼리의 결과) 형태로 데이터를 받아야 함
     OPEN p_out_results FOR
-        SELECT user_id,
+        SELECT payroll_code,
+               user_id,
                user_name,
                dept_name,
                payroll_date,
@@ -899,15 +903,24 @@ VALUES ('ATT25100011', 'ROOT', 'EMP25041000005', TO_DATE('20251015', 'YYYYMMDD')
 -- 매월 1일에 급여대장테이블에 전에 달의 급여대장이 저장되도록(5월1일은 4월급여대장이 만들어지도록)
 
 -- 매월 1일 급여 대장 생성 프로시저
-CREATE OR REPLACE PROCEDURE sp_insert_payroll_pay 
-
+create or replace PROCEDURE sp_insert_payroll_pay 
+    
 IS
+    CURSOR payroll_cursor IS -- 커서선언
+        SELECT company_code
+        FROM   tb_company_master;
+
     v_payroll_start_date DATE;
     v_payroll_period VARCHAR2(20);
     v_payroll_type VARCHAR2(20);
     v_payroll_name VARCHAR2(100);
     v_payroll_end_date DATE;
     v_payroll_date DATE;
+    v_make_payroll_period_code VARCHAR2(100);
+    v_date          VARCHAR2(8);
+    v_max           VARCHAR2(50);
+    v_seq_num       NUMBER;
+    v_new_seq       VARCHAR2(5);
 BEGIN
     -- payroll_start_date 대장기간 시작일
     v_payroll_start_date := TRUNC(ADD_MONTHS(SYSDATE, -1),'MM'); -- 월의 첫날로 잘라내기
@@ -922,35 +935,174 @@ BEGIN
     -- payroll_date 지급일
     v_payroll_date := TRUNC(SYSDATE, 'MM') + 9;
     
-    -- 급여대장에 INSERT
-    INSERT INTO tb_payroll (
-        payroll_code, -- 급여대장코드 함수
-        company_code, -- 회사코드
-        user_id, -- 사원번호
-        payroll_period, -- 귀속연월
-        payroll_type, -- j1 급여
-        payroll_name, -- 급여대장명칭
-        payroll_start_date, -- 대장기간시작일
-        payroll_end_date, -- 대장기간종료일
-        payroll_date, -- 지급일                            
-        payroll_period_code -- 신고귀속코드 함수
-    )
-    SELECT FN_MAKE_PAYROLL_CODE,
-           um.company_code,
-           um.user_id,
-           v_payroll_period,
-           v_payroll_type,
-           v_payroll_name,
-           v_payroll_start_date,
-           v_payroll_end_date,
-           v_payroll_date,
-           fn_make_payroll_period_code
-    FROM   tb_user_master um
-    WHERE  um.leave_date IS NULL;
-      
+     -- 오늘 날짜
+    v_date := TO_CHAR(SYSDATE, 'YYMMDD');
+
+    FOR payroll_info IN payroll_cursor LOOP
+        -- 신고귀속코드 함수
+        v_make_payroll_period_code := fn_make_payroll_period_code;
+
+        -- 급여대장에 INSERT
+        INSERT INTO tb_payroll (
+            payroll_code, -- 급여대장코드 함수
+            company_code, -- 회사코드
+            user_id, -- 사원번호
+            payroll_period, -- 귀속연월
+            payroll_type, -- j1 급여
+            payroll_name, -- 급여대장명칭
+            payroll_start_date, -- 대장기간시작일
+            payroll_end_date, -- 대장기간종료일
+            payroll_date, -- 지급일                            
+            payroll_period_code -- 신고귀속코드 함수
+        ) SELECT 'PRL' || v_date || LPAD(QUIZ.TB_PAYROLL_SEQ.NEXTVAL, 5, '0'),
+                 payroll_info.company_code,
+                 user_id,
+                 v_payroll_period,
+                 v_payroll_type,
+                 v_payroll_name,
+                 v_payroll_start_date,
+                 v_payroll_end_date,
+                 v_payroll_date,
+                 v_make_payroll_period_code
+          FROM   tb_user_master         
+          WHERE  leave_date IS NULL
+            AND  company_code = payroll_info.company_code;
+            
+    END LOOP;
+
      -- 5. 트랜잭션 처리 및 결과 출력
     COMMIT;
     
-    DBMS_OUTPUT.PUT_LINE(TO_CHAR(SQL%ROWCOUNT) || ' 건의 급여 대장 (' || v_payroll_name || ')이 전체 사원을 대상으로 생성되었습니다.');                      
 END;
 /
+
+
+-- TB_COMPANY_MASTER 테이블에 샘플 데이터 1건을 삽입하는 쿼리입니다.
+
+INSERT INTO tb_company_master (
+    COMPANY_CODE,
+    COMPANY_NAME,
+    CEO_NAME,
+    CEO_PHONE,
+    COMPANY_EMAIL,
+    INDUSTRY_TYPE,
+    BUSINESS_TYPE,
+    MANAGER_NAME,
+    EMPLOYEE_COUNT,
+    BNO,
+    CHECK_NO,
+    COMPANY_ADDRESS,
+    COMPANY_PHONE,
+    MANAGER_PHONE
+    -- CREATED_BY, CREATE_DATE, UPDATED_BY, UPDATE_DATE는 기본값(DEFAULT)을 사용합니다.
+) VALUES (
+    '0000', -- 회사코드
+    '테스트 솔루션즈', -- 회사명
+    '김대표', -- 대표자명
+    '010-1234-5678', -- 대표자 휴대폰번호
+    'test@solution.com', -- 회사이메일
+    '소프트웨어 개발 및 공급', -- 업종
+    '서비스', -- 업태
+    '박담당', -- 담당자 명
+    50, -- 직원 수
+    '123-45-67890', -- 사업자등록번호
+    '1234567890', -- 인증번호 (가정)
+    '서울특별시 강남구 테헤란로 123', -- 회사 주소
+    '02-9876-5432', -- 회사 전화번호
+    '010-2468-1357' -- 담당자 연락처
+);
+
+COMMIT; -- 변경사항을 확정합니다.
+
+CREATE SEQUENCE QUIZ.TB_PAYROLL_SEQ START WITH 1
+INCREMENT BY 1       
+NOCACHE; 
+
+-- 급여 생성 함수
+create or replace FUNCTION FN_MAKE_USER_PAY_MANAGEMENT
+RETURN VARCHAR2
+IS
+    v_date          VARCHAR2(8);
+    v_max           VARCHAR2(50);
+    v_seq_num       NUMBER;
+    v_new_seq       VARCHAR2(5);
+    v_user_pay_management_code  VARCHAR2(50);
+BEGIN
+    -- 오늘 날짜
+    v_date := TO_CHAR(SYSDATE, 'YYMMDD');
+
+    SELECT MAX(user_pay_management_code)
+      INTO v_max
+      FROM tb_user_pay_management
+     WHERE user_pay_management_code LIKE 'PMC' || v_date || '%';
+
+    IF v_max IS NULL THEN
+        v_new_seq := '00001';
+    ELSE
+        v_seq_num := TO_NUMBER(SUBSTR(v_max, 12, 5)) + 1;
+        v_new_seq := LPAD(v_seq_num, 5, '0');
+    END IF;
+
+    v_user_pay_management_code := 'PMC' || v_date || v_new_seq;
+    RETURN v_user_pay_management_code;
+END;
+/
+
+-- 급여대장-계산하기모달창-확정버튼 
+INSERT INTO tb_user_pay_management (
+    user_pay_management_code,
+    payroll_code,
+    company_code,
+    user_id,
+    pay_period,
+    pay_date,
+    salary,
+    bonus,
+    overtime_allowance,
+    night_allowance,
+    holiday_allowance,
+    family_allowance,
+    meal_allowance,
+    annual_leave_allowance,
+    total_allowance,
+    total_payment,
+    income_tax,
+    national_pension,
+    employment_insurance,
+    health_insurance,
+    long_time_care_insurance,
+    local_income_tax,
+    total_deduction,
+    net_pay
+) VALUES (
+    FN_MAKE_USER_PAY_MANAGEMENT,
+    #{payroll_code},
+    (SELECT company_code
+     FROM   tb_user_master
+     WHERE  user_id = #{user_id}) as company_code,
+    #{user_id},
+    (SELECT payroll_period
+     FROM   tb_payroll
+     WHERE  payroll_code = #{payroll_code}) as pay_period,
+    #{pay_date},
+    #{salary},
+    #{bonus},
+    #{overtime_allowance},
+    #{night_allowance},
+    #{holiday_allowance},
+    #{family_allowance},
+    #{meal_allowance},
+    #{annual_leave_allowance},
+    #{total_allowance},
+    #{total_payment},
+    #{income_tax},
+    #{national_pension},
+    #{employment_insurance},
+    #{health_insurance},
+    #{long_time_care_insurance},
+    #{local_income_tax},
+    #{total_deduction},
+    #{net_pay}
+);
+
+

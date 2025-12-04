@@ -2,6 +2,8 @@
  * payRoll.js
  */
 
+let currentPayrollPeriodCode = null; 
+
 /* 공통코드(선택박스) */
 function getCmCodeOptions(divId) {
 	const keys = Object.keys(divId);
@@ -477,8 +479,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 데이터(payrollCode)를 가져옵니다.
 			const payrollPeriodCode = targetElement.dataset.payrollPeriodCode;
+			currentPayrollPeriodCode = payrollPeriodCode;
 
-			console.log(`[급여계산 클릭] 대상 Payroll Code: ${payrollPeriodCode}`);
+			console.log(`[급여계산 클릭] 대상 payrollPeriodCode: ${payrollPeriodCode}`);
 
 			// 모달 열기
 			const payrollManageModal = document.querySelector('#payrollManageModal');
@@ -578,5 +581,40 @@ document.addEventListener("DOMContentLoaded", () => {
 			resetSummaryTables();
 		}
 	}); // end of payrollDetailGrid
-	
+
+	// 확정 버튼을 눌렀을때 사원급여관리 테이블에 삽입
+	document.querySelector('#btnPayrollSave').addEventListener('click', function(){
+		
+		if (!currentPayrollPeriodCode) {
+			console.log("확정 대상 급여 대장을 찾을 수 없습니다. 다시 시도해 주세요.", currentPayrollPeriodCode);
+			return;
+		}
+		const data = payrollDetailGrid.getData();
+		// console.log('a : ',a);
+		
+		fetch("/api/hr/registerUserPay", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		})
+			.then((response) => response.text())
+			.then((textresult) => {
+				// 텍스트를 정수로 변환
+    			const successCount = parseInt(textresult, 10);
+    			
+    			// 성공했을때
+				if (successCount > 0) {
+					alert(successCount + "건의 등록이 확정되었습니다.");
+					
+				} else {
+					alert("등록 실패 : " + textresult.message);
+					console.log(textresult.message);
+				}
+			})
+			.catch((error) => console.error("Error:", error));
+		
+	})	
+
 }); // end of DOMContentLoaded
