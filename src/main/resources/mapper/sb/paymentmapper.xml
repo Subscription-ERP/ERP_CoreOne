@@ -63,5 +63,11 @@
 		WHERE ORDER_ID =
 		#{orderId}
 	</update>
+	<select id="findCardCompanyCode" resultType="string">
+    SELECT CODE
+    FROM TB_CM_CODE
+    WHERE GROUP_CODE = #{groupCode}
+      AND #{displayName} LIKE '%' || CODE_NAME || '%'
+</select>
 	<!-- 필요하면 조회 메서드도 추가 -->
 </mapper>

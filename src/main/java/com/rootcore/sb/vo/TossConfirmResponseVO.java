@@ -13,8 +13,9 @@ public class TossConfirmResponseVO {
 	private String status; // SUCCESS, FAILED 등
 	private Long totalAmount;
 	private OffsetDateTime approvedAt;
-	private String cardCompany;	//내가 화면에 보여줄 매핑용 데이터로 null상태임
-	//값을 꺼내와서 넣어야 들어감
+	private String cardCompany; // 내가 화면에 보여줄 매핑용 데이터로 null상태임
+	private String cardCompanyCode;
+	// 값을 꺼내와서 넣어야 들어감
 
 	// 🔹 토스에서 내려주는 결제수단 (카드, 계좌이체, 간편결제 등)
 	private String method;
