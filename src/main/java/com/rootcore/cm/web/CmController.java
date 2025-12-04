@@ -18,9 +18,9 @@ public class CmController {
 		return "cm/authManage";
 	}
 
-	@GetMapping("/cm/itemManage")
-	public String itemManage() {
-		return "cm/itemManage";
+	@GetMapping("/cm/skuManage")
+	public String skuManage() {
+		return "cm/skuManage";
 	}
 
 	@GetMapping("/cm/deptCodeManage")
