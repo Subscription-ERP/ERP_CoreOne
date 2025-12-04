@@ -1,5 +1,7 @@
 package com.rootcore.sb.service;
 
+import java.util.List;
+
 import com.rootcore.sb.vo.CompanyVO;
 
 public interface CompanyService {
@@ -9,4 +11,5 @@ public interface CompanyService {
     String registerCompany(CompanyVO requestVO);
     
     CompanyVO getCompany(String companyCode);
+    List<CompanyVO> selectCompanyList();
 }

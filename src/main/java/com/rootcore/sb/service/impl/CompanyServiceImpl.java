@@ -1,6 +1,7 @@
 package com.rootcore.sb.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,5 +46,11 @@ public class CompanyServiceImpl implements CompanyService {
 	  public CompanyVO getCompany(String companyCode) {
 	      return companyMapper.selectCompany(companyCode);
 	  }
+
+	  @Override
+	  public List<CompanyVO> selectCompanyList() {
+		return companyMapper.selectCompanyList();
+	  }
+	  
 	  
 }
