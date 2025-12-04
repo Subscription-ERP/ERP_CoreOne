@@ -1,15 +1,16 @@
 package com.rootcore.auth.web;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/auth")
+@RequiredArgsConstructor
 public class MenuPermissionPageController {
 
-    @GetMapping("/menu_permission")
+    /** 메뉴 권한 화면 이동 */
+    @GetMapping("/auth/menu_permission")
     public String menuPermissionPage() {
-        return "auth/menu_permission";
+        return "auth/menu_permission";   // templates/auth/menu_permission.html
     }
 }

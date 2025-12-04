@@ -1,216 +1,354 @@
 /* ============================================================
-   메뉴권한 관리 JS (액션 기반 저장 방식)
-   상준 ERP 프로젝트 최종 버전
+   menuAuth.js  (최종 통합본)
+   - 검색 조건 AJAX 반영
+   - GRID 행 선택 강조
+   - 메뉴트리 렌더링 고도화
+   - 전체선택/해제, 되돌리기, 저장 기능 포함
 ============================================================ */
 
-let currentUserId = null;
-let currentCompanyCode = "ROOT";  // 세션에 있으면 세션값 사용하도록 변경 가능
+const COMPANY_CODE = '0000';
 
-/* ============================================================
-   1) 유저 목록 조회
-============================================================ */
+let userGrid;
+let selectedUser = null;
+let selectedRowKey = null;
+let originalAuthSnapshot = null;
+
+// 탭별 메뉴 데이터
+let menuTreeData = {
+    SYS: [],
+    HR: [],
+    SALES: [],
+    FI: [],
+    SUB: []
+};
+
+// ===============================================
+//  초기 로딩
+// ===============================================
+$(document).ready(function () {
+    console.log("menuAuth.js loaded");
+
+    initUserGrid();   // 왼쪽 GRID 초기화
+    bindEvents();     // 버튼 및 탭 이벤트 연결
+
+    // 자동 조회 제거 → 조회 버튼 눌렀을 때만 실행
+});
+
+
+// ===============================================
+// 1) LEFT 사용자 GRID 초기화
+// ===============================================
+function initUserGrid() {
+    const Grid = tui.Grid;
+
+    userGrid = new Grid({
+        el: document.getElementById('userGrid'),
+        bodyHeight: 'fitToParent',
+        scrollX: true,
+        scrollY: true,
+        rowHeight: 34,
+        minBodyHeight: 300,
+        columns: [
+            { header: '사원번호', name: 'userId', width: 110, align: 'center' },
+            { header: '사원명', name: 'userName', width: 120, align: 'center' },
+            { header: '부서', name: 'dept', width: 120, align: 'center' },
+            { header: '직급', name: 'jobTitle', width: 120, align: 'center' },
+            { header: '직책', name: 'position', width: 120, align: 'center' },
+            {
+                header: '상태', name: 'userStatus', width: 90, align: 'center',
+                formatter: ({ value }) => {
+                    if (value === '0')
+                        return '<span style="color:#0a7a20; font-weight:600;">재직</span>';
+                    if (value === '1')
+                        return '<span style="color:#d93025; font-weight:600;">퇴사</span>';
+                    return '-';
+                }
+            }
+        ]
+    });
+
+    // =============================
+    // GRID Row 클릭 → 선택 강조 + 메뉴권한 조회
+    // =============================
+    userGrid.on('click', function (ev) {
+        const rowKey = ev.rowKey;
+        const rowData = userGrid.getRow(rowKey);
+        if (!rowData) return;
+
+        // 이전 선택 제거
+        if (selectedRowKey !== null)
+            userGrid.removeRowClassName(selectedRowKey, 'row-selected');
+
+        // 새 선택 강조
+        userGrid.addRowClassName(rowKey, 'row-selected');
+        selectedRowKey = rowKey;
+        selectedUser = rowData;
+
+        console.log("선택한 사용자:", rowData);
+
+        loadUserMenuAuth(rowData.userId);
+    });
+}
+
+
+// ===============================================
+// 2) 이벤트 바인딩
+// ===============================================
+function bindEvents() {
+
+    // 🔍 조회 버튼
+    $('#btnSearch').on('click', function () {
+        loadUserList();
+    });
+
+    // 🧹 초기화 버튼
+    $('#btnReset').on('click', function () {
+        $('#searchUserName').val('');
+        $('#searchDept').val('');
+        $('#searchPosition').val('');
+
+        userGrid.resetData([]);
+        selectedUser = null;
+        selectedRowKey = null;
+    });
+
+    // 탭 클릭
+    $('.menu-tab-btn').on('click', function () {
+        const targetId = $(this).data('tab');
+
+        $('.menu-tab-btn').removeClass('active');
+        $(this).addClass('active');
+
+        $('.tab-panel').removeClass('active').hide();
+        $('#' + targetId).addClass('active').show();
+    });
+
+    // 전체선택
+    $('#btnAllCheck').on('click', function () {
+        $('.tab-panel.active .chk-auth').prop('checked', true);
+    });
+
+    // 전체해제
+    $('#btnAllClear').on('click', function () {
+        $('.tab-panel.active .chk-auth').prop('checked', false);
+    });
+
+    // 되돌리기
+    $('#btnRevert').on('click', function () {
+        if (!originalAuthSnapshot) {
+            alert("되돌릴 내용이 없습니다.");
+            return;
+        }
+        restoreAuthFromSnapshot(originalAuthSnapshot);
+    });
+
+    // 저장
+    $('#btnSaveAuth').on('click', function () {
+        saveMenuAuth();
+    });
+}
+
+
+// ===============================================
+// 3) 사용자 목록 AJAX 조회
+// ===============================================
+// ===================== 3) 사용자 목록 조회 =====================
 function loadUserList() {
 
-    const userName = $("#searchUserName").val();
-    const dept = $("#searchDept").val();
-    const position = $("#searchPosition").val();
+  const params = {
+    companyCode: COMPANY_CODE,
+    userName: $('#searchUserName').val(),
+    dept: $('#searchDept').val(),
+    position: $('#searchPosition').val()
+  };
+
+  console.log("검색 조건:", params);
+
+  $.ajax({
+    url: '/auth/menu_permission/api/user',
+    type: 'GET',
+    data: params,
+    success: function (data) {
+      console.log("사용자 목록:", data);
+
+      userGrid.resetData(data);
+
+      // 선택 초기화
+      selectedUser = null;
+      selectedRowKey = null;
+    },
+    error: function () {
+      alert("사용자 목록 조회 중 오류가 발생했습니다.");
+    }
+  });
+}
+
+
+
+// ===============================================
+// 4) 선택된 사용자 메뉴 권한 조회
+// ===============================================
+function loadUserMenuAuth(userId) {
 
     $.ajax({
-        url: "/auth/menu_permission/user_list",
-        type: "GET",
+        url: '/auth/menu_permission/api/menu',
+        type: 'GET',
         data: {
-            companyCode: currentCompanyCode,
-            userName: userName,
-            dept: dept,
-            position: position
+            companyCode: COMPANY_CODE,
+            userId: userId
         },
-        success: function (res) {
-            userGrid.resetData(res);
+        success: function (data) {
+            console.log("메뉴 권한 데이터:", data);
+
+            splitMenuTreeBySystemType(data);
+            renderAllMenuTrees();
+
+            originalAuthSnapshot = makeAuthSnapshot();
         },
         error: function () {
-            alert("사용자 조회 중 오류가 발생했습니다.");
+            alert("메뉴 권한 조회 실패");
         }
     });
 }
 
-/* ============================================================
-   2) 유저 선택 시 메뉴트리 로드
-============================================================ */
-function loadMenuTree(menuGroup) {
 
-    if (!currentUserId) return;
+// ===============================================
+// 5) 메뉴트리 systemType 별 분리
+// ===============================================
+function splitMenuTreeBySystemType(list) {
 
-    $.ajax({
-        url: "/auth/menu_permission/menu_tree",
-        type: "GET",
-        data: {
-            companyCode: currentCompanyCode,
-            userId: currentUserId,
-            menuGroup: menuGroup
-        },
-        success: function (tree) {
-            renderMenuTree(tree, menuGroup);
-        },
-        error: function () {
-            alert("메뉴트리 조회 중 오류가 발생했습니다.");
-        }
+    menuTreeData = { SYS: [], HR: [], SALES: [], FI: [], SUB: [] };
+
+    list.forEach(node => {
+        const type = node.systemType || 'SYS';
+        if (menuTreeData[type]) menuTreeData[type].push(node);
     });
 }
 
-/* ============================================================
-   3) 메뉴트리 출력
-============================================================ */
-function renderMenuTree(tree, menuGroup) {
 
-    const containerId =
-        menuGroup === "HR" ? "#menuTreeHr" :
-        menuGroup === "SD" ? "#menuTreeSales" :
-        menuGroup === "FI" ? "#menuTreeFi" :
-        "#menuTreeSub";
+// ===============================================
+// 6) 메뉴트리 전체 렌더링
+// ===============================================
+function renderAllMenuTrees() {
+    renderMenuTree(menuTreeData.SYS, $('#menuTreeSys'));
+    renderMenuTree(menuTreeData.HR, $('#menuTreeHr'));
+    renderMenuTree(menuTreeData.SALES, $('#menuTreeSales'));
+    renderMenuTree(menuTreeData.FI, $('#menuTreeFi'));
+    renderMenuTree(menuTreeData.SUB, $('#menuTreeSub'));
+}
 
-    const container = $(containerId);
-    container.empty();
 
-    tree.forEach(item => {
-        container.append(buildMenuNode(item));
+// ===============================================
+// 6-1) 개별 트리 생성
+// ===============================================
+function renderMenuTree(nodes, $container) {
+
+    $container.empty();
+
+    nodes.forEach(node => {
+        $container.append(buildMenuItem(node));
     });
 }
 
-/* ============================================================
-   4) 메뉴 노드 HTML 생성
-============================================================ */
-function buildMenuNode(node) {
 
-    let html = `
-        <div class="menu-item">
-            <div class="title">${node.menuName}</div>
-            <div class="auth-checks">
-    `;
+// ===============================================
+// 6-2) 트리 Node 생성(재귀)
+// ===============================================
+function buildMenuItem(node) {
 
-    node.actions.forEach(action => {
-        html += `
-            <label>
-                <input type="checkbox"
-                    class="auth-check"
-                    data-menu="${node.menuCode}"
-                    data-action="${action.actionCode}"
-                    ${action.checked ? "checked" : ""}>
-                ${action.actionCode}
-            </label>
-        `;
-    });
+    const $item = $('<div class="menu-item"></div>');
+    const $title = $('<span class="title"></span>').text(node.menuName);
 
-    html += `</div>`;
+    const $checks = $(`
+        <span class="auth-checks">
+            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="READ"> 조회</label>
+            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="CREATE"> 등록</label>
+            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="UPDATE"> 수정</label>
+            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="DELETE"> 삭제</label>
+        </span>
+    `);
 
+    // 권한 초기값 적용
+    if (node.readAuth === 'Y')   $checks.find('[data-action="READ"]').prop('checked', true);
+    if (node.createAuth === 'Y') $checks.find('[data-action="CREATE"]').prop('checked', true);
+    if (node.updateAuth === 'Y') $checks.find('[data-action="UPDATE"]').prop('checked', true);
+    if (node.deleteAuth === 'Y') $checks.find('[data-action="DELETE"]').prop('checked', true);
+
+    $item.append($title).append($checks);
+
+    // 아이가 있으면 재귀적으로 생성
     if (node.children && node.children.length > 0) {
-        html += `<div class="menu-children">`;
-
+        const $childWrap = $('<div class="menu-children"></div>');
         node.children.forEach(child => {
-            html += buildMenuNode(child);
+            $childWrap.append(buildMenuItem(child));
         });
-
-        html += `</div>`;
+        $item.append($childWrap);
     }
 
-    html += `</div>`;
-
-    return html;
+    return $item;
 }
 
-/* ============================================================
-   5) 저장 버튼 클릭 시 액션 기반 JSON 구성
-============================================================ */
-$("#btnSaveAuth").on("click", function () {
 
-    if (!currentUserId) {
-        alert("사원을 먼저 선택하세요.");
-        return;
+// ===============================================
+// 7) 되돌리기 Snapshot 생성
+// ===============================================
+function makeAuthSnapshot() {
+    const snapshot = {};
+
+    $('.chk-auth').each(function () {
+        const menu = $(this).data('menu');
+        const action = $(this).data('action');
+        const checked = $(this).prop('checked');
+
+        if (!snapshot[menu]) snapshot[menu] = {};
+        snapshot[menu][action] = checked;
+    });
+
+    return snapshot;
+}
+
+function restoreAuthFromSnapshot(snapshot) {
+    $('.chk-auth').each(function () {
+        const menu = $(this).data('menu');
+        const action = $(this).data('action');
+
+        $(this).prop('checked', snapshot[menu]?.[action] ?? false);
+    });
+}
+
+
+// ===============================================
+// 8) 메뉴권한 저장
+// ===============================================
+function saveMenuAuth() {
+
+    if (!selectedUser) {
+        return alert("먼저 사원을 선택하세요.");
     }
 
-    let saveList = [];
+    const payload = [];
 
-    $(".auth-check").each(function () {
-        const menuCode = $(this).data("menu");
-        const actionCode = $(this).data("action");
-        const checked = $(this).is(":checked") ? "Y" : "N";
-
-        saveList.push({
-            menuCode: menuCode,
-            actionCode: actionCode,
-            authYn: checked,
-            companyCode: currentCompanyCode,
-            userId: currentUserId
+    $('.chk-auth').each(function () {
+        payload.push({
+            companyCode: COMPANY_CODE,
+            userId: selectedUser.userId,
+            menuCode: $(this).data('menu'),
+            actionCode: $(this).data('action'),
+            authYn: $(this).prop('checked') ? 'Y' : 'N'
         });
     });
 
     $.ajax({
-        url: "/auth/menu_permission/save",
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(saveList),
+        url: '/auth/menu_permission/api/save',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
         success: function () {
-            alert("메뉴권한이 저장되었습니다.");
+            alert("메뉴 권한이 저장되었습니다.");
+            originalAuthSnapshot = makeAuthSnapshot();
         },
         error: function () {
-            alert("저장 중 오류가 발생했습니다.");
+            alert("저장 실패");
         }
     });
-});
-
-/* ============================================================
-   6) 전체선택 / 전체해제
-============================================================ */
-$("#btnAllCheck").on("click", function () {
-    $(".auth-check").prop("checked", true);
-});
-
-$("#btnAllClear").on("click", function () {
-    $(".auth-check").prop("checked", false);
-});
-
-/* ============================================================
-   7) 유저 그리드 클릭 이벤트
-============================================================ */
-const userGrid = new tui.Grid({
-    el: document.getElementById("userGrid"),
-    scrollX: false,
-    scrollY: true,
-    columns: [
-        { header: "사원ID", name: "userId", width: 100 },
-        { header: "이름", name: "userName", width: 120 },
-        { header: "부서", name: "deptName", width: 120 },
-        { header: "직급", name: "positionName", width: 100 }
-    ],
-    bodyHeight: "fitToParent"
-});
-
-userGrid.on("click", function (ev) {
-    if (!ev.rowKey) return;
-
-    const row = userGrid.getRow(ev.rowKey);
-    currentUserId = row.userId;
-
-    loadMenuTree("HR");
-});
-
-/* ============================================================
-   8) 탭 클릭 이벤트 처리
-============================================================ */
-$(".menu-tab-btn").on("click", function () {
-    const tab = $(this).data("tab");
-
-    $(".menu-tab-btn").removeClass("active");
-    $(this).addClass("active");
-
-    if (tab === "tab-hr") loadMenuTree("HR");
-    if (tab === "tab-sales") loadMenuTree("SD");
-    if (tab === "tab-fi") loadMenuTree("FI");
-    if (tab === "tab-sub") loadMenuTree("SUB");
-});
-
-/* ============================================================
-   9) 초기 데이터 로딩
-============================================================ */
-$(document).ready(function () {
-    loadUserList();
-});
+}

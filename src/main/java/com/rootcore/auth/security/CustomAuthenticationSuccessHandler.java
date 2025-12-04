@@ -8,8 +8,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.rootcore.auth.mapper.MenuPermissionMapper;
-import com.rootcore.auth.vo.MenuTreeRowVO;
-import com.rootcore.auth.vo.UserMenuAuthVO;
+import com.rootcore.auth.vo.MenuAuthSaveVO;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,18 +31,18 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         HttpSession session = request.getSession();
 
         String userId = authentication.getName();
-        String companyCode = "ROOT";   // TODO: 로그인한 회사코드로 변경
+        String companyCode = "0000";
 
-        // ★ 사용자 메뉴 권한 조회
-        List<UserMenuAuthVO> authList =
-                menuPermissionMapper.selectUserAuthList(companyCode, userId);
+        // 🔹 1) 사용자 권한 조회
+        List<MenuAuthSaveVO> authList =
+                menuPermissionMapper.selectUserMenuAuth(companyCode, userId);
 
-        // 세션 저장
+        // 🔹 2) 세션 저장
         session.setAttribute("LOGIN_USER_ID", userId);
         session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
         session.setAttribute("USER_MENU_AUTH", authList);
 
-        // 로그인 후 메인으로 이동
+        // 🔹 3) 메인 페이지로 이동
         response.sendRedirect("/");
     }
 }

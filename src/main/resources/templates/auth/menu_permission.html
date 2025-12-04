@@ -6,109 +6,182 @@
 <head>
     <title>사용자별 메뉴권한 관리</title>
 
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <link rel="stylesheet"
+          href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 
     <link th:href="@{/css/general.css}" rel="stylesheet"/>
 
     <style>
-
-        /* ======================= 검색영역 ======================= */
+    
+    
+        /* ======================= 🔍 검색영역 ======================= */
         .card-ui--search .card-ui__body {
-            padding: 6px 14px !important;
-            height: 50px !important;
+            padding: 8px 16px !important;
+            height: 58px !important;          /* ← 높이 고정 유지 */
+            display: flex;
+            align-items: center;              /* 세로 가운데 정렬 */
+        }
+
+        .search-container {
+            width: 100%;
+        }
+
+        .search-row {
+            display: flex;
+            align-items: center;              /* 폰트 + 입력폼 세로 가운데 */
+            gap: 24px;                        /* 항목 간 간격 */
+            width: 100%;
+        }
+
+        .search-item {
             display: flex;
             align-items: center;
+            gap: 8px;
         }
+
         .search-label {
-            width: 70px; font-size: 13px; font-weight: 600;
+            font-size: 13px;
+            font-weight: 600;
+            width: 52px;                      /* 라벨 폭 */
+            text-align: right;
+            margin: 0;
         }
-        .search-field { display: flex; align-items: center; gap: 6px; }
+
         .search-input {
-            height: 28px !important; padding: 2px 6px !important;
+            height: 30px !important;
             font-size: 13px !important;
+            padding: 2px 8px !important;
         }
+
+        /* 각 입력폼 너비 조절 (사원명 조금 줄이기) */
+        #searchUserName {
+            width: 150px !important;
+        }
+        #searchDept,
+        #searchPosition {
+            width: 130px !important;
+        }
+
+        .search-btn-box {
+            margin-left: auto;                /* 오른쪽 끝으로 밀기 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         #btnReset, #btnSearch {
             height: 30px !important;
             padding: 0 14px !important;
             font-size: 13px !important;
         }
 
-        /* ======================= Layout ======================= */
+        /* ======================= Layout (LEFT / RIGHT) ======================= */
         .menu-auth-container {
-            display: grid; grid-template-columns: 380px 1fr;
-            gap: 14px; height: calc(100vh - 135px);
+            display: grid;
+            grid-template-columns: 520px 1fr;   /* 왼쪽 그리드 조금 넓게 */
+            gap: 14px;
+            height: calc(100vh - 140px);
         }
-        .left-panel, .right-panel { height: 100%; display: flex; flex-direction: column; }
-        .grid-root { height: calc(100% - 10px); }
+
+        .left-panel, .right-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-root {
+            height: 100% !important;
+            min-height: 550px !important;
+        }
+
+        /* ======================= GRID 선택 ROW 색상 ======================= */
+        .tui-grid-row.row-selected td {
+            background-color: #d9e8ff !important;
+        }
 
         /* ======================= 메뉴트리 ======================= */
         .menu-tree {
-            padding: 14px; overflow-y: auto;
+            padding: 14px;
+            overflow-y: auto;
             max-height: calc(100vh - 260px);
-            border: 1px solid #ddd; background: #fff; border-radius: 6px;
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 6px;
         }
 
         .menu-item { margin: 6px 0; }
         .menu-item .title { font-weight: 600; }
-        .menu-children { margin-left: 20px; border-left: 1px dashed #bbb; padding-left: 12px; }
-        .auth-checks { display: inline-flex; gap: 10px; margin-left: 6px; }
+        .menu-children {
+            margin-left: 20px;
+            border-left: 1px dashed #bbb;
+            padding-left: 12px;
+        }
+        .auth-checks {
+            display: inline-flex;
+            gap: 10px;
+            margin-left: 6px;
+        }
 
-        /* ======================= 버튼 ======================= */
-        .toolbar .btn { height: 30px !important; padding: 0 12px !important; font-size: 13px !important; }
-        .toolbar { display: flex; gap: 8px; margin-left: auto; }
+        /* ======================= 버튼 / 탭 ======================= */
+        .toolbar .btn {
+            height: 30px !important;
+            padding: 0 12px !important;
+            font-size: 13px !important;
+        }
 
-        .card-ui__header { display: flex; align-items: center; justify-content: space-between; }
+        .card-ui__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
     </style>
 </head>
 
 <body>
 <div layout:fragment="content" class="page page-fluid">
 
-    <!-- ==================== 🔍 검색영역 ==================== -->
-    <section class="card-ui card-ui--search" style="margin-top: 10px;">
-        <div class="card-ui__body" style="flex:1;">
+   <section class="card-ui card-ui--search" style="margin-top: 10px;">
+    <div class="card-ui__body search-container">
 
-            <div class="filter-bar row g-4 align-items-center col-md-12">
+        <div class="search-row">
 
-                <div class="col-md-3">
-                    <div class="field-inline search-field">
-                        <label class="search-label">사원명</label>
-                        <input id="searchUserName" type="text" class="form-control input-base search-input"/>
-                    </div>
-                </div>
+            <!-- 사원명 -->
+            <div class="search-item">
+                <label class="search-label">사원명</label>
+                <input id="searchUserName" type="text" class="form-control search-input" />
+            </div>
 
-                <div class="col-md-3">
-                    <div class="field-inline search-field">
-                        <label class="search-label">부서명</label>
-                        <select id="searchDept" class="form-select input-base search-input">
-                            <option value="">전체</option>
-                        </select>
-                    </div>
-                </div>
+            <!-- 부서명 -->
+            <div class="search-item">
+                <label class="search-label">부서명</label>
+                <select id="searchDept" class="form-select search-input">
+                    <option value="">전체</option>
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    <div class="field-inline search-field">
-                        <label class="search-label">직급</label>
-                        <select id="searchPosition" class="form-select input-base search-input">
-                            <option value="">전체</option>
-                        </select>
-                    </div>
-                </div>
+            <!-- 직급 -->
+            <div class="search-item">
+                <label class="search-label">직급</label>
+                <select id="searchPosition" class="form-select search-input">
+                    <option value="">전체</option>
+                </select>
+            </div>
 
-                <div class="col-md-3 text-end">
-                    <button id="btnReset" class="btn btn-white btn-inner me-1">초기화</button>
-                    <button id="btnSearch" class="btn btn-color btn-inner">조회</button>
-                </div>
-
+            <!-- 버튼 영역 -->
+            <div class="search-btn-box">
+                <button id="btnReset" class="btn btn-white btn-inner me-1">초기화</button>
+                <button id="btnSearch" class="btn btn-color btn-inner">조회</button>
             </div>
 
         </div>
-    </section>
+    </div>
+</section>
 
-
-    <!-- ==================== 2-열 Layout ==================== -->
+    <!-- ==================== LEFT / RIGHT ==================== -->
     <section class="menu-auth-container">
 
         <!-- LEFT GRID -->
@@ -125,13 +198,11 @@
             </div>
         </div>
 
-
-        <!-- RIGHT: MENU PERMISSION -->
+        <!-- RIGHT MENU PANEL -->
         <div class="right-panel card-ui card-ui--detail">
 
             <header class="card-ui__header">
 
-                <!-- 탭 5개 (SYS/HR/SD/FI/SUB) -->
                 <ul class="nav nav-tabs ui-tabs" id="menuTabs">
                     <li class="nav-item">
                         <button class="nav-link active menu-tab-btn" data-tab="tab-sys">시스템관리</button>
@@ -150,7 +221,6 @@
                     </li>
                 </ul>
 
-                <!-- 버튼 4개 -->
                 <div class="toolbar">
                     <button id="btnAllCheck" class="btn btn-white btn-inner">전체선택</button>
                     <button id="btnAllClear" class="btn btn-white btn-inner">전체해제</button>
@@ -186,11 +256,12 @@
         </div>
 
     </section>
-[[${session.USER_MENU_AUTH}]]============
-<script th:src="@{/js/auth/menuAuth.js}"></script>
+
+    <div layout:fragment="script">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script th:src="@{/js/auth/menuAuth.js}"></script>
+    </div>
 
 </div>
-
-
 </body>
 </html>
