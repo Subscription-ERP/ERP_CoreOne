@@ -4,17 +4,21 @@
 
 <mapper namespace="com.rootcore.cm.mapper.SkuMapper">
     <!-- 수주 상품 조회 -->
-    <select id="selectAllSku">
+    <select id="selectAllSku" resultType="SkuVO">
         SELECT  sku.sku,
                 sku.sku_name,
+                sku.sku_type,
                 sku.spec,
                 sku.unit,
                 unitPrice.unit_price_type,
+                cmCode.code_name "type_name",
                 unitPrice.unit_price
         FROM tb_sku_master sku
         JOIN tb_unit_price_master unitPrice
           ON sku.company_code = unitprice.company_code
          AND sku.sku = unitPrice.sku
+        JOIN tb_cm_code cmCode
+          ON unitprice.unit_price_type = cmCode.code
         WHERE sku.sku_type = 'ITEM'
         <where>
             <if test="unitPriceType == 'SELL_UNIT' ">

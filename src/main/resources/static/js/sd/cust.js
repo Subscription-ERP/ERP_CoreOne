@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 거래처 정보 불러오기
   function custListData() {
-    fetch('/api/sd/cust')
+    fetch('/api/sd/custList')
       .then(res => res.json())
       .then(result => {
         grid.resetData(result);

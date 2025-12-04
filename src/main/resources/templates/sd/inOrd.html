@@ -121,7 +121,7 @@
                             <div class="col-12 col-md-2">
                                 <div class="field-inline">
                                     <label for="totalSupplyPrice" class="field-inline__label">공급가액</label>
-                                    <input id="totalSupplyPrice" name="totalSupplyPrice" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0"
+                                    <input id="totalSupplyPrice" name="totalSupplyPrice" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0; text-align: right;"
                                            th:value="${#numbers.formatInteger(totalSupplyPrice, 3, 'COMMA')}" />
                                 </div>
                             </div>
@@ -130,7 +130,7 @@
                             <div class="col-12 col-md-2">
                                 <div class="field-inline">
                                     <label for="totalSurtax" class="field-inline__label">부가세</label>
-                                    <input id="totalSurtax" name="totalSurtax" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0"
+                                    <input id="totalSurtax" name="totalSurtax" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0; text-align: right;"
                                            th:value="${#numbers.formatInteger(totalSurtax, 3, 'COMMA')}" />
                                 </div>
                             </div>
@@ -139,7 +139,7 @@
                             <div class="col-12 col-md-2">
                                 <div class="field-inline">
                                     <label for="totalPrice" class="field-inline__label">총액</label>
-                                    <input id="totalPrice" name="totalPrice" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0"
+                                    <input id="totalPrice" name="totalPrice" type="text" class="form-control input-base is-disabled" readonly style="flex: 1; min-width: 0; text-align: right;"
                                            th:value="${#numbers.formatInteger(totalPrice, 3, 'COMMA')}" />
                                 </div>
                             </div>

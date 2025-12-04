@@ -18,8 +18,8 @@ public class SdRestController {
     @Autowired
     CustService custService;
 
-    @GetMapping("/cust")
-    public List<CustVO> CustList(CustVO param) {
+    @GetMapping("/custList")
+    public List<CustVO> custList(CustVO param) {
         return custService.getCustList(param);
     }
 
@@ -27,5 +27,5 @@ public class SdRestController {
     @PostMapping("/searchCust")
     public List<CustVO> searchCust(@RequestBody CustVO param) {
         return custService.getCustList(param);
-    };
+    }
 }

@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function getCustList() {
   if (!window.custModalGrid) return;
 
-  fetch('/api/sd/cust')
+  fetch('/api/sd/custList')
     .then(res => res.json())
     .then(result => {
       window.custModalGrid.resetData(result);
@@ -86,20 +86,12 @@ function searchCust() {
       .then(res => res.json())
       .then(result => {
         window.custModalGrid.resetData(result);
-
-        if (result.length === 1) {
-          const row = result[0];
-
-          // 부모에 값 넘기는 함수
-          if (typeof handleSelectedCust === 'function') {
-            handleSelectedCust(row);
-          }
-          closeCustModal();
-        } else {
-          openCustModal();
-        }
-
         window.custModalGrid.refreshLayout();
+
+        // 부모에 값 넘기는 함수
+        if (typeof handleSelectedCust === 'function') {
+          window.afterCustSearch(result);
+        }
       })
       .catch(err => console.error(err));
 }
@@ -108,7 +100,7 @@ function searchCust() {
 function handleEnter(e) {
   if(e.key === 'Enter') {
     e.preventDefault();
-    if (btnSearch) btnSearch.click();
+    searchCust();
   }
 }
 
