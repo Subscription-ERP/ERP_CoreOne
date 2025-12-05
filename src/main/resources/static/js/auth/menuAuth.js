@@ -1,12 +1,12 @@
 /* ============================================================
-   menuAuth.js  (최종 통합본)
-   - 검색 조건 AJAX 반영
+   menuAuth.js  (COMPANY_CODE 자동보정 포함 최신안정본)
+   - 검색 조건 AJAX
    - GRID 행 선택 강조
-   - 메뉴트리 렌더링 고도화
-   - 전체선택/해제, 되돌리기, 저장 기능 포함
+   - 메뉴트리 렌더링
+   - 전체선택/해제, 되돌리기, 저장 기능
 ============================================================ */
 
-const COMPANY_CODE = '0000';
+let COMPANY_CODE = '';
 
 let userGrid;
 let selectedUser = null;
@@ -22,23 +22,36 @@ let menuTreeData = {
     SUB: []
 };
 
-// ===============================================
+// ============================================================
 //  초기 로딩
-// ===============================================
+// ============================================================
 $(document).ready(function () {
     console.log("menuAuth.js loaded");
 
-    initUserGrid();   // 왼쪽 GRID 초기화
-    bindEvents();     // 버튼 및 탭 이벤트 연결
+    // ---------------------------------------------
+    // 🔥 1) 회사코드 읽기 + 자동 보정
+    // ---------------------------------------------
+    COMPANY_CODE = $("#sessionCompanyCode").val();
 
-    // 자동 조회 제거 → 조회 버튼 눌렀을 때만 실행
+    if (!COMPANY_CODE || COMPANY_CODE.trim() === '') {
+        COMPANY_CODE = '10000';     // ★ 상준 프로젝트 기본 회사코드
+    }
+
+    console.log("최종 COMPANY_CODE:", COMPANY_CODE);
+
+    // ---------------------------------------------
+    // 🔥 2) 왼쪽 GRID 및 이벤트 초기화
+    // ---------------------------------------------
+    initUserGrid();
+    bindEvents();
 });
 
 
-// ===============================================
+// ============================================================
 // 1) LEFT 사용자 GRID 초기화
-// ===============================================
+// ============================================================
 function initUserGrid() {
+
     const Grid = tui.Grid;
 
     userGrid = new Grid({
@@ -67,9 +80,9 @@ function initUserGrid() {
         ]
     });
 
-    // =============================
-    // GRID Row 클릭 → 선택 강조 + 메뉴권한 조회
-    // =============================
+    // -------------------------------------------------------
+    // GRID Row 클릭 → 선택 강조 + 오른쪽 메뉴권한 조회
+    // -------------------------------------------------------
     userGrid.on('click', function (ev) {
         const rowKey = ev.rowKey;
         const rowData = userGrid.getRow(rowKey);
@@ -79,7 +92,7 @@ function initUserGrid() {
         if (selectedRowKey !== null)
             userGrid.removeRowClassName(selectedRowKey, 'row-selected');
 
-        // 새 선택 강조
+        // 선택 강조
         userGrid.addRowClassName(rowKey, 'row-selected');
         selectedRowKey = rowKey;
         selectedUser = rowData;
@@ -91,9 +104,9 @@ function initUserGrid() {
 }
 
 
-// ===============================================
+// ============================================================
 // 2) 이벤트 바인딩
-// ===============================================
+// ============================================================
 function bindEvents() {
 
     // 🔍 조회 버튼
@@ -149,45 +162,42 @@ function bindEvents() {
 }
 
 
-// ===============================================
+// ============================================================
 // 3) 사용자 목록 AJAX 조회
-// ===============================================
-// ===================== 3) 사용자 목록 조회 =====================
+// ============================================================
 function loadUserList() {
 
-  const params = {
-    companyCode: COMPANY_CODE,
-    userName: $('#searchUserName').val(),
-    dept: $('#searchDept').val(),
-    position: $('#searchPosition').val()
-  };
+    const params = {
+        companyCode: COMPANY_CODE,
+        userName: $('#searchUserName').val(),
+        dept: $('#searchDept').val(),
+        position: $('#searchPosition').val()
+    };
 
-  console.log("검색 조건:", params);
+    console.log("검색 조건:", params);
 
-  $.ajax({
-    url: '/auth/menu_permission/api/user',
-    type: 'GET',
-    data: params,
-    success: function (data) {
-      console.log("사용자 목록:", data);
+    $.ajax({
+        url: '/auth/menu_permission/api/user',
+        type: 'GET',
+        data: params,
+        success: function (data) {
+            console.log("사용자 목록:", data);
 
-      userGrid.resetData(data);
+            userGrid.resetData(data);
 
-      // 선택 초기화
-      selectedUser = null;
-      selectedRowKey = null;
-    },
-    error: function () {
-      alert("사용자 목록 조회 중 오류가 발생했습니다.");
-    }
-  });
+            selectedUser = null;
+            selectedRowKey = null;
+        },
+        error: function () {
+            alert("사용자 목록 조회 중 오류가 발생했습니다.");
+        }
+    });
 }
 
 
-
-// ===============================================
+// ============================================================
 // 4) 선택된 사용자 메뉴 권한 조회
-// ===============================================
+// ============================================================
 function loadUserMenuAuth(userId) {
 
     $.ajax({
@@ -203,6 +213,7 @@ function loadUserMenuAuth(userId) {
             splitMenuTreeBySystemType(data);
             renderAllMenuTrees();
 
+            // 되돌리기용 스냅샷 저장
             originalAuthSnapshot = makeAuthSnapshot();
         },
         error: function () {
@@ -212,23 +223,25 @@ function loadUserMenuAuth(userId) {
 }
 
 
-// ===============================================
-// 5) 메뉴트리 systemType 별 분리
-// ===============================================
+// ============================================================
+// 5) 메뉴트리 systemType 분류
+// ============================================================
 function splitMenuTreeBySystemType(list) {
 
     menuTreeData = { SYS: [], HR: [], SALES: [], FI: [], SUB: [] };
 
     list.forEach(node => {
         const type = node.systemType || 'SYS';
-        if (menuTreeData[type]) menuTreeData[type].push(node);
+        if (menuTreeData[type]) {
+            menuTreeData[type].push(node);
+        }
     });
 }
 
 
-// ===============================================
-// 6) 메뉴트리 전체 렌더링
-// ===============================================
+// ============================================================
+// 6) 전체 메뉴트리 렌더링
+// ============================================================
 function renderAllMenuTrees() {
     renderMenuTree(menuTreeData.SYS, $('#menuTreeSys'));
     renderMenuTree(menuTreeData.HR, $('#menuTreeHr'));
@@ -238,9 +251,9 @@ function renderAllMenuTrees() {
 }
 
 
-// ===============================================
-// 6-1) 개별 트리 생성
-// ===============================================
+// ============================================================
+// 6-1) 개별 메뉴트리 렌더링
+// ============================================================
 function renderMenuTree(nodes, $container) {
 
     $container.empty();
@@ -251,32 +264,37 @@ function renderMenuTree(nodes, $container) {
 }
 
 
-// ===============================================
-// 6-2) 트리 Node 생성(재귀)
-// ===============================================
+// ============================================================
+// 6-2) 재귀 기반 메뉴 Item 구성
+// ============================================================
 function buildMenuItem(node) {
 
     const $item = $('<div class="menu-item"></div>');
     const $title = $('<span class="title"></span>').text(node.menuName);
 
-    const $checks = $(`
-        <span class="auth-checks">
-            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="READ"> 조회</label>
-            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="CREATE"> 등록</label>
-            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="UPDATE"> 수정</label>
-            <label><input type="checkbox" class="chk-auth" data-menu="${node.menuCode}" data-action="DELETE"> 삭제</label>
-        </span>
-    `);
+    const $checks = $('<span class="auth-checks"></span>');
+    const actions = node.actions || [];
 
-    // 권한 초기값 적용
-    if (node.readAuth === 'Y')   $checks.find('[data-action="READ"]').prop('checked', true);
-    if (node.createAuth === 'Y') $checks.find('[data-action="CREATE"]').prop('checked', true);
-    if (node.updateAuth === 'Y') $checks.find('[data-action="UPDATE"]').prop('checked', true);
-    if (node.deleteAuth === 'Y') $checks.find('[data-action="DELETE"]').prop('checked', true);
+    actions.forEach(action => {
+        const $label = $(`
+            <label>
+                <input type="checkbox"
+                       class="chk-auth"
+                       data-menu="${node.menuCode}"
+                       data-action="${action.actionCode}">
+                ${action.actionName || action.actionCode}
+            </label>
+        `);
+
+        if (action.authYn === 'Y') {
+            $label.find('input').prop('checked', true);
+        }
+
+        $checks.append($label);
+    });
 
     $item.append($title).append($checks);
 
-    // 아이가 있으면 재귀적으로 생성
     if (node.children && node.children.length > 0) {
         const $childWrap = $('<div class="menu-children"></div>');
         node.children.forEach(child => {
@@ -289,12 +307,11 @@ function buildMenuItem(node) {
 }
 
 
-// ===============================================
-// 7) 되돌리기 Snapshot 생성
-// ===============================================
+// ============================================================
+// 7) 되돌리기 Snapshot 생성 / 복원
+// ============================================================
 function makeAuthSnapshot() {
     const snapshot = {};
-
     $('.chk-auth').each(function () {
         const menu = $(this).data('menu');
         const action = $(this).data('action');
@@ -303,7 +320,6 @@ function makeAuthSnapshot() {
         if (!snapshot[menu]) snapshot[menu] = {};
         snapshot[menu][action] = checked;
     });
-
     return snapshot;
 }
 
@@ -311,15 +327,14 @@ function restoreAuthFromSnapshot(snapshot) {
     $('.chk-auth').each(function () {
         const menu = $(this).data('menu');
         const action = $(this).data('action');
-
         $(this).prop('checked', snapshot[menu]?.[action] ?? false);
     });
 }
 
 
-// ===============================================
+// ============================================================
 // 8) 메뉴권한 저장
-// ===============================================
+// ============================================================
 function saveMenuAuth() {
 
     if (!selectedUser) {
