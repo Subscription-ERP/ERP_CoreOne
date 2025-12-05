@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.HrReviewMapper">
+
+	<!-- 인사평가-->
+
+	<!-- 인사평가 기준관리 - 다건조회 -->
+	<select id="selectHrReviewMasterALL" resultType="HrReviewMasterVO">
+		SELECT 
+		    company_code,
+		    review_master_code,
+		    review_master_name,
+		    review_start_date,
+		    review_end_date,
+		    use_yn,
+		    remark
+		FROM  tb_hr_review_master
+		ORDER BY review_start_date desc
+	</select>
+
+	<!-- 인사평가 기준관리 - 단건조회 -->
+	<select id="selectHrReviewMaster" resultType="HrReviewMasterVO" parameterType="String">
+		SELECT 
+		    company_code,
+		    review_master_code,
+		    review_master_name,
+		    review_start_date,
+		    review_end_date,
+		    use_yn,
+		    remark
+		FROM  tb_hr_review_master
+		WHERE review_master_code = #{rmCode}
+	</select>
+
+	<!-- 인사평가 기준관리 - 평가항목 조회 -->
+	<select id="selectEvalItem" resultType="EvalItemVO" parameterType="String">
+       SELECT 
+		    eval_seq,
+		    company_code,
+		    review_master_code,
+		    eval_name,
+		    eval_detail,
+		    eval_weight
+		FROM tb_eval_item
+		WHERE review_master_code = #{rmCode}
+	</select>
+
+	<!-- 검색(템플릿명/날짜/사용유무) -->
+	<select id="searchHrReview" resultType="HrReviewMasterVO" parameterType="HrReviewMasterVO">
+		SELECT 
+		    company_code,
+		    review_master_code,
+		    review_master_name,
+		    review_start_date,
+		    review_end_date,
+		    use_yn,
+		    remark
+		FROM  tb_hr_review_master
+		<where>
+			<!-- 템플릿명 -->
+			<if test="reviewMasterName != null and reviewMasterName != ''">
+				AND review_master_name LIKE '%' || #{reviewMasterName} || '%'
+			</if>
+			<!-- 시작일~끝일 -->
+			<if test="reviewStartDate != null and reviewEndDate != null">
+			    AND review_start_date BETWEEN TRUNC(#{reviewStartDate})
+			                              AND TRUNC(#{reviewEndDate})
+			</if>
+			<!-- 사용유무 -->
+			<if test="useYnList != null and useYnList.size() > 0">
+			    AND use_yn IN
+			    <foreach collection="useYnList" item="yn" open="(" separator="," close=")">
+			        #{yn}
+			    </foreach>
+			</if>
+		</where>	
+		ORDER BY review_start_date desc
+	</select>
+
+
+
+
+</mapper>
