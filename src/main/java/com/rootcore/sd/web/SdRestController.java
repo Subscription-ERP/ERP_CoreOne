@@ -28,4 +28,5 @@ public class SdRestController {
     public List<CustVO> searchCust(@RequestBody CustVO param) {
         return custService.getCustList(param);
     }
+
 }

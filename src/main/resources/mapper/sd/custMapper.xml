@@ -72,7 +72,7 @@
                                     created_by,
                                     create_date)
         VALUES ('0000',
-                FN_MAKE_CUST_CODE,
+                FN_MAKE_CODE('CUST'),
                 #{custName},
                 #{ceoName},
                 #{bno},

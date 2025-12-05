@@ -1,7 +1,9 @@
 package com.rootcore.sd.web;
 
 import com.rootcore.sd.service.CustService;
+import com.rootcore.sd.service.InOrdService;
 import com.rootcore.sd.vo.CustVO;
+import com.rootcore.sd.vo.InOrdVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,9 @@ public class SdController {
 
     @Autowired
     CustService custService;
+
+    @Autowired
+    InOrdService inOrdService;
 
     // 거래처 메인
     @GetMapping("/sd/cust")
@@ -43,7 +48,7 @@ public class SdController {
         return "redirect:/sd/cust";
     }
 
-    // 수주 등록
+    // 수주 화면
     @GetMapping("/sd/inOrd")
     public String inOrdMain() {
         return "sd/inOrd";
