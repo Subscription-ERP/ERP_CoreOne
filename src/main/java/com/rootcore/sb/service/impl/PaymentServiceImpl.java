@@ -100,12 +100,17 @@ public class PaymentServiceImpl implements PaymentService {
 		tossResponse.setCardCompany(cardName); // 화면용 한글 카드사명
 		tossResponse.setCardCompanyCode(cardCode); // DB용 코드
 		// 회사등록
+		CompanyVO existCompany = companyMapper.selectCompany(company.getCompanyCode());
+		if(existCompany  == null) {
 		company.setCreatedBy("SYSTEM");
 		company.setCreateDate(LocalDateTime.now());
 		company.setUpdatedBy("SYSTEM");
 		company.setUpdateDate(LocalDateTime.now());
 		companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
-
+		} else {
+			company = existCompany; // 기존 회사 정보 사용
+		}
+		
 		// 계약서 등록
 
 		contract.setCompanyCode(company.getCompanyCode());

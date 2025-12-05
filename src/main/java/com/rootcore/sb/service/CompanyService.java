@@ -2,6 +2,8 @@ package com.rootcore.sb.service;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.rootcore.sb.vo.CompanyVO;
 
 public interface CompanyService {
@@ -10,6 +12,7 @@ public interface CompanyService {
      */
     String registerCompany(CompanyVO requestVO);
     
-    CompanyVO getCompany(String companyCode);
-    List<CompanyVO> selectCompanyList();
+    CompanyVO selectCompany(String companyCode);
+    List<CompanyVO> selectCompanyList(@Param("companyName") String companyName,
+    	    @Param("ceoName") String ceoName);
 }

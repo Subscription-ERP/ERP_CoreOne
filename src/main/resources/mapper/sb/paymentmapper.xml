@@ -63,71 +63,34 @@
 		WHERE ORDER_ID =
 		#{orderId}
 	</update>
-	 <!-- 회사 목록 + 현재 구독상태 조회 -->
-    <select id="selectCompanyList"
-            resultType="com.rootcore.sb.vo.CompanyVO">
-
-        SELECT
-               c.COMPANY_CODE        AS companyCode        -- 회사코드
-             , c.COMPANY_NAME        AS companyName        -- 회사명
-             , c.BNO                 AS businessNumber     -- 사업자번호
-             , c.CEO_NAME            AS ceoName            -- 대표자명
-             , c.CEO_PHONE           AS ceoPhone           -- 전화번호
-
-             , s.SUB_CODE            AS subsCode           -- 현재 구독코드 (없으면 NULL)
-             , s.SUBS_STATUS         AS subsStatus         -- ACTIVE
-             , st.CODE_NAME          AS subsStatusName     -- 구독 활성 / 구독 비활성
-
-             , s.PLAN_CODE           AS planCode           -- 현재 플랜코드
-             , p.PLAN_NAME           AS planName           -- 현재 플랜명
-
-        FROM   TB_COMPANY_MASTER c
-               LEFT JOIN TB_SUBSCRIBE s
-                      ON s.COMPANY_CODE = c.COMPANY_CODE
-                     AND s.SUBS_STATUS  = 'ACTIVE'          -- ★ 현재 구독만
-               LEFT JOIN TB_CM_CODE st
-                      ON st.GROUP_CODE  = 'SUBS_STATUS'
-                     AND st.CODE        = s.SUBS_STATUS
-               LEFT JOIN TB_SUBSCRIBE_PLAN p
-                      ON p.PLAN_CODE    = s.PLAN_CODE
-        ORDER BY c.COMPANY_NAME
-
-    </select>
+	<select id="findCardCompanyCode" resultType="string">
+    SELECT CODE
+    FROM TB_CM_CODE
+    WHERE GROUP_CODE = #{groupCode}
+      AND #{displayName} LIKE '%' || CODE_NAME || '%'
+</select>
+	
       <!-- 회사별 비활성(과거) 구독 이력 조회 -->
     <select id="selectInactiveSubListByComCode"
             parameterType="string"
             resultType="com.rootcore.sb.vo.SubscribeVO">
 
-        SELECT
-               s.SUB_CODE              AS subsCode          -- 구독코드
-             , s.COMPANY_CODE          AS companyCode       -- 회사코드
-             , s.PLAN_CODE             AS planCode          -- 플랜코드
-             , p.PLAN_NAME             AS planName          -- 플랜명
-
-             , s.SUBS_STATUS           AS subsStatus        -- INACTIVE
-             , st.CODE_NAME            AS subsStatusName    -- 구독 비활성
-
-             , s.INACTIVE_REASON       AS inactiveReason    -- CANCEL / EXPIRE / ...
-             , rs.CODE_NAME            AS inactiveReasonName-- 구독 해지 / 구독 만료 / 미납 정지 …
-
-             , s.SUBS_START            AS subsStart         -- 시작일
-             , s.SUBS_END              AS subsEnd           -- 종료일
-
-             , s.CURRENT_PRICE         AS currentPrice      -- 당시 금액
-             , s.CURRENT_USER_COUNT    AS currentUserCount  -- 당시 사용자 수
-
-        FROM   TB_SUBSCRIBE s
-               LEFT JOIN TB_SUBSCRIBE_PLAN p
-                      ON p.PLAN_CODE = s.PLAN_CODE
-               LEFT JOIN TB_CM_CODE st
-                      ON st.GROUP_CODE = 'SUBS_STATUS'
-                     AND st.CODE       = s.SUBS_STATUS
-               LEFT JOIN TB_CM_CODE rs
-                      ON rs.GROUP_CODE = 'SUBS_INACTIVE_REASON'
-                     AND rs.CODE       = s.INACTIVE_REASON
-        WHERE  s.COMPANY_CODE = #{comCode}      -- 회사코드 파라미터
-          AND  s.SUBS_STATUS  = 'INACTIVE'      -- ★ 과거 구독(비활성)만
-        ORDER BY s.SUBS_START DESC
+      SELECT c.COMPANY_CODE,
+           s.CURRENT_PRICE,
+           s.CURRENT_USER_COUNT,
+           s.PLAN_CODE,
+           s.SUBS_START,
+           s.SUBS_END,
+           s.SUB_CODE,
+           s.SUBS_STATUS,
+           st.CODE_NAME AS inactiveReasonName
+    FROM TB_COMPANY_MASTER c 
+     JOIN TB_SUBSCRIBE s
+     ON c.COMPANY_CODE = s.COMPANY_CODE
+     JOIN TB_CM_CODE st
+     ON st.CODE = s.INACTIVE_REASON
+     WHERE SUBS_STATUS = 'INACTIVE'
+     ORDER BY c.COMPANY_CODE
 
     </select>
 	<!-- 필요하면 조회 메서드도 추가 -->

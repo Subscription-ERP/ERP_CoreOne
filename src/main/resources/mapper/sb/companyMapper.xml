@@ -1,61 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.sb.mapper.CompanyMapper">
- <insert id="insertCompany" parameterType="com.rootcore.sb.vo.CompanyVO">
- <selectKey resultType="String" order="BEFORE"
+	<insert id="insertCompany"
+		parameterType="com.rootcore.sb.vo.CompanyVO">
+		<selectKey resultType="String" order="BEFORE"
 			keyProperty="companyCode">
 			SELECT FN_MAKE_COMPANY_CODE() FROM DUAL
 
 		</selectKey>
-        INSERT INTO TB_COMPANY_MASTER (
-            COMPANY_CODE,
-            COMPANY_NAME,
-            CEO_NAME,
-            CEO_PHONE,
-            COMPANY_EMAIL,
-            INDUSTRY_TYPE,
-            BUSINESS_TYPE,
-            MANAGER_NAME,
-            EMPLOYEE_COUNT,
-            BNO,
-            CHECK_NO,
-            COMPANY_ADDRESS,
-            COMPANY_PHONE,
-            MANAGER_PHONE,
-            CREATED_BY,
-            CREATE_DATE,
-            UPDATED_BY,
-            UPDATE_DATE
-        ) VALUES (
-            #{companyCode},
-            #{companyName},
-            #{ceoName},
-            #{ceoPhone},
-            #{companyEmail},
-            #{industryType},
-            #{businessType},
-            #{managerName},
-            #{employeeCount},
-            #{bno},
-            #{checkNo},
-            #{companyAddress},
-            #{companyPhone},
-            #{managerPhone},
-            #{createdBy},
-            #{createDate},
-            #{updatedBy},
-            #{updateDate}
-        )
-    </insert>
-    
-    <select id="selectCompany" parameterType="String" resultType="com.rootcore.sb.vo.CompanyVO">
-    SELECT COMPANY_CODE,
-           COMPANY_NAME,
-           CEO_NAME,
-           ADDRESS,
-           PHONE
-    FROM TB_COMPANY_MASTER
-    WHERE COMPANY_CODE = #{companyCode}
+		INSERT INTO TB_COMPANY_MASTER (
+		COMPANY_CODE,
+		COMPANY_NAME,
+		CEO_NAME,
+		CEO_PHONE,
+		COMPANY_EMAIL,
+		INDUSTRY_TYPE,
+		BUSINESS_TYPE,
+		MANAGER_NAME,
+		EMPLOYEE_COUNT,
+		BNO,
+		CHECK_NO,
+		COMPANY_ADDRESS,
+		COMPANY_PHONE,
+		MANAGER_PHONE,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		) VALUES (
+		#{companyCode},
+		#{companyName},
+		#{ceoName},
+		#{ceoPhone},
+		#{companyEmail},
+		#{industryType},
+		#{businessType},
+		#{managerName},
+		#{employeeCount},
+		#{bno},
+		#{checkNo},
+		#{companyAddress},
+		#{companyPhone},
+		#{managerPhone},
+		#{createdBy},
+		#{createDate},
+		#{updatedBy},
+		#{updateDate}
+		)
+	</insert>
+
+	<select id="selectCompany" parameterType="String"
+		resultType="com.rootcore.sb.vo.CompanyVO">
+		SELECT COMPANY_CODE,
+		COMPANY_NAME,
+		CEO_NAME,
+		ADDRESS,
+		PHONE
+		FROM TB_COMPANY_MASTER
+		WHERE COMPANY_CODE = #{companyCode}
+	</select>
+
+	<!-- 회사 목록 + 현재 구독상태 조회 -->
+	<!-- 회사 목록 + 현재 구독상태 조회 (전체 + 검색 둘 다) -->
+<select id="selectCompanyList"
+        resultType="com.rootcore.sb.vo.CompanyVO">
+
+    SELECT
+        c.COMPANY_CODE,
+        c.COMPANY_NAME,
+        c.CEO_NAME,
+        c.CEO_PHONE,
+        c.COMPANY_EMAIL,
+        c.MANAGER_NAME,
+        c.MANAGER_PHONE,
+        s.SUB_CODE,
+        s.SUBS_STATUS,
+        st.CODE_NAME AS subsStatusName
+    FROM TB_COMPANY_MASTER c
+    JOIN TB_SUBSCRIBE s
+        ON c.COMPANY_CODE = s.COMPANY_CODE
+    JOIN TB_CM_CODE st
+        ON st.CODE = s.SUBS_STATUS
+    <where>
+        s.SUBS_STATUS = 'ACTIVE'
+
+        <if test="companyName != null and companyName != ''">
+            AND c.COMPANY_NAME LIKE '%' || #{companyName} || '%'
+        </if>
+
+        <if test="ceoName != null and ceoName != ''">
+            AND c.CEO_NAME LIKE '%' || #{ceoName} || '%'
+        </if>
+    </where>
+    ORDER BY c.COMPANY_CODE
 </select>
 
 </mapper>
