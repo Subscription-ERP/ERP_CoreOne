@@ -42,15 +42,18 @@ public class CompanyServiceImpl implements CompanyService {
 	        //     company.setCompanyCode(...) 가 자동으로 채워진 상태가 된다.
 	        return company.getCompanyCode();
 	    }
-	  @Override
-	  public CompanyVO getCompany(String companyCode) {
-	      return companyMapper.selectCompany(companyCode);
-	  }
+	
 
-	  @Override
-	  public List<CompanyVO> selectCompanyList() {
-		return companyMapper.selectCompanyList();
-	  }
+	
+	@Override
+	public CompanyVO selectCompany(String companyCode) {
+		return companyMapper.selectCompany(companyCode);
+	}
+
+	@Override
+	public List<CompanyVO> selectCompanyList(String companyName, String ceoName) {
+		  return companyMapper.selectCompanyList(companyName,ceoName);
+	}
 	  
 	  
 }
