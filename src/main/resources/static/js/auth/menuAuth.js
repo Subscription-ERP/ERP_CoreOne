@@ -34,7 +34,7 @@ $(document).ready(function () {
     COMPANY_CODE = $("#sessionCompanyCode").val();
 
     if (!COMPANY_CODE || COMPANY_CODE.trim() === '') {
-        COMPANY_CODE = '10000';     // ★ 상준 프로젝트 기본 회사코드
+        COMPANY_CODE = '0000';     
     }
 
     console.log("최종 COMPANY_CODE:", COMPANY_CODE);
@@ -168,7 +168,6 @@ function bindEvents() {
 function loadUserList() {
 
     const params = {
-        companyCode: COMPANY_CODE,
         userName: $('#searchUserName').val(),
         dept: $('#searchDept').val(),
         position: $('#searchPosition').val()
