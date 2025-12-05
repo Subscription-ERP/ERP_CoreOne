@@ -1220,3 +1220,35 @@ VALUES
 ('USER_PAY_MANAGEMENT','MAKE_CODE','급여관리코드','TB_USER_PAY_MANAGEMENT','UPM', 'USER_PAY_MANAGEMENT_CODE');
 -- 생성 결과
 select fn_make_date_code('USER_PAY_MANAGEMENT') from dual;
+
+-- 사원급여관리-단건조회-pdf출력
+SELECT upm.user_pay_management_code,
+       um.user_name,
+       upm.user_id,
+       dm.dept_name,
+       cmc.code_name,
+       upm.salary,
+       upm.bonus,
+       upm.overtime_allowance AS overtime,
+       upm.night_allowance AS night,
+       upm.holiday_allowance AS holiday,
+       upm.family_allowance AS family,
+       upm.meal_allowance AS meal,
+       upm.annual_leave_allowance AS annualLeave,
+       upm.total_payment AS totalPaymentAmount,
+       upm.national_pension,
+       upm.employment_insurance,
+       upm.health_insurance,
+       upm.long_time_care_insurance,
+       upm.total_deduction AS totalDeductionAmount,
+       upm.net_pay,
+       upm.payroll_code,
+       upm.company_code,
+       upm.pay_period
+FROM   tb_user_pay_management upm
+       JOIN tb_user_master um 
+       ON upm.user_id = um.user_id
+       JOIN tb_dept_master dm 
+       ON um.dept = dm.dept_code
+       JOIN tb_cm_code cmc
+       ON um.job_title = cmc.code;

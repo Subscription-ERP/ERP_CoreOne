@@ -168,9 +168,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.querySelector("#payPeriodEnd").value = '';
 	})
 
-	/* ------------------------------------------------------------------
+	/*==================
 	 * 급여명세서(인쇄) 모달
-	 * ------------------------------------------------------------------ */
+	 * ================= */
 
 	const printPreviewModal = document.getElementById('printPreviewModal'); // 인쇄 모달 가장 큰 틀
 	const btnPrint = document.getElementById('btnPrint'); // 인쇄 버튼 태그
@@ -250,11 +250,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 각 사원에 대해 a 태그를 만들어 클릭 -> 브라우저가 다운로드 처리
 		checkedRows.forEach(row => {
 			const userPayManagementCode = row.userPayManagementCode;
-			const url = `/api/hr/payslip/download?userId=${encodeURIComponent(userPayManagementCode)}`;
+			const url = `/api/hr/payslip/download?userPayManagementCode=${encodeURIComponent(userPayManagementCode)}`;
 
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `userCard-${userPayManagementCode}.pdf`;
+			a.download = `payslip-${userPayManagementCode}.pdf`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);

@@ -3,6 +3,7 @@ package com.rootcore.hr.mapper;
 import java.util.List;
 
 import com.rootcore.hr.vo.PayrollManageSearchVO;
+import com.rootcore.hr.vo.UserPayManageDetailVO;
 import com.rootcore.hr.vo.UserPayManageVO;
 
 public interface PayrollManageMapper {
@@ -11,5 +12,5 @@ public interface PayrollManageMapper {
 	List<UserPayManageVO> selectPayrollManageList(PayrollManageSearchVO param);
 	
 	// 단건조회
-	UserPayManageVO selectPayrollManageDetail(String userPayManagementCode);
+	UserPayManageDetailVO selectPayrollManageDetail(String userPayManagementCode);
 }

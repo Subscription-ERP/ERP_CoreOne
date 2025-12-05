@@ -3,15 +3,22 @@
 
 <head>
 <title>급여관리</title>
-<!-- TOAST UI CDN, SCRIPT -->
-<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	<!-- SheetJS CDN -->
+	<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+	<!-- ToastUI Grid -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+	<!-- ToastUI Date/Time Picker CSS -->
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+	<link rel="stylesheet" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
 <!-- ToastUI JS -->
 <script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
 <script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
 <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
 <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+<!-- general.css -->
+<link th:href="@{/css/general.css}" rel="stylesheet" />
+<link th:href="@{/css/hr/hrUser.css}" rel="stylesheet" />
 
 <style>
 /* Tui Grid 데이터 없는 배경색과 유사한 밝은 회색 */

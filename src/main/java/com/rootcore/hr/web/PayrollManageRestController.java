@@ -14,7 +14,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.rootcore.hr.service.PayrollManageService;
 import com.rootcore.hr.vo.PayrollManageSearchVO;
+import com.rootcore.hr.vo.UserPayManageDetailVO;
 import com.rootcore.hr.vo.UserPayManageVO;
+import com.rootcore.hr.vo.UserVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,31 +48,77 @@ public class PayrollManageRestController {
 
 	// 사원카드PDF 미리보기
 	@GetMapping("/payslip/preview")
-	public ModelAndView userCardPreview(@RequestParam String userPayManagementCode) {
+	public ModelAndView payslipPreview(@RequestParam String userPayManagementCode) {
 
-		// 데이터조회
-		UserPayManageVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
-		if (userPayManage == null) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
-		}
+	    // 1. 데이터 조회
+	    UserPayManageDetailVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
+	    if (userPayManage == null) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
+	    }
 
-		// 템플릿에 넘길 data 맵 생성
-		Map<String, Object> data = new HashMap<>();
-		data.put("userPayManage", userPayManage);
+	    // 2. 귀속연월 포맷팅 (동적 제목에 사용할 문자열 생성)
+	    String payPeriodRaw = userPayManage.getPayPeriod(); // 예: "2025-02"
+	    String payPeriodFormatted = null;
+	    
+	    if (payPeriodRaw != null && payPeriodRaw.matches("\\d{4}-\\d{2}")) {
+	        // "2025-02" -> "2025년 02월"
+	        payPeriodFormatted = payPeriodRaw.replace("-", "년 ") + "월";
+	    }
 
-		// pdfView로 ModelAndView 생성
-		ModelAndView mav = new ModelAndView("pdfView");
+	    // 3. 템플릿에 넘길 **data 맵 생성 (필수)**
+	    Map<String, Object> data = new HashMap<>();
+	    
+	    // (a) 기존 객체 유지
+	    data.put("userPayManage", userPayManage); 
+	    // (b) 새로 만든 포맷된 문자열을 data 맵 안에 추가
+	    data.put("payPeriodFormatted", payPeriodFormatted); 
 
-		// pdfView에서 사용할 템플릿 이름(template/pdf/payslip.html)
-		mav.addObject("templateName", "pdf/payslip");
+	    // 4. ModelAndView 설정
+	    ModelAndView mav = new ModelAndView("pdfView");
 
-		// 템플릿에 전달할 실제 데이터
-		mav.addObject("data", data);
+	    // PdfView가 요구하는 2가지 필수 키: 'templateName'과 'data'
+	    mav.addObject("templateName", "pdf/payslip");
+	    mav.addObject("data", data); // <--- data 맵 객체 전달 (PdfView의 핵심 요구사항)
+	    mav.addObject("disposition", "inline");
 
-		// 미리보기
-		mav.addObject("disposition", "inline");
+	    return mav;
+	}
+	
+	// 사원카드PDF 다운로드
+	@GetMapping("/payslip/download")
+	public ModelAndView payslipPDF(@RequestParam String userPayManagementCode) {
+		
+		// 1. 데이터 조회
+	    UserPayManageDetailVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
+	    if (userPayManage == null) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
+	    }
 
-		return mav;
+	    // 2. 귀속연월 포맷팅 (동적 제목에 사용할 문자열 생성)
+	    String payPeriodRaw = userPayManage.getPayPeriod(); // 예: "2025-02"
+	    String payPeriodFormatted = null;
+	    
+	    if (payPeriodRaw != null && payPeriodRaw.matches("\\d{4}-\\d{2}")) {
+	        // "2025-02" -> "2025년 02월"
+	        payPeriodFormatted = payPeriodRaw.replace("-", "년 ") + "월";
+	    }
 
+	    // 3. 템플릿에 넘길 **data 맵 생성 (필수)**
+	    Map<String, Object> data = new HashMap<>();
+	    
+	    // (a) 기존 객체 유지
+	    data.put("userPayManage", userPayManage); 
+	    // (b) 새로 만든 포맷된 문자열을 data 맵 안에 추가
+	    data.put("payPeriodFormatted", payPeriodFormatted); 
+
+	    // 4. ModelAndView 설정
+	    ModelAndView mav = new ModelAndView("pdfView");
+
+	    // PdfView가 요구하는 2가지 필수 키: 'templateName'과 'data'
+	    mav.addObject("templateName", "pdf/payslip");
+	    mav.addObject("data", data); // <--- data 맵 객체 전달 (PdfView의 핵심 요구사항)
+	    mav.addObject("disposition", "payslip-" + userPayManage.getUserPayManagementCode() + ".pdf");
+
+	    return mav;
 	}
 }
