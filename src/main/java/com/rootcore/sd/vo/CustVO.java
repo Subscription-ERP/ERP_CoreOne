@@ -23,9 +23,11 @@ public class CustVO {
     private String custType;
     private String dept;
     private String userName;
-    private char useStatus;
+    private String useStatus;
     private String createdBy;
     private Date createDate;
+    private String updatedBy;
+    private Date updateDate;
     private Boolean includeStopped; // 검색조건
     private int creditMax;          // 여신 한도
 }
