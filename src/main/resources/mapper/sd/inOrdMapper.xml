@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sd.mapper.InOrdMapper">
+
+    <!-- 수주 상품 조회 -->
+    <select id="selectAllSku" resultType="SkuVO">
+        SELECT  sku.sku,
+                sku.sku_name,
+                sku.spec,
+                sku.unit,
+                unit.unit_price_type,
+                cmCode.code_name "type_name",
+                unit.unit_price
+        FROM tb_sku_master sku
+        JOIN tb_unit_price_master unit
+        ON sku.company_code = unit.company_code
+        AND sku.sku = unit.sku
+        JOIN tb_cm_code cmCode
+        ON unit.unit_price_type = cmCode.code
+        WHERE sku.sku_type = 'ITEM'
+        <where>
+            <if test="unitPriceType == 'SELL_UNIT' ">
+                AND unit_price_type = 'SELL_UNIT'
+            </if>
+            <if test="unitPriceType == 'BUY_UNIT' ">
+                AND unit_price_type = 'BUY_UNIT'
+            </if>
+        </where>
+    </select>
+
+    <!-- 수주 등록 -->
+    <insert id="insertInOrd" parameterType="InOrdVO">
+        <selectKey keyProperty="inordNo" resultType="string" order="BEFORE">
+            SELECT FN_MAKE_DATE_CODE('INORD') FROM DUAL
+        </selectKey>
+
+        INSERT InTO tb_inord (company_code,
+                              inord_no,
+                              inord_date,
+                              due_date,
+                              dept,
+                              pic,
+                              cust_code,
+                              cust_name,
+                              total_supply_price,
+                              total_surtax,
+                              total_price,
+                              created_by,
+                              create_date)
+        VALUES ('0000',
+                #{inordNo},
+                #{inordDate},
+                #{dueDate},
+                #{dept},
+                #{pic},
+                #{custCode},
+                #{custName},
+                #{totalSupplyPrice},
+                #{totalSurtax},
+                #{totalPrice},
+                '박봉근',
+                SYSDATE)
+    </insert>
+
+    <!-- 수주 품목 등록 -->
+    <insert id="insertInOrdDetail" parameterType="InOrdDetailVO">
+        <selectKey keyProperty="inordDetailNo" resultType="string" order="BEFORE">
+            SELECT FN_MAKE_DATE_CODE('INORD_DETAIL') FROM DUAL
+        </selectKey>
+
+        INSERT INTO tb_inord_detail (inord_detail_no,
+                                     company_code,
+                                     inord_no,
+                                     sku,
+                                     qty,
+                                     unit_price,
+                                     supply_price,
+                                     surtax,
+                                     price,
+                                     remark,
+                                     created_by,
+                                     create_date)
+        VALUES ( #{inordDetailNo},
+                '0000',
+                #{inordNo},
+                #{sku},
+                #{qty},
+                #{unitPrice},
+                #{supplyPrice},
+                #{surtax},
+                #{price},
+                #{remark},
+                '박봉근',
+                SYSDATE)
+    </insert>
+
+</mapper>

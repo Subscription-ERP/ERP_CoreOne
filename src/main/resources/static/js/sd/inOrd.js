@@ -7,17 +7,27 @@ const btnAddRow = document.getElementById('btnAddRow');
 let inOrdGrid;
 let unitPriceTypeItems = [];
 let skuDataList = [];
+let defaultType = '';
 
-/* Enter 입력 방지 (grid에서 post 방지) */
-document.addEventListener('keydown', function (e) {
-    const target = e.target;
-    if (e.key === 'Enter'
-        && target.tagName !== 'TEXTAREA'
-        && target.type !== 'submit') {
-        e.preventDefault();
+document.getElementById('btnSave').addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const saveInOrdData = getInOrdData();
+
+    const res = await fetch('/api/inOrd/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saveInOrdData)
+    });
+
+    if (res.ok) {
+        console.log("등록 완료");
+    } else {
+        console.log("등록 실패");
     }
 });
 
+// 조회
 document.addEventListener("DOMContentLoaded", function () {
 
     /* 기본 입력 사항 */
@@ -61,17 +71,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 header: '규격',
                 name: 'spec',
                 width: 100,
+                minWidth: 100,
                 align: 'right',
             },
             {
                 header: '단위',
                 name: 'unit',
                 width: 100,
+                minWidth: 100,
             },
             {
                 header: '수량',
                 name: 'qty',
                 width: 100,
+                minWidth: 100,
                 align: 'right',
                 editor: 'text'
             },
@@ -79,6 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 header: '단가유형',
                 name: 'unitPriceType',
                 width: 120,
+                minWidth: 120,
                 formatter: 'listItemText',
                 editor: {
                     type: 'select',
@@ -107,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 header: '비고  ',
                 name: 'remark',
                 width: 250,
+                minWidth: 250,
                 editor: 'text'
             },
         ],
@@ -183,6 +198,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 inOrdGrid.focus(rowKey, 'qty');
                 inOrdGrid.startEditing(rowKey, 'qty');
             }
+
+            if (columnName === 'unitPriceType') {
+                const row = inOrdGrid.getRow(rowKey);
+                const skuCode = row.sku;
+                const typeCode = value; // 선택한 단가유형 코드
+
+                if (skuCode && typeCode) {
+                    // skuDataList 구조에 맞게 찾기 (예시는 sku + unitPriceType 기준)
+                    const skuInfo = skuDataList.find(item =>
+                        item.sku === skuCode && item.unitPriceType === typeCode
+                    );
+
+                    if (skuInfo && skuInfo.unitPrice != null) {
+                        inOrdGrid.setValue(rowKey, 'unitPrice', skuInfo.unitPrice);
+                    } else {
+                        // 해당 유형 단가가 없으면 0 또는 기존값 유지 등 정책 결정
+                        inOrdGrid.setValue(rowKey, 'unitPrice', 0);
+                    }
+
+                    // 단가 바뀌었으니 공급가액/부가세 재계산
+                    const qty = Number(row.qty) || 0;
+                    const supplyPrice = qty * (Number(inOrdGrid.getValue(rowKey, 'unitPrice')) || 0);
+                    const surTax = Math.floor(supplyPrice * 0.1);
+
+                    inOrdGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
+                    inOrdGrid.setValue(rowKey, 'surTax', surTax.toLocaleString());
+                    sumPrice();
+                }
+            }
+
 
             // 공급가액, 부가세 계산
             if (columnName === 'qty' || columnName === 'unitPrice') {
@@ -300,7 +345,7 @@ function emptyRow(){
         skuName: '',
         spec: '',
         qty: 0,
-        unitPriceType: '',
+        unitPriceType: defaultType,
         unitPrice: 0,
         supplyPrice: 0,
         surTax: 0,
@@ -373,6 +418,55 @@ function sumPrice() {
     }
 }
 
+// 등록 전 데이터 불러오기
+function getInOrdData() {
+    
+    // 기본정보
+    const info = {
+        inordNo: document.getElementById('inordNo').value || null,
+        inordDate: document.getElementById('inordDate').value,   // "yyyy-MM-dd"
+        dueDate: document.getElementById('dueDate').value,       // "yyyy-MM-dd"
+        custCode: document.getElementById('custCodeSearch').value,
+        custName: document.getElementById('custNameSearch').value,
+        dept: document.getElementById('dept')?.value || '',
+        pic: document.getElementById('pic')?.value || '',
+        creditMax: toNumber(document.getElementById('creditMax')?.value),
+        totalSupplyPrice: toNumber(document.getElementById('totalSupplyPrice')?.value),
+        totalSurtax: toNumber(document.getElementById('totalSurtax')?.value),
+        totalPrice: toNumber(document.getElementById('totalPrice')?.value)
+    };
+
+    // 품목
+    const rows = inOrdGrid.getData();
+    const detail = rows
+        .filter(r => (r.sku && String(r.sku).trim() !== '')   // 빈 행 제거
+            || (r.skuName && String(r.skuName).trim() !== ''))
+        .map((row, idx) => ({
+            lineNo: idx + 1,
+            sku: row.sku,
+            skuName: row.skuName,
+            spec: row.spec,
+            unit: row.unit,
+            qty: toNumber(row.qty),
+            unitPriceType: row.unitPriceType,
+            unitPrice: toNumber(row.unitPrice),
+            supplyPrice: toNumber(row.supplyPrice),
+            surTax: toNumber(row.surTax),
+            remark: row.remark
+        }));
+
+    return { info, detail };
+}
+
+// 콤마 → 숫자
+function toNumber(v) {
+    if (v == null) return 0;
+    const raw = String(v).replace(/,/g, '').trim();
+    if (raw === '') return 0;
+    const n = Number(raw);
+    return Number.isNaN(n) ? 0 : n;
+}
+
 
 
 // 나중에 삭제할 것!! ==============================================
@@ -405,6 +499,18 @@ function skuList() {
                 return col;
             }));
 
+            // 단가 유형 세팅
+            const defaultType =
+                unitPriceTypeItems.find(it => it.value === 'SELL_UNIT')?.value
+                || (unitPriceTypeItems[0] && unitPriceTypeItems[0].value)
+                || '';
+
+            // 기존 행에 기본값 세팅
+            inOrdGrid.getData().forEach(row => {
+                if (!row.unitPriceType) {
+                    inOrdGrid.setValue(row.rowKey, 'unitPriceType', defaultType);
+                }
+            });
 
         })
         .catch(err => console.error(err));
