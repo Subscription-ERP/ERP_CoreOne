@@ -28,13 +28,31 @@
         </where>
     </select>
 
+    <!-- 품목 조회 ver2 -->
+    <select id="select2">
+        SELECT  sku.sku,        -- 품목코드
+                sku.sku_name,   -- 품목명
+                sku.spec,       -- 규격
+                sku.unit,       -- 단위
+                unit.unit_price_type,   -- 단가유형
+                cmCode.code_name,       -- 단가유형이름
+                unit.unit_price         -- 단가
+        FROM tb_sku_master sku
+        JOIN tb_unit_price_master unit
+          ON sku.sku = unit.sku
+        JOIN tb_cm_code cmCode
+          ON unit.unit_price_type = cmCode.code
+        WHERE sku.sku_type = 'ITEM'
+          AND unit.unit_price_type = 'SELL_UNIT'
+    </select>
+
     <!-- 수주 등록 -->
     <insert id="insertInOrd" parameterType="InOrdVO">
         <selectKey keyProperty="inordNo" resultType="string" order="BEFORE">
             SELECT FN_MAKE_DATE_CODE('INORD') FROM DUAL
         </selectKey>
 
-        INSERT InTO tb_inord (company_code,
+        ?INSERT InTO tb_inord (company_code,
                               inord_no,
                               inord_date,
                               due_date,
@@ -68,7 +86,7 @@
             SELECT FN_MAKE_DATE_CODE('INORD_DETAIL') FROM DUAL
         </selectKey>
 
-        INSERT INTO tb_inord_detail (inord_detail_no,
+        ?INSERT INTO tb_inord_detail (inord_detail_no,
                                      company_code,
                                      inord_no,
                                      sku,
