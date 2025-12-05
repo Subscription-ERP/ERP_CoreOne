@@ -371,6 +371,14 @@ CREATE OR REPLACE PROCEDURE sp_calculate_payroll(
     -- 일반적인 변수(VARCHAR2, NUMBER)는 하나의 값만 담는다면 REF CURSOR는 여러행과 열로 이루어진 데이터 셋 자체를 담아서 반환함
     -- JAVA에서 프로시저를 호출하면 p_our_results를 통해서 전달받은 커서를 SELECT문을 실행한 것처럼 순회하면서 데이터를 읽어 올 수 있음.
 )
+/* ================================
+ * 프로시저명 : sp_calculate_payroll
+ * 설명 : 급여 계산 프로시저
+ * 작성자 : 장준현
+ * 작성일 : 25.12.03
+ * 수정이력 :
+    * 수정일 :
+ * ================================ */
 IS
     -- 1) 커서 정의
     -- 위에서 선언한 대장에 해당하는 사원조회
@@ -913,11 +921,26 @@ VALUES ('ATT25100011', 'ROOT', 'EMP25041000005', TO_DATE('20251015', 'YYYYMMDD')
 
 -- 매월 1일 급여 대장 생성 프로시저
 create or replace PROCEDURE sp_insert_payroll_pay 
-    
+/* ==========================================
+ * 프로시저명 : sp_insert_payroll_pay
+ * 설명 : 매월 1일 급여 대장 생성 프로시저
+ * 작성자 : 장준현
+ * 작성일 : 25.12.04
+ * 수정이력 : 프로시저안에 있는 코드값 생성 함수로 변경
+    * 수정일 : 25.12.05 11:55
+ * ========================================== */
 IS
+    -- 회사 조회 커서
     CURSOR payroll_cursor IS -- 커서선언
         SELECT company_code
         FROM   tb_company_master;
+        
+    -- 회사에 해당하는 사원 조회 커서
+    CURSOR user_cursor (p_company_code VARCHAR2) IS
+        SELECT user_id
+        FROM   tb_user_master
+        WHERE  leave_date IS NULL
+          AND  company_code = p_company_code;
 
     v_payroll_start_date DATE;
     v_payroll_period VARCHAR2(20);
@@ -925,11 +948,7 @@ IS
     v_payroll_name VARCHAR2(100);
     v_payroll_end_date DATE;
     v_payroll_date DATE;
-    v_make_payroll_period_code VARCHAR2(100);
-    v_date          VARCHAR2(8);
-    v_max           VARCHAR2(50);
-    v_seq_num       NUMBER;
-    v_new_seq       VARCHAR2(5);
+    v_payroll_period_code VARCHAR2(20);
 BEGIN
     -- payroll_start_date 대장기간 시작일
     v_payroll_start_date := TRUNC(ADD_MONTHS(SYSDATE, -1),'MM'); -- 월의 첫날로 잘라내기
@@ -944,39 +963,39 @@ BEGIN
     -- payroll_date 지급일
     v_payroll_date := TRUNC(SYSDATE, 'MM') + 9;
     
-     -- 오늘 날짜
-    v_date := TO_CHAR(SYSDATE, 'YYMMDD');
-
+    -- 회사 조회 커서 루프시작
     FOR payroll_info IN payroll_cursor LOOP
-        -- 신고귀속코드 함수
-        v_make_payroll_period_code := fn_make_payroll_period_code;
-
-        -- 급여대장에 INSERT
-        INSERT INTO tb_payroll (
-            payroll_code, -- 급여대장코드 함수
-            company_code, -- 회사코드
-            user_id, -- 사원번호
-            payroll_period, -- 귀속연월
-            payroll_type, -- j1 급여
-            payroll_name, -- 급여대장명칭
-            payroll_start_date, -- 대장기간시작일
-            payroll_end_date, -- 대장기간종료일
-            payroll_date, -- 지급일                            
-            payroll_period_code -- 신고귀속코드 함수
-        ) SELECT 'PRL' || v_date || LPAD(QUIZ.TB_PAYROLL_SEQ.NEXTVAL, 5, '0'),
-                 payroll_info.company_code,
-                 user_id,
-                 v_payroll_period,
-                 v_payroll_type,
-                 v_payroll_name,
-                 v_payroll_start_date,
-                 v_payroll_end_date,
-                 v_payroll_date,
-                 v_make_payroll_period_code
-          FROM   tb_user_master         
-          WHERE  leave_date IS NULL
-            AND  company_code = payroll_info.company_code;
+        
+        -- 귀속코드생성
+        v_payroll_period_code := fn_make_date_code('PAYROLL_PERIOD');
+        
+        -- 사원 조회 커서 루프시작
+        FOR user_info IN user_cursor(payroll_info.company_code) LOOP
             
+            -- 급여대장에 INSERT
+            INSERT INTO tb_payroll (
+                payroll_code, -- 급여대장코드 함수
+                company_code, -- 회사코드
+                user_id, -- 사원번호
+                payroll_period, -- 귀속연월
+                payroll_type, -- j1 급여
+                payroll_name, -- 급여대장명칭
+                payroll_start_date, -- 대장기간시작일
+                payroll_end_date, -- 대장기간종료일
+                payroll_date, -- 지급일                            
+                payroll_period_code -- 신고귀속코드 함수
+            ) VALUES (fn_make_date_code('PAYROLL'),
+                      payroll_info.company_code,
+                      user_info.user_id,
+                      v_payroll_period,
+                      v_payroll_type,
+                      v_payroll_name,
+                      v_payroll_start_date,
+                      v_payroll_end_date,
+                      v_payroll_date,
+                      v_payroll_period_code
+            );
+        END LOOP;
     END LOOP;
 
      -- 5. 트랜잭션 처리 및 결과 출력
@@ -985,9 +1004,7 @@ BEGIN
 END;
 /
 
-
 -- TB_COMPANY_MASTER 테이블에 샘플 데이터 1건을 삽입하는 쿼리입니다.
-
 INSERT INTO tb_company_master (
     COMPANY_CODE,
     COMPANY_NAME,
@@ -1138,6 +1155,10 @@ GROUP BY pr.payroll_period,
          pr.create_date,
          pr.payroll_period_code; 
          
+-- ==================
+-- 20251205
+-- ==================
+
 -- 급여관리-사원급여조회
 SELECT upm.user_pay_management_code,
 			   upm.payroll_code,
@@ -1176,3 +1197,26 @@ SELECT user_pay_management_code
 			   ON upm.user_id = um.user_id
 			   JOIN tb_dept_master dm 
 			   ON um.dept = dm.dept_code;
+               
+-- 급여대장-상여등록-신고귀속코드-생성
+INSERT INTO TB_CM_CODE
+(CODE, GROUP_CODE, CODE_NAME, ATTRIBUTE01, ATTRIBUTE02, REMARK)
+VALUES
+('PAYROLL_PERIOD','MAKE_CODE','신고귀속코드','TB_PAYROLL','PRP', 'PAYROLL_PERIOD_CODE');
+
+-- =============================================
+-- 요게 코드 실행하는 것들
+-- 위에꺼가 오늘날짜를 포함 한거고
+-- 아래꺼는 오늘날자를 포함 안한거고
+-- =============================================
+select fn_make_date_code('PAYROLL') from dual;
+select fn_make_date_code('PAYROLL_PERIOD') from dual;
+select fn_make_code('PAYROLL_PERIOD') from dual;
+
+-- 사원급여관리-급여관리코드-생성
+INSERT INTO TB_CM_CODE
+(CODE, GROUP_CODE, CODE_NAME, ATTRIBUTE01, ATTRIBUTE02, REMARK)
+VALUES
+('USER_PAY_MANAGEMENT','MAKE_CODE','급여관리코드','TB_USER_PAY_MANAGEMENT','UPM', 'USER_PAY_MANAGEMENT_CODE');
+-- 생성 결과
+select fn_make_date_code('USER_PAY_MANAGEMENT') from dual;

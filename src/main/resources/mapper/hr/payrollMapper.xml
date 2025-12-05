@@ -4,11 +4,11 @@
 	
 	<!-- 급여대장-상여등록-신고귀속코드-생성 -->
 	<select id="selectNewPeriodCode" resultType="String">
-	    SELECT FN_MAKE_PERIOD_CODE() FROM DUAL
+	    SELECT fn_make_date_code('PAYROLL_PERIOD') FROM DUAL
 	</select>
 	
 	<!-- 급여대장-상여등록 -->
-	<insert id="insertBonusPayrollOne" parameterType="com.rootcore.hr.vo.PayrollVO">
+	<insert id="insertBonusPayrollOne" parameterType="PayrollVO">
 		INSERT INTO tb_payroll (
 			payroll_code,
 			company_code,
@@ -25,7 +25,7 @@
 			payroll_date
 		)
 		VALUES (
-			FN_MAKE_PAYROLL_CODE(),
+			fn_make_date_code('PAYROLL'),
 			'0000',
 			#{userId},
 			#{payrollPeriodCode},
@@ -104,11 +104,11 @@
 	</select>
 		
 	<resultMap id="payrollResultMap" type="UserPayManageVO">
-	    <result column="payroll_code"               property="payroll_code"/>
-	    <result column="user_id"                    property="user_id"/>
-	    <result column="user_name"                  property="user_name"/>
-	    <result column="dept_name"                  property="dept_name"/>
-	    <result column="payroll_date"               property="payroll_date"/>
+	    <result column="payroll_code"               property="payrollCode"/>
+	    <result column="user_id"                    property="userId"/>
+	    <result column="user_name"                  property="userName"/>
+	    <result column="dept_name"                  property="deptName"/>
+	    <result column="payroll_date"               property="payrollDate"/>
 	    <result column="salary"                     property="salary"/>
 	    <result column="bonus"                      property="bonus"/>
 	    <result column="overtime"                   property="overtime"/>
@@ -116,15 +116,15 @@
 	    <result column="holiday"                    property="holiday"/>
 	    <result column="family"                     property="family"/>
 	    <result column="meal"                       property="meal"/>
-	    <result column="annual_leave"               property="annual_leave"/>
-	    <result column="total_allowance"            property="total_allowance"/>
-	    <result column="total_payment_amount"       property="total_payment_amount"/>
-	    <result column="national_pension"           property="national_pension"/>
-	    <result column="employment_insurance"       property="employment_insurance"/>
-	    <result column="health_insurance"           property="health_insurance"/>
-	    <result column="long_time_care_insurance"   property="long_time_care_insurance"/>
-	    <result column="total_deduction_amount"     property="total_deduction_amount"/>
-	    <result column="net_pay"                    property="net_pay"/>
+	    <result column="annual_leave"               property="annualLeave"/>
+	    <result column="total_allowance"            property="totalAllowance"/>
+	    <result column="total_payment_amount"       property="totalPaymentAmount"/>
+	    <result column="national_pension"           property="nationalPension"/>
+	    <result column="employment_insurance"       property="employmentInsurance"/>
+	    <result column="health_insurance"           property="healthInsurance"/>
+	    <result column="long_time_care_insurance"   property="longTimeCareInsurance"/>
+	    <result column="total_deduction_amount"     property="totalDeductionAmount"/>
+	    <result column="net_pay"                    property="netPay"/>
 	</resultMap>
 	
 	
@@ -163,16 +163,16 @@
 		    total_deduction,
 		    net_pay
 		) VALUES (
-		    FN_MAKE_USER_PAY_MANAGEMENT,
-		    #{payroll_code},
+		    fn_make_date_code('USER_PAY_MANAGEMENT'),
+		    #{payrollCode},
 		    (SELECT company_code
 		     FROM   tb_user_master
-		     WHERE  user_id = #{user_id}),
-		    #{user_id},
+		     WHERE  user_id = #{userId}),
+		    #{userId},
 		    (SELECT payroll_period
 		     FROM   tb_payroll
-		     WHERE  payroll_code = #{payroll_code}),
-		    #{payroll_date},
+		     WHERE  payroll_code = #{payrollCode}),
+		    #{payrollDate},
 		    #{salary},
 		    #{bonus},
 		    #{overtime},
@@ -180,17 +180,17 @@
 		    #{holiday},
 		    #{family},
 		    #{meal},
-		    #{annual_leave},
-		    #{total_allowance},
-		    #{total_payment_amount},
+		    #{annualLeave},
+		    #{totalAllowance},
+		    #{totalPaymentAmount},
 		    <!-- #{income_tax}, -->
-		    #{national_pension},
-		    #{employment_insurance},
-		    #{health_insurance},
-		    #{long_time_care_insurance},
+		    #{nationalPension},
+		    #{employmentInsurance},
+		    #{healthInsurance},
+		    #{longTimeCareInsurance},
 		    <!-- #{local_income_tax}, -->
-		    #{total_deduction_amount},
-		    #{net_pay}
+		    #{totalDeductionAmount},
+		    #{netPay}
 		)
 	</insert>
 	
