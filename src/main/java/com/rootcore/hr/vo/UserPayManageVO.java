@@ -8,16 +8,17 @@ import lombok.Data;
 
 @Data
 public class UserPayManageVO {
-	private String user_pay_management_code; // 사원급여관리코드
-	private String company_code; // 회사코드
-	private String payroll_code; // 급여대장코드
-	private String user_id; // 사번
-	private String user_name; // 사원이름
-	private Long income_tax; // 소득세
-	private Long local_income_tax; // 지방소득세
-	private String dept_name; // 부서이름
+	private String userPayManagementCode; // 사원급여관리코드
+	private String companyCode; // 회사코드
+	private String payrollCode; // 급여대장코드
+	private String payPeriod; // 귀속연월
+	private String userId; // 사번
+	private String userName; // 사원이름
+	private Long incomeTax; // 소득세
+	private Long localIncomeTax; // 지방소득세
+	private String deptName; // 부서이름
 	@JsonFormat(pattern = "yyyy-MM-dd")
-	private Date payroll_date; // 지급일
+	private Date payrollDate; // 지급일
 	private Long salary; // 기본급
 	private Long bonus; // 상여
 	private Long overtime; // 총연장근무시간
@@ -25,13 +26,13 @@ public class UserPayManageVO {
 	private Long holiday; // 총휴일근무시간
 	private Long family; // 가족수
 	private Long meal; // 식대
-	private Long annual_leave; // 연차휴가수당
-	private Long total_allowance; // 총 수당총액(상여 미포함)
-	private Long total_payment_amount; // 총 지급액(상여포함)
-	private Long national_pension; // 국민연금
-	private Long employment_insurance; // 고용보험
-	private Long health_insurance; // 건강보험
-	private Long long_time_care_insurance; // 장기요양보험
-	private Long total_deduction_amount; // 총 4대보험(소득세랑 지방소득세가 없어서 지금은 이게 공제 총액)
-	private Long net_pay; // 실 수령액
+	private Long annualLeave; // 연차휴가수당
+	private Long totalAllowance; // 총 수당총액(상여 미포함)
+	private Long totalPaymentAmount; // 총 지급액(상여포함)
+	private Long nationalPension; // 국민연금
+	private Long employmentInsurance; // 고용보험
+	private Long healthInsurance; // 건강보험
+	private Long longTimeCareInsurance; // 장기요양보험
+	private Long totalDeductionAmount; // 총 4대보험(소득세랑 지방소득세가 없어서 지금은 이게 공제 총액)
+	private Long netPay; // 실 수령액
 }

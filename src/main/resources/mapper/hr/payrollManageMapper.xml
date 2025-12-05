@@ -3,17 +3,15 @@
 <mapper namespace="com.rootcore.hr.mapper.PayrollManageMapper">
 
 	<!-- 급여관리-급여 대장 목록 -->
-	<select id="selectPayrollManageList" resultType="UserPayManageVO">
-		SELECT user_pay_management_code
-		FROM   tb_user_pay_management
-	</select>
-<!-- ,
+	<select id="selectPayrollManageList" resultType="UserPayManageVO" parameterType="payrollManageSearchVO">
+		SELECT upm.user_pay_management_code,
 			   upm.payroll_code,
 			   upm.company_code,
+			   upm.pay_period,
 			   upm.user_id,
 			   um.user_name,
 			   dm.dept_name,
-			   upm.pay_date, 
+			   upm.pay_date as payrollDate, 
 			   upm.salary,
 			   upm.bonus,
 			   upm.overtime_allowance AS overtime,
@@ -21,20 +19,68 @@
 			   upm.holiday_allowance AS holiday,
 			   upm.family_allowance AS family,
 			   upm.meal_allowance AS meal,
-			   upm.annual_leave_allowance AS annual_leave,
- 			   upm.total_allowance ,
- 			   upm.total_payment AS total_payment_amount,
-			   upm.income_tax,
+			   upm.annual_leave_allowance AS annualLeave,
+ 			   upm.total_allowance AS totalAllowance,
+ 			   upm.total_payment AS totalPaymentAmount,
+			   upm.income_tax as incomeTax,
+			   upm.national_pension,
+			   upm.employment_insurance,
+			   upm.health_insurance,
+			   upm.long_time_care_insurance,			   
+			   upm.total_deduction AS totalDeductionAmount,
+			   upm.net_pay
+		FROM   tb_user_pay_management upm
+			   JOIN tb_user_master um 
+			   ON upm.user_id = um.user_id
+			   JOIN tb_dept_master dm 
+			   ON um.dept = dm.dept_code
+		WHERE  1=1
+		<if test="dept != null and dept != '' ">
+            AND dm.dept_code like '%' || #{dept} || '%'
+        </if>
+        <if test="userName != null and userName != '' ">
+            AND um.user_name like '%' || #{userName} || '%'
+        </if>
+        <if test="payPeriodStart != null and payPeriodStart != '' ">
+            AND upm.pay_period >= #{payPeriodStart}
+        </if>
+        <if test="payPeriodEnd != null and payPeriodEnd != '' ">
+            AND upm.pay_period &lt;= #{payPeriodEnd}
+        </if>
+	</select>
+	
+	<!-- 단건조회 -->
+	<select id="selectPayrollManageDetail">
+		SELECT upm.user_pay_management_code,
+			   um.user_name,
+			   upm.user_id,
+			   dm.dept_name,
+			   cc.code_name,
+			   upm.salary,
+			   upm.bonus,
+			   upm.overtime_allowance AS overtime,
+			   upm.night_allowance AS night,
+			   upm.holiday_allowance AS holiday,
+			   upm.family_allowance AS family,
+			   upm.meal_allowance AS meal,
+			   upm.annual_leave_allowance AS annualLeave,
+			   upm.total_payment AS totalPaymentAmount,
 			   upm.national_pension,
 			   upm.employment_insurance,
 			   upm.health_insurance,
 			   upm.long_time_care_insurance,
-			   upm.local_income_tax,
-			   upm.total_deduction AS total_deduction_amount,
-			   upm.net_pay 
-			    upm
+			   upm.total_deduction AS totalDeductionAmount,
+			   upm.net_pay,
+			   upm.payroll_code,
+			   upm.company_code,
+			   upm.pay_period,
+		FROM   tb_user_pay_management upm
 			   JOIN tb_user_master um 
 			   ON upm.user_id = um.user_id
 			   JOIN tb_dept_master dm 
-			   ON um.dept = dm.dept_code-->
+			   ON um.dept = dm.dept_code
+			   JOIN tb_cm_code cc
+			   ON um.job_title = cc.code
+	</select>
+
 </mapper>

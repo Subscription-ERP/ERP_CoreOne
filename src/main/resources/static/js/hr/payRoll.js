@@ -121,18 +121,18 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.holiday);
 	document.getElementById('family').textContent = rowData.family === null || rowData.family === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.family);
 	document.getElementById('meal').textContent = rowData.meal === null || rowData.meal === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.meal);
-	document.getElementById('annual_leave').textContent = rowData.annual_leave === null || rowData.annual_leave === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.annual_leave);
-	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.total_allowance);
+	document.getElementById('annual_leave').textContent = rowData.annual_leave === null || rowData.annual_leave === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.annualLeave);
+	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
 
 	// ------------------ 공제 테이블 업데이트 ------------------
 	// 서버 응답 VO 필드명: national_pension, employment_insurance, health_insurance, long_time_care_insurance, total_deduction_amount
 	// document.getElementById('sumIncomeTax').textContent = rawValue(rowData.income_tax || 0);  
 	// document.getElementById('sumLocalIncomeTax').textContent = rawValue(rowData.local_income_tax || 0);  
-	document.getElementById('national_pension').textContent = rowData.national_pension === null || rowData.national_pension === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.national_pension);
-	document.getElementById('employment_insurance').textContent = rowData.employment_insurance === null || rowData.employment_insurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employment_insurance);
-	document.getElementById('health_insurance').textContent = rowData.health_insurance === null || rowData.health_insurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.health_insurance);
-	document.getElementById('long_time_care_insurance').textContent = rowData.long_time_care_insurance === null || rowData.long_time_care_insurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.long_time_care_insurance);
-	document.getElementById('total_deduction_amount').textContent = rowData.total_deduction_amount === null || rowData.total_deduction_amount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.total_deduction_amount);
+	document.getElementById('national_pension').textContent = rowData.nationalPension === null || rowData.nationalPension === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.nationalPension);
+	document.getElementById('employment_insurance').textContent = rowData.employmentInsurance === null || rowData.employmentInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employmentInsurance);
+	document.getElementById('health_insurance').textContent = rowData.healthInsurance === null || rowData.healthInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.healthInsurance);
+	document.getElementById('long_time_care_insurance').textContent = rowData.longTimeCareInsurance === null || rowData.longTimeCareInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.longTimeCareInsurance);
+	document.getElementById('total_deduction_amount').textContent = rowData.totalDeductionAmount === null || rowData.totalDeductionAmount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalDeductionAmount);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -544,26 +544,26 @@ document.addEventListener("DOMContentLoaded", () => {
 		rowKey: "userId",
 		columns: [
 			// { header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
-			{ header: "사번", name: "user_id", align: "center", width: 150 },
-			{ header: "성명", name: "user_name", width: 10 },
-			{ header: "부서명", name: "dept_name", width: 100 },
-			{ header: "지급일", name: "payroll_date", align: "center", width: 100 },
+			{ header: "사번", name: "userId", align: "center", width: 150 },
+			{ header: "성명", name: "userName", width: 10 },
+			{ header: "부서명", name: "deptName", width: 100 },
+			{ header: "지급일", name: "payrollDate", align: "center", width: 100 },
 			{ header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
 				} },
 			{ header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
 				} },
-			{ header: "수당총액", name: "total_allowance", align: "right", width: 100, formatter: function(e) {
+			{ header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
 				} },
-			{ header: "총 지급액", name: "total_payment_amount", align: "right", width: 100, formatter: function(e) {
+			{ header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
 				} },
-			{ header: "공제 총액", name: "total_deduction_amount", align: "right", width: 100, formatter: function(e) {
+			{ header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
 				} },
-			{ header: "실 수령액", name: "net_pay", align: "right", width: 100, formatter: function(e) {
+			{ header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
 				} }
 		],
