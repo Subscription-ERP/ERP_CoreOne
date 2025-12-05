@@ -550,6 +550,25 @@ input[type="checkbox"]:checked {
 }
 
 
+/* 사이드바 adminlte.css 오버라이드 --------------------------------------------- */
+/* 사이드바 1단계 메뉴 (기본 메뉴) 폰트 크기 줄이기 */
+.app-sidebar .sidebar-menu .nav-link {
+  font-size: 0.9rem;   /* 기본 1rem → 약간 작게 */
+}
+
+/* 사이드바 하위(트리뷰) 메뉴 더 작게 */
+.app-sidebar .sidebar-menu .nav-treeview .nav-link {
+  font-size: 0.85rem;
+}
+
+/* 사이드바 섹션 헤더(예: '참고용 문서', 'EXAMPLES', 'DOCUMENTATIONS' 등) */
+.app-sidebar .nav-header {
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;   /* 있으면 살짝 간격만 줘도 깔끔 */
+}
+
+
+
 
 /* input[type="file"] 스타일 조정(포기상태) -------------------------------------------------- */
 /* .form-grid input[type="file"] {

@@ -22,6 +22,7 @@ public class AttendanceRestController {
 	@GetMapping("/attMonthList")
 	public List<AttendanceVO> getAttMonthList(String month){
 		return attendanceService.seletMonthAttendance(month);
+		
 	}
 
 	

@@ -1,0 +1,347 @@
+/* Toolbar(인쇄,이력,조회 버튼 갭처리) */
+.toolbar {
+	display: flex;
+	gap: 6px;
+}
+
+/* Grid Root(그리드 높이제어) */
+.grid-root {
+	min-height: 260px;
+}
+
+/* form-grid  */
+.form-grid--basic-layout {
+	display: grid;
+	grid-template-columns: 180px 1fr 1.4fr 1fr 1.4fr;
+	border-radius: 6px 6px 0 0;
+}
+
+.form-grid.form-grid--basic-layout {
+	border-bottom: 0;
+	border-radius: 6px 6px 0 0;
+}
+
+.form-grid--basic-layout>.form-grid__field:nth-child(4n+5),
+	.form-grid--basic-layout>.form-grid__label:nth-child(4n+5) {
+	border-right: 0;
+}
+
+.form-grid--basic-layout>.form-grid__label, .form-grid--basic-layout>.form-grid__field,
+	.form-grid__photo {
+	border-bottom: 1px solid var(--mid-light-gray-color);
+	border-right: 1px solid var(--mid-light-gray-color);
+}
+
+.form-grid__photo {
+	grid-row: 1/span 5;
+	background: #f8f9fa;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--black-color);
+	font-size: var(--fs-s);
+	text-align: center;
+	overflow: hidden;
+}
+
+.form-grid__photo {
+	position: relative;
+}
+
+/* 사원 이미지 */
+.photo-uploader {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.photo-uploader__img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.photo-uploader__overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0);
+	color: #fff;
+	font-weight: 700;
+	opacity: 0;
+	transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.form-grid__photo:hover .photo-uploader__overlay {
+	background: rgba(0, 0, 0, 0.4);
+	opacity: 1;
+	cursor: pointer;
+}
+
+.form-grid--sub {
+	border-top: 0 !important;
+	border-radius: 0 0 6px 6px;
+	margin-top: 0;
+}
+
+/* 자격증 / 경력 서브 그리드 ---------------------------------------------------- */
+.sub-grid {
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.sub-grid.form-grid--sub {
+	border-top: 1px solid var(--mid-light-gray-color) !important;
+	border-radius: 6px;
+}
+
+.sub-grid__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 10px;
+	background: #f8f9fa;
+	border-bottom: 1px solid var(--mid-light-gray-color);
+}
+
+.sub-grid__title-wrap {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.sub-grid__title {
+	font-size: var(--fs-s);
+	font-weight: 700;
+}
+
+.sub-grid__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 6px;
+	border-radius: 10px;
+	background: var(--base-color-soft);
+	color: #fff;
+	font-size: 11px;
+}
+
+.sub-grid__btn-add {
+	width: auto;
+	height: 30px;
+	padding: 4px 10px;
+	font-size: var(--fs-s);
+}
+
+.sub-grid__body {
+	background: #fff;
+}
+
+/* 서브 테이블 공통 */
+.sub-table {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+.sub-table th, .sub-table td {
+	border-bottom: 1px solid var(--mid-light-gray-color);
+	border-right: 1px solid var(--mid-light-gray-color);
+	padding: 4px 6px;
+	font-size: var(--fs-s);
+	vertical-align: middle;
+}
+
+.sub-table th:last-child, .sub-table td:last-child {
+	border-right: 0;
+}
+
+.sub-table th {
+	background: #f8f9fa;
+	font-weight: 700;
+	text-align: center;
+}
+
+.sub-table .input-base {
+	height: 30px !important;
+	border: none;
+	box-shadow: none;
+}
+
+/* 수정 아이콘 버튼 */
+.btn-icon {
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.btn-icon i {
+	font-size: 14px;
+}
+
+/* sub-grid 안 테이블은 마지막 행은 아래쪽 border 제거 (바깥 grid 테두리만 사용) */
+.sub-grid .sub-table tr:last-child td {
+	border-bottom: 0;
+}
+
+/* 인쇄 미리보기 모달 사이즈 --------------------------------------------------------------------- */
+.modal-layer__dialog--print {
+	width: 420px;
+	max-width: 90vw;
+}
+
+/* 인쇄 미리보기 전체 레이아웃 */
+.print-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+}
+
+/* A4 페이지 감싸는 영역 (가운데 정렬) */
+.print-preview__page-wrap {
+	display: flex;
+	justify-content: center;
+}
+
+/* 실제 A4 비율 박스 */
+.print-preview__page {
+	width: 100%;
+	max-width: 360px;
+	aspect-ratio: 210/297;
+	/* A4 비율 (가로:세로) */
+	background: #fff;
+	border: 1px solid var(--mid-light-gray-color);
+	box-shadow: 0 0 4px rgba(0, 0, 0, 0.06);
+	overflow: hidden;
+}
+
+/* 아직 데이터 없을 때 보여줄 플레이스홀더 */
+.print-preview__placeholder {
+	width: 100%;
+	height: 100%;
+	font-size: var(--fs-s);
+	color: var(--disabled-color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 10px;
+}
+
+/* 하단 페이지 네비게이션 바 */
+.print-preview__pager {
+	margin-top: 8px;
+	border: 1px solid var(--mid-light-gray-color);
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 36px;
+	padding: 0 10px;
+	background: #f8f9fa;
+}
+
+/* 좌우 화살표 버튼 */
+.print-preview__nav {
+	width: 32px;
+	height: 32px;
+}
+
+.print-preview__nav i {
+	font-size: 16px;
+}
+
+/* "1/2" 표시 */
+.print-preview__page-info {
+	font-size: var(--fs-s);
+	font-weight: 700;
+}
+
+/* 비활성 상태용 (필요하면) */
+.print-preview__nav.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+/* 사원이력 화면 인쇄 ------------------------------------------ */
+@media print {
+	/* 1) 페이지 여백 제거 */
+	body {
+		margin: 0;
+	}
+
+	/* 2) 기본적으로 모든 화면 요소는 숨기기 */
+	body * {
+		visibility: hidden;
+	}
+
+	/* 3) 모달(#historyModal) 안의 요소만 보이게 */
+	#historyModal, #historyModal * {
+		visibility: visible;
+	}
+
+	/* 4) 인쇄 제목 (인쇄 전용) 추가 */
+	#history-tab-dept::before {
+		content: "부서 이력";
+		display: block;
+		font-weight: bold;
+		font-size: 16px;
+		margin: 8px 0;
+	}
+	#history-tab-salary::before {
+		content: "급여 이력";
+		display: block;
+		font-weight: bold;
+		font-size: 16px;
+		margin: 16px 0 8px;
+	}
+
+	/* 5) 인쇄할 때는 모달을 페이지 맨 위에 배치 */
+	#historyModal {
+		position: absolute !important;
+		top: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		margin: 0 auto !important;
+		width: 100% !important;
+		height: auto !important;
+		transform: none !important;
+		box-shadow: none !important;
+		border-radius: 0 !important;
+	}
+
+	/* 6) 모달 내부 카드 영역도 기본 레이아웃으로 */
+	.modal-layer__dialog {
+		position: static !important;
+		margin: 0 auto !important;
+		max-width: 100% !important;
+	}
+
+	/* 7) 백드롭, 탭 버튼 등 인쇄 불필요 요소 숨기기 */
+	.modal-layer__backdrop, .modal-history__tabs {
+		display: none !important;
+	}
+
+	/* 8) 두 탭 모두 보여주기 (active 무시) */
+	.history-tab-panel {
+		display: block !important;
+	}
+
+	/* 9) 부서/급여 구분 여백 */
+	#history-tab-dept {
+		margin-bottom: 24px;
+	}
+}

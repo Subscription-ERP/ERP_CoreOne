@@ -1,34 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
 
 <head>
   <title>인사평가 기준관리</title>
-
   <!-- SheetJS CDN -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
   <!-- ToastUI Grid -->
   <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-
-  <!-- ToastUI Date/Time Picker CSS -->
-  <link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
-  <link rel="stylesheet" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
-
   <!-- ToastUI JS -->
   <script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
   <script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
-  <script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
-  <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
   <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-
   <!-- general.css -->
   <link th:href="@{/css/general.css}" rel="stylesheet" />
+  <link th:href="@{/css/hr/hrUser.css}" rel="stylesheet" />
 
   <style>
-    /* ---------------- 인사평가 기준관리 전용 스타일 ---------------- */
-
     /* 상단 툴바 버튼 간격 */
     .toolbar {
       display: flex;
@@ -40,7 +28,7 @@
       min-height: 260px;
     }
 
-    /* step 번호 + 섹션 제목 라인 */
+    /* 섹션 제목 */
     .section-step-title {
       display: flex;
       align-items: center;
@@ -50,26 +38,9 @@
       font-weight: 700;
     }
 
-    .section-step-title__bullet {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background-color: var(--base-color-soft);
-      color: #fff;
-      font-size: 11px;
-    }
-
     /* 기본 정보 영역 */
     .eval-basic-grid {
       margin-bottom: 10px;
-    }
-
-    .eval-basic-grid .form-grid__row--fullremark .form-grid__field--wide textarea {
-      resize: vertical;
-      min-height: 60px;
     }
 
     .eval-radio-group {
@@ -89,280 +60,242 @@
       font-weight: 400;
     }
 
-    /* 평가 항목 테이블 */
-    .eval-items__footer {
-      padding: 6px 10px 10px;
-      text-align: right;
+    .eval-del {
+      border: 1px solid var(--light-gray-color);
+      border-radius: 3px;
       font-size: var(--fs-s);
-      color: var(--black-color);
+      transition: .3s;
     }
 
-    .eval-items__footer strong {
-      color: var(--base-color);
-      font-weight: 700;
+    .eval-del:hover {
+      background-color: var(--gray-color);
     }
 
-    .sub-table--eval-items td:last-child {
-      text-align: center;
-    }
-
-    .btn-row-remove {
-      border: none;
-      background: transparent;
-      padding: 0;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-    }
-
-    .btn-row-remove i {
-      font-size: 14px;
+    .evalBtn-text {
+      margin-top: 5px;
+      font-size: var(--fs-s);
     }
   </style>
 </head>
 
 <body>
-<div layout:fragment="content" class="page page-fluid">
+  <div layout:fragment="content" class="page page-fluid">
 
-  <!-- ==================== 조회 영역 =============================================== -->
-  <section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
-    <div class="card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
-      <div class="filter-bar row g-4 align-items-center col-md-12">
+    <!-- ==================== 조회 영역 =============================================== -->
+    <section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
+      <div class="card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
+        <div class="filter-bar row g-4 align-items-center col-md-12">
 
-        <!-- 템플릿명 -->
-        <div class="col-12 col-md-4">
-          <div class="field-inline">
-            <label for="keyTemplateName" class="field-inline__label">템플릿명</label>
-            <input id="keyTemplateName" type="text"
-                   class="form-control input-base" style="flex: 1; min-width: 0;" />
-          </div>
-        </div>
-
-        <!-- 사용여부 -->
-        <div class="col-12 col-md-4">
-          <div class="field-inline">
-            <span class="field-inline__label">사용여부</span>
-            <div class="eval-radio-group">
-              <label>
-                <input type="radio" name="keyUseYn" value="" checked />
-                <span>전체</span>
-              </label>
-              <label>
-                <input type="radio" name="keyUseYn" value="Y" />
-                <span>Y</span>
-              </label>
-              <label>
-                <input type="radio" name="keyUseYn" value="N" />
-                <span>N</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- 조회 버튼 -->
-        <div class="col-12 col-md-2 ms-auto text-end">
-          <button id="btnSearch" type="button" class="btn btn-color btn-outer">조회</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= 인사평가 템플릿 목록(Grid) =================================== -->
-  <section class="card-ui card-ui--grid section-flex">
-    <header class="card-ui__header">
-      <div>
-        <h6 class="card-ui__title">인사평가 템플릿 목록</h6>
-        <small class="text-muted">행 선택 시 아래에서 템플릿 상세 정보가 표시됩니다.</small>
-      </div>
-      <!-- 필요하면 우측에 추가 버튼 등을 배치 -->
-    </header>
-
-    <div class="card-ui__body p-0">
-      <div id="evalTemplateGrid" class="grid-root"></div>
-    </div>
-  </section>
-
-  <!-- ================= 인사평가 템플릿 등록 ========================================= -->
-  <section class="card-ui card-ui--detail section-fixed">
-    <header class="card-ui__header">
-      <h6 class="card-ui__title">인사평가 템플릿 등록</h6>
-
-      <!-- 우측 액션 -->
-      <div class="toolbar">
-        <button id="btnReset" type="button" class="btn btn-white btn-inner">초기화</button>
-        <button id="btnSave" type="button" class="btn btn-color btn-inner">등록</button>
-      </div>
-    </header>
-
-    <div class="card-ui__body section-scroll">
-      <form id="evalTemplateForm">
-
-        <!-- 2. 기본 정보 -->
-        <div class="section-step-title">
-          <span class="section-step-title__bullet">2</span>
-          <span>기본 정보</span>
-        </div>
-
-        <div class="form-grid eval-basic-grid">
-          <!-- 1행 : 템플릿명 / 평가제도 -->
-          <div class="form-grid__row">
-            <div class="form-grid__label">템플릿명</div>
-            <div class="form-grid__field">
-              <input id="templateName" name="templateName"
-                     class="form-control form-control-sm input-base" />
-            </div>
-
-            <div class="form-grid__label">평가제도</div>
-            <div class="form-grid__field">
-              <!-- 화면설명에 A~E 등급으로 고정이라고 되어 있어 select 고정값 샘플 -->
-              <select id="gradeType" name="gradeType"
-                      class="form-select form-select-sm input-base">
-                <option value="AE">A~E 등급</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 2행 : 평가기간(시작) / 평가기간(종료) -->
-          <div class="form-grid__row">
-            <div class="form-grid__label">평가기간(시작일)</div>
-            <div class="form-grid__field">
-              <input id="periodStart" name="periodStart" type="date"
-                     class="form-control form-control-sm input-base" />
-            </div>
-
-            <div class="form-grid__label">평가기간(종료일)</div>
-            <div class="form-grid__field">
-              <input id="periodEnd" name="periodEnd" type="date"
-                     class="form-control form-control-sm input-base" />
-            </div>
-          </div>
-
-          <!-- 3행 : 사용여부 / 비고 -->
-          <div class="form-grid__row form-grid__row--fullremark">
-            <div class="form-grid__label">사용여부</div>
-            <div class="form-grid__field">
-              <div class="eval-radio-group">
-                <label>
-                  <input type="radio" name="useYn" value="Y" checked />
-                  <span>Y</span>
-                </label>
-                <label>
-                  <input type="radio" name="useYn" value="N" />
-                  <span>N</span>
-                </label>
+          <div class="col-12 col-md-9" style="display: flex; gap: 20px; align-items: center; ">
+            <!-- 템플릿명 -->
+            <div class="col-12 col-md-4">
+              <div class="field-inline">
+                <label for="reviewMasterNameSearch" class="field-inline__label">템플릿명</label>
+                <input id="reviewMasterNameSearch" type="text" name="reviewMasterNameSearch" class="form-control input-base"
+                  style="flex: 1; min-width: 0;" />
               </div>
             </div>
 
-            <div class="form-grid__label">비고</div>
-            <div class="form-grid__field form-grid__field--wide">
-              <textarea id="remark" name="remark"
-                        class="form-control form-control-sm input-base"
-                        style="width:100%; border:none; box-shadow:none;"></textarea>
+            <!-- 날짜(시작일) -->
+            <div class="col-12 col-md-3">
+              <div class="field-inline">
+                <label for="reviewStartDate" class="field-inline__label" id="reviewStartDate-searchWrapper">시작일</label>
+                <input id="reviewStartDate-search" type="Date" name="reviewStartDate" class="form-control input-base"
+                  style="flex: 1; min-width: 0;" />
+              </div>
             </div>
+
+            <!-- 날짜(종료일) -->
+            <div class="col-12 col-md-3">
+              <div class="field-inline">
+                <label for="reviewEndDate" class="field-inline__label" id="reviewEndDate-searchWrapper">종료일</label>
+                <input id="reviewEndDate-search" type="Date" name="reviewEndDate" class="form-control input-base"
+                  style="flex: 1; min-width: 0;" />
+              </div>
+            </div>
+
+            <!-- 사용여부 -->
+            <div class="col-12 col-md-4">
+              <div class="field-inline">
+                <span class="field-inline__label">사용여부</span>
+                <div class="eval-radio-group">
+                  <label>
+                    <input type="checkbox" name="searchUseYn" value="Y" />
+                    <span>Y</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" name="searchUseYn" value="N" />
+                    <span>N</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 조회 버튼 -->
+          <div class="col-12 col-md-2 ms-auto text-end">
+            <button id="btnResetSearch" type="button" class="btn btn-white btn-outer">초기화</button>
+            <button id="btnSearch" type="button" class="btn btn-color btn-outer">조회</button>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- 3. 평가 항목 -->
-        <div class="section-step-title" style="margin-top: 12px;">
-          <span class="section-step-title__bullet">3</span>
-          <span>평가 항목</span>
+    <!-- ================= 인사평가 템플릿 목록(Grid) =================================== -->
+    <section class="card-ui card-ui--grid">
+      <header class="card-ui__header">
+        <h6 class="card-ui__title">인사평가 템플릿 항목</h6>
+        <small class="text-muted">행 선택 시 아래 상세 정보가 표시됩니다.</small>
+      </header>
+
+      <div class="card-ui__body p-0">
+        <div id="reviewList"></div>
+      </div>
+    </section>
+
+    <!-- ================= 인사평가 템플릿 등록 ========================================= -->
+    <section class="card-ui card-ui--detail section-fixed" style="flex: 0 0 400px;">
+      <header class="card-ui__header">
+        <h6 class="card-ui__title">인사평가 템플릿 저장</h6>
+        <!-- 우측 액션 -->
+        <div class="toolbar">
+          <button id="btnReset" type="button" class="btn btn-white btn-inner">초기화</button>
+          <button id="btnSave" type="button" class="btn btn-color btn-inner">저장</button>
         </div>
+      </header>
 
-        <div class="form-grid form-grid--sub sub-grid">
-          <!-- 헤더 -->
-          <div class="sub-grid__header">
-            <div class="sub-grid__title-wrap">
-              <span class="sub-grid__title">평가 항목 목록</span>
+      <div class="card-ui__body section-scroll form-allwrapper">
+        <form id="evalTemplateForm">
+
+          <!-- 기본 정보 -->
+          <div class="form-grid eval-basic-grid">
+            <div class="form-grid__row">
+              <div class="form-grid__label">템플릿명</div>
+              <div class="form-grid__field">
+                <input id="reviewMasterName" name="reviewMasterName" class="form-control form-control-sm input-base" />
+              </div>
+
+              <div class="form-grid__label">평가제도</div>
+              <div class="form-grid__field">
+                <input type="text" value="A~E 등급" class="form-control form-control-sm input-base disabled" disabled
+                  readonly />
+              </div>
             </div>
-            <button type="button"
-                    class="btn btn-white btn-inner sub-grid__btn-add"
-                    id="btnItemAdd">
-              항목추가 +
-            </button>
+
+            <div class="form-grid__row">
+              <div class="form-grid__label">평가 시작일</div>
+              <div class="form-grid__field" id="reviewStartDateWrapper">
+                <input id="reviewStartDate" name="reviewStartDate" type="date"
+                  class="form-control form-control-sm input-base" />
+              </div>
+
+              <div class="form-grid__label">평가 종료일</div>
+              <div class="form-grid__field" id="reviewEndDateWrapper">
+                <input id="reviewEndDate" name="reviewEndDate" type="date"
+                  class="form-control form-control-sm input-base" />
+              </div>
+            </div>
+
+            <div class="form-grid__row">
+              <div class="form-grid__label">사용여부</div>
+              <div class="form-grid__field">
+                <div class="eval-radio-group">
+                  <label>
+                    <input type="radio" name="useYn" value="Y" checked />
+                    <span>Y</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="useYn" value="N" />
+                    <span>N</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-grid__label">비고</div>
+              <div class="form-grid__field">
+                <input id="remark" name="remark" type="text" class="form-control form-control-sm input-base" />
+              </div>
+            </div>
           </div>
 
-          <!-- 본문 테이블 -->
-          <div class="sub-grid__body">
-            <table class="sub-table sub-table--eval-items">
-              <colgroup>
-                <col style="width: 10%">
-                <col style="width: 25%">
-                <col style="width: 35%">
-                <col style="width: 20%">
-                <col style="width: 10%">
-              </colgroup>
-              <thead>
-              <tr>
-                <th>번호</th>
-                <th>항목명</th>
-                <th>설명</th>
-                <th>가중치(%)</th>
-                <th>삭제</th>
-              </tr>
-              </thead>
-              <tbody id="itemTbody">
-              <tr class="empty-row">
-                <td colspan="5" class="text-center text-muted py-3">
-                  평가 항목을 추가해 주세요.
-                </td>
-              </tr>
-              <!-- JS로 행 추가 -->
-              </tbody>
-            </table>
+          <!-- 3. 평가 항목 -->
+          <div class="form-grid form-grid--sub sub-grid sub-grid--cert">
+            <!-- 헤더 -->
+            <div class="sub-grid__header">
+              <div class="sub-grid__title-wrap">
+                <span class="sub-grid__title">평가항목</span>
+              </div>
+              <button type="button" class="btn btn-white btn-inner sub-grid__btn-add" id="btnEvalAdd">
+                추가 +
+              </button>
+            </div>
+
+            <!-- 본문 테이블 -->
+            <div class="sub-grid__body">
+              <table class="sub-table sub-table--cert">
+                <colgroup>
+                  <col style="width: 8%">
+                  <col style="width: 20%">
+                  <col style="width: 49%">
+                  <col style="width: 15%">
+                  <col style="width: 8%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>번호</th>
+                    <th>항목명</th>
+                    <th>설명</th>
+                    <th>가중치(%)</th>
+                    <th>삭제</th>
+                  </tr>
+                </thead>
+                <tbody id="evalTbody">
+                  <tr class="empty-row">
+                    <td colspan="5" class="text-center text-muted py-3">
+                      데이터가 없습니다. 추가해주세요.
+                    </td>
+                  </tr>
+                  <!-- JS로 행 추가 -->
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- 가중치 합계 -->
-          <div class="eval-items__footer">
+          <!-- 평가항목 입력 행 템플릿 -->
+          <template id="evalRowTemplate">
+            <tr>
+              <td><input type="text" id="evalNum" class="form-control form-control-sm input-base" /></td>
+              <td><input type="text" name="evalName" class="form-control form-control-sm input-base" /></td>
+              <td><input type="text" name="evalDetail" class="form-control form-control-sm input-base" /></td>
+              <td><input type="text" name="evalWeight" class="form-control form-control-sm input-base" /></td>
+              <td style="text-align: center;">
+                <button type="button" class="eval-del">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </td>
+            </tr>
+          </template>
+          <div class="evalBtn-text">
             * 가중치 합계 : <strong id="weightSum">0</strong>%
           </div>
-        </div>
 
-        <!-- 평가 항목 입력 행 템플릿 -->
-        <template id="itemRowTemplate">
-          <tr>
-            <td class="text-center">
-              <span class="row-index">1</span>
-            </td>
-            <td>
-              <input type="text" name="itemName"
-                     class="form-control form-control-sm input-base" />
-            </td>
-            <td>
-              <input type="text" name="itemDesc"
-                     class="form-control form-control-sm input-base" />
-            </td>
-            <td>
-              <input type="number" name="weight"
-                     class="form-control form-control-sm input-base"
-                     min="0" max="100" />
-            </td>
-            <td>
-              <button type="button" class="btn-row-remove">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </td>
-          </tr>
-        </template>
+        </form>
+      </div>
+    </section>
 
-      </form>
+    <!-- 전역 토스트 알림 -->
+    <div id="toastContainer" class="rc-toast"></div>
+
+    <!-- 전역 로딩 스피너 -->
+    <div id="globalLoader" class="rc-loader-overlay" style="display: none;">
+      <div class="rc-loader-spinner"></div>
     </div>
-  </section>
 
-  <!-- 전역 토스트 알림 -->
-  <div id="toastContainer" class="rc-toast"></div>
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/hr/reviewMaster.js}"></script>
 
-  <!-- 전역 로딩 스피너 -->
-  <div id="globalLoader" class="rc-loader-overlay" style="display: none;">
-    <div class="rc-loader-spinner"></div>
   </div>
-
-  <!-- JS (파일명은 필요에 맞게 변경해서 사용하시면 됩니다) -->
-  <script th:src="@{/js/hr/reviewMaster.js}"></script>
-  <script th:src="@{/js/common.js}"></script>
-
-</div>
 </body>
+
 </html>
