@@ -66,7 +66,13 @@ th {
 								<div class="field-inline">
 									<label for="payPeriod" class="field-inline__label">귀속연월</label>
 									<!-- 범위 input -->
-									<input id="payPeriodStart" type="month" class="form-control input-base" style="flex: 1; min-width: 0" />~<input id="payPeriodEnd" type="month" class="form-control input-base" style="flex: 1; min-width: 0" />
+									<div id="payPeriodStartWrapper">
+										<input id="payPeriodStart" type="month" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
+									~
+									<div id="payPeriodEndWrapper">
+										<input id="payPeriodEnd" type="month" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
 								</div>
 							</div>
 
@@ -128,7 +134,8 @@ th {
 									<th>건강보험</th>
 									<th>장기요양보험</th>
 									<th>지방소득세</th>
-									<th>총 수당 총액</th>
+									<th>결근병가공제</th>
+									<th>총 공제 총액</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -140,6 +147,7 @@ th {
 									<td class="text-end" id="health_insurance"></td>
 									<td class="text-end" id="long_time_care_insurance"></td>
 									<td class="text-end" id=""></td>
+									<td class="text-end" id="absence"></td>
 									<td class="text-end" id="total_deduction_amount"></td>
 								</tr>
 							</tbody>

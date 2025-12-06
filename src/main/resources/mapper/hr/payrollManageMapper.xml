@@ -28,7 +28,8 @@
 			   upm.health_insurance,
 			   upm.long_time_care_insurance,			   
 			   upm.total_deduction AS totalDeductionAmount,
-			   upm.net_pay
+			   upm.net_pay,
+			   upm.absence
 		FROM   tb_user_pay_management upm
 			   JOIN tb_user_master um 
 			   ON upm.user_id = um.user_id
@@ -73,7 +74,8 @@
 		       upm.net_pay,
 		       upm.payroll_code,
 		       upm.company_code,
-		       upm.pay_period
+		       upm.pay_period,
+		       upm.absence
 		FROM   tb_user_pay_management upm
 		       JOIN tb_user_master um 
 		       ON upm.user_id = um.user_id

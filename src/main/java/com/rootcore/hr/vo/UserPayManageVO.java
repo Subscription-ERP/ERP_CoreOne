@@ -35,4 +35,5 @@ public class UserPayManageVO {
 	private Long longTimeCareInsurance; // 장기요양보험
 	private Long totalDeductionAmount; // 총 4대보험(소득세랑 지방소득세가 없어서 지금은 이게 공제 총액)
 	private Long netPay; // 실 수령액
+	private Long absence; // 결근, 병가 공제액
 }

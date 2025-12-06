@@ -205,15 +205,15 @@ th {
 		<tr>
 			<td>식대 (비과세)</td>
 			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.mealAllowance ?:0,0,'COMMA',0,'POINT')}">200,000</td>
-			<th>공제액 계
-			</th>
-			<th class="align-right" th:text="${#numbers.formatDecimal(userPayManage.totalDeduction ?:0,0,'COMMA',0,'POINT')}">187,410</th>
+			<td>결근병가공제</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.absence ?:0,0,'COMMA',0,'POINT')}">5,250</td>
 		</tr>
 		<tr>
 			<td>연차휴가수당</td>
 			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.annualLeaveAllowance ?:0,0,'COMMA',0,'POINT')}">200,000</td>
-			<td></td>
-			<td class="align-right"></td>
+			<th>공제액 계
+			</th>
+			<th class="align-right" th:text="${#numbers.formatDecimal(userPayManage.totalDeduction ?:0,0,'COMMA',0,'POINT')}">187,410</th>
 		</tr>
 
 		<tr>

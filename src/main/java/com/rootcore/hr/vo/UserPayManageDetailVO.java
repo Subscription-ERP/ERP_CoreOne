@@ -32,4 +32,5 @@ public class UserPayManageDetailVO {
 	private String payrollCode;
 	private String companyCode;
 	private String payPeriod; // 귀속연월
+	private String absence;
 }

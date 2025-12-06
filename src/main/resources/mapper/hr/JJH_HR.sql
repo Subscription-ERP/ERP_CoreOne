@@ -350,7 +350,8 @@ CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
     health_insurance            NUMBER,
     long_time_care_insurance    NUMBER,
     total_deduction_amount      NUMBER,
-    net_pay                     NUMBER
+    net_pay                     NUMBER,
+    absence NUMBER
 );
 /
 
@@ -387,7 +388,7 @@ IS
                pr.user_id, -- 사용자 id
                um.user_name, -- 성명
                dm.dept_name, -- 부서명
-               pr.payroll_date, -- 지급일
+               pr.payroll_date, -- 지급일               
                um.salary, -- 기본급여
                pr.bonus_rate, -- 상여 지급율
                pr.bonus_amount, -- 상여 지급액
@@ -397,7 +398,9 @@ IS
                um.family_count, -- 가족수
                um.children_count, -- 자녀수
                al.expiry_date, -- 소멸예정일
-               al.remaining_days -- 잔여연차
+               al.remaining_days, -- 잔여연차
+               pr.payroll_start_date, -- 대장시작시간
+               absence.absenceCount -- 결근, 병가 얼마나 썼는지
         FROM   tb_payroll pr
                JOIN tb_user_master um -- 사원관리 테이블
                ON pr.user_id = um.user_id
@@ -408,16 +411,27 @@ IS
                            FROM   tb_attendance ad_sub -- 근태관리 테이블
                                   JOIN tb_payroll pr_sub -- 급여대장 테이블
                                   ON ad_sub.user_id = pr_sub.user_id
-                           WHERE  pr_sub.payroll_period_code = p_payroll_period_code
-                           AND    ad_sub.work_date >= pr_sub.payroll_start_date
-                           AND    ad_sub.work_date <= pr_sub.payroll_end_date
-                           GROUP BY ad_sub.user_id
+                           WHERE  pr_sub.payroll_period_code = p_payroll_period_code -- 매개변수로 받은 신고귀속코드랑 급여대장에있는 신고귀속코드가 같은걸 찾고
+                           AND    ad_sub.work_date >= pr_sub.payroll_start_date -- work_date일한시간이 대장시작시간보다 크거나 같은거
+                           AND    ad_sub.work_date <= pr_sub.payroll_end_date -- work_date일한시간이 대장종료시간보다 작거나 같은거
+                           GROUP BY ad_sub.user_id -- 이렇게 하면 몇월에 대한 급여인지 알게됨
                           ) ad 
                 ON ad.user_id = pr.user_id
                 LEFT JOIN tb_annual_leave al
                 ON al.user_id = pr.user_id
                 JOIN tb_dept_master dm
                 ON dm.dept_code = um.dept
+                LEFT JOIN ( SELECT att_sub.user_id,
+                                   COUNT(*) as absenceCount
+                            FROM   tb_attendance att_sub
+                                   JOIN tb_payroll pr_sub
+                                   ON att_sub.user_id = pr_sub.user_id
+                            WHERE  pr_sub.payroll_period_code = p_payroll_period_code
+                              AND  att_sub.work_date >= pr_sub.payroll_start_date -- work_date일한시간이 대장시작시간보다 크거나 같은거
+                              AND  att_sub.work_date <= pr_sub.payroll_end_date
+                              AND  (attend_type = 'h4' OR  attend_type = 'h7')
+                           GROUP BY att_sub.user_id ) absence
+                ON pr.user_id = absence.user_id
          WHERE  pr.payroll_period_code = p_payroll_period_code;
         
     -- 변수선언
@@ -442,6 +456,7 @@ IS
     v_net_pay  NUMBER; -- 실수령액
     v_total_payment_amount NUMBER; -- 총 지급액(상여포함)
     v_total_deduction_amount NUMBER; -- 총 4대보험
+    v_absence NUMBER; -- 결근, 병가 공제액
     
     -- 결과 컬렉션 변수 선언
     v_results T_PAYROLL_RESULTS_TAB;
@@ -471,8 +486,14 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('v_uid:'||v_uid); -- 사용자id
         DBMS_OUTPUT.PUT_LINE(',v_sal:'||v_sal); -- 급여
         
-        -- 시간당 통상임금 := 기본급 / 209
-        -- 여
+        
+        -- =================================================================================================================
+        -- 209시간
+        -- 주 40시간 근무하는 월급제 근로자의 월평균 소정근로시간을 의미
+        -- 1주 소정근로시간 40시간에 유급주휴 8시간(40시간 / 8시간 × 1일 8시간)을 더한 48시간을 월평균(4.345주)으로 환산하여 반올림한 값
+        -- (주40시간 + 주휴 8시간) X 4.345 = 약209시간
+        -- =================================================================================================================
+        -- 시간당 통상임금(통상시급) := 기본급 / 209
         v_ordinary_wage := ROUND(v_sal / 209);
         DBMS_OUTPUT.PUT_LINE(',v_ordinary_wage:'||v_ordinary_wage);
         
@@ -574,6 +595,32 @@ BEGIN
             -- 예시) 15,123원 -> 15,000원
             v_national_pension := TRUNC(v_earnings, -3) * 0.045;
             DBMS_OUTPUT.PUT_LINE('v_national_pension:'||v_national_pension);
+                        
+            -- =================================================================
+            -- 통상임금은 기본적으로 상여, 수당, 4대보험, 소득세, 지방소득에만 영향줌
+            -- 실 수령액 - (결근 + 지각 + 병가)
+            -- ① (기본금 / 해당 월의 전체 일수 or 30일고정 or 월의 유급일수) × 근로일수(주휴일 포함)
+            -- ② (기본금 / 209시간) × 8시간 × 근로일수(주휴일 포함)
+            -- 보통 사업자는 1번을 선호
+            -- 이유는 돈 적게 나가서
+            -- h1	0H	정상 x
+            -- h2	0H	지각 x
+            -- h3	0H	조퇴 x
+            -- h4	0H	결근 o
+            -- h5	0H	반차 x
+            -- h6	0H	연차 x
+            -- h7	0H	병가 o
+            -- h8	0H	외근 x
+            -- h9	0H	출장 x
+            -- h10	0H	휴무 x
+            --
+            -- 결근에 대해서 계산
+            -- =================================================================
+            IF user_info.absenceCount > 0 THEN
+                v_absence := ( v_sal / 30 ) * user_info.absenceCount;
+            ELSE
+                v_absence := 0;
+            END IF;
         END IF;
         
         -- 고용보험
@@ -603,8 +650,8 @@ BEGIN
         -- 계산법 : 소득세 * 0.1
         
         -- 총 공제총액
-        -- 총 4대보험 := 국민연금 + 고용보험 + 건강보험 + 장기요양보험
-        v_total_deduction_amount := v_national_pension + v_employment_insurance + v_health_insurance + v_long_time_care_insurance;
+        -- 총 4대보험 := 국민연금 + 고용보험 + 건강보험 + 장기요양보험 + 결근병가공제
+        v_total_deduction_amount := v_national_pension + v_employment_insurance + v_health_insurance + v_long_time_care_insurance + v_absence;
         DBMS_OUTPUT.PUT_LINE('v_total_deduction_amount:'||v_total_deduction_amount);
         
         -- 실 수령액
@@ -639,7 +686,8 @@ BEGIN
             v_health_insurance, 
             v_long_time_care_insurance, 
             v_total_deduction_amount, 
-            v_net_pay
+            v_net_pay,
+            v_absence
         );
         
     END LOOP;
@@ -669,7 +717,8 @@ BEGIN
                health_insurance,
                long_time_care_insurance,
                total_deduction_amount,
-               net_pay
+               net_pay,
+               absence
         FROM TABLE(v_results);
         -- TABLE()함수는 타입 컬렉션(v_results)을 마치 데이터베이스의 일반적인 테이블처럼 SQL문에서 조회 할 수 있도록 변환해 주는 특수 함수
         -- 정확히는 컬렉션을 관계형 테이블로 변환하는 기능
@@ -1221,7 +1270,7 @@ VALUES
 -- 생성 결과
 select fn_make_date_code('USER_PAY_MANAGEMENT') from dual;
 
--- 사원급여관리-단건조회-pdf출력
+-- 사원급여관리-단건조회-pdf출력-급여명세서에 필요한 데이터들 select
 SELECT upm.user_pay_management_code,
        um.user_name,
        upm.user_id,
@@ -1252,3 +1301,75 @@ FROM   tb_user_pay_management upm
        ON um.dept = dm.dept_code
        JOIN tb_cm_code cmc
        ON um.job_title = cmc.code;
+       
+-- h2 지각에 대한 결근일         
+SELECT SUM(8 - (att_sub.total_work_time - (att_sub.over_work_time + att_sub.night_work_time + att_sub.holiday_work_time))),
+       att_sub.user_id
+FROM   tb_attendance att_sub
+       JOIN tb_payroll pr_sub
+       ON att_sub.user_id = pr_sub.user_id
+WHERE  pr_sub.payroll_period_code = 'PRP25120500002'
+  AND  att_sub.attend_type = 'h2'
+GROUP BY att_sub.user_id;
+
+-- h4 결근에 대한 몇일인지
+SELECT att_sub.user_id,
+       COUNT(*) as absenceCount
+FROM   tb_attendance att_sub
+       JOIN tb_payroll pr_sub
+       ON att_sub.user_id = pr_sub.user_id
+WHERE  pr_sub.payroll_period_code = 'PRP25120500002'
+  AND  att_sub.work_date >= pr_sub.payroll_start_date -- work_date일한시간이 대장시작시간보다 크거나 같은거
+  AND  att_sub.work_date <= pr_sub.payroll_end_date
+  AND (attend_type = 'h4' OR  attend_type = 'h7')
+GROUP BY att_sub.user_id ;
+
+SELECT pr.payroll_code, -- 급여대장코드
+               pr.user_id, -- 사용자 id
+               um.user_name, -- 성명
+               dm.dept_name, -- 부서명
+               pr.payroll_date, -- 지급일             
+               um.salary, -- 기본급여
+               pr.bonus_rate, -- 상여 지급율
+               pr.bonus_amount, -- 상여 지급액
+               ad.total_over_work_time, -- 총 연장근무시간
+               ad.total_night_work_time, -- 총 야간근무시간
+               ad.total_holiday_work_time, -- 총 휴일근무시간
+               um.family_count, -- 가족수
+               um.children_count, -- 자녀수
+               al.expiry_date, -- 소멸예정일
+               al.remaining_days, -- 잔여연차
+               pr.payroll_start_date, -- 대장시작시간               
+               absence.absenceCount
+        FROM   tb_payroll pr
+               JOIN tb_user_master um -- 사원관리 테이블
+               ON pr.user_id = um.user_id
+               LEFT JOIN ( SELECT ad_sub.user_id,
+                                  SUM(ad_sub.over_work_time) as total_over_work_time,
+                                  SUM(ad_sub.night_work_time) as total_night_work_time,
+                                  SUM(ad_sub.holiday_work_time) as total_holiday_work_time
+                           FROM   tb_attendance ad_sub -- 근태관리 테이블
+                                  JOIN tb_payroll pr_sub -- 급여대장 테이블
+                                  ON ad_sub.user_id = pr_sub.user_id
+                           WHERE  pr_sub.payroll_period_code = 'PRP25120500002' -- 매개변수로 받은 신고귀속코드랑 급여대장에있는 신고귀속코드가 같은걸 찾고
+                           AND    ad_sub.work_date >= pr_sub.payroll_start_date -- work_date일한시간이 대장시작시간보다 크거나 같은거
+                           AND    ad_sub.work_date <= pr_sub.payroll_end_date -- work_date일한시간이 대장종료시간보다 작거나 같은거
+                           GROUP BY ad_sub.user_id -- 이렇게 하면 몇월에 대한 급여인지 알게됨
+                          ) ad 
+                ON ad.user_id = pr.user_id
+                LEFT JOIN tb_annual_leave al
+                ON al.user_id = pr.user_id
+                JOIN tb_dept_master dm
+                ON dm.dept_code = um.dept
+                LEFT JOIN ( SELECT att_sub.user_id,
+                              COUNT(*) as absenceCount
+                       FROM   tb_attendance att_sub
+                              JOIN tb_payroll pr_sub
+                              ON att_sub.user_id = pr_sub.user_id
+                       WHERE  pr_sub.payroll_period_code = 'PRP25120500002'
+                         AND  att_sub.work_date >= pr_sub.payroll_start_date -- work_date일한시간이 대장시작시간보다 크거나 같은거
+                         AND  att_sub.work_date <= pr_sub.payroll_end_date
+                         AND  (attend_type = 'h4' OR  attend_type = 'h7')
+                       GROUP BY att_sub.user_id ) absence
+                ON pr.user_id = absence.user_id
+         WHERE  pr.payroll_period_code = 'PRP25120500002';

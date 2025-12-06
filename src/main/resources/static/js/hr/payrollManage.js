@@ -26,6 +26,7 @@ function resetSummaryTables() {
 	document.getElementById('health_insurance').textContent = 0;
 	document.getElementById('long_time_care_insurance').textContent = 0;
 	// document.getElementById('#').textContent = 0;
+	document.getElementById('absence').textContent = 0;
 	document.getElementById('total_deduction_amount').textContent = 0;
 }
 
@@ -49,6 +50,7 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('employment_insurance').textContent = rowData.employmentInsurance === null || rowData.employmentInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employmentInsurance);
 	document.getElementById('health_insurance').textContent = rowData.healthInsurance === null || rowData.healthInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.healthInsurance);
 	document.getElementById('long_time_care_insurance').textContent = rowData.longTimeCareInsurance === null || rowData.longTimeCareInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.longTimeCareInsurance);
+	document.getElementById('absence').textContent = rowData.absence === null || rowData.absence === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.absence);
 	document.getElementById('total_deduction_amount').textContent = rowData.totalDeductionAmount === null || rowData.totalDeductionAmount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalDeductionAmount);
 }
 
@@ -279,4 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	// input 상자만 눌러도 달력 나오게 설정
+	setupNativeDatePicker('payPeriodStartWrapper','payPeriodStart'); // 급여조회-사원급여조회-귀속연월 범위시작
+	setupNativeDatePicker('payPeriodEndWrapper','payPeriodEnd'); // 급여조회-사원급여조회-귀속연월 범위종료
 });
