@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>구독 관리</title>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e5e7eb;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+        }
+
+        /* 구독 상세 전체 래퍼 */
+        .subscription-wrapper {
+            padding: 16px 20px;
+        }
+
+        .subscription-wrapper .subscription-card {
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            font-size: 15px;
+        }
+
+        .subscription-wrapper .subscription-card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .subscription-wrapper .subscription-grid {
+            display: flex;
+            gap: 18px;
+            flex-wrap: nowrap;
+        }
+
+        .subscription-wrapper .subscription-section {
+            flex: 1;
+            min-width: 260px;
+            padding-right: 12px;
+            border-right: 1px solid var(--border);
+        }
+
+        .subscription-wrapper .subscription-section:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .subscription-wrapper .section-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-sub);
+        }
+
+        /* 플랜 배지 */
+        .subscription-wrapper .plan-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            background: #111827;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .subscription-wrapper .plan-name {
+            font-weight: 600;
+        }
+
+        .subscription-wrapper .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            background: rgba(22, 163, 74, 0.1);
+            color: #16a34a;
+        }
+
+        .subscription-wrapper .info-list div {
+            font-size: 14px;
+            margin: 2px 0;
+            color: var(--text-sub);
+        }
+
+        /* 모듈칩 */
+        .subscription-wrapper .module-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .subscription-wrapper .chip {
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 13px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            color: var(--text-main);
+        }
+
+        .subscription-wrapper .chip-active {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: rgba(37, 99, 235, 0.4);
+            color: #1d4ed8;
+            font-weight: 500;
+        }
+
+        .subscription-wrapper .usage-stats div,
+        .subscription-wrapper .payment-info div {
+            font-size: 14px;
+            margin: 2px 0;
+            color: var(--text-sub);
+        }
+
+        .subscription-wrapper .btn-row {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 14px;
+        }
+
+        .subscription-wrapper .btn {
+            padding: 7px 14px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .subscription-wrapper .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .subscription-wrapper .btn-ghost {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        @media (max-width: 900px) {
+            .subscription-wrapper .subscription-grid {
+                flex-wrap: wrap;
+            }
+
+            .subscription-wrapper .subscription-section {
+                border-right: none;
+                padding-right: 0;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 12px;
+                margin-bottom: 8px;
+            }
+
+            .subscription-wrapper .subscription-section:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+
+            .subscription-wrapper .btn-row {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+
+    <div class="subscription-wrapper">
+
+        <section class="subscription-card">
+            <h2 class="subscription-card-title">구독 상세</h2>
+
+            <div class="subscription-grid">
+
+                <!-- 왼쪽 : 구독 상품 (더미데이터) -->
+                <div class="subscription-section">
+                    <div class="section-header">구독 상품</div>
+
+                    <div class="plan-badge">
+                        <span class="plan-name">Essential</span>
+                        <span class="plan-price">월 9,900원</span>
+                    </div>
+
+                    <div class="status-badge">구독중 · D-30</div>
+
+                    <div class="info-list">
+                        <div>구독 기간 : 2025-01-02 ~ 2026-01-01</div>
+                        <div>사용자 수 : 35 / 50명</div>
+                        <div>요금제 유형 : 월 단위 선불</div>
+                    </div>
+                </div>
+
+                <!-- 가운데 : 사용 중인 서비스 (더미데이터) -->
+                <div class="subscription-section">
+                    <div class="section-header">사용 중인 서비스</div>
+
+                    <div class="module-chips">
+                        <span class="chip chip-active">회계</span>
+                        <span class="chip chip-active">인사</span>
+                        <span class="chip chip-active">영업</span>
+                    </div>
+
+                    <div class="usage-stats">
+                        <div>전표 건수 : 1,230건</div>
+                        <div>근태 기록 : 320건</div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽 : 결제 정보 (더미데이터) -->
+                <div class="subscription-section">
+                    <div class="section-header">결제 정보</div>
+
+                    <div class="payment-info">
+                        <div>결제 수단 : 토스페이먼츠(****-1234)</div>
+                        <div>결제 주기 : 월 결제</div>
+                        <div>다음 결제일 : 2025-11-24</div>
+                        <div>최근 결제일 : 2025-10-24 (결제완료)</div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" class="btn btn-ghost">영수증 보기</button>
+                        <button type="button" class="btn btn-ghost">세금계산서</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="btn-row">
+                <button type="button" class="btn btn-primary">결제하기</button>
+                <button type="button" class="btn btn-ghost">플랜 변경</button>
+            </div>
+        </section>
+
+    </div>
+
+</div>
+</body>
+</html>

@@ -93,5 +93,35 @@
      ORDER BY c.COMPANY_CODE
 
     </select>
+ <select id="selectSubDetail" parameterType="string" resultType="SubscribeVO">
+    <![CDATA[
+    SELECT *
+    FROM (
+        SELECT 
+            sub_code,
+            company_code,
+            plan_code,
+            subs_start,
+            subs_end,
+            subs_status,
+            current_price,
+            current_user_count,
+            billing_period,
+            created_by,
+            create_date,
+            updated_by,
+            update_date
+        FROM TB_SUBSCRIBE
+        WHERE company_code = #{companyCode}
+          AND subs_status = 'ACTIVE'
+          AND subs_start <= SYSDATE
+          AND subs_end >= SYSDATE
+        ORDER BY subs_start DESC
+    )
+    WHERE ROWNUM = 1
+    ]]>
+</select>
+
+    
 	<!-- 필요하면 조회 메서드도 추가 -->
 </mapper>

@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.rootcore.sb.vo.PaymentVO;
-import com.rootcore.sb.vo.PlanVO;
 import com.rootcore.sb.vo.SubscribeVO;
 
 @Mapper
@@ -21,5 +20,7 @@ public interface PaymentMapper {
         @Param("code") String code
     );
     // 회사코드로 비활성 구독 이력 조회
-    List<SubscribeVO> selectInactiveSubListByComCode(@Param("comCode") String comCode);
+    List<SubscribeVO> selectInactiveSubListByComCode(@Param("companyCode") String companyCode);
+    SubscribeVO selectSubDetail(@Param("companyCode") String companyCode);
+    
 }

@@ -21,7 +21,8 @@ public interface PaymentService {
 
 	);
 	// 회사별 비활성 구독 이력 조회
-    List<SubscribeVO> selectInactiveSubListByComCode(String comCode);
+    List<SubscribeVO> selectInactiveSubListByComCode(String companyCode);
+    SubscribeVO selectSubDetail(String companyCode);
 //결제가 완료된 후 승인하는 기능
 	// 신규 구독 + 결제 동시 처리
 //	    void handleNewSubscribeAndPayment(NewSubsPaymentRequest req);

@@ -54,6 +54,16 @@ public class CompanyServiceImpl implements CompanyService {
 	public List<CompanyVO> selectCompanyList(String companyName, String ceoName) {
 		  return companyMapper.selectCompanyList(companyName,ceoName);
 	}
+
+	@Override
+	public CompanyVO selectCompanyDetail(String companyCode) {
+		return companyMapper.selectCompanyDetail(companyCode);
+	}
+
+	@Override
+	public int updateCompany(CompanyVO vo) {
+		return companyMapper.updateCompany(vo);
+	}
 	  
 	  
 }

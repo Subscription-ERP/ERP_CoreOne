@@ -2,49 +2,52 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.sb.mapper.SubscribeMapper">
 
-<!-- 구독 INSERT -->
-    <insert id="insertSubscribe" parameterType="com.rootcore.sb.vo.SubscribeVO">
+	<!-- 구독 INSERT -->
+	<insert id="insertSubscribe"
+		parameterType="com.rootcore.sb.vo.SubscribeVO">
 
-        <!-- SUB_CODE 생성 (구독코드 생성용 함수/시퀀스는 프로젝트에 맞게 수정) -->
-        <selectKey resultType="String" order="BEFORE" keyProperty="subCode">
-            SELECT FN_MAKE_SUB_CODE() FROM DUAL
-        </selectKey>
+		<!-- SUB_CODE 생성 (구독코드 생성용 함수/시퀀스는 프로젝트에 맞게 수정) -->
+		<selectKey resultType="String" order="BEFORE"
+			keyProperty="subCode">
+			SELECT FN_MAKE_SUB_CODE() FROM DUAL
+		</selectKey>
 
-        INSERT INTO TB_SUBSCRIBE
-        (
-            SUB_CODE,
-            COMPANY_CODE,
-            SUBS_STATUS,
-            SUBS_START,
-            SUBS_END,
-            CREATED_BY,
-            CREATE_DATE,
-            UPDATED_BY,
-            UPDATE_DATE,
-            PLAN_CODE,
-            CONTRACT_CODE,
-            BILLING_PERIOD,
-            CURRENT_USER_COUNT,
-            CURRENT_PRICE
-        )
-        VALUES
-        (
-            #{subCode},
-            #{companyCode},
-            #{subsStatus},
-            #{subsStart},
-            #{subsEnd},
-            #{createdBy},
-            #{createDate},
-            #{updatedBy},
-            #{updateDate},
-            #{planCode},
-            #{contractCode},
-            #{billingPeriod},
-            #{currentUserCount},
-            #{currentPrice}
-        )
-    </insert>
-    
+		INSERT INTO TB_SUBSCRIBE
+		(
+		SUB_CODE,
+		COMPANY_CODE,
+		SUBS_STATUS,
+		SUBS_START,
+		SUBS_END,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE,
+		PLAN_CODE,
+		CONTRACT_CODE,
+		BILLING_PERIOD,
+		CURRENT_USER_COUNT,
+		CURRENT_PRICE
+		)
+		VALUES
+		(
+		#{subCode},
+		#{companyCode},
+		#{subsStatus},
+		#{subsStart},
+		#{subsEnd},
+		#{createdBy},
+		#{createDate},
+		#{updatedBy},
+		#{updateDate},
+		#{planCode},
+		#{contractCode},
+		#{billingPeriod},
+		#{currentUserCount},
+		#{currentPrice}
+		)
+	</insert>
+
+	
 
 </mapper>
