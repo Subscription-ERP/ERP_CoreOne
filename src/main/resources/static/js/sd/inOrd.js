@@ -14,7 +14,7 @@ document.getElementById('btnSave').addEventListener('click', async (e) => {
 
     const saveInOrdData = getInOrdData();
 
-    const res = await fetch('/api/inOrd/save', {
+    const res = await fetch('/api/sd/inord/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(saveInOrdData)
@@ -129,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     emptyRow();
-    skuList();
 
     // 추가버튼 클릭시 행 추가
     btnAddRow.addEventListener('click', emptyRow);
@@ -199,36 +198,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 inOrdGrid.startEditing(rowKey, 'qty');
             }
 
-            if (columnName === 'unitPriceType') {
-                const row = inOrdGrid.getRow(rowKey);
-                const skuCode = row.sku;
-                const typeCode = value; // 선택한 단가유형 코드
-
-                if (skuCode && typeCode) {
-                    // skuDataList 구조에 맞게 찾기 (예시는 sku + unitPriceType 기준)
-                    const skuInfo = skuDataList.find(item =>
-                        item.sku === skuCode && item.unitPriceType === typeCode
-                    );
-
-                    if (skuInfo && skuInfo.unitPrice != null) {
-                        inOrdGrid.setValue(rowKey, 'unitPrice', skuInfo.unitPrice);
-                    } else {
-                        // 해당 유형 단가가 없으면 0 또는 기존값 유지 등 정책 결정
-                        inOrdGrid.setValue(rowKey, 'unitPrice', 0);
-                    }
-
-                    // 단가 바뀌었으니 공급가액/부가세 재계산
-                    const qty = Number(row.qty) || 0;
-                    const supplyPrice = qty * (Number(inOrdGrid.getValue(rowKey, 'unitPrice')) || 0);
-                    const surTax = Math.floor(supplyPrice * 0.1);
-
-                    inOrdGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
-                    inOrdGrid.setValue(rowKey, 'surTax', surTax.toLocaleString());
-                    sumPrice();
-                }
-            }
-
-
             // 공급가액, 부가세 계산
             if (columnName === 'qty' || columnName === 'unitPrice') {
                 const row = inOrdGrid.getRow(rowKey);
@@ -264,6 +233,37 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    inOrdGrid.on('editingStart', ev => {
+        const { rowKey, columnName } = ev;
+        if (columnName !== 'unitPriceType') return;
+
+        const editor = inOrdGrid.getColumn(columnName).editor;
+        const el = editor && editor.el;
+        if (!el) return;
+
+        const selectEl = el.querySelector('select');
+        if (!selectEl) return;
+
+        selectEl.addEventListener('change', () => {
+            inOrdGrid.finishEditing();
+
+            const value = selectEl.value;
+            handleUnitPriceTypeChange(rowKey, value);
+        }, { once: true });
+    });
+
+
+    inOrdGrid.off && inOrdGrid.off('editingFinish');
+
+    inOrdGrid.on('editingFinish', (e) => {
+        const { rowKey, columnName, value } = e;
+        if (columnName === 'unitPriceType') {
+            handleUnitPriceTypeChange(rowKey, value);
+        }
+    });
+
+
+
 });
 
 // 모달에서 거래처 값 불러오기
@@ -273,6 +273,7 @@ window.handleSelectedCust = function(row) {
 
     document.getElementById('creditMax').value = Number(row.creditMax).toLocaleString();
     sumPrice();
+    skuList();
 };
 
 window.afterCustSearch = function(result) {
@@ -420,17 +421,17 @@ function sumPrice() {
 
 // 등록 전 데이터 불러오기
 function getInOrdData() {
+    // creditMax: toNumber(document.getElementById('creditMax')?.value)  // 여신한도
     
     // 기본정보
     const info = {
         inordNo: document.getElementById('inordNo').value || null,
         inordDate: document.getElementById('inordDate').value,   // "yyyy-MM-dd"
         dueDate: document.getElementById('dueDate').value,       // "yyyy-MM-dd"
-        custCode: document.getElementById('custCodeSearch').value,
-        custName: document.getElementById('custNameSearch').value,
         dept: document.getElementById('dept')?.value || '',
         pic: document.getElementById('pic')?.value || '',
-        creditMax: toNumber(document.getElementById('creditMax')?.value),
+        custCode: document.getElementById('custCodeSearch').value,
+        custName: document.getElementById('custNameSearch').value,
         totalSupplyPrice: toNumber(document.getElementById('totalSupplyPrice')?.value),
         totalSurtax: toNumber(document.getElementById('totalSurtax')?.value),
         totalPrice: toNumber(document.getElementById('totalPrice')?.value)
@@ -444,14 +445,11 @@ function getInOrdData() {
         .map((row, idx) => ({
             lineNo: idx + 1,
             sku: row.sku,
-            skuName: row.skuName,
-            spec: row.spec,
-            unit: row.unit,
             qty: toNumber(row.qty),
-            unitPriceType: row.unitPriceType,
-            unitPrice: toNumber(row.unitPrice),
-            supplyPrice: toNumber(row.supplyPrice),
-            surTax: toNumber(row.surTax),
+            unitPrice: toNumber(row.unitPrice),     // 단가
+            supplyPrice: toNumber(row.supplyPrice), // 공급가액 (수량*단가)
+            surtax: toNumber(row.surTax),           // 부가세
+            price: toNumber(row.supplyPrice) + toNumber(row.surTax),
             remark: row.remark
         }));
 
@@ -467,18 +465,57 @@ function toNumber(v) {
     return Number.isNaN(n) ? 0 : n;
 }
 
+// 단가유형 클릭시 단가 변환
+function handleUnitPriceTypeChange(rowKey, value) {
+    const row = inOrdGrid.getRow(rowKey);
+    const skuCode = row.sku;
+    const typeCode = value;
+
+    if (skuCode && typeCode) {
+        const skuInfo = skuDataList.find(item =>
+            item.sku === skuCode && item.unitPriceType === typeCode
+        );
+
+        if (skuInfo && skuInfo.unitPrice != null) {
+            inOrdGrid.setValue(rowKey, 'unitPrice', skuInfo.unitPrice);
+        } else {
+            inOrdGrid.setValue(rowKey, 'unitPrice', 0);
+        }
+
+        const qty = Number(row.qty) || 0;
+        const supplyPrice = qty * (Number(inOrdGrid.getValue(rowKey, 'unitPrice')) || 0);
+        const surTax = Math.floor(supplyPrice * 0.1);
+
+        inOrdGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
+        inOrdGrid.setValue(rowKey, 'surTax', surTax.toLocaleString());
+        sumPrice();
+    }
+}
+
+
 
 
 // 나중에 삭제할 것!! ==============================================
 
 // 품목 불러오기
 function skuList() {
-    fetch("/api/cm/skuList")
+    const custCode = document.getElementById('custCodeSearch').value.trim();
+
+    if (!custCode) {
+        console.warn('거래처 코드가 없습니다. 모달에서 거래처를 먼저 선택하세요.');
+        return;
+    }
+
+    const url = `/api/cm/inOrdSkuList?custCode=${encodeURIComponent(custCode)}`;
+
+    console.log(custCode);
+    console.log(url);
+
+    fetch(url)
         .then(res => res.json())
         .then(result => {
             skuDataList = result;
 
-            // result 에서 단가유형 목록 추출 (중복 제거)
             const map = new Map();
             skuDataList.forEach(item => {
                 if (item.unitPriceType && item.typeName) {
@@ -487,11 +524,10 @@ function skuList() {
             });
 
             unitPriceTypeItems = Array.from(map.entries()).map(([value, text]) => ({
-                text,   // 화면에 보이는 값 (한글)
-                value   // 실제 저장되는 값 (코드)
+                text,
+                value
             }));
 
-            // Grid 에 listItems 주입
             inOrdGrid.setColumns(inOrdGrid.getColumns().map(col => {
                 if (col.name === 'unitPriceType') {
                     col.editor.options.listItems = unitPriceTypeItems;

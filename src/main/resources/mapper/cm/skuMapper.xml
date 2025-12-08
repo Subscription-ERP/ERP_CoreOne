@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.rootcore.cm.mapper.SkuMapper">
-    <!-- 수주 상품 조회 -->
+
+    <!-- 품목 조회 -->
     <select id="selectAllSku" resultType="SkuVO">
         SELECT  sku,
                 sku_name,
@@ -14,6 +14,31 @@
                 use_yn,
                 tax_yn
         FROM tb_sku_master
+    </select>
+
+    <!-- 수주 품목 조회 -->
+    <select id="selectInOrdSku" resultType="SkuVO" parameterType="string">
+        SELECT  sku.sku,        -- 품목코드
+                sku.sku_name,   -- 품목명
+                sku.spec,       -- 규격
+                sku.unit,       -- 단위
+                unit.unit_price_type,           -- 단가유형
+                cmCode.code_name "type_name",   -- 단가유형이름
+                unit.unit_price                 -- 단가
+        FROM tb_sku_master sku
+        JOIN tb_unit_price_master unit
+        ON sku.company_code = unit.company_code
+        AND sku.sku = unit.sku
+        JOIN tb_cm_code cmCode
+        ON unit.unit_price_type = cmCode.code
+        WHERE sku.sku_type = 'ITEM'
+        AND unit.unit_price_type != 'BUY_UNIT'
+        AND unit.cust_code = #{custCode}
+        <where>
+            <if test="unitPriceType == 'SELL_UNIT' ">
+                AND unit_price_type = 'SELL_UNIT'
+            </if>
+        </where>
     </select>
 
 </mapper>
