@@ -16,6 +16,10 @@ public interface CompanyMapper {
 	 // 관리자용 회사 목록 조회
     List<CompanyVO> selectCompanyList(@Param("companyName") String companyName,
     	    @Param("ceoName") String ceoName);
+    
+    CompanyVO selectCompanyDetail(String companyCode);
+
+    int updateCompany(CompanyVO vo);
 
 	
 	 // (선택) 상태 업데이트 같은 거 쓰고 싶으면 나중에 추가

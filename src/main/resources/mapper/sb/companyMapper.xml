@@ -95,4 +95,31 @@
     ORDER BY c.COMPANY_CODE
 </select>
 
+  <!-- 회사 상세 조회 -->
+    <select id="selectCompanyDetail" parameterType="string" resultType="CompanyVO">
+        SELECT 
+            company_code,
+            company_name,
+            ceo_name,
+            phone,
+            email,
+            address,
+            business_number,
+            create_date,
+            update_date
+        FROM COMPANY
+        WHERE company_code = #{companyCode}
+    </select>
+   <!-- 회사 정보 수정 -->
+    <update id="updateCompany" parameterType="CompanyVO">
+        UPDATE COMPANY
+        SET 
+            company_name = #{companyName},
+            ceo_name = #{ceoName},
+            phone = #{phone},
+            email = #{email},
+            address = #{address},
+            update_date = SYSDATE
+        WHERE company_code = #{companyCode}
+    </update>
 </mapper>

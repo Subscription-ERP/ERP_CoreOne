@@ -8,62 +8,135 @@
 <title>결제 완료</title>
 
 <style>
-/* 레이아웃의 body는 건들지 말고, 이 페이지만 따로 */
-.payment-page {
-  max-width: 520px;      /* 오른쪽 컨텐츠 영역 안에서 가로폭 */
-  margin: 40px auto;     /* 위쪽 여백 + 가운데 정렬 */
-}
+  :root {
+    --primary: #2563eb;
+    --border: #e5e7eb;
+    --text-main: #111827;
+    --text-sub: #6b7280;
+  }
 
-/* 제목 */
-.payment-page .title {
-  text-align: center;
-  font-weight: 600;
-  margin-bottom: 30px;
-  font-size: 18px;
-}
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px; /* ★ 전체 글자 크게 */
+  }
 
-/* 데이터 박스 */
-.payment-page .table-box {
-  border: 1px solid #ddd;
-  padding: 10px 20px;
-  font-size: 14px;
-  background-color: #fff;
-}
+  .subscription-card {
+    padding: 18px 20px; /* ★ 여백 줄임 */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+  }
 
-/* 각 줄 */
-.payment-page .row {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
-}
+  .subscription-card-title {
+    font-size: 20px; /* ★ 제목 크게 */
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
 
-.payment-page .row:last-child {
-  border-bottom: none;
-}
+  .subscription-grid {
+    display: flex;
+    gap: 18px; /* ★ 간격 좁힘 */
+  }
 
-/* 버튼 영역 */
-.payment-page .btn-area {
-  margin-top: 25px;
-  text-align: center;
-}
+  .subscription-section {
+    flex: 1;
+    min-width: 250px;
+    padding-right: 12px;
+    border-right: 1px solid var(--border);
+  }
 
-/* 확인 버튼 */
-.payment-page .btn-confirm {
-  background: #000;
-  color: #fff;
-  padding: 12px 70px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  text-decoration: none;
-  display: inline-block;
-}
+  .subscription-section:last-child {
+    padding-right: 0;
+    border-right: none;
+  }
 
-.payment-page .btn-confirm:hover {
-  opacity: 0.9;
-}
+  .section-header {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-sub);
+  }
+
+  .plan-badge {
+    display: inline-flex;
+    padding: 8px 12px; /* ★ 줄임 */
+    border-radius: 18px;
+    background: #111827;
+    color: #fff;
+    font-size: 14px; /* ★ 크게 */
+    margin-bottom: 8px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    background: rgba(22,163,74,0.1);
+    color: #16a34a;
+  }
+
+  .info-list div {
+    margin: 2px 0; /* ★ 항목 간격 축소 */
+    font-size: 14px;
+  }
+
+  .module-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px; /* ★ 간격 줄임 */
+  }
+
+  .chip {
+    padding: 6px 10px;
+    border-radius: 14px;
+    font-size: 13px; /* ★ 크게 */
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+  }
+
+  .chip-active {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: rgba(37, 99, 235, 0.4);
+    color: #1d4ed8;
+  }
+
+  .usage-stats div,
+  .payment-info div {
+    margin: 2px 0; /* ★ 간격 축소 */
+    font-size: 14px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 14px; /* ★ 아래 버튼 여백 줄임 */
+  }
+
+  .btn {
+    padding: 7px 14px;
+    border-radius: 18px;
+    font-size: 14px; /* ★ 크게 */
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-ghost {
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+  }
 </style>
+
+
 </head>
 
 <body>

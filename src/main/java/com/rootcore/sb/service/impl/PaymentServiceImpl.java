@@ -185,8 +185,13 @@ public class PaymentServiceImpl implements PaymentService {
 	
 
 	 @Override
-	    public List<SubscribeVO> selectInactiveSubListByComCode(String comCode) {
-	        return paymentMapper.selectInactiveSubListByComCode(comCode);
+	    public List<SubscribeVO> selectInactiveSubListByComCode(String companyCode) {
+	        return paymentMapper.selectInactiveSubListByComCode(companyCode);
 	    }
+
+	 @Override
+	 public SubscribeVO selectSubDetail(String companyCode) {
+		return paymentMapper.selectSubDetail(companyCode);
+	 }
 
 }

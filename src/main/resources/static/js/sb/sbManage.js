@@ -84,6 +84,14 @@ function initCompanyGrid() {
     data: []
   });
 
+  
+  // ✅ 체크박스 선택 시 회사 상세 가져오기
+  companyGrid.on('check', function(ev) {
+    const rowData = companyGrid.getRow(ev.rowKey);
+    if (rowData && rowData.companyCode) {
+      loadCompanyDetail(rowData.companyCode);
+    }
+  });
   // actions 컬럼 클릭 시 모달 열기
   companyGrid.on('click', function(ev) {
     const columnName = ev.columnName;
@@ -95,6 +103,69 @@ function initCompanyGrid() {
       }
     }
   });
+}
+
+// ✅ 특정 회사의 상세 정보 조회
+function loadCompanyDetail(companyCode) {
+  if (!companyCode) return;
+
+  const url = '/api/manage/companyDetail?companyCode=' + encodeURIComponent(companyCode);
+
+  fetch(url)
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('회사 상세 조회 실패 (status: ' + response.status + ')');
+      }
+      return response.json();
+    })
+    .then(function(data) {
+      // 상세 섹션 보이기
+      const section = document.getElementById('companyDetailSection');
+      if (section) {
+        section.hidden = false;
+      }
+
+      // 각 필드에 값 바인딩 (null 방지용 || '')
+      setInputValue('detailCompanyCode', data.companyCode);
+      setInputValue('detailCompanyName', data.companyName);
+      setInputValue('detailCeoName', data.ceoName);
+      setInputValue('detailBizNo', data.businessNumber);
+      setInputValue('detailTel', data.tel || data.ceoPhone);
+      setInputValue('detailManagerTel', data.managerPhone);
+      setInputValue('detailEmail', data.companyEmail || data.email);
+      setInputValue('detailManagerName', data.managerName);
+      setInputValue('detailAddress', data.address);
+    })
+    .catch(function(err) {
+      console.error(err);
+      alert('회사 상세 정보를 불러오는 중 오류가 발생했습니다.');
+    });
+}
+
+// ✅ 상세값 세팅 공통 함수
+function setInputValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.value = value != null ? value : '';
+  }
+}
+
+// ✅ 회사 상세 숨기기 (필요할 때 사용)
+function hideCompanyDetail() {
+  const section = document.getElementById('companyDetailSection');
+  if (section) {
+    section.hidden = true;
+  }
+  // 값도 지우고 싶으면 여기서 초기화
+  setInputValue('detailCompanyCode', '');
+  setInputValue('detailCompanyName', '');
+  setInputValue('detailCeoName', '');
+  setInputValue('detailBizNo', '');
+  setInputValue('detailTel', '');
+  setInputValue('detailManagerTel', '');
+  setInputValue('detailEmail', '');
+  setInputValue('detailManagerName', '');
+  setInputValue('detailAddress', '');
 }
 
 // 구독 이력 Grid 초기화
