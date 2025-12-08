@@ -26,9 +26,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         // ✅ 로그인한 사용자 ID
         String userId = authentication.getName();
+        SecurityUser user  = (SecurityUser) authentication.getPrincipal();
 
         // ✅ 회사코드 → DB 기준과 반드시 일치시켜야 함
-        String companyCode = "0000";
+        String companyCode = user.getLoginVO().getCompanyCode();
 
         session.setAttribute("LOGIN_USER_ID", userId);
         session.setAttribute("LOGIN_COMPANY_CODE", companyCode);

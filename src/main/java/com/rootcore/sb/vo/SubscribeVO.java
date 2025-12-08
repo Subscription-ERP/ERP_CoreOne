@@ -27,4 +27,8 @@ public class SubscribeVO {
 	    private Integer billingPeriod;   // BILLING_PERIOD (청구 주기)
 	    private Integer currentUserCount;// CURRENT_USER_COUNT (현재 사용자 수)
 	    private Double currentPrice;     // CURRENT_PRICE (현재 청구금액)
+	    private Double Price;
+	    private String paymentMethod;
+		private LocalDate recentPayment;
+		private LocalDate nextPayment;
 }
