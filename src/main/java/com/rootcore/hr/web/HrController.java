@@ -26,10 +26,12 @@ public class HrController {
 	}
 	
 	// 연차
+	// 연차관리
 	@GetMapping("/hr/annualManage")
 	public String annaulManage() {
-		return "hr/annual/userManage";
+		return "hr/annual/annualManage";
 	}
+	// 연차현황
 	@GetMapping("/hr/annualStatus")
 	public String annualStatus() {
 		return "hr/annual/annualStatus";

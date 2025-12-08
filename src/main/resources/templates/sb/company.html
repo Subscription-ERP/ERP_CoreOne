@@ -307,13 +307,8 @@
                                 <div class="mb-3 row">
                                     <label class="col-sm-4 col-form-label">직원 수</label>
                                     <div class="col-sm-8">
-                                        <select class="form-select" th:field="*{employeeCount}">
-                                            <option value="">선택</option>
-                                            <option value="under10">10명 이하</option>
-                                            <option value="10-50">10 ~ 50명</option>
-                                            <option value="50-100">50 ~ 100명</option>
-                                            <option value="over100">100명 이상</option>
-                                        </select>
+                                        <input type="text" class="form-control" th:field="*{employeeCount}" placeholder="직원 수">
+                                            
                                     </div>
                                 </div>
 

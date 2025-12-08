@@ -26,4 +26,10 @@ public class InOrdServiceImpl implements InOrdService {
         }
     }
 
+	@Override
+	public List<InOrdDetailVO> getInOrdDetail(InOrdDetailVO info) {
+		// TODO Auto-generated method stub
+		return inOrdMapper.SelectInOrdDetailList(info);
+	}
+
 }

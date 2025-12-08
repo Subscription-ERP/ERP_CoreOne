@@ -12,6 +12,7 @@ public class SkuVO {
     private String skuType;         // 품목분류
     private String spec;            // 규격
     private String unit;            // 단위
+    private int unitPrice;			// 단가
     private String remark;          // 비고
     private String useYn;           // 사용여부
     private String taxYn;           // 과세여부

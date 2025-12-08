@@ -8,3 +8,5 @@ public interface SkuMapper {
     List<SkuVO> selectAllSku(SkuVO sku);
     List<SkuVO> selectInOrdSku(String custCode);
 }
+    List<SkuVO> selectOneSku(SkuVO sku);
+} 

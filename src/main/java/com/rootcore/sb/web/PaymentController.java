@@ -14,7 +14,6 @@ import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PlanVO;
-import com.rootcore.sb.vo.SubscribeVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
 

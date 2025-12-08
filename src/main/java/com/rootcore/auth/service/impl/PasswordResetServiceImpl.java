@@ -25,9 +25,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * 비밀번호 재설정 링크 이메일 발송
-     */
+    //비밀번호 재설정 링크 이메일 발송 
     @Override
     public boolean sendResetLink(String userId, String email) {
 
@@ -108,9 +106,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         return true;
     }
 
-    /**
-     * 비밀번호 재설정 실행 (★ 자동 unlock 포함)
-     */
+    
+    //비밀번호 재설정 실행 (★ 자동 unlock 포함)
     @Override
     public boolean resetPassword(String token, String newPassword) {
 

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>품번 조회</title>
+
+    <link rel="stylesheet" th:href="@{/css/modal/custModal.css}">
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+</head>
+
+<body th:fragment="skuModal">
+
+<div id="skuModal" class="modal-layer" hidden>
+
+    <div class="modal-layer__backdrop"></div>
+
+    <div class="modal-layer__dialog modal-layer__dialog--lg" style="width: 900px;">
+
+        <!-- 헤더 -->
+        <header class="modal-card__header">
+            <h5 class="modal-card__title">품번 조회</h5>
+            <button type="button" class="btn-icon modal-card__btn-close" id="btnSkuClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </header>
+
+        <!-- 본문 -->
+        <div class="modal-card__body">
+
+            <!-- 검색 영역 -->
+            <div class="modal-history__info-row">
+
+                <div class="modal-history__field col-auto">
+
+                    <span class="modal-history__label" style="width: 70px">품번</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+                        <input type="text" id="schSkuCode" class="form-control input-base">
+                    </span>
+
+                    <span class="modal-history__label" style="width: 70px">품명</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+                        <input type="text" id="schSkuName" class="form-control input-base">
+                    </span>
+
+                </div>
+
+                <button type="button" id="btnSkuSearch"
+                        class="btn btn-white btn-inner modal-history__btn-print col-md-2">
+                    조회
+                </button>
+
+            </div>
+
+            <!-- GRID 영역 -->
+            <div class="form_grid sub-grid mt-2">
+                <div class="sub-grid__body">
+                    <div id="skuModalGrid"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/modal/skuModal.js}"></script>
+
+</body>
+</html>

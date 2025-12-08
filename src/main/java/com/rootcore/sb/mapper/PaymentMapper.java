@@ -15,12 +15,13 @@ public interface PaymentMapper {
 //    void callExistSubsPayment(ExistSubsPaymentVO vo);
 
 	  // 코드로 카드사명(한글) 조회
-    String findCardCompanyName(
+    String findCardCompanyCode(
         @Param("groupCode") String groupCode,
         @Param("code") String code
     );
     // 회사코드로 비활성 구독 이력 조회
     List<SubscribeVO> selectInactiveSubListByComCode(@Param("companyCode") String companyCode);
     SubscribeVO selectSubDetail(@Param("companyCode") String companyCode);
+    List<PaymentVO> selectPaymentHistory(@Param("companyCode") String companyCode);
     
 }
