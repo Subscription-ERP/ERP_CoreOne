@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.fi.mapper.SlipMapper">
+
+    <!-- ==========================================
+         1. 전표번호 생성 (함수 호출)
+         ※ FN_MAKE_SLIP_NO() 는 예시 함수명입니다.
+           실제 DB 함수명에 맞게 수정 필요합니다.
+       ========================================== -->
+    <select id="makeSlipNo" resultType="string">
+        SELECT FN_MAKE_DATE_CODE('SLIP') AS SLIP_NO
+        FROM DUAL
+    </select>
+
+    <!-- ==========================================
+         2. TB_SLIP_MASTER INSERT
+         테이블 정의(사용자님이 주신 것 기준)
+         COMPANY_CODE   NOT NULL
+         SLIP_NO        NOT NULL
+         SLIP_DATE      DATE DEFAULT SYSDATE NOT NULL
+         FISCAL_PERIOD  DATE DEFAULT SYSDATE NOT NULL
+         CUST_CODE
+         SLIP_TYPE
+         SUMMARY
+         STATUS         CHAR(1) DEFAULT 0 NOT NULL
+         INVOICE_NO
+         HARP_NO
+         CR_SUM
+         DR_SUM
+         CREATED_BY     DEFAULT 'ADMIN'
+         CREATE_DATE    DEFAULT SYSDATE
+         UPDATED_BY     DEFAULT 'ADMIN'
+         UPDATE_DATE    DEFAULT SYSDATE
+       ========================================== -->
+    <insert id="insertSlipMaster"
+            parameterType="com.rootcore.fi.vo.SlipMasterVO">
+
+        INSERT INTO TB_SLIP_MASTER (
+              COMPANY_CODE
+            , SLIP_NO
+            , SLIP_DATE
+            , FISCAL_PERIOD
+            , CUST_CODE
+            , SLIP_TYPE
+            , SUMMARY
+            , STATUS
+            , INVOICE_NO
+            , HARP_NO
+            , CR_SUM
+            , DR_SUM
+        )
+        VALUES (
+              #{companyCode}
+            , #{slipNo}
+            , #{slipDate}
+            , #{fiscalPeriod}
+            , #{custCode}
+            , #{slipType}
+            , #{summary}
+            , #{status}
+            , #{invoiceNo}
+            , #{harpNo}
+            , #{crSum}
+            , #{drSum}
+        )
+    </insert>
+
+    <!-- ==========================================
+         3. TB_SLIP_DETAIL INSERT
+         테이블 정의(사용자님이 주신 것 기준)
+         SLIP_DETAIL_NO   NOT NULL
+         COMPANY_CODE     NOT NULL
+         SLIP_NO          NOT NULL
+         DR_CR_TYPE
+         SLIP_ACCOUNT
+         AMOUNT
+         CREATED_BY       DEFAULT 'ADMIN'
+         CREATE_DATE      DEFAULT SYSDATE
+         UPDATED_BY       DEFAULT 'ADMIN'
+         UPDATE_DATE      DEFAULT SYSDATE
+       ========================================== -->
+    <insert id="insertSlipDetail"
+            parameterType="com.rootcore.fi.vo.SlipDetailVO">
+
+        INSERT INTO TB_SLIP_DETAIL (
+              SLIP_DETAIL_NO
+            , COMPANY_CODE
+            , SLIP_NO
+            , DR_CR_TYPE
+            , SLIP_ACCOUNT
+            , AMOUNT
+        )
+        VALUES (
+              #{slipDetailNo}
+            , #{companyCode}
+            , #{slipNo}
+            , #{drCrType}
+            , #{slipAccount}
+            , #{amount}
+        )
+    </insert>
+
+</mapper>

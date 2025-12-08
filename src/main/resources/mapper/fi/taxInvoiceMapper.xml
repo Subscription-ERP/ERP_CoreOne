@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.fi.mapper.TaxInvoiceMapper">
+
+    <!-- ==========================================
+         1. 세금계산서 번호 생성 (함수 호출)
+         ※ FN_MAKE_INVOICE_NO() 는 예시 함수명입니다.
+           실제 DB에 생성하신 함수명/파라미터에 맞게 수정하셔야 합니다.
+       ========================================== -->
+    <select id="makeInvoiceNo" resultType="string">
+        SELECT FN_MAKE_DATE_CODE('INVOICE') AS INVOICE_NO
+        FROM DUAL
+    </select>
+
+    <!-- ==========================================
+         2. TB_INVOICE_MASTER INSERT
+         테이블 정의(사용자님이 주신 것 기준)
+         COMPANY_CODE         NOT NULL
+         INVOICE_NO           NOT NULL
+         CUST_CODE
+         INVOICE_TYPE
+         STATUS       CHAR(1) DEFAULT 0 NOT NULL
+         ISSUE_DATE   DATE    DEFAULT SYSDATE
+         DOCUMENT_DATE DATE   DEFAULT SYSDATE
+         TOTAL_SUPPLY_PRICE
+         TOTAL_TAX_PRICE
+         TOTAL_AMOUNT
+         CREATED_BY   DEFAULT 'ADMIN'
+         CREATE_DATE  DEFAULT SYSDATE
+         UPDATED_BY   DEFAULT 'ADMIN'
+         UPDATE_DATE  DEFAULT SYSDATE
+       ========================================== -->
+    <insert id="insertInvoiceMaster"
+            parameterType="com.rootcore.fi.vo.TaxInvoiceVO">
+
+        INSERT INTO TB_INVOICE_MASTER (
+              COMPANY_CODE
+            , INVOICE_NO
+            , CUST_CODE
+            , INVOICE_TYPE
+            , STATUS
+            , ISSUE_DATE
+            , DOCUMENT_DATE
+            , TOTAL_SUPPLY_PRICE
+            , TOTAL_TAX_PRICE
+            , TOTAL_AMOUNT
+        )
+        VALUES (
+              #{companyCode}
+            , #{invoiceNo}
+            , #{custCode}
+            , #{invoiceType}
+            , #{status}
+            , #{issueDate}
+            , #{documentDate}
+            , #{totalSupplyPrice}
+            , #{totalTaxPrice}
+            , #{totalAmount}
+        )
+    </insert>
+
+    <!-- ==========================================
+         3. TB_INVOICE_DETAIL INSERT
+         테이블 정의(사용자님이 주신 것 기준)
+         INVOICE_DETAIL_NO  NOT NULL
+         COMPANY_CODE       NOT NULL
+         INVOICE_NO         NOT NULL
+         SKU                NOT NULL
+         QTY
+         UNIT_PRICE
+         SUPPLY_PRICE
+         TAX_PRICE
+         CREATED_BY  DEFAULT 'ADMIN'
+         CREATE_DATE DEFAULT SYSDATE
+         UPDATED_BY  DEFAULT 'ADMIN'
+         UPDATE_DATE DEFAULT SYSDATE
+       ========================================== -->
+    <insert id="insertInvoiceDetail"
+            parameterType="com.rootcore.fi.vo.TaxInvoiceDetailVO">
+
+        INSERT INTO TB_INVOICE_DETAIL (
+              INVOICE_DETAIL_NO
+            , COMPANY_CODE
+            , INVOICE_NO
+            , SKU
+            , QTY
+            , UNIT_PRICE
+            , SUPPLY_PRICE
+            , TAX_PRICE
+        )
+        VALUES (
+              #{invoiceDetailNo}
+            , #{companyCode}
+            , #{invoiceNo}
+            , #{sku}
+            , #{qty}
+            , #{unitPrice}
+            , #{supplyPrice}
+            , #{taxPrice}
+        )
+    </insert>
+
+</mapper>
