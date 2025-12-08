@@ -17,6 +17,8 @@ public class SdController {
 
     @Autowired
     InOrdService inOrdService;
+    
+    // 거래처 관련 ===========================================
 
     // 거래처 메인
     @GetMapping("/sd/cust")
@@ -34,7 +36,7 @@ public class SdController {
     public String addCust(CustVO cust) {
         custService.addCust(cust);
         return "redirect:/sd/cust";
-    };
+    }
     
     // 거래처 수정
     @GetMapping("/sd/cust/modify")
@@ -48,10 +50,19 @@ public class SdController {
         return "redirect:/sd/cust";
     }
 
-    // 수주 화면
-    @GetMapping("/sd/inOrd")
+    // 수주 관련 ============================================
+
+    // 수주 등록 화면
+    @GetMapping("/sd/inord")
     public String inOrdMain() {
-        return "sd/inOrd";
+        return "sd/inord";
     }
+
+    // 수주 완료 처리
+    @GetMapping("/sd/inordList")
+    public String inOrdSuccess() {
+        return "sd/inordList";
+    }
+
 
 }

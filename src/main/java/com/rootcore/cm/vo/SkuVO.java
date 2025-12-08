@@ -20,4 +20,8 @@ public class SkuVO {
     private Date createDate;        // 생성일자
     private String updatedBy;       // 수정자
     private Date updateDate;        // 수정일자
+    
+    private String unitPriceType;   // 단가유형
+    private String typeName;        // 단가유형이름
+    private int unitPrice;          // 단가
 }
