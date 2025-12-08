@@ -26,7 +26,8 @@ public class HrReviewVO {
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date updateDate;
 	
-    private int totalMemberCnt;     // 팀원 수
-    private int completedCnt;       // 평가 완료 인원 수
+	private String targetUserName;          // 피평가자 이름
+	private String targetDept;              // 피평가자 부
+	private String targetJobTitle;          // 피평가자 직급/직위
 	
 }
