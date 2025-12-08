@@ -5,80 +5,94 @@
 
 <mapper namespace="com.rootcore.auth.mapper.MenuPermissionMapper">
 
-    <!-- ✅ 1) USER 목록 조회 -->
-    <select id="selectUserList" resultType="com.rootcore.auth.vo.UserAuthVO">
-    SELECT
-        U.COMPANY_CODE,
-        U.USER_ID,
-        U.USER_NAME,
-        U.DEPT,
-        U.POSITION,
-        U.ROLE_CODE,
-        R.ROLE_NAME
-    FROM TB_USER_MASTER U
-    LEFT JOIN TB_ROLE_MASTER R
-      ON U.COMPANY_CODE = R.COMPANY_CODE
-     AND U.ROLE_CODE   = R.ROLE_CODE
-    WHERE U.COMPANY_CODE = #{companyCode}
+	<!-- ✅ 1) USER 목록 조회 -->
+	<select id="selectUserList"
+		resultType="com.rootcore.auth.vo.UserAuthVO">
+		SELECT
+			U.COMPANY_CODE,
+			U.USER_ID,
+			U.USER_NAME,
+			U.DEPT,
+			U.POSITION,
+			U.ROLE_CODE,
+			R.ROLE_NAME
+		FROM TB_USER_MASTER U
+		LEFT JOIN TB_ROLE_MASTER R
+			ON U.COMPANY_CODE = R.COMPANY_CODE
+		   AND U.ROLE_CODE = R.ROLE_CODE
+		WHERE U.COMPANY_CODE = #{companyCode}
 
-    <if test="userName != null and userName != ''">
-        AND U.USER_NAME LIKE '%' || #{userName} || '%'
-    </if>
+		<if test="userName != null and userName != ''">
+			AND U.USER_NAME LIKE '%' || #{userName} || '%'
+		</if>
 
-    <if test="dept != null and dept != ''">
-        AND U.DEPT LIKE '%' || #{dept} || '%'
-    </if>
+		<if test="dept != null and dept != ''">
+			AND U.DEPT LIKE '%' || #{dept} || '%'
+		</if>
 
-    <if test="position != null and position != ''">
-        AND U.POSITION LIKE '%' || #{position} || '%'
-    </if>
+		<if test="position != null and position != ''">
+			AND U.POSITION LIKE '%' || #{position} || '%'
+		</if>
 
-    ORDER BY U.USER_ID
-</select>
+		ORDER BY U.USER_ID
+	</select>
 
 
-    <!-- ✅ 2) ROLE → MENU 권한 조회 -->
-    <select id="selectRoleMenuAuthList" resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
-        SELECT
-            A.COMPANY_CODE,
-            A.ROLE_CODE,
-            A.MENU_CODE,
-            A.READ_YN,
-            A.CREATE_YN,
-            A.UPDATE_YN,
-            A.DELETE_YN
-        FROM TB_ROLE_MENU_AUTH A
-        WHERE A.COMPANY_CODE = #{companyCode}
-          AND A.ROLE_CODE    = #{roleCode}
-        ORDER BY A.MENU_CODE
-    </select>
+	<!-- ✅ 2) ROLE → MENU 조회 + SYSTEM_TYPE 포함 -->
+	<select id="selectRoleMenuAuthList"
+		resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
 
-    <!-- ✅ 3) ROLE → MENU 권한 전체 삭제 -->
-    <delete id="deleteRoleMenuAuth">
-        DELETE FROM TB_ROLE_MENU_AUTH
-        WHERE COMPANY_CODE = #{companyCode}
-          AND ROLE_CODE    = #{roleCode}
-    </delete>
+		SELECT
+			M.COMPANY_CODE,
+			#{roleCode} AS ROLE_CODE,
+			M.MENU_CODE,
+			M.MENU_NAME,
+			M.SYSTEM_TYPE,   <!-- ✅ TAB 필터 핵심 -->
 
-    <!-- ✅ 4) ROLE → MENU 권한 등록 -->
-    <insert id="insertRoleMenuAuth">
-        INSERT INTO TB_ROLE_MENU_AUTH (
-            COMPANY_CODE,
-            ROLE_CODE,
-            MENU_CODE,
-            READ_YN,
-            CREATE_YN,
-            UPDATE_YN,
-            DELETE_YN
-        ) VALUES (
-            #{companyCode},
-            #{roleCode},
-            #{menuCode},
-            #{readYn},
-            #{createYn},
-            #{updateYn},
-            #{deleteYn}
-        )
-    </insert>
+			NVL(A.READ_YN, 'N')   AS READ_YN,
+			NVL(A.CREATE_YN, 'N') AS CREATE_YN,
+			NVL(A.UPDATE_YN, 'N') AS UPDATE_YN,
+			NVL(A.DELETE_YN, 'N') AS DELETE_YN
+
+		FROM TB_MENU_MASTER M
+		LEFT JOIN TB_ROLE_MENU_AUTH A
+			ON M.COMPANY_CODE = A.COMPANY_CODE
+		   AND M.MENU_CODE = A.MENU_CODE
+		   AND A.ROLE_CODE = #{roleCode}
+
+		WHERE M.COMPANY_CODE = #{companyCode}
+		  AND M.USE_YN = 'Y'
+
+		ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
+	</select>
+
+
+	<!-- ✅ 3) ROLE → MENU 권한 전체 삭제 -->
+	<delete id="deleteRoleMenuAuth">
+		DELETE FROM TB_ROLE_MENU_AUTH
+		WHERE COMPANY_CODE = #{companyCode}
+		  AND ROLE_CODE = #{roleCode}
+	</delete>
+
+	<!-- ✅ 4) ROLE → MENU 권한 등록 -->
+	<insert id="insertRoleMenuAuth">
+		INSERT INTO TB_ROLE_MENU_AUTH (
+			COMPANY_CODE,
+			ROLE_CODE,
+			MENU_CODE,
+			READ_YN,
+			CREATE_YN,
+			UPDATE_YN,
+			DELETE_YN
+		) VALUES (
+			#{companyCode},
+			#{roleCode},
+			#{menuCode},
+			#{readYn},
+			#{createYn},
+			#{updateYn},
+			#{deleteYn}
+		)
+	</insert>
 
 </mapper>
