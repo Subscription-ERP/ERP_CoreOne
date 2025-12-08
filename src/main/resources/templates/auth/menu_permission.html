@@ -12,7 +12,7 @@
     <style>
         .menu-auth-container {
             display: grid;
-            grid-template-columns: 520px 1fr;
+            grid-template-columns: 700px 1fr;
             gap: 14px;
             height: calc(100vh - 140px);
         }
@@ -30,6 +30,11 @@
             height: 30px !important;
             padding: 0 12px !important;
             font-size: 13px !important;
+        }
+
+        .grid-chk {
+            transform: scale(1.1);
+            cursor: pointer;
         }
     </style>
 </head>
@@ -52,12 +57,27 @@
 
             <div class="col-md-3">
                 <label>부서</label>
-                <input id="searchDept" type="text" class="form-control">
+                <select id="searchDept" class="form-select">
+                    <option value="">전체</option>
+                    <option value="인사">인사</option>
+                    <option value="회계">회계</option>
+                    <option value="영업">영업</option>
+                    <option value="생산">생산</option>
+                    <option value="관리">관리</option>
+                </select>
             </div>
 
             <div class="col-md-3">
                 <label>직급</label>
-                <input id="searchPosition" type="text" class="form-control">
+                <select id="searchPosition" class="form-select">
+                    <option value="">전체</option>
+                    <option value="사원">사원</option>
+                    <option value="대리">대리</option>
+                    <option value="과장">과장</option>
+                    <option value="차장">차장</option>
+                    <option value="부장">부장</option>
+                    <option value="임원">임원</option>
+                </select>
             </div>
 
             <div class="col-md-3 text-end align-self-end">
@@ -70,26 +90,46 @@
 
     <section class="menu-auth-container">
 
-        <!-- ✅ LEFT : USER GRID -->
+        <!-- ✅ LEFT -->
         <div class="card-ui">
             <header class="card-ui__header">
                 <h6>USER 목록</h6>
             </header>
-            <div class="card-ui__body p-0">
+            <div class="card-ui__body p-0_sr">
                 <div id="userGrid" class="grid-root"></div>
             </div>
         </div>
 
-        <!-- ✅ RIGHT : ROLE MENU GRID -->
+        <!-- ✅ RIGHT -->
         <div class="card-ui">
 
-            <header class="card-ui__header">
+            <header class="card-ui__header d-flex justify-content-between align-items-center">
+
+                <ul class="nav nav-tabs ui-tabs" id="menuTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active menu-tab-btn" type="button" data-system="SYSTEM">SYSTEM</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn" type="button" data-system="HR">인사</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn" type="button" data-system="FI">회계</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn" type="button" data-system="SALES">영업</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn" type="button" data-system="SUB">구독</button>
+                    </li>
+                </ul>
+
                 <div class="toolbar">
                     <button id="btnAllCheck" class="btn btn-white">전체선택</button>
                     <button id="btnAllClear" class="btn btn-white">전체해제</button>
                     <button id="btnRevert" class="btn btn-white">되돌리기</button>
                     <button id="btnSaveAuth" class="btn btn-color">저장</button>
                 </div>
+
             </header>
 
             <div class="card-ui__body p-0">
