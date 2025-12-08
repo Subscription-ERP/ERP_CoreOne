@@ -23,5 +23,4 @@ public class SkuVO {
     
     private String unitPriceType;   // 단가유형
     private String typeName;        // 단가유형이름
-    private int unitPrice;          // 단가
 }
