@@ -101,30 +101,51 @@
     <![CDATA[
     SELECT *
     FROM (
-        SELECT 
-            sub_code,
-            company_code,
-            plan_code,
-            subs_start,
-            subs_end,
-            subs_status,
-            current_price,
-            current_user_count,
-            billing_period,
-            created_by,
-            create_date,
-            updated_by,
-            update_date
-        FROM TB_SUBSCRIBE
-        WHERE company_code = #{companyCode}
-          AND subs_status = 'ACTIVE'
-          AND subs_start <= SYSDATE
-          AND subs_end >= SYSDATE
-        ORDER BY subs_start DESC
+        SELECT
+            s.sub_code,
+            s.company_code,
+            s.plan_code,
+            s.subs_start,
+            s.subs_end,
+            s.subs_status,
+            s.current_price,
+            s.current_user_count,
+            s.billing_period,
+            p.price,               
+            pay.payment_method,                        
+            pay.recent_payment,        
+            pay.next_payment,   
+            s.created_by,
+            s.create_date,
+            s.updated_by,
+            s.update_date
+        FROM TB_SUBSCRIBE s
+        JOIN TB_SUBSCRIBE_PLAN p
+          ON p.plan_code = s.plan_code
+        LEFT JOIN (
+            SELECT sub_code,
+                   payment_method,
+                   recent_payment,
+                   next_payment
+            FROM (
+                SELECT 
+                    t.*,
+                    ROW_NUMBER() OVER (PARTITION BY t.sub_code ORDER BY t.recent_payment DESC) rn
+                FROM TB_PAYMENT t
+            )
+            WHERE rn = 1
+        ) pay
+          ON pay.sub_code = s.sub_code
+        WHERE s.company_code = #{companyCode}
+          AND s.subs_status = 'ACTIVE'
+          AND s.subs_start <= SYSDATE
+          AND s.subs_end >= SYSDATE
+        ORDER BY s.subs_start DESC
     )
     WHERE ROWNUM = 1
     ]]>
 	</select>
+	
 
 	<select id="selectPaymentHistory" parameterType="string"
 		resultType="com.rootcore.sb.vo.PaymentVO">

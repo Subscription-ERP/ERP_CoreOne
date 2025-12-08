@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.rootcore.sb.service.PaymentService;
 import com.rootcore.sb.vo.PaymentVO;
+import com.rootcore.sb.vo.PlanVO;
 import com.rootcore.sb.vo.SubscribeVO;
 
 import jakarta.servlet.http.HttpSession;
@@ -34,7 +35,6 @@ public class SubController {
 	 */
 	  @GetMapping("/UserManage")
 	    public String UserManagePage(HttpSession session, Model model) {
-
 	        String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
 	        System.out.println("로그인한 회사코드" + companyCode);
 
