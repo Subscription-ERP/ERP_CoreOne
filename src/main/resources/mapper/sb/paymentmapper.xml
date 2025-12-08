@@ -5,56 +5,58 @@
 <mapper namespace="com.rootcore.sb.mapper.PaymentMapper">
 
 	<!-- 결제 이력 INSERT -->
-<insert id="insertPayment" parameterType="com.rootcore.sb.vo.PaymentVO">
+	<insert id="insertPayment"
+		parameterType="com.rootcore.sb.vo.PaymentVO">
 
-    <!-- PAYMENT_CODE 생성 -->
-    <selectKey resultType="String" order="BEFORE" keyProperty="paymentCode">
-        SELECT FN_MAKE_PAYMENT_CODE() FROM DUAL
-    </selectKey>
+		<!-- PAYMENT_CODE 생성 -->
+		<selectKey resultType="String" order="BEFORE"
+			keyProperty="paymentCode">
+			SELECT FN_MAKE_PAYMENT_CODE() FROM DUAL
+		</selectKey>
 
-    INSERT INTO TB_PAYMENT
-    (
-        PAYMENT_CODE,
-        SUB_CODE,
-        COMPANY_CODE,
-        TOTAL_PRICE,
-        PAYMENT_STAT,
-        PAYMENT_METHOD,
-        PAYMENT_DATE,
-        CARD_COMPANY,
-        RECENT_PAYMENT,
-        NEXT_PAYMENT,
-        BILLING_START,
-        BILLING_END,
-        PAYMENT_KEY,
-        ORDER_ID,
-        CREATED_BY,
-        CREATE_DATE,
-        UPDATED_BY,
-        UPDATE_DATE
-    )
-    VALUES
-    (
-        #{paymentCode},
-        #{subCode},
-        #{companyCode},
-        #{totalPrice},
-        #{paymentStat},
-        #{paymentMethod},
-        #{paymentDate},
-        #{cardCompany},
-        #{recentPayment},
-        #{nextPayment},
-        #{billingStart},
-        #{billingEnd},
-        #{paymentKey},
-        #{orderId},
-        #{createdBy},
-        #{createDate},
-        #{updatedBy},
-        #{updateDate}
-    )
-</insert>
+		INSERT INTO TB_PAYMENT
+		(
+		PAYMENT_CODE,
+		SUB_CODE,
+		COMPANY_CODE,
+		TOTAL_PRICE,
+		PAYMENT_STAT,
+		PAYMENT_METHOD,
+		PAYMENT_DATE,
+		CARD_COMPANY,
+		RECENT_PAYMENT,
+		NEXT_PAYMENT,
+		BILLING_START,
+		BILLING_END,
+		PAYMENT_KEY,
+		ORDER_ID,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		)
+		VALUES
+		(
+		#{paymentCode},
+		#{subCode},
+		#{companyCode},
+		#{totalPrice},
+		#{paymentStat},
+		#{paymentMethod},
+		#{paymentDate},
+		#{cardCompany},
+		#{recentPayment},
+		#{nextPayment},
+		#{billingStart},
+		#{billingEnd},
+		#{paymentKey},
+		#{orderId},
+		#{createdBy},
+		#{createDate},
+		#{updatedBy},
+		#{updateDate}
+		)
+	</insert>
 	<update id="updateOrderSubCode">
 		UPDATE TB_PAYMENT_ORDER
 		SET SUB_CODE = #{subCode},
@@ -64,36 +66,38 @@
 		#{orderId}
 	</update>
 	<select id="findCardCompanyCode" resultType="string">
-    SELECT CODE
-    FROM TB_CM_CODE
-    WHERE GROUP_CODE = #{groupCode}
-      AND #{displayName} LIKE '%' || CODE_NAME || '%'
-</select>
-	
-      <!-- 회사별 비활성(과거) 구독 이력 조회 -->
-    <select id="selectInactiveSubListByComCode"
-            parameterType="string"
-            resultType="com.rootcore.sb.vo.SubscribeVO">
+		SELECT CODE_NAME
+		FROM TB_CM_CODE
+		WHERE GROUP_CODE = #{groupCode}
+		AND CODE = #{code}
+	</select>
 
-      SELECT c.COMPANY_CODE,
-           s.CURRENT_PRICE,
-           s.CURRENT_USER_COUNT,
-           s.PLAN_CODE,
-           s.SUBS_START,
-           s.SUBS_END,
-           s.SUB_CODE,
-           s.SUBS_STATUS,
-           st.CODE_NAME AS inactiveReasonName
-    FROM TB_COMPANY_MASTER c 
-     JOIN TB_SUBSCRIBE s
-     ON c.COMPANY_CODE = s.COMPANY_CODE
-     JOIN TB_CM_CODE st
-     ON st.CODE = s.INACTIVE_REASON
-     WHERE SUBS_STATUS = 'INACTIVE'
-     ORDER BY c.COMPANY_CODE
+	<!-- 회사별 비활성(과거) 구독 이력 조회 -->
+	<select id="selectInactiveSubListByComCode"
+		parameterType="string" resultType="com.rootcore.sb.vo.SubscribeVO">
 
-    </select>
- <select id="selectSubDetail" parameterType="string" resultType="SubscribeVO">
+		SELECT c.COMPANY_CODE,
+		s.CURRENT_PRICE,
+		s.CURRENT_USER_COUNT,
+		s.PLAN_CODE,
+		s.SUBS_START,
+		s.SUBS_END,
+		s.SUB_CODE,
+		s.SUBS_STATUS,
+		st.CODE_NAME AS inactiveReasonName
+		FROM TB_COMPANY_MASTER c
+		JOIN TB_SUBSCRIBE s
+		ON c.COMPANY_CODE =
+		s.COMPANY_CODE
+		JOIN TB_CM_CODE st
+		ON st.CODE = s.INACTIVE_REASON
+		WHERE
+		SUBS_STATUS = 'INACTIVE'
+		ORDER BY c.COMPANY_CODE
+
+	</select>
+	<select id="selectSubDetail" parameterType="string"
+		resultType="SubscribeVO">
     <![CDATA[
     SELECT *
     FROM (
@@ -120,8 +124,34 @@
     )
     WHERE ROWNUM = 1
     ]]>
-</select>
+	</select>
 
-    
+	<select id="selectPaymentHistory" parameterType="string"
+		resultType="com.rootcore.sb.vo.PaymentVO">
+
+		SELECT
+		PAYMENT_CODE,
+		SUB_CODE,
+		COMPANY_CODE,
+		ORDER_ID,
+		TOTAL_PRICE,
+		PAYMENT_STAT,
+		PAYMENT_METHOD,
+		PAYMENT_DATE,
+		CARD_COMPANY,
+		PAYMENT_KEY,
+		RECENT_PAYMENT,
+		NEXT_PAYMENT,
+		BILLING_START,
+		BILLING_END,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		FROM
+		TB_PAYMENT   <!-- 🔴 여기를 네 실제 테이블명으로 바꿔줘 -->
+		WHERE COMPANY_CODE = #{companyCode}
+		ORDER BY PAYMENT_DATE DESC
+	</select>
 	<!-- 필요하면 조회 메서드도 추가 -->
 </mapper>

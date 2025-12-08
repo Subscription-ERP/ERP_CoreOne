@@ -94,7 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
 		String cardCode = tossResponse.getCard().getCardCompanyCode(); // issuerCode 그대로
 
 		// ② 화면에 보여줄 카드사명 → 공통코드에서 조회
-		String cardName = paymentMapper.findCardCompanyName("OP", cardCode);
+		String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
 //		System.out.println(">>> 조회된 코드 = " + code);
 
 		tossResponse.setCardCompany(cardName); // 화면용 한글 카드사명
@@ -193,5 +193,10 @@ public class PaymentServiceImpl implements PaymentService {
 	 public SubscribeVO selectSubDetail(String companyCode) {
 		return paymentMapper.selectSubDetail(companyCode);
 	 }
+
+	@Override
+	public List<PaymentVO> selectPaymentHistory(String companyCode) {
+		return paymentMapper.selectPaymentHistory(companyCode);
+	}
 
 }
