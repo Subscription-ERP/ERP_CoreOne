@@ -893,7 +893,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				}
 			} catch (err) {
 				console.error(err);
-				showToast("통신 중 오류가 발생했습니다.", "error");
+				showToast("등록 중 오류가 발생했습니다.", "error");
 			}
 
 

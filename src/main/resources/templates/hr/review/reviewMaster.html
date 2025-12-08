@@ -75,6 +75,7 @@
       margin-top: 5px;
       font-size: var(--fs-s);
     }
+    
   </style>
 </head>
 
@@ -153,6 +154,7 @@
         <div id="reviewList"></div>
       </div>
     </section>
+    
 
     <!-- ================= 인사평가 템플릿 등록 ========================================= -->
     <section class="card-ui card-ui--detail section-fixed" style="flex: 0 0 400px;">
@@ -265,7 +267,7 @@
           <!-- 평가항목 입력 행 템플릿 -->
           <template id="evalRowTemplate">
             <tr>
-              <td><input type="text" id="evalNum" class="form-control form-control-sm input-base" /></td>
+              <td class="disabled"><input type="text" id="evalNum" class="form-control form-control-sm input-base" disabled readonly style="text-align: center;" /></td>
               <td><input type="text" name="evalName" class="form-control form-control-sm input-base" /></td>
               <td><input type="text" name="evalDetail" class="form-control form-control-sm input-base" /></td>
               <td><input type="text" name="evalWeight" class="form-control form-control-sm input-base" /></td>

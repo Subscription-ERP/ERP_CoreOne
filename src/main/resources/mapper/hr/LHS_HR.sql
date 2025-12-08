@@ -234,4 +234,3 @@ INSERT INTO tb_eval_item VALUES (eval_seq.NEXTVAL,'0000','HRE25120500003','ë¦¬ìŠ
 
 
 
-

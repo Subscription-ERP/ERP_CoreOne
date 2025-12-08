@@ -1,5 +1,5 @@
 /**
- * reviewMaster.js
+ * reviewMaster.js (인사평가 기준관리)
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -41,7 +41,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 			]
 		});
 	}
-
+	
+	
+	
 	/* ------------------------------------------------------------------
 	 * 인사평가목록 전체조회
 	 * ------------------------------------------------------------------ */
@@ -176,10 +178,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ------------------------------------------------------------------ */
 	function renumberEvalSeq() {
 	  const rows = document.querySelectorAll('#evalTbody tr:not(.empty-row)');
-	  rows.forEach((tr, index) => {
-	    const seqInput = tr.querySelector('input[name="evalSeq"]');
-	    if (seqInput) {
-	      seqInput.value = index + 1;
+
+	  rows.forEach((tr, idx) => {
+	    const no = idx + 1;
+
+	    // 1) 화면 표시용 번호 (#evalNum)
+	    const numInput = tr.querySelector('#evalNum');
+	    if (numInput) {
+	      numInput.value = no;
+	      numInput.readOnly = true;
+	      numInput.disabled = true;   // 표시용 번호는 서버에 보낼 필요 없음
+	    }
+
+	    // 2) 필요한 경우 실제 seq 값도 세팅 (Optional)
+	    const seqHidden = tr.querySelector('input[name="evalSeq"]');
+	    if (seqHidden) {
+	      seqHidden.value = no;
 	    }
 	  });
 	}
@@ -367,6 +381,203 @@ document.addEventListener("DOMContentLoaded", async () => {
 			
 		});
 	}
+	
+	
+
+	
+	/* ------------------------------------------------------------------
+	 * 등록 / 수정 공통 처리
+	 * ------------------------------------------------------------------ */
+	const btnSave = document.querySelector("#btnSave");
+
+	if (btnSave) {
+	  btnSave.addEventListener("click", async () => {
+	    const fr = document.querySelector(".form-allwrapper");
+
+	    // 1) 기본정보
+	    const reviewPayload = {
+	      companyCode: "0000",
+	      reviewMasterName: fr.querySelector("#reviewMasterName")?.value ?? "",
+	      reviewStartDate: fr.querySelector("#reviewStartDate")?.value ?? "",
+	      reviewEndDate: fr.querySelector("#reviewEndDate")?.value ?? "",
+	      useYn: fr.querySelector('input[name="useYn"]:checked')?.value ?? "",
+	      remark: fr.querySelector("#remark")?.value ?? "",
+	    };
+
+	    // 2) 평가항목
+	    const evalItemList = [];
+	    document
+	      .querySelectorAll("#evalTbody tr:not(.empty-row)")
+	      .forEach((tr) => {
+	        const evalName = tr.querySelector('input[name="evalName"]')?.value ?? "";
+	        const evalDetail = tr.querySelector('input[name="evalDetail"]')?.value ?? "";
+	        const evalWeight = tr.querySelector('input[name="evalWeight"]')?.value ?? "";
+
+	        if (evalName || evalDetail || evalWeight) {
+	          evalItemList.push({
+	            evalName,
+	            evalDetail,
+	            evalWeight,
+	          });
+	        }
+	      });
+
+	    // 3) 등록인지 수정인지 판단 (그리드에서 하나 선택해서 들어온 상태면 수정)
+	    const isModify = !!(currentReviewDetail && currentReviewDetail.reviewMasterCode);
+
+	    // 4) 최종 payload
+	    const payload = {
+	      ...reviewPayload,
+	      evalItemList,
+	    };
+
+	    // 수정일 때는 reviewMasterCode를 함께 보냄
+	    if (isModify) {
+	      payload.reviewMasterCode = currentReviewDetail.reviewMasterCode;
+	    }
+
+	    try {
+	      // 5) URL 분기 – 등록 vs 수정
+	      const url = isModify
+	        ? "/api/review/modifyMaster"
+	        : "/api/review/registerMaster";
+
+	      const res = await fetch(url, {
+	        method: "POST",
+	        headers: {
+	          "Content-Type": "application/json;charset=UTF-8",
+	        },
+	        body: JSON.stringify(payload),
+	      });
+
+	      if (!res.ok) {
+	        throw new Error("서버 오류");
+	      }
+
+	      const data = await res.json();
+
+	      if (data.status === "success") {
+	        showToast(
+	          isModify
+	            ? "인사평가 기준이 수정되었습니다."
+	            : "인사평가 기준이 등록되었습니다.",
+	          "success"
+	        );
+
+	        // 그리드 새로고침
+	        await loadUserList();
+
+	        // 폼 초기화 (등록/수정 후 새거 작성 모드로 돌릴지 유지할지는 취향)
+	        btnReset?.click();
+
+	        // 수정 끝났으니 상태 초기화
+	        currentReviewDetail = null;
+
+	      } else {
+	        showToast(data.message || "저장 중 오류가 발생했습니다.", "error");
+	      }
+	    } catch (err) {
+	      console.error(err);
+	      showToast("저장 중 오류가 발생했습니다.", "error");
+	    }
+	  });
+	}
+
+/*	const btnSave = document.querySelector("#btnSave");
+
+	if (btnSave) {
+	  btnSave.addEventListener("click", async () => {
+	    const fr = document.querySelector(".form-allwrapper");
+
+	    // 1) 기본정보
+	    const reviewPayload = {
+	      companyCode: "0000",
+	      reviewMasterName: fr.querySelector("#reviewMasterName")?.value ?? "",
+	      reviewStartDate: fr.querySelector("#reviewStartDate")?.value ?? "",
+	      reviewEndDate: fr.querySelector("#reviewEndDate")?.value ?? "",
+	      useYn: fr.querySelector('input[name="useYn"]:checked')?.value ?? "",
+	      remark: fr.querySelector("#remark")?.value ?? "",
+	    };
+
+	    // 2) 평가항목
+	    const evalItemList = [];
+	    document
+	      .querySelectorAll("#evalTbody tr:not(.empty-row)")
+	      .forEach((tr) => {
+	        const evalName = tr.querySelector('input[name="evalName"]')?.value ?? "";
+	        const evalDetail = tr.querySelector('input[name="evalDetail"]')?.value ?? "";
+	        const evalWeight = tr.querySelector('input[name="evalWeight"]')?.value ?? "";
+
+	        if (evalName || evalDetail || evalWeight) {
+	          evalItemList.push({
+	            evalName,
+	            evalDetail,
+	            evalWeight,
+	          });
+	        }
+	      });
+
+	    // 3) 최종 payload
+	    const payload = {
+	      ...reviewPayload,
+	      evalItemList,
+	    };
+
+
+	    try {
+	      const url = "/api/review/registerMaster"; 
+
+	      const res = await fetch(url, {
+	        method: "POST",
+	        headers: {
+	          "Content-Type": "application/json;charset=UTF-8",
+	        },
+	        body: JSON.stringify(payload),
+	      });
+
+	      if (!res.ok) {
+	        throw new Error("서버 오류");
+	      }
+
+	      const data = await res.json();
+
+	      if (data.status === "success") {
+	        showToast("인사평가 기준이 등록되었습니다.", "success");
+			loadUserList();
+			btnReset?.click();
+
+	      } else {
+	        showToast(data.message || "등록 중 오류가 발생했습니다.", "error");
+	      }
+	    } catch (err) {
+	      console.error(err);
+	      showToast("등록 중 오류가 발생했습니다.", "error");
+	    }
+	  });
+	}
+*/
+	
+	
+	/* ------------------------------------------------------------------
+	 * 평가항목 번호 자동 세팅 (행 추가 감지)
+	 * ------------------------------------------------------------------ */
+	const evalTbodyEl = document.querySelector("#evalTbody");
+
+	if (evalTbodyEl) {
+	  const observer = new MutationObserver(() => {
+	    renumberEvalSeq();   // tr 추가될 때마다 번호 자동 배치
+	  });
+
+	  observer.observe(evalTbodyEl, {
+	    childList: true,     // 자식 변경 감지
+	  });
+	}
+	
+	
+	
+	
+	
+	
 
 
 });
