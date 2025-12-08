@@ -1472,4 +1472,87 @@ FROM   tb_annual_leave al
 WHERE  grant_year = TO_CHAR(sysdate, 'yyyy');
 
 -- insert연차신청
-INSERT INTO 
+INSERT INTO tb_annual_leave_detail(annual_leave_code,
+                                   company_code,
+                                   leave_type,
+                                   used_days,
+                                   leave_start_date,
+                                   leave_end_date,
+                                   leave_apply_date,
+                                   rm)
+VALUES ((SELECT annual_leave_code
+         FROM   tb_annual_leave
+         WHERE  user_id = #{userId}),
+         '0000',
+         #{leaveType},
+         #{usedDays},
+         #{annualStartDate},
+         #{annualEndDate},
+         #{rm});
+  
+-- 공통코드 테이블 조회
+SELECT *
+FROM   tb_cm_code;
+
+-- TB_ATTENDANCE 근태코드
+INSERT INTO tb_cm_code(code, group_code, code_name, ATTRIBUTE01, ATTRIBUTE02, REMARK)
+VALUES ('ATTEN','MAKE_CODE','근태코드','TB_ATTENDANCE','ATN', 'ATTEN_CODE');
+
+-- 근태코드 실행
+SELECT fn_make_date_code('ATTEN') FROM DUAL;
+                                 
+/*
+ * 연차등록하면서 근태도 등록
+ * COMPANY_CODE	VARCHAR2(20 BYTE)	No		1	회사코드
+ * ATTEN_CODE	VARCHAR2(20 BYTE)	No		2	근태코드
+ * USER_ID	VARCHAR2(20 BYTE)	No		3	사원번호_FK
+ * WORK_DATE	DATE	Yes		4	근무일자
+ * ATTEND_TYPE	VARCHAR2(20 BYTE)	Yes		5	근태상태
+ * IN_TIME	DATE	Yes		6	출근시간
+ * OUT_TIME	DATE	Yes		7	퇴근시간
+ * OVER_WORK_TIME	NUMBER(5,2)	Yes		8	연장근무시간
+ * NIGHT_WORK_TIME	NUMBER(5,2)	Yes		9	야간근무시간
+ * HOLIDAY_WORK_TIME	NUMBER(5,2)	Yes		10	휴일근무시간
+ * TOTAL_WORK_TIME	NUMBER(5,2)	Yes		11	일일총근무시간
+ * REMARK	VARCHAR2(2000 BYTE)	Yes		12	비고
+ * CREATED_BY	VARCHAR2(20 BYTE)	Yes	"'ADMIN'	"	13	생성자
+ * CREATE_DATE	DATE	Yes		14	생성날짜
+ * UPDATED_BY	VARCHAR2(20 BYTE)	Yes	"'ADMIN'	"	15	수정자
+ * UPDATE_DATE	DATE	Yes		16	수정날짜
+ */
+ 
+INSERT INTO tb_attendance(company_code,
+                          atten_code,
+                          user_id,
+                          work_date,
+                          attend_type,
+                          in_time,
+                          out_time)
+VALUES (#{companyCode},
+        fn_make_date_code('ATTEN'),
+        #{userId},
+        TO_DATE(#{leaveStartDate},'yyyy/mm/dd'}),
+        #{leaveType},
+        #{;
+        
+        select * from tb_user_master;
+SELECT annual_leave_code
+FROM   tb_annual_leave
+WHERE  user_id = 'EMP23030100003'
+  AND  grant_year = TO_CHAR(sysdate, 'yyyy');
+                        
+SELECT *
+FROM   tb_cm_code;
+
+SELECT a.code
+FROM   tb_cm_code a
+JOIN   tb_cm_code b ON a.code_name = SUBSTR(b.code_name, 3)
+WHERE  a.group_code = '0H'
+  AND  b.code = 'b2';
+  
+SELECT TO_CHAR(TO_DATE('2025-12-09' || ' 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS') 
+FROM dual;
+
+SELECT TO_CHAR(leave_start_date, 'YYYY-MM-DD HH24:MI:SS'), TO_CHAR(leave_end_date, 'YYYY-MM-DD HH24:MI:SS') FROM tb_annual_leave_detail;
+
+select * from tb_annual_leave_detail;

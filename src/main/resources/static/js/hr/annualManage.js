@@ -2,41 +2,114 @@
  * annualManage.js
  */
 
+/* ============
+ * 연차신청이력조회
+ * ============ */
+const annualDetailGrid = new tui.Grid({
+	el: document.getElementById("annualDetailGrid"),
+	scrollX: true,
+	scrollY: true,
+	data: {
+		api: {
+			readData: {
+				url: "/api/hr/annualManageList",
+				method: "GET",
+			},
+		},
+	},
+	bodyHeight: 240,
+	rowKey: "user_id",
+	columns: [
+		{ header: "사번", name: "userId", align: "center",sortable: true },
+		{ header: "성명", name: "userName",sortable: true },
+		{ header: "부서명", name: "deptName",sortable: true },
+		{ header: "직급", name: "jobTitle",sortable: true },
+		{ header: "신청구분", name: "leaveType",sortable: true },
+		{ header: "사용일수", name: "usedDays", align: "right",sortable: true },
+		{ header: "연차시작일", name: "annualStartDate", align: "center" ,sortable: true},
+		{ header: "연차종료일", name: "annualEndDate", align: "center",sortable: true },
+		{ header: "연차신청일", name: "leaveApplyDate", align: "center" ,sortable: true},
+		{ header: "사유", name: "rm" },
+	],
+}); // end of payrollDetailGrid
+
+
+/* ============================================
+ * 연차일때는 date 반차일때는 datetime-local 로 설정
+ * ============================================ */
+function annualDateChange() {
+	const leaveType = document.getElementById("leaveType");
+
+	// 만약 select 박스가 아직 없다면 console에 찍고 중단
+	if (!leaveType) {
+		console.error("leaveType 요소를 찾을 수 없습니다. HTML이 생성된 후 실행하세요.");
+		return;
+	}
+
+	leaveType.addEventListener('change', (e) => {
+		const type = e.target.value;
+		console.log("선택된 값:", type);
+		const startInput = document.getElementById("annualStartDate");
+		const endInput = document.getElementById("annualEndDate");
+
+		if (type === 'b1') { // 연차
+			startInput.type = "date";
+			endInput.type = "date";
+			document.querySelector('#annualStartDateLabel').textContent = "연차시작일";
+			document.querySelector('#annualEndDateLabel').textContent = "연차종료일";
+			document.getElementById("usedDays").value = 0; // 연차일 경우 사용일수 초기화
+			document.querySelector('#annualEndDate').removeAttribute('readonly'); // 사용일수 readonly 설정
+			document.querySelector('#annualEndDate').removeAttribute('disabled'); // 사용일수 disabled 설정
+		} else if (type === 'b2' || type === 'b3') { // b2: 오전반차, b3: 오후반차
+			document.querySelector('#annualStartDateLabel').textContent = "반차시작일";
+			document.querySelector('#annualEndDateLabel').textContent = "-";
+			document.querySelector('#usedDays').value = 0.5; // 반차일 경우 사용일수 0.5로 자동 설정
+			document.querySelector('#annualEndDate').setAttribute('readonly', 'readonly'); // 사용일수 readonly 설정
+			document.querySelector('#annualEndDate').setAttribute('disabled', 'disabled'); // 사용일수 disabled 설정
+		}
+
+		// 타입 변경 시 기존 입력값 초기화 (포맷이 맞지 않아 오류가 날 수 있음)
+		startInput.value = '';
+		endInput.value = '';
+
+	});
+}
+
 /* ================
  * 연차신청 저장 버튼
  * ================ */
 function submitAnnualForm() {
-	// 성명
-	const userId = document.getElementById("userId").value;
-	// 부서명
-	const myAnuualdeptName = document.getElementById("myAnuualdeptName").value;
-	// 직급
-	const myAnuualjobTitle = document.getElementById("myAnuualjobTitle").value;
-	// 신청구분
-	const leaveType = document.getElementById("leaveType").value;
-	// 사용일수
-	const usedDays = document.getElementById("usedDays").value;
-	// 연차시작일
-	const annualStartDate = document.getElementById("annualStartDate").value;
-	// 연차종료일
-	const annualEndDate = document.getElementById("annualEndDate").value;
-	// 사유
-	const rm = document.getElementById("rm").value;
-	
-	// 서버전송할때 보낼 데이터 객체 생성
-	const data = {
-		userId: userId,
-		myAnuualdeptName: myAnuualdeptName,
-		myAnuualjobTitle: myAnuualjobTitle,
-		leaveType: leaveType,
-		usedDays: usedDays,
-		annualStartDate: annualStartDate,
-		annualEndDate: annualEndDate,
-		rm: rm,
-	};
-	
 	// 데이터 보내기
 	document.querySelector('#btnSave').addEventListener('click', () => {
+		// 성명
+		const userId = document.getElementById("userId").value;
+		// 부서명
+		const myAnuualdeptName = document.getElementById("myAnuualdeptName").value;
+		// 직급
+		const myAnuualjobTitle = document.getElementById("myAnuualjobTitle").value;
+		// 신청구분
+		const leaveType = document.getElementById("leaveType").value;
+		// 사용일수
+		const usedDays = document.getElementById("usedDays").value;
+		// 연차시작일
+		const annualStartDate = document.getElementById("annualStartDate").value;
+		// 연차종료일
+		const annualEndDate = document.getElementById("annualEndDate").value;
+		// 사유
+		const rm = document.getElementById("rm").value;
+
+		// 서버전송할때 보낼 데이터 객체 생성
+		const data = {
+			userId: userId,
+			myAnuualdeptName: myAnuualdeptName,
+			myAnuualjobTitle: myAnuualjobTitle,
+			leaveType: leaveType,
+			usedDays: usedDays,
+			annualStartDate: annualStartDate,
+			annualEndDate: annualEndDate,
+			rm: rm,
+		};
+		console.log("보낼 데이터:", data);
 		fetch("/api/hr/myAnnualApply", {
 			method: "POST",
 			headers: {
@@ -44,13 +117,15 @@ function submitAnnualForm() {
 			},
 			body: JSON.stringify(data),
 		})
-			.then((response) => response.json())
+			.then((response) => response.text())
 			.then((result) => {
-				if (result.success) {
-					showToast(result.count + "건의 상여 등록이 완료되었습니다.", 'success');
-					targetUserGrid.resetData([]); // 성공 시 대상 목록 초기화
-					updatePeopleNumber();
-					resetBonusRegisterForm(); // 상여등록 폼 초기화
+				if (result > 2) {
+					showToast("건의 연차 신청이 완료되었습니다.", 'success');
+					resetAnnualForm();
+					// 내 연차 현황 다시 불러오기
+					getmyAnnualStatus();
+					// 그리드 데이터 다시 불러오기
+					annualDetailGrid.readData();
 				} else {
 					showToast("등록 실패 : " + result.message, 'error');
 				}
@@ -63,6 +138,7 @@ function submitAnnualForm() {
  * 사용일수 데이터 계산하기 
  * =================== */
 function calculateUsedDays() {
+	const leaveType = document.getElementById("leaveType").value;
 	const annualStartDate = document.querySelector('#annualStartDate').value;
 	const annualEndDate = document.querySelector('#annualEndDate').value;
 
@@ -77,8 +153,14 @@ function calculateUsedDays() {
 			return;
 		}
 
-		const annualOfUse = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
-		document.querySelector('#usedDays').value = annualOfUse;
+		let annualOfUse;
+		// 반차일 경우 시간 차이에 따라 0.5일 계산
+		if (leaveType === 'b2') { // 반차
+			return;
+		} else {
+			annualOfUse = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
+			document.querySelector('#usedDays').value = annualOfUse;
+		}
 	}
 }
 
@@ -120,7 +202,8 @@ function getmyAnnualStatus() {
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
 
 	/* ==================
 	 * 연차신청 초기화 버튼
@@ -131,43 +214,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * 신청구분 (공통코드)
 	 * ================== */
 	const divId = { "0B": "leaveType" };
-	getCmCodeOptions(divId);
+	await getCmCodeOptions(divId);
 
 	/* ==================
 	 * 내 연차 현황 함수 호출
 	 * ================== */
 	getmyAnnualStatus();
 
-	/* ============
-	 * 연차신청이력조회
-	 * ============ */
-	const annualDetailGrid = new tui.Grid({
-		el: document.getElementById("annualDetailGrid"),
-		scrollX: true,
-		scrollY: true,
-		data: {
-			api: {
-				readData: {
-					url: "/api/hr/annualManageList",
-					method: "GET",
-				},
-			},
-		},
-		bodyHeight: 240,
-		rowKey: "user_id",
-		columns: [
-			{ header: "사번", name: "userId", align: "center" },
-			{ header: "성명", name: "userName" },
-			{ header: "부서명", name: "deptName" },
-			{ header: "직급", name: "jobTitle" },
-			{ header: "신청구분", name: "leaveType" },
-			{ header: "사용일수", name: "usedDays", align: "right" },
-			{ header: "연차시작일", name: "leaveStartDate", align: "center" },
-			{ header: "연차종료일", name: "leaveEndDate", align: "center" },
-			{ header: "연차신청일", name: "leaveApplyDate", align: "center" },
-			{ header: "사유", name: "rm" },
-		],
-	}); // end of payrollDetailGrid
 
 	/* ===================
 	 * 날짜 변경 시 자동 계산 이벤트 리스너
@@ -188,4 +241,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	setupNativeDatePicker('annualStartDateWrapper', 'annualStartDate')
 	setupNativeDatePicker('annualEndDateWrapper', 'annualEndDate')
 
+	/* ===========================================
+	 * 연차일때는 date 반차일때는 datetime-local 로 설정
+	 * =========================================== */
+	annualDateChange();
+
+	/* ===============
+	 * 연차신청 저장 버튼
+	 * =============== */
+	submitAnnualForm();
 });

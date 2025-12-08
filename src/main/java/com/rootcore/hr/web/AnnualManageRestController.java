@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,7 +54,8 @@ public class AnnualManageRestController {
 
 	// 연차신청
 	@PostMapping("/myAnnualApply")
-	public int myAnnualApply(AnnualLeaveDetailVO param) {
+	public int myAnnualApply(@RequestBody AnnualLeaveDetailVO param) {
+		System.out.println(">>> 연차신청 param: " + param);
 		return annualManageService.insertmyAnnualApply(param);
 	}
 }
