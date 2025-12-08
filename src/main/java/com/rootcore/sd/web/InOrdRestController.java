@@ -29,6 +29,7 @@ public class InOrdRestController {
     public void inOrdSave(@RequestBody InOrdSave req) {
         inOrdService.addInOrd(req.getInfo(), req.getDetail());
     }
+
     @GetMapping("/detail")
     public List<InOrdDetailVO> inOrdDetailSearch(InOrdDetailVO InOrdDetail){
 		return inOrdService.getInOrdDetail(InOrdDetail);

@@ -68,14 +68,23 @@
                 SYSDATE)
     </insert>
 
-    <!-- 수주 기본 정보 불러오기 -->
-    <select id="selectInordHeaderList" resultType="InOrdVO">
-        SELECT *
-        FROM tb_inord
+    <select id="selectInOrdList" resultType="InOrdVO">
+        SELECT ior.company_code,
+               ior.inord_no,
+               ior.inord_date,
+               ior.cust_code,
+               ior.cust_name,
+               ior.total_price,
+               ior.output_status,
+               cm_output.code_name
+        FROM tb_inord ior
+        JOIN tb_cm_code cm_output
+          ON ior.output_status = cm_output.code
+         AND cm_output.group_code = '0L'
+
     </select>
 
     <!-- 수주 세부 정보 불러오기 -->
-
 	<select id="SelectInOrdDetailList" parameterType="InOrdDetailVO" resultType="InOrdDetailVO">
 		SELECT ior.company_code
 		     , ior.inord_no
@@ -90,6 +99,10 @@
 		     , nvl(iod.supply_price, 0) supply_price
 		     , nvl(iod.surtax, 0) surtax
 		     , nvl(iod.price, 0) price
+		     , iod.output_status                            -- 출고여부
+		     , cm_output.code_name "output_status_name",    -- 출고여부명
+		     , iod.invoice_status                           -- 세금계산서발행여부
+		     , cm_invoice.code_name "invoice_status_name"   -- 세금계산서발행여부명
 		  FROM tb_inord ior
 		  JOIN tb_inord_detail iod
 		    ON ior.company_code = iod.company_code
@@ -97,6 +110,12 @@
 		  JOIN tb_sku_master sku
 		    ON iod.company_code = sku.company_code
 		   AND iod.sku = sku.sku
+		  JOIN tb_cm_code cm_output
+            ON iod.output_status = cm_output.code
+           AND cm_output.group_code = '0L'
+          JOIN tb_cm_code cm_invoice
+		    ON iod.invoice_status = cm_invoice.code
+           AND cm_invoice.group_code = 'INVOICE_STATUS'
 		 WHERE 1=1
 		 <if test="custCode != null and custCode != ''">
 		   AND ior.cust_code LIKE '%' || #{custCode} || '%'
