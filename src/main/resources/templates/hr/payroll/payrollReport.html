@@ -41,12 +41,23 @@
 
 /* Tui Grid 데이터 없는 배경색과 유사한 밝은 회색 */
 .table-summary tbody td {
-    background-color: #f7f7f7 !important; /* !important를 사용하여 Bootstrap 기본 스타일을 덮어씁니다. */
+	background-color: #f7f7f7 !important;
+	/* !important를 사용하여 Bootstrap 기본 스타일을 덮어씁니다. */
 }
 
 /* 임금 항목 셀은 배경색을 제거하여 왼쪽은 흰색으로 남깁니다 (선택 사항) */
 .table-summary tbody tr td:first-child {
-    background-color: transparent !important;
+	background-color: transparent !important;
+}
+
+/* 지급일 범위 너비 조정 */
+#paymentEndDateWrapper, #paymentStartDateWrapper {
+	width: 37%;
+}
+
+/* 지급일 왼쪽 여백 */
+#paymentStartDateWrapper {
+	margin-left: 12px;
 }
 </style>
 </head>
@@ -83,7 +94,14 @@
 								<div class="field-inline">
 									<label for="payrollDate" class="field-inline__label">지급일</label>
 									<!-- 범위 input -->
-									<input id="paymentStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />~<input id="paymentEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+									<div id="paymentStartDateWrapper">
+										<input id="paymentStartDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
+									~
+									<div id="paymentEndDateWrapper">
+										<input id="paymentEndDate" type="date" class="form-control input-base" style="flex: 1; min-width: 0" />
+									</div>
+
 								</div>
 							</div>
 						</div>
@@ -114,7 +132,7 @@
 							<div class="form-grid form-grid--sub">
 								<div class="form-grid__row">
 									<div class="form-grid__label">귀속연월</div>
-									<div class="form-grid__field form-grid__field--wide">
+									<div class="form-grid__field form-grid__field--wide" id="payrollPeriodParent">
 										<input id="payrollPeriod" name="payrollPeriod" type="month" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
@@ -138,19 +156,19 @@
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">대장기간시작일</div>
-									<div class="form-grid__field form-grid__field--wide">
+									<div class="form-grid__field form-grid__field--wide" id="payrollStartDateWrapper">
 										<input id="payrollStartDate" name="payrollStartDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">대장기간종료일</div>
-									<div class="form-grid__field form-grid__field--wide">
+									<div class="form-grid__field form-grid__field--wide" id="payrollEndDateWrapper">
 										<input id="payrollEndDate" name="payrollEndDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">지급일</div>
-									<div class="form-grid__field form-grid__field--wide">
+									<div class="form-grid__field form-grid__field--wide" id="payrollBonusDateWrapper">
 										<input id="payrollBonusDate" name="payrollBonusDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
@@ -241,7 +259,7 @@
 
 				<!-- 내용 -->
 				<div class="modal-card__body">
-	
+
 					<!-- 급여대장 나오는 테이블 -->
 					<div id="payrollDetailGrid" class="grid-root" style="height: 240px; margin-bottom: 20px;"></div>
 					<!-- 상세 수당총액 -->
@@ -284,7 +302,8 @@
 								<th>건강보험</th>
 								<th>장기요양보험</th>
 								<th>지방소득세</th>
-								<th>총 수당 총액</th>
+								<th>결근병가공제</th>
+								<th>총 공제 총액</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -296,6 +315,7 @@
 								<td class="text-end" id="health_insurance"></td>
 								<td class="text-end" id="long_time_care_insurance"></td>
 								<td class="text-end" id=""></td>
+								<td class="text-end" id="absence"></td>
 								<td class="text-end" id="total_deduction_amount"></td>
 							</tr>
 						</tbody>
@@ -310,9 +330,9 @@
 		<!-- 전역 토스트 알림 -->
 		<div id="toastContainer" class="rc-toast"></div>
 		<!-- 공통코드 불러오는 스크립트 -->
-		<script th:src="@{/js/common.js}"></script>
 		<script th:src="@{/js/hr/payRoll.js}"></script>
-		
+		<script th:src="@{/js/common.js}"></script>
+
 	</div>
 </body>
 </html>

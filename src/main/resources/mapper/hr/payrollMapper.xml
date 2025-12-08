@@ -103,6 +103,7 @@
 		</if> --><!-- 임시제거 -->
 	</select>
 		
+	<!-- 계산하기누르면 모달창이 나타나면서 실행 -->
 	<resultMap id="payrollResultMap" type="UserPayManageVO">
 	    <result column="payroll_code"               property="payrollCode"/>
 	    <result column="user_id"                    property="userId"/>
@@ -125,8 +126,8 @@
 	    <result column="long_time_care_insurance"   property="longTimeCareInsurance"/>
 	    <result column="total_deduction_amount"     property="totalDeductionAmount"/>
 	    <result column="net_pay"                    property="netPay"/>
+	    <result column="absence"                    property="absence"/>
 	</resultMap>
-	
 	
 	<select id="selectUserPayManageList" statementType="CALLABLE">
 	    {call sp_calculate_payroll(
@@ -161,7 +162,8 @@
 		    long_time_care_insurance,
 		    <!-- local_income_tax, -->
 		    total_deduction,
-		    net_pay
+		    net_pay,
+		    absence
 		) VALUES (
 		    fn_make_date_code('USER_PAY_MANAGEMENT'),
 		    #{payrollCode},
@@ -190,7 +192,8 @@
 		    #{longTimeCareInsurance},
 		    <!-- #{local_income_tax}, -->
 		    #{totalDeductionAmount},
-		    #{netPay}
+		    #{netPay},
+		    #{absence}
 		)
 	</insert>
 	

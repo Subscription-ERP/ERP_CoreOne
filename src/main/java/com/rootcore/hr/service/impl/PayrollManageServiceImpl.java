@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.rootcore.hr.mapper.PayrollManageMapper;
 import com.rootcore.hr.service.PayrollManageService;
 import com.rootcore.hr.vo.PayrollManageSearchVO;
+import com.rootcore.hr.vo.UserPayManageDetailVO;
 import com.rootcore.hr.vo.UserPayManageVO;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class PayrollManageServiceImpl implements PayrollManageService {
 
 	// 단건조회
 	@Override
-	public UserPayManageVO selectPayrollManageDetail(String userPayManagementCode) {
+	public UserPayManageDetailVO selectPayrollManageDetail(String userPayManagementCode) {
 		return payrollManageMapper.selectPayrollManageDetail(userPayManagementCode);
 	}
 }

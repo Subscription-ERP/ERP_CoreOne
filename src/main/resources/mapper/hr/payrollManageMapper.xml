@@ -28,7 +28,8 @@
 			   upm.health_insurance,
 			   upm.long_time_care_insurance,			   
 			   upm.total_deduction AS totalDeductionAmount,
-			   upm.net_pay
+			   upm.net_pay,
+			   upm.absence
 		FROM   tb_user_pay_management upm
 			   JOIN tb_user_master um 
 			   ON upm.user_id = um.user_id
@@ -50,37 +51,39 @@
 	</select>
 	
 	<!-- 단건조회 -->
-	<select id="selectPayrollManageDetail">
+	<select id="selectPayrollManageDetail" resultType="UserPayManageDetailVO" parameterType="String">
 		SELECT upm.user_pay_management_code,
-			   um.user_name,
-			   upm.user_id,
-			   dm.dept_name,
-			   cc.code_name,
-			   upm.salary,
-			   upm.bonus,
-			   upm.overtime_allowance AS overtime,
-			   upm.night_allowance AS night,
-			   upm.holiday_allowance AS holiday,
-			   upm.family_allowance AS family,
-			   upm.meal_allowance AS meal,
-			   upm.annual_leave_allowance AS annualLeave,
-			   upm.total_payment AS totalPaymentAmount,
-			   upm.national_pension,
-			   upm.employment_insurance,
-			   upm.health_insurance,
-			   upm.long_time_care_insurance,
-			   upm.total_deduction AS totalDeductionAmount,
-			   upm.net_pay,
-			   upm.payroll_code,
-			   upm.company_code,
-			   upm.pay_period,
+		       um.user_name,
+		       upm.user_id,
+		       dm.dept_name,
+		       cmc.code_name,
+		       upm.salary,
+		       upm.bonus,
+		       upm.overtime_allowance,
+		       upm.night_allowance,
+		       upm.holiday_allowance,
+		       upm.family_allowance,
+		       upm.meal_allowance,
+		       upm.annual_leave_allowance,
+		       upm.total_payment,
+		       upm.national_pension,
+		       upm.employment_insurance,
+		       upm.health_insurance,
+		       upm.long_time_care_insurance,
+		       upm.total_deduction,
+		       upm.net_pay,
+		       upm.payroll_code,
+		       upm.company_code,
+		       upm.pay_period,
+		       upm.absence
 		FROM   tb_user_pay_management upm
-			   JOIN tb_user_master um 
-			   ON upm.user_id = um.user_id
-			   JOIN tb_dept_master dm 
-			   ON um.dept = dm.dept_code
-			   JOIN tb_cm_code cc
-			   ON um.job_title = cc.code
+		       JOIN tb_user_master um 
+		       ON upm.user_id = um.user_id
+		       JOIN tb_dept_master dm 
+		       ON um.dept = dm.dept_code
+		       JOIN tb_cm_code cmc
+		       ON um.job_title = cmc.code
+		WHERE  upm.user_pay_management_code = #{userPayManagementCode}
 	</select>
 
 </mapper>

@@ -15,7 +15,7 @@ function formatKoreanNumber(value) {
 }
 
 // 공통코드(선택박스)
-function getCmCodeOptions(divId) {
+function getCmCodeOptionsPayRoll(divId) {
 	const keys = Object.keys(divId);
 	const param = keys.map((k) => `code=${k}`).join("&");
 
@@ -109,6 +109,7 @@ function resetSummaryTables() {
 	document.getElementById('health_insurance').textContent = 0;
 	document.getElementById('long_time_care_insurance').textContent = 0;
 	// document.getElementById('#').textContent = 0;
+	document.getElementById('absence').textContent = 0;
 	document.getElementById('total_deduction_amount').textContent = 0;
 }
 
@@ -132,13 +133,14 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('employment_insurance').textContent = rowData.employmentInsurance === null || rowData.employmentInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employmentInsurance);
 	document.getElementById('health_insurance').textContent = rowData.healthInsurance === null || rowData.healthInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.healthInsurance);
 	document.getElementById('long_time_care_insurance').textContent = rowData.longTimeCareInsurance === null || rowData.longTimeCareInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.longTimeCareInsurance);
+	document.getElementById('absence').textContent = rowData.absence === null || rowData.absence === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.absence);
 	document.getElementById('total_deduction_amount').textContent = rowData.totalDeductionAmount === null || rowData.totalDeductionAmount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalDeductionAmount);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
 	// 급여구분 
 	const divId = { "0J": "payrollType" };
-	getCmCodeOptions(divId);
+	getCmCodeOptionsPayRoll(divId);
 
 	// 상여지급방법 (라디오 버튼)
 	const divIdRadio = { "0K": "bonusTypeContainer" };
@@ -634,6 +636,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	});
 
-
+    // 날짜 input박스만 눌러도 달력 선택창 뜨게 하기
+	setupNativeDatePicker('payrollPeriodParent','payrollPeriod'); // 급여대장-상여등록-귀속연월
+	setupNativeDatePicker('payrollStartDateWrapper','payrollStartDate'); // 급여대장-상여등록-대장기간시작일
+	setupNativeDatePicker('payrollEndDateWrapper','payrollEndDate'); // 급여대장-상여등록-대장기간종료일
+	setupNativeDatePicker('payrollBonusDateWrapper','payrollBonusDate'); // 급여대장-상여등록-지급일
+	setupNativeDatePicker('paymentStartDateWrapper','paymentStartDate'); // 급여대장-대장조회-지급일시작
+	setupNativeDatePicker('paymentEndDateWrapper','paymentEndDate'); // 급여대장-대장조회-지급일종료
+	
 
 }); // end of DOMContentLoaded

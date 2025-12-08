@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"></meta>
+<title>급여명세서</title>
+<style>
+body {
+	font-family: 'Malgun Gothic', sans-serif;
+	font-size: 10px;
+	margin: 35px 25px;
+}
+
+.title {
+	text-align: center;
+	font-size: 22px;
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+
+/* 상단 제목 테이블 */
+.title-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 20px;
+}
+
+/* 왼쪽 큰 "사원카드" 박스 */
+.title-cell {
+	border: 0.5px solid #bbb;
+	text-align: center;
+	font-size: 20px;
+	font-weight: bold;
+	padding: 8px 0;
+	letter-spacing: 0.5em;
+}
+
+/* 오른쪽 위 "사원번호" 라벨 – 여기만 배경색 */
+.title-label {
+	border: 0.5px solid #bbb;
+	text-align: center;
+	width: 130px;
+	font-size: 10px;
+	font-weight: bold;
+	background-color: #f5f5f5;
+}
+
+/* 오른쪽 아래 실제 사원번호 값 */
+.title-value {
+	border: 0.5px solid #bbb;
+	text-align: center;
+	font-size: 10px;
+	padding: 6px 0;
+}
+
+.card-wrapper {
+	padding: 0;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+th, td {
+	border: 0.5px solid #bbb;
+	padding: 6px 8px;
+	vertical-align: middle;
+	word-break: break-all;
+}
+
+th {
+	text-align: center;
+}
+
+.photo-area {
+	width: 90px;
+	text-align: center;
+}
+
+.photo-box {
+	width: 70px;
+	height: 90px;
+	border: none;
+	margin: 0 auto;
+	font-size: 10px;
+	text-align: center;
+	line-height: 90px;
+}
+
+.side-title {
+	width: 24px;
+	text-align: center;
+	font-weight: bold;
+	background-color: #f5f5f5;
+}
+
+.side-title.vertical {
+	writing-mode: vertical-rl;
+	text-orientation: mixed;
+}
+
+.label {
+	background-color: #f5f5f5;
+	width: 80px;
+	font-weight: bold;
+}
+
+.section-title {
+	background-color: #f5f5f5;
+	font-weight: bold;
+	text-align: center;
+	letter-spacing: 0.5em;
+}
+
+.sub-table-title {
+	background-color: #f5f5f5;
+}
+
+.align-right {
+	text-align: right;
+	padding-right: 10px;
+}
+</style>
+</head>
+
+<body>
+
+	<div class="title" th:text="${payPeriodFormatted} + ' 급여명세서'"></div>
+
+	<!-- 기본 정보 -->
+	<table>
+		<tr>
+			<th>성명</th>
+			<td th:text="${userPayManage.userName}"></td>
+			<th>사번</th>
+			<td th:text="${userPayManage.userId}"></td>
+		</tr>
+		<tr>
+			<th>부서</th>
+			<td th:text="${userPayManage.deptName}"></td>
+			<th>직급</th>
+			<td th:text="${userPayManage.codeName}"></td>
+		</tr>
+	</table>
+
+	<br />
+
+	<!-- 세부내역 제목 -->
+	<table>
+		<tr>
+			<th colspan="4" class="section-title">세부내용</th>
+		</tr>
+		<tr>
+			<th colspan="2" class="section-title">지급</th>
+			<th colspan="2" class="section-title">공제</th>
+		</tr>
+	</table>
+
+	<!-- 지급 / 공제 테이블 -->
+	<table>
+		<tr>
+			<th>임금 항목</th>
+			<th>지급 금액(원)</th>
+			<th>공제 항목</th>
+			<th>공제 금액(원)</th>
+		</tr>
+
+		<tr>
+			<td>기본급</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.salary ?: 0,0,'COMMA',0,'POINT')}">2,750,000</td>
+			<td>소득세</td>
+			<td class="align-right" th:text="0">52,530</td>
+		</tr>
+		<tr>
+			<td>상여금</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.bonus ?:0,0,'COMMA',0,'POINT')}">100,000</td>
+			<td>국민연금</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.nationalPension ?:0,0,'COMMA',0,'POINT')}">22,950</td>
+		</tr>
+		<tr>
+			<td>연장근로수당</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.overtimeAllowance ?:0,0,'COMMA',0,'POINT')}">90,270</td>
+			<td>고용보험</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.employmentInsurance ?:0,0,'COMMA',0,'POINT')}">4,590</td>
+		</tr>
+		<tr>
+			<td>야간근로수당</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.nightAllowance ?:0,0,'COMMA',0,'POINT')}">105,315</td>
+			<td>건강보험</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.healthInsurance ?:0,0,'COMMA',0,'POINT')}">90,390</td>
+		</tr>
+		<tr>
+			<td>휴일근로수당</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.holidayAllowance ?:0,0,'COMMA',0,'POINT')}">0</td>
+			<td>장기요양보험</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.longTimeCareInsurance ?:0,0,'COMMA',0,'POINT')}">11,700</td>
+		</tr>
+		<tr>
+			<td>가족수당</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.familyAllowance ?:0,0,'COMMA',0,'POINT')}">0</td>
+			<td>지방소득세</td>
+			<td class="align-right" th:text="0">5,250</td>
+		</tr>
+		<tr>
+			<td>식대 (비과세)</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.mealAllowance ?:0,0,'COMMA',0,'POINT')}">200,000</td>
+			<td>결근병가공제</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.absence ?:0,0,'COMMA',0,'POINT')}">5,250</td>
+		</tr>
+		<tr>
+			<td>연차휴가수당</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.annualLeaveAllowance ?:0,0,'COMMA',0,'POINT')}">200,000</td>
+			<th>공제액 계
+			</th>
+			<th class="align-right" th:text="${#numbers.formatDecimal(userPayManage.totalDeduction ?:0,0,'COMMA',0,'POINT')}">187,410</th>
+		</tr>
+
+		<tr>
+			<th>지급액 계</th>
+			<th class="align-right" th:text="${#numbers.formatDecimal(userPayManage.totalPayment ?:0,0,'COMMA',0,'POINT')}">3,145,585</th>
+			<td></td>
+			<td class="align-right"></td>
+		</tr>
+		<tr>
+			<th colspan="2">실지급액</th>
+			<th colspan="2" class="align-right" th:text="${#numbers.formatDecimal(userPayManage.netPay ?:0,0,'COMMA',0,'POINT')}">2,958,175</th>
+		</tr>
+	</table>
+
+	<br />
+
+	<!-- 계산 방법 -->
+	<table>
+		<tr>
+			<th colspan="4" class="section-title">계산방법</th>
+		</tr>
+		<tr>
+			<th>구분</th>
+			<th colspan="2">산출식 또는 산출방법</th>
+			<th>지급액(원)</th>
+		</tr>
+
+		<tr>
+			<td>연장근로수당</td>
+			<td colspan="2" class="align-left">통상시급 × 1.5 × 연장근로시간</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.overtimeAllowance ?:0,0,'COMMA',0,'POINT')}">90,270</td>
+		</tr>
+
+		<tr>
+			<td>야간근로수당</td>
+			<td colspan="2" class="align-left">통상시급 × 1.5 × 야간근로시간</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.nightAllowance ?:0,0,'COMMA',0,'POINT')}">105,315</td>
+		</tr>
+
+		<tr>
+			<td>휴일근로수당</td>
+			<td colspan="2" class="align-left">통상시급 × 1.5 × 휴일근로시간</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.holidayAllowance ?:0,0,'COMMA',0,'POINT')}">해당사항없음</td>
+		</tr>
+
+		<tr>
+			<td>가족수당</td>
+			<td colspan="2" class="align-left">통상시급 × 1.5 × 연장근로시간</td>
+			<td class="align-right" th:text="${#numbers.formatDecimal(userPayManage.familyAllowance ?:0,0,'COMMA',0,'POINT')}">해당사항없음</td>
+		</tr>
+	</table>
+
+</body>
+</html>

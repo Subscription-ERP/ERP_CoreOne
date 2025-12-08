@@ -26,6 +26,7 @@ function resetSummaryTables() {
 	document.getElementById('health_insurance').textContent = 0;
 	document.getElementById('long_time_care_insurance').textContent = 0;
 	// document.getElementById('#').textContent = 0;
+	document.getElementById('absence').textContent = 0;
 	document.getElementById('total_deduction_amount').textContent = 0;
 }
 
@@ -49,6 +50,7 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('employment_insurance').textContent = rowData.employmentInsurance === null || rowData.employmentInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employmentInsurance);
 	document.getElementById('health_insurance').textContent = rowData.healthInsurance === null || rowData.healthInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.healthInsurance);
 	document.getElementById('long_time_care_insurance').textContent = rowData.longTimeCareInsurance === null || rowData.longTimeCareInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.longTimeCareInsurance);
+	document.getElementById('absence').textContent = rowData.absence === null || rowData.absence === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.absence);
 	document.getElementById('total_deduction_amount').textContent = rowData.totalDeductionAmount === null || rowData.totalDeductionAmount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalDeductionAmount);
 }
 
@@ -168,9 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.querySelector("#payPeriodEnd").value = '';
 	})
 
-	/* ------------------------------------------------------------------
+	/*==================
 	 * 급여명세서(인쇄) 모달
-	 * ------------------------------------------------------------------ */
+	 * ================= */
 
 	const printPreviewModal = document.getElementById('printPreviewModal'); // 인쇄 모달 가장 큰 틀
 	const btnPrint = document.getElementById('btnPrint'); // 인쇄 버튼 태그
@@ -250,11 +252,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 각 사원에 대해 a 태그를 만들어 클릭 -> 브라우저가 다운로드 처리
 		checkedRows.forEach(row => {
 			const userPayManagementCode = row.userPayManagementCode;
-			const url = `/api/hr/payslip/download?userId=${encodeURIComponent(userPayManagementCode)}`;
+			const url = `/api/hr/payslip/download?userPayManagementCode=${encodeURIComponent(userPayManagementCode)}`;
 
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `userCard-${userPayManagementCode}.pdf`;
+			a.download = `payslip-${userPayManagementCode}.pdf`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
@@ -279,4 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
+	// input 상자만 눌러도 달력 나오게 설정
+	setupNativeDatePicker('payPeriodStartWrapper','payPeriodStart'); // 급여조회-사원급여조회-귀속연월 범위시작
+	setupNativeDatePicker('payPeriodEndWrapper','payPeriodEnd'); // 급여조회-사원급여조회-귀속연월 범위종료
 });
