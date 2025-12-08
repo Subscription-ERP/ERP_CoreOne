@@ -15,5 +15,25 @@
                 tax_yn
         FROM tb_sku_master
     </select>
-
+    <select id="selectOneSku" resultType="SkuVO">
+		SELECT sku.sku
+		     , sku.sku_name
+		     , sku.sku_type
+		     , sku.spec
+		     , sku.unit
+		     , prc.unit_price
+		     , sku.tax_yn
+		  FROM tb_sku_master sku
+		  JOIN tb_unit_price_master prc
+		    ON sku.company_code = prc.company_code
+		   AND sku.sku = prc.sku
+		 WHERE prc.unit_price_type = 'SELL_UNIT'
+		   AND sku.use_yn = 'Y'
+		<if test="sku != null and sku !='' ">
+			AND sku.sku like '%' || #{sku} || '%'
+		</if>
+		<if test="skuName != null and skuName !='' ">
+			AND sku.sku_name like '%'|| #{skuName} ||'%'
+		</if>
+    </select>
 </mapper>

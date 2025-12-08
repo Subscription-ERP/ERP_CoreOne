@@ -1,9 +1,13 @@
 package com.rootcore.sd.mapper;
 
-import com.rootcore.sd.vo.InOrdVO;
+import java.util.List;
+
 import com.rootcore.sd.vo.InOrdDetailVO;
+import com.rootcore.sd.vo.InOrdVO;
 
 public interface InOrdMapper {
     void insertInOrd(InOrdVO inOrd);
     void insertInOrdDetail(InOrdDetailVO inOrdDeatil);
+    List<InOrdVO> SelectInOrdList(InOrdVO inOrd);
+    List<InOrdDetailVO> SelectInOrdDetailList(InOrdDetailVO inOrd);
 }

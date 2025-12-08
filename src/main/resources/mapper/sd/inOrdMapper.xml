@@ -112,4 +112,47 @@
                 SYSDATE)
     </insert>
 
+	<select id="SelectInOrdDetailList" parameterType="InOrdDetailVO" resultType="InOrdDetailVO">
+		SELECT ior.company_code
+		     , ior.inord_no
+		     , ior.inord_date
+		     , ior.cust_code
+		     , ior.cust_name
+		     , iod.inord_detail_no
+		     , iod.sku
+		     , sku.sku_name
+		     , iod.qty
+		     , iod.unit_price
+		     , nvl(iod.supply_price, 0) supply_price
+		     , nvl(iod.surtax, 0) surtax
+		     , nvl(iod.price, 0) price
+		  FROM tb_inord ior
+		  JOIN tb_inord_detail iod
+		    ON ior.company_code = iod.company_code
+		   AND ior.inord_no = iod.inord_no
+		  JOIN tb_sku_master sku
+		    ON iod.company_code = sku.company_code
+		   AND iod.sku = sku.sku
+		 WHERE 1=1
+		 <if test="custCode != null and custCode != ''">
+		   AND ior.cust_code LIKE '%' || #{custCode} || '%'
+		 </if>
+		 <if test="custName != null and custName != ''">
+		   AND ior.cust_name LIKE '%' || #{custName} || '%'
+		 </if>
+		 <if test="sku != null and sku !='' ">
+		   AND iod.sku like '%' || #{sku} || '%'
+		 </if>
+		 <if test="skuName != null and skuName !='' ">
+		   AND sku.sku_name like '%'|| #{skuName} ||'%'
+		 </if>
+		 <if test="searchDiv == 'Modal'">
+		   AND iod.invoice_status = '0'
+		 </if>
+		 <if test="searchDiv == 'Modal'">
+		   AND iod.output_status != '0'
+		 </if>
+		   AND ior.inord_date = ior.inord_date
+		   AND ior.inord_no = ior.inord_no
+	</select>
 </mapper>

@@ -23,5 +23,8 @@ public class CmRestController {
         return skuService.getSkuList(param);
     }
 
-
+    @GetMapping("/skuOne")
+    public List<SkuVO> skuOne(SkuVO param) {
+        return skuService.getOneSku(param);
+    }
 }

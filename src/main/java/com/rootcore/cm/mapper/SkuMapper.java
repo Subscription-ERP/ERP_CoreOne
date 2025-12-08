@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface SkuMapper {
     List<SkuVO> selectAllSku(SkuVO sku);
-}
+    List<SkuVO> selectOneSku(SkuVO sku);
+} 

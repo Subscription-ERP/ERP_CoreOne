@@ -18,4 +18,10 @@ public class SkuServiceImpl implements SkuService {
     public List<SkuVO> getSkuList(SkuVO sku) {
         return skuMapper.selectAllSku(sku);
     }
+
+	@Override
+	public List<SkuVO> getOneSku(SkuVO sku) {
+		// TODO Auto-generated method stub
+		return skuMapper.selectOneSku(sku);
+	}
 }

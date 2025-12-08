@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface InOrdService {
     void addInOrd(InOrdVO info, List<InOrdDetailVO> details);
+    List<InOrdDetailVO> getInOrdDetail(InOrdDetailVO info);
 }
