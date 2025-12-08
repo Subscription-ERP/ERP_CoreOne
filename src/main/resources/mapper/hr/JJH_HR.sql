@@ -1373,3 +1373,103 @@ SELECT pr.payroll_code, -- 급여대장코드
                        GROUP BY att_sub.user_id ) absence
                 ON pr.user_id = absence.user_id
          WHERE  pr.payroll_period_code = 'PRP25120500002';
+         
+-- ==========
+-- 2025-12-08
+-- ==========
+SELECT *
+FROM   tb_annual_leave;
+SELECT *
+FROM   tb_annual_leave_detail;
+SELECT *
+FROM   tb_user_master;
+SELECT *
+FROM   tb_cm_code;
+SELECT *
+FROM   tb_cm_code_group;
+SELECT *
+FROM   tb_attendance;
+INSERT INTO tb_cm_code_group(group_code, group_name)
+VALUES ('0B', '연차신청구분');
+INSERT INTO tb_cm_code (code, group_code, code_name)
+VALUES ('b1', '0B', '연차');
+INSERT INTO tb_cm_code (code, group_code, code_name)
+VALUES ('b2', '0B', '반차');
+UPDATE tb_cm_code
+SET code_name = '연차'
+WHERE code_name = '연차신청구분';
+UPDATE tb_annual_leave_detail
+SET leave_type = 'b1'
+WHERE leave_type = '연차';
+UPDATE tb_annual_leave_detail
+SET leave_type = 'b2'
+WHERE leave_type = '반차';
+
+-- 사원연차조회
+SELECT ald.annual_leave_code, -- 연차관리코드
+       ald.annual_leave_detail_seq, -- 연차상세관리번호
+       al.user_id, -- 사번
+       um.user_name, -- 성명
+       dm.dept_name, -- 부서명
+       cmcj.code_name as job_title, -- 직위직급
+       cmcl.code_name as leave_type, -- 신청구분
+       ald.used_days, -- 사용일수
+       ald.leave_start_date, -- 연차시작일
+       ald.leave_end_date, -- 연차종료일
+       ald.leave_apply_date, -- 연차신청일
+       ald.rm -- 사유
+FROM   tb_annual_leave_detail ald
+       JOIN tb_annual_leave al
+       ON al.annual_leave_code = ald.annual_leave_code
+       JOIN tb_user_master um
+       ON um.user_id = al.user_id
+       JOIN tb_dept_master dm
+       ON dm.dept_code = um.dept
+       JOIN tb_cm_code cmcj
+       ON cmcj.code = um.job_title
+       JOIN tb_cm_code cmcl
+       ON cmcl.code = ald.leave_type
+WHERE  al.user_id = 'EMP23030100003';
+       
+-- tb_annual_leave 샘플데이터
+INSERT INTO TB_ANNUAL_LEAVE (ANNUAL_LEAVE_CODE, COMPANY_CODE, USER_ID, GRANT_YEAR, TOTAL_GRANT_DAYS, TOTAL_USED_DAYS, REMAINING_DAYS, EXPIRY_DATE)
+VALUES ('AL24_001', '0000', 'EMP25001', '2024', 15, 15, 0, TO_DATE('2024-12-31', 'YYYY-MM-DD'));
+
+INSERT INTO TB_ANNUAL_LEAVE (ANNUAL_LEAVE_CODE, COMPANY_CODE, USER_ID, GRANT_YEAR, TOTAL_GRANT_DAYS, TOTAL_USED_DAYS, REMAINING_DAYS, EXPIRY_DATE)
+VALUES ('AL25_001', '0000', 'EMP25001', '2025', 16, 4.5, 11.5, TO_DATE('2025-12-31', 'YYYY-MM-DD'));
+
+-- tb_annual_leave_detail 샘플데이터
+INSERT ALL
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (1, 'AL24_001', '0000', '연차', 1.0, TO_DATE('2024-03-05', 'YYYY-MM-DD'), TO_DATE('2024-03-05', 'YYYY-MM-DD'), TO_DATE('2024-03-01', 'YYYY-MM-DD'), '개인사정', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (2, 'AL24_001', '0000', '연차', 3.0, TO_DATE('2024-07-20', 'YYYY-MM-DD'), TO_DATE('2024-07-22', 'YYYY-MM-DD'), TO_DATE('2024-07-10', 'YYYY-MM-DD'), '여름휴가', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (3, 'AL24_001', '0000', '오전반차', 0.5, TO_DATE('2024-09-10', 'YYYY-MM-DD'), TO_DATE('2024-09-10', 'YYYY-MM-DD'), TO_DATE('2024-09-01', 'YYYY-MM-DD'), '병원진료', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (4, 'AL24_001', '0000', '연차', 10.5, TO_DATE('2024-12-15', 'YYYY-MM-DD'), TO_DATE('2024-12-25', 'YYYY-MM-DD'), TO_DATE('2024-12-01', 'YYYY-MM-DD'), '연말휴가', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (5, 'AL25_001', '0000', '연차', 1.0, TO_DATE('2025-01-02', 'YYYY-MM-DD'), TO_DATE('2025-01-02', 'YYYY-MM-DD'), TO_DATE('2024-12-20', 'YYYY-MM-DD'), '신년휴식', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (6, 'AL25_001', '0000', '오후반차', 0.5, TO_DATE('2025-02-14', 'YYYY-MM-DD'), TO_DATE('2025-02-14', 'YYYY-MM-DD'), TO_DATE('2025-02-01', 'YYYY-MM-DD'), '가사정리', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (7, 'AL25_001', '0000', '연차', 2.0, TO_DATE('2025-05-02', 'YYYY-MM-DD'), TO_DATE('2025-05-03', 'YYYY-MM-DD'), TO_DATE('2025-04-20', 'YYYY-MM-DD'), '샌드위치데이', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+INTO TB_ANNUAL_LEAVE_DETAIL VALUES (8, 'AL25_001', '0000', '연차', 1.0, TO_DATE('2025-08-01', 'YYYY-MM-DD'), TO_DATE('2025-08-01', 'YYYY-MM-DD'), TO_DATE('2025-07-20', 'YYYY-MM-DD'), '개인휴무', 'ADMIN', SYSDATE, 'ADMIN', SYSDATE)
+SELECT * FROM DUAL;
+
+-- 연차현황조회
+SELECT al.annual_leave_code,
+       al.company_code,
+       al.user_id,
+       al.grant_year,
+       al.total_grant_days,
+       al.total_used_days,
+       al.remaining_days,
+       al.expiry_date,       
+       um.user_name,
+       dm.dept_name,
+       ccj.code_name as job_title
+FROM   tb_annual_leave al
+       JOIN tb_user_master um
+       ON um.user_id = al.user_id
+       JOIN tb_dept_master dm
+       ON dm.dept_code = um.dept
+       JOIN tb_cm_code ccj
+       ON ccj.code = um.job_title
+WHERE  grant_year = TO_CHAR(sysdate, 'yyyy');
+
+-- insert연차신청
+INSERT INTO 

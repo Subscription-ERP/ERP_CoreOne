@@ -390,7 +390,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			peopleNumber: employeeIds.length,
 			employeeIds: employeeIds,
 		};
-
+		
+		/* ======
+		 * 상여등록
+		 * ====== */
 		fetch("/api/hr/bonusRegister", {
 			method: "POST",
 			headers: {
