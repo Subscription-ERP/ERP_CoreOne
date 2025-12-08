@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.hr.service.HrReviewService;
 import com.rootcore.hr.vo.HrReviewMasterVO;
+import com.rootcore.hr.vo.HrReviewVO;
+
+import jakarta.servlet.http.HttpSession; 
 
 import lombok.RequiredArgsConstructor;
 
@@ -100,6 +103,29 @@ public class HrReviewRestController {
 	public List<HrReviewMasterVO> reviewManageAllList(){
 		return hrReviewService.selectReviewOnlyY();
 	}
+	
+	// 인사평가관리 - 다건조회 + 부서별 팀장제외 팀원수계산 + 현재리뷰상태
+	@GetMapping("/manage/status")
+	public List<HrReviewMasterVO> reviewManageAllListWithStatus(HttpSession session){
+		
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");	
+		
+		return hrReviewService.selectCheckReviewCount(companyCode, userId);
+	}
+	
+	
+	// 인사평가관리 - 팀원 목록
+	@GetMapping("/manage/teamMember")
+	public List<HrReviewVO> getTeamMemberReviewList(@RequestParam("reviewMasterCode") String reviewMasterCode,
+            HttpSession session){
+		
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String raterUserId = (String) session.getAttribute("LOGIN_USER_ID");	
+		
+		return hrReviewService.selectTeamList(companyCode, raterUserId, reviewMasterCode);
+	}
+	
 	
 	
 	

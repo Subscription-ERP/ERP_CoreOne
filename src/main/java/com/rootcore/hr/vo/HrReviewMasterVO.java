@@ -35,4 +35,8 @@ public class HrReviewMasterVO {
 	private List<EvalItemVO> evalItemList;          // 평가항목
 	private List<String> useYnList;                 // 사용여부 리스트(검색)
 	
+    private int totalMemberCnt;                     // 팀원 수
+    private int completedCnt;                       // 평가 완료 인원 수
+    private String reivewStatus;                    // 리뷰평가상태
+	
 }

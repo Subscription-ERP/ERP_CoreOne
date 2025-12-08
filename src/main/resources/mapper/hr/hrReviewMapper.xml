@@ -170,62 +170,96 @@
 		WHERE use_yn = 'Y'
 	</select>
 	
-	<!-- 인사평가 관리 - 팀장 기준 템플릿별 상태 계산 -->
-	<select id="selectReviewSatus" parameterType="String">
-	    SELECT
-	        m.company_code,
-	        m.review_master_code,
-	        m.reivew_master_name,
-	        m.review_start_date,
-	        m.review_end_date,
-	
-	        NVL(tm.total_member_cnt, 0) AS total_member_cnt, 
-	        NVL(SUM(CASE WHEN r.review_status = '2' THEN 1 ELSE 0 END), 0) AS completed_cnt,
-	
-	        CASE
-	            WHEN NVL(COUNT(r.review_code), 0) = 0
-	                 THEN '미평가'
-	            WHEN NVL(SUM(CASE WHEN r.review_status = '2' THEN 1 ELSE 0 END), 0)
-	                   <![CDATA[ < ]]> NVL(tm.total_member_cnt, 0)
-	                 THEN '진행중'
-	            ELSE '완료'
-	        END AS review_status
-	    FROM tb_hr_review_master m
-	
-	    LEFT JOIN tb_hr_review r
-	      ON r.company_code       = m.company_code
-	     AND r.review_master_code = m.review_master_code
-	     AND r.rater_user_id      = #{raterUserId}
-	
-	    LEFT JOIN (
-	        SELECT
-	            leader.company_code,
-	            leader.user_id AS rater_user_id,
-	            COUNT(member.USER_ID) AS total_member_cnt
-	        FROM tb_user_master leader
-	        JOIN tb_user_master member
-	          ON member.company_code = leader.company_code
-	         AND member.dept         = leader.dept
-	         AND member.user_id <![CDATA[ <> ]]> leader.user_id   
-	        GROUP BY leader.company_code, 
-	                 leader.user_id
-	    ) tm
-	      ON tm.company_code = m.company_code
-	     AND tm.rater_user_id = #{raterUserId}
-	
-	    WHERE m.company_code = #{companyCode}
-	      AND m.use_yn = 'Y'
-	    GROUP BY
-	        m.company_code,
-	        m.review_master_code,
-	        m.Review_master_name,
-	        m.review_start_date,
-	        m.review_end_date,
-	        tm.total_member_cnt
-	    ORDER BY m.review_start_date DESC
-	</select>
 
+	<!-- 인사평가관리 - 팀장별 부서 팀원수 계산 및 평가상태 계산 -->
+	<!-- 1) 팀원 수(팀장 본인을 제외하고 가져오기) -->
+	<select id="selectTeamCount">
+		SELECT COUNT(*) AS total_member_cnt
+		FROM tb_user_master u
+		WHERE u.company_code = #{companyCode}
+		  AND u.dept = (
+		            SELECT dept
+		            FROM tb_user_master
+		            WHERE company_code = #{companyCode}
+		            AND user_id = #{userId}
+		  )
+		  AND u.user_id <![CDATA[ <> ]]> #{userId}
+		  AND u.user_status = 0
+	</select>
 	
+	<!-- 2) 작성/완성된 reivew 갯수 -->
+	<select id="selectReviewCount">
+		SELECT 
+		    m.company_code,
+		    m.review_master_code,
+		    m.review_master_name,
+		    m.review_start_date,
+		    m.review_end_date,
+		    NVL(COUNT(r.review_code), 0) AS total_review_cnt,  
+		    NVL(SUM(CASE WHEN r.review_status = '2' THEN 1 ELSE 0 END), 0) AS completed_cnt  
+		FROM        tb_hr_review_master m
+		LEFT JOIN   tb_hr_review r 
+		       ON   r.company_code = m.company_code
+		AND         r.review_master_code = m.review_master_code
+		AND         r.rater_user_id = #{userId}
+		WHERE       m.company_code = #{companyCode}
+		AND         m.use_yn = 'Y'
+		GROUP BY
+		    m.company_code,
+		    m.review_master_code,
+		    m.review_master_name,
+		    m.review_start_date,
+		    m.review_end_date
+		ORDER BY m.review_start_date DESC
+	</select>
+	
+	<!-- 인사평가관리 - 팀원목록 -->
+	<select id="selectTeamList" resultType="HrReviewVO">
+		SELECT 
+		    staff.user_id       AS target_user_id,
+		    staff.user_name     AS target_user_name,
+		    staff.dept          AS target_dept,
+		    staff.job_title     AS target_job_title,
+		    
+		    r.review_code,
+		    r.review_status,
+		    r.final_score,
+		    r.review_comment   
+		     
+		FROM tb_user_master manager
+		JOIN tb_user_master staff
+		  ON staff.company_code = manager.company_code
+		 AND staff.dept = manager.dept
+		 AND staff.user_id <![CDATA[ <> ]]> manager.user_id
+		 AND staff.user_status = '0'
+		 
+		LEFT JOIN tb_hr_review r 
+		  ON r.company_code = staff.company_code
+		 AND r.review_master_code = #{reviewMasterCode}
+		 AND r.rater_user_id = manager.user_id
+		 AND r.target_user_id = staff.user_id
+		 
+		WHERE manager.company_code = #{companyCode}
+		 AND manager.user_id = #{raterUserId}
+		 
+		ORDER BY staff.user_name
+<!--		SELECT 
+		    u.user_id,
+		    u.user_name,
+		    u.dept,
+		    u.job_title,
+		    u.position,
+		    u.user_status
+		FROM tb_user_master u
+		WHERE u.company_code = #{companyCode}
+		AND u.dept = (SELECT dept
+		              FROM   tb_user_master
+		              WHERE  company_code = #{companyCode}
+		                AND  user_id = #{userId})
+		AND u.user_id <![CDATA[ <> ]]> #{userId}
+		AND u.user_status = '0'
+		ORDER BY u.user_name-->
+	</select>
 	
 	
 	

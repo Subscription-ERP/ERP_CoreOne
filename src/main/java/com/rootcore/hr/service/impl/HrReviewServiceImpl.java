@@ -9,6 +9,7 @@ import com.rootcore.hr.mapper.HrReviewMapper;
 import com.rootcore.hr.service.HrReviewService;
 import com.rootcore.hr.vo.EvalItemVO;
 import com.rootcore.hr.vo.HrReviewMasterVO;
+import com.rootcore.hr.vo.HrReviewVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -100,6 +101,35 @@ public class HrReviewServiceImpl implements HrReviewService {
 	@Override
 	public List<HrReviewMasterVO> selectReviewOnlyY() {
 		return hrReviewMapper.selectReviewOnlyY();
+	}
+
+	// 인사평가관리 - 다건조회 + 부서 팀장별 팀원수 계산, 리뷰작성 상태
+	@Override
+	public List<HrReviewMasterVO> selectCheckReviewCount(String companyCode, String userId) {
+		
+		int totalMemberCnt = hrReviewMapper.selectTeamCount(companyCode, userId);  // 전체 팀원수
+		List<HrReviewMasterVO> list = hrReviewMapper.selectReviewCount(companyCode, userId); // 리뷰작성
+		
+		for(HrReviewMasterVO hrReviewMasterVO : list) {
+			hrReviewMasterVO.setTotalMemberCnt(totalMemberCnt);
+			
+			if(hrReviewMasterVO.getCompletedCnt() == 0) {
+				hrReviewMasterVO.setReivewStatus("미평가");
+			} else if(hrReviewMasterVO.getCompletedCnt() < totalMemberCnt) {
+				hrReviewMasterVO.setReivewStatus("진행중");
+			} else {
+				hrReviewMasterVO.setReivewStatus("완료");
+			}
+		}
+		
+		return list;
+	}
+
+	
+	// 인사평가관리 - 팀원 목록
+	@Override
+	public List<HrReviewVO> selectTeamList(String companyCode, String raterUserId, String reviewMasterCode) {
+		return hrReviewMapper.selectTeamList(companyCode, raterUserId, reviewMasterCode);
 	}
 
 
