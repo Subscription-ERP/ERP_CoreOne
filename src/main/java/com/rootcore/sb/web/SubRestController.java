@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.sb.service.CompanyService;
 import com.rootcore.sb.service.PaymentService;
 import com.rootcore.sb.vo.CompanyVO;
+import com.rootcore.sb.vo.PaymentVO;
 import com.rootcore.sb.vo.SubscribeVO;
 
 import jakarta.servlet.http.HttpSession;
@@ -58,6 +60,11 @@ public class SubRestController {
     }
     
 	/* 회사(사용자) - 구독 상세 화면, 결제 이력 조회 */
- 
+    @GetMapping("/payments")
+    @ResponseBody
+    public List<PaymentVO> paymentHistory(HttpSession session) {
+        String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+        return paymentService.selectPaymentHistory(companyCode);
+    }
     
 }

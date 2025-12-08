@@ -1,252 +1,232 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>구독 관리</title>
+<title>구독 관리</title>
 
-    <style>
-        :root {
-            --primary: #2563eb;
-            --border: #e5e7eb;
-            --text-main: #111827;
-            --text-sub: #6b7280;
-        }
+<!-- Toast Grid CSS -->
+<link rel="stylesheet"
+	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 
-        /* 구독 상세 전체 래퍼 */
-        .subscription-wrapper {
-            padding: 16px 20px;
-        }
+<style>
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
-        .subscription-wrapper .subscription-card {
-            padding: 18px 20px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: #fff;
-            font-size: 15px;
-        }
+.page-container {
+	padding: 24px 32px;
+}
 
-        .subscription-wrapper .subscription-card-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
+.card {
+	background: #ffffff;
+	border-radius: 16px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+	display: flex;
+	gap: 32px;
+}
 
-        .subscription-wrapper .subscription-grid {
-            display: flex;
-            gap: 18px;
-            flex-wrap: nowrap;
-        }
+.card-section {
+	flex: 1;
+}
 
-        .subscription-wrapper .subscription-section {
-            flex: 1;
-            min-width: 260px;
-            padding-right: 12px;
-            border-right: 1px solid var(--border);
-        }
+.card-section.right {
+	text-align: right;
+}
 
-        .subscription-wrapper .subscription-section:last-child {
-            border-right: none;
-            padding-right: 0;
-        }
+h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 700;
+}
 
-        .subscription-wrapper .section-header {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-sub);
-        }
+h3 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+}
 
-        /* 플랜 배지 */
-        .subscription-wrapper .plan-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 18px;
-            background: #111827;
-            color: #fff;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
+.plan-badges {
+	margin-top: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
 
-        .subscription-wrapper .plan-name {
-            font-weight: 600;
-        }
+.badge-plan {
+	display: inline-block;
+	padding: 6px 16px;
+	border-radius: 999px;
+	background: #111827;
+	color: #ffffff;
+	font-weight: 600;
+}
 
-        .subscription-wrapper .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            background: rgba(22, 163, 74, 0.1);
-            color: #16a34a;
-        }
+.badge-status {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: #d1fae5;
+	color: #16a34a;
+	font-size: 12px;
+}
 
-        .subscription-wrapper .info-list div {
-            font-size: 14px;
-            margin: 2px 0;
-            color: var(--text-sub);
-        }
+.info-list {
+	margin-top: 16px;
+	font-size: 14px;
+	line-height: 1.7;
+}
 
-        /* 모듈칩 */
-        .subscription-wrapper .module-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
+.info-label {
+	color: #6b7280;
+}
 
-        .subscription-wrapper .chip {
-            padding: 6px 10px;
-            border-radius: 14px;
-            font-size: 13px;
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
-            color: var(--text-main);
-        }
+.service-tags {
+	margin-top: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
 
-        .subscription-wrapper .chip-active {
-            background: rgba(37, 99, 235, 0.1);
-            border-color: rgba(37, 99, 235, 0.4);
-            color: #1d4ed8;
-            font-weight: 500;
-        }
+.service-tag {
+	padding: 6px 14px;
+	border-radius: 999px;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+	font-size: 13px;
+}
 
-        .subscription-wrapper .usage-stats div,
-        .subscription-wrapper .payment-info div {
-            font-size: 14px;
-            margin: 2px 0;
-            color: var(--text-sub);
-        }
+.btn {
+	border-radius: 999px;
+	padding: 8px 16px;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+	cursor: pointer;
+	font-size: 13px;
+}
 
-        .subscription-wrapper .btn-row {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 14px;
-        }
+.btn+.btn {
+	margin-left: 8px;
+}
 
-        .subscription-wrapper .btn {
-            padding: 7px 14px;
-            border-radius: 18px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-        }
+.btn-primary {
+	background: #2563eb;
+	border-color: #2563eb;
+	color: #ffffff;
+}
 
-        .subscription-wrapper .btn-primary {
-            background: var(--primary);
-            color: #fff;
-        }
+.section-title {
+	margin: 32px 0 12px;
+	font-size: 18px;
+	font-weight: 600;
+}
 
-        .subscription-wrapper .btn-ghost {
-            background: #fff;
-            border: 1px solid var(--border);
-            color: var(--text-main);
-        }
-
-        @media (max-width: 900px) {
-            .subscription-wrapper .subscription-grid {
-                flex-wrap: wrap;
-            }
-
-            .subscription-wrapper .subscription-section {
-                border-right: none;
-                padding-right: 0;
-                border-bottom: 1px solid var(--border);
-                padding-bottom: 12px;
-                margin-bottom: 8px;
-            }
-
-            .subscription-wrapper .subscription-section:last-child {
-                border-bottom: none;
-                margin-bottom: 0;
-            }
-
-            .subscription-wrapper .btn-row {
-                justify-content: flex-start;
-            }
-        }
-    </style>
+/* Toast Grid를 카드처럼 보이게 */
+#paymentGrid {
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+}
+</style>
 </head>
 
 <body>
-<div layout:fragment="content">
+	<div layout:fragment="content">
+		<div class="page-container">
 
-    <div class="subscription-wrapper">
+			<!-- ========= 상단 구독 상세 ========= -->
+			<div class="card">
+				<!-- 왼쪽: 구독 상품 정보 -->
+				<div class="card-section">
+					<h2>구독 상세</h2>
 
-        <section class="subscription-card">
-            <h2 class="subscription-card-title">구독 상세</h2>
+					<div class="plan-badges">
+						<!-- 요금제 이름 / 금액 -->
+						<span class="badge-plan"
+							th:text="${subDetail.planCode} + ' 월 ' + ${#numbers.formatInteger(subDetail.planPrice, 0, 'COMMA')} + '원'">
+							Essential 월 9,900원 </span>
 
-            <div class="subscription-grid">
+						<!-- 구독 상태 + 남은일수 -->
+						<span class="badge-status"
+							th:text="${subDetail.subsStatusLabel} + ' · D-' + ${subDetail.remainDays}">
+							구독중 · D-30 </span>
+					</div>
 
-                <!-- 왼쪽 : 구독 상품 (더미데이터) -->
-                <div class="subscription-section">
-                    <div class="section-header">구독 상품</div>
+					<div class="info-list">
+						<div>
+							<span class="info-label">구독 기간 : </span> <span
+								th:text="${subDetail.startDate}">2025-01-02</span> ~ <span
+								th:text="${subDetail.endDate}">2026-01-01</span>
+						</div>
+						<div>
+							<span class="info-label">사용자 수 : </span> <span
+								th:text="${subDetail.currentUserCount}">35명</span>
 
-                    <div class="plan-badge">
-                        <span class="plan-name">Essential</span>
-                        <span class="plan-price">월 9,900원</span>
-                    </div>
+						</div>
+						<div>
+							<span class="info-label">다음 결제일 : </span> <span
+								th:text="${subDetail.nextPayment}">2026-01-02</span>
+						</div>
+					</div>
+				</div>
 
-                    <div class="status-badge">구독중 · D-30</div>
+				<!-- 가운데: 사용 중인 서비스 -->
+				<div class="card-section">
+					<h3>사용 중인 서비스</h3>
+					<div class="service-tags">
+						<span class="service-tag">회계</span> <span class="service-tag">인사</span>
+						<span class="service-tag">영업</span>
+					</div>
+				</div>
 
-                    <div class="info-list">
-                        <div>구독 기간 : 2025-01-02 ~ 2026-01-01</div>
-                        <div>사용자 수 : 35 / 50명</div>
-                        <div>요금제 유형 : 월 단위 선불</div>
-                    </div>
-                </div>
+				<!-- 오른쪽: 결제 정보 -->
+				<div class="card-section right">
+					<h3>결제 정보</h3>
 
-                <!-- 가운데 : 사용 중인 서비스 (더미데이터) -->
-                <div class="subscription-section">
-                    <div class="section-header">사용 중인 서비스</div>
+					<div class="info-list" style="text-align: left;">
+						<div>
+							<span class="info-label">결제 수단 : </span> <span
+								th:text="${subDetail.paymentMethod}"> 토스페이먼츠(****1234) </span>
+						</div>
+						<div>
+							<span class="info-label">결제 주기 : </span> <span
+								th:text="${subDetail.billingPeriod}">월 결제</span>
+						</div>
+						<div>
+							<span class="info-label">다음 결제일 : </span> <span
+								th:text="${subDetail.nextPayment}">2025-11-24</span>
+						</div>
+						<div>
+							<span class="info-label">최근 결제일 : </span> <span
+								th:text="${subDetail.recentPayment}">2025-10-24</span> (<span
+								th:text="${subDetail.PaymentStat}">결제완료</span>)
+						</div>
+					</div>
 
-                    <div class="module-chips">
-                        <span class="chip chip-active">회계</span>
-                        <span class="chip chip-active">인사</span>
-                        <span class="chip chip-active">영업</span>
-                    </div>
+					<div style="margin-top: 12px;">
+						<button class="btn">영수증 보기</button>
+						<button class="btn">세금계산서</button>
+					</div>
+					<div style="margin-top: 8px;">
+						<button class="btn btn-primary">결제하기</button>
+						<button class="btn">플랜 변경</button>
+					</div>
+				</div>
+			</div>
 
-                    <div class="usage-stats">
-                        <div>전표 건수 : 1,230건</div>
-                        <div>근태 기록 : 320건</div>
-                    </div>
-                </div>
+			<!-- ========= 하단 결제 이력 ========= -->
+			<h2 class="section-title">결제 이력</h2>
+			<div id="paymentGrid"></div>
 
-                <!-- 오른쪽 : 결제 정보 (더미데이터) -->
-                <div class="subscription-section">
-                    <div class="section-header">결제 정보</div>
+		</div>
 
-                    <div class="payment-info">
-                        <div>결제 수단 : 토스페이먼츠(****-1234)</div>
-                        <div>결제 주기 : 월 결제</div>
-                        <div>다음 결제일 : 2025-11-24</div>
-                        <div>최근 결제일 : 2025-10-24 (결제완료)</div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button type="button" class="btn btn-ghost">영수증 보기</button>
-                        <button type="button" class="btn btn-ghost">세금계산서</button>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="btn-row">
-                <button type="button" class="btn btn-primary">결제하기</button>
-                <button type="button" class="btn btn-ghost">플랜 변경</button>
-            </div>
-        </section>
-
-    </div>
-
-</div>
+		<!-- Toast Grid JS -->
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<!-- 결제이력용 JS -->
+		<script th:src="@{/js/sbUserManage.js}"></script>
+	</div>
 </body>
 </html>

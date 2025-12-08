@@ -62,5 +62,4 @@ public class FiRestController {
     	return creditService.mergeCredit(param);
     }
     
-    
 }

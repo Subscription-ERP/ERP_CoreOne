@@ -1,11 +1,14 @@
 package com.rootcore.sb.web;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.rootcore.sb.service.PaymentService;
+import com.rootcore.sb.vo.PaymentVO;
 import com.rootcore.sb.vo.SubscribeVO;
 
 import jakarta.servlet.http.HttpSession;
@@ -33,6 +36,7 @@ public class SubController {
 	    public String UserManagePage(HttpSession session, Model model) {
 
 	        String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+	        System.out.println("로그인한 회사코드" + companyCode);
 
 //	        if (companyCode == null) {
 //	            throw new RuntimeException("로그인 정보가 없습니다.");
@@ -40,6 +44,7 @@ public class SubController {
 
 	        // ★ 타임리프에서 사용할 상세 정보
 	        SubscribeVO subDetail = paymentService.selectSubDetail(companyCode);
+	        
 	        model.addAttribute("subDetail", subDetail);
 
 	        return "sb/sbUserManage"; // 타임리프 HTML 렌더링

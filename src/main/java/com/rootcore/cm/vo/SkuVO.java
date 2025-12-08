@@ -12,6 +12,7 @@ public class SkuVO {
     private String skuType;         // 품목분류
     private String spec;            // 규격
     private String unit;            // 단위
+    private int unitPrice;			// 단가
     private String remark;          // 비고
     private String useYn;           // 사용여부
     private String taxYn;           // 과세여부
@@ -19,4 +20,8 @@ public class SkuVO {
     private Date createDate;        // 생성일자
     private String updatedBy;       // 수정자
     private Date updateDate;        // 수정일자
+    
+    private String unitPriceType;   // 단가유형
+    private String typeName;        // 단가유형이름
+    private int unitPrice;          // 단가
 }

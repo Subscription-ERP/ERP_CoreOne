@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.AnnualManageMapper">
+	<!-- 사원연차신청이력조회 -->
+	<select id="selectAnnualManageList" resultType="AnnualLeaveDetailVO" parameterType="AnnualLeaveDetailVO">
+		SELECT ald.annual_leave_code, -- 연차관리코드
+		       ald.annual_leave_detail_seq, -- 연차상세관리번호
+		       al.user_id, -- 사번
+		       um.user_name, -- 성명
+		       dm.dept_name, -- 부서명
+		       cmcj.code_name as job_title, -- 직위직급
+		       cmcl.code_name as leave_type, -- 신청구분
+		       ald.used_days, -- 사용일수
+		       ald.leave_start_date, -- 연차시작일
+		       ald.leave_end_date, -- 연차종료일
+		       ald.leave_apply_date, -- 연차신청일
+		       ald.rm -- 사유
+		FROM   tb_annual_leave_detail ald
+		       JOIN tb_annual_leave al
+		       ON al.annual_leave_code = ald.annual_leave_code
+		       JOIN tb_user_master um
+		       ON um.user_id = al.user_id
+		       JOIN tb_dept_master dm
+		       ON dm.dept_code = um.dept
+		       JOIN tb_cm_code cmcj
+		       ON cmcj.code = um.job_title
+		       JOIN tb_cm_code cmcl
+		       ON cmcl.code = ald.leave_type
+		WHERE  1=1
+		<if test="userId != null and userId != '' " >
+          AND  al.user_id = #{userId}
+		</if>
+	</select>
+	
+	<select id="selectmyAnnualStatus" resultType="AnnualLeaveVO" parameterType="AnnualLeaveVO">
+		SELECT al.annual_leave_code,
+		       al.company_code,
+		       al.user_id,
+		       al.grant_year,
+		       al.total_grant_days,
+		       al.total_used_days,
+		       al.remaining_days,
+		       al.expiry_date,       
+		       um.user_name,
+		       dm.dept_name,
+		       ccj.code_name as job_title
+		FROM   tb_annual_leave al
+		       JOIN tb_user_master um
+		       ON um.user_id = al.user_id
+		       JOIN tb_dept_master dm
+		       ON dm.dept_code = um.dept
+		       JOIN tb_cm_code ccj
+		       ON ccj.code = um.job_title
+		WHERE  1=1
+		  AND  al.grant_year = TO_CHAR(sysdate, 'yyyy')
+		<if test="userId != null and userId != '' ">
+		  AND  al.user_id = #{userId}
+		</if>
+	</select>
+	
+	<insert id="insertmyAnnualApply" parameterType="AnnualLeaveDetailVO">
+		
+	</insert>
+</mapper>

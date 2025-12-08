@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>수주 조회</title>
+
+    <link rel="stylesheet" th:href="@{/css/modal/custModal.css}">
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+</head>
+
+<body th:fragment="inOrdModal">
+
+<div id="inOrdModal" class="modal-layer" hidden>
+    <div class="modal-layer__backdrop"></div>
+
+    <div class="modal-layer__dialog modal-layer__dialog--lg" style="width: 1000px;">
+
+        <!-- 헤더 -->
+        <header class="modal-card__header">
+            <h5 class="modal-card__title">수주 조회</h5>
+            <button type="button" class="btn-icon modal-card__btn-close" id="btnInOrdClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </header>
+
+        <!-- 본문 -->
+        <div class="modal-card__body">
+
+            <!-- 검색 영역 -->
+            <div class="modal-history__info-row">
+
+                <div class="modal-history__field col-auto">
+
+                    <span class="modal-history__label" style="width: 90px">거래처코드</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+                        <input type="text" id="schInOrdCustCode" class="form-control input-base">
+                    </span>
+
+                    <span class="modal-history__label" style="width: 80px">거래처명</span>
+                    <span class="modal-history__value" style="width: 150px; padding: 0;">
+                        <input type="text" id="schInOrdCustName" class="form-control input-base">
+                    </span>
+
+                </div>
+
+                <button type="button" id="btnInOrdSearch" class="btn btn-white btn-inner modal-history__btn-print col-md-2">
+                    조회
+                </button>
+
+            </div>
+
+            <!-- Grid -->
+            <div class="form_grid sub-grid mt-2">
+                <div class="sub-grid__body">
+                    <div id="inOrdModalGrid"></div>
+                </div>
+            </div>
+
+            <!-- 선택 버튼 -->
+            <div class="d-flex justify-content-end mt-3">
+                <button type="button" id="btnInOrdSelect" class="btn btn-color btn-inner">선택</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/modal/inOrdModal.js}"></script>
+</body>
+</html>

@@ -2,57 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.sd.mapper.InOrdMapper">
 
-    <!-- 수주 상품 조회 -->
-    <select id="selectAllSku" resultType="SkuVO">
-        SELECT  sku.sku,
-                sku.sku_name,
-                sku.spec,
-                sku.unit,
-                unit.unit_price_type,
-                cmCode.code_name "type_name",
-                unit.unit_price
-        FROM tb_sku_master sku
-        JOIN tb_unit_price_master unit
-        ON sku.company_code = unit.company_code
-        AND sku.sku = unit.sku
-        JOIN tb_cm_code cmCode
-        ON unit.unit_price_type = cmCode.code
-        WHERE sku.sku_type = 'ITEM'
-        <where>
-            <if test="unitPriceType == 'SELL_UNIT' ">
-                AND unit_price_type = 'SELL_UNIT'
-            </if>
-            <if test="unitPriceType == 'BUY_UNIT' ">
-                AND unit_price_type = 'BUY_UNIT'
-            </if>
-        </where>
-    </select>
-
-    <!-- 품목 조회 ver2 -->
-    <select id="select2">
-        SELECT  sku.sku,        -- 품목코드
-                sku.sku_name,   -- 품목명
-                sku.spec,       -- 규격
-                sku.unit,       -- 단위
-                unit.unit_price_type,   -- 단가유형
-                cmCode.code_name,       -- 단가유형이름
-                unit.unit_price         -- 단가
-        FROM tb_sku_master sku
-        JOIN tb_unit_price_master unit
-          ON sku.sku = unit.sku
-        JOIN tb_cm_code cmCode
-          ON unit.unit_price_type = cmCode.code
-        WHERE sku.sku_type = 'ITEM'
-          AND unit.unit_price_type = 'SELL_UNIT'
-    </select>
-
     <!-- 수주 등록 -->
     <insert id="insertInOrd" parameterType="InOrdVO">
         <selectKey keyProperty="inordNo" resultType="string" order="BEFORE">
             SELECT FN_MAKE_DATE_CODE('INORD') FROM DUAL
         </selectKey>
 
-        ?INSERT InTO tb_inord (company_code,
+        INSERT INTO tb_inord (company_code,
                               inord_no,
                               inord_date,
                               due_date,
@@ -86,7 +42,7 @@
             SELECT FN_MAKE_DATE_CODE('INORD_DETAIL') FROM DUAL
         </selectKey>
 
-        ?INSERT INTO tb_inord_detail (inord_detail_no,
+        INSERT INTO tb_inord_detail (inord_detail_no,
                                      company_code,
                                      inord_no,
                                      sku,
@@ -112,4 +68,55 @@
                 SYSDATE)
     </insert>
 
+    <!-- 수주 기본 정보 불러오기 -->
+    <select id="selectInordHeaderList" resultType="InOrdVO">
+        SELECT *
+        FROM tb_inord
+    </select>
+
+    <!-- 수주 세부 정보 불러오기 -->
+
+	<select id="SelectInOrdDetailList" parameterType="InOrdDetailVO" resultType="InOrdDetailVO">
+		SELECT ior.company_code
+		     , ior.inord_no
+		     , ior.inord_date
+		     , ior.cust_code
+		     , ior.cust_name
+		     , iod.inord_detail_no
+		     , iod.sku
+		     , sku.sku_name
+		     , iod.qty
+		     , iod.unit_price
+		     , nvl(iod.supply_price, 0) supply_price
+		     , nvl(iod.surtax, 0) surtax
+		     , nvl(iod.price, 0) price
+		  FROM tb_inord ior
+		  JOIN tb_inord_detail iod
+		    ON ior.company_code = iod.company_code
+		   AND ior.inord_no = iod.inord_no
+		  JOIN tb_sku_master sku
+		    ON iod.company_code = sku.company_code
+		   AND iod.sku = sku.sku
+		 WHERE 1=1
+		 <if test="custCode != null and custCode != ''">
+		   AND ior.cust_code LIKE '%' || #{custCode} || '%'
+		 </if>
+		 <if test="custName != null and custName != ''">
+		   AND ior.cust_name LIKE '%' || #{custName} || '%'
+		 </if>
+		 <if test="sku != null and sku !='' ">
+		   AND iod.sku like '%' || #{sku} || '%'
+		 </if>
+		 <if test="skuName != null and skuName !='' ">
+		   AND sku.sku_name like '%'|| #{skuName} ||'%'
+		 </if>
+		 <if test="searchDiv == 'Modal'">
+		   AND iod.invoice_status = '0'
+		 </if>
+		 <if test="searchDiv == 'Modal'">
+		   AND iod.output_status != '0'
+		 </if>
+		   AND ior.inord_date = ior.inord_date
+		   AND ior.inord_no = ior.inord_no
+	</select>
 </mapper>

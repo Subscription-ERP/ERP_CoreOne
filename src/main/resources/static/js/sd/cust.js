@@ -240,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (custName === "") {
       alert("상호(이름)을 입력하시오");
+      // showToast('상호(이름)을 입력하시오', 'warning');
       return false;
     } else if (ceoName === "") {
       alert("대표자명을 입력하시오");
