@@ -15,5 +15,11 @@ public interface AnnualManageMapper {
 
 	// 연차신청
 	int insertmyAnnualApply(AnnualLeaveDetailVO param);
+	
+	// 연차신청시 연차관리테이블 업데이트
+	int updateAnnualApply(AnnualLeaveDetailVO param);
+	
+	// 연차신청시 근태테이블에 출퇴근기록 insert
+	int insertAttendance(AnnualLeaveDetailVO param);
 
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.hr.mapper.AnnualManageMapper">
+
 	<!-- 사원연차신청이력조회 -->
 	<select id="selectAnnualManageList" resultType="AnnualLeaveDetailVO" parameterType="AnnualLeaveDetailVO">
 		SELECT ald.annual_leave_code, -- 연차관리코드
@@ -11,8 +12,8 @@
 		       cmcj.code_name as job_title, -- 직위직급
 		       cmcl.code_name as leave_type, -- 신청구분
 		       ald.used_days, -- 사용일수
-		       ald.leave_start_date, -- 연차시작일
-		       ald.leave_end_date, -- 연차종료일
+		       ald.leave_start_date as annualStartDate, -- 연차시작일
+		       ald.leave_end_date as annualEndDate, -- 연차종료일
 		       ald.leave_apply_date, -- 연차신청일
 		       ald.rm -- 사유
 		FROM   tb_annual_leave_detail ald
@@ -32,6 +33,7 @@
 		</if>
 	</select>
 	
+	<!-- 내연차현황 -->
 	<select id="selectmyAnnualStatus" resultType="AnnualLeaveVO" parameterType="AnnualLeaveVO">
 		SELECT al.annual_leave_code,
 		       al.company_code,
@@ -58,7 +60,97 @@
 		</if>
 	</select>
 	
+	<!-- 사원연차신청등록, 연차상세관리 테이블 insert -->
 	<insert id="insertmyAnnualApply" parameterType="AnnualLeaveDetailVO">
-		
+		INSERT INTO tb_annual_leave_detail(annual_leave_detail_seq,
+										   annual_leave_code,
+		                                   company_code,
+		                                   leave_type,
+		                                   used_days,
+		                                   leave_start_date,
+		                                   leave_end_date,
+		                                   rm)
+		VALUES (seq_annual_leave_detail.NEXTVAL,
+				(SELECT annual_leave_code
+		         FROM   tb_annual_leave
+		         WHERE  user_id = #{userId}
+		         AND  grant_year = TO_CHAR(sysdate, 'yyyy')),
+		         '0000',
+		         #{leaveType},
+		         #{usedDays},
+		         <choose>
+		        	<when test="leaveType == 'b1'">
+				        #{annualStartDate},
+				        #{annualEndDate},
+		            </when>
+		            <when test="leaveType == 'b2'">
+		                TO_DATE(#{annualStartDate} || ' 09:00:00', 'RRRR-MM-DD HH24:MI:SS'),
+		                TO_DATE(#{annualStartDate} || ' 13:00:00', 'RRRR-MM-DD HH24:MI:SS'),
+		            </when>
+		            <when test="leaveType == 'b3'">
+	                    TO_DATE(#{annualStartDate} || ' 14:00:00', 'RRRR-MM-DD HH24:MI:SS'),
+	                    TO_DATE(#{annualStartDate} || ' 18:00:00', 'RRRR-MM-DD HH24:MI:SS'),
+	                </when>
+		          </choose>
+		         #{rm})
 	</insert>
+
+	<!-- 연차관리테이블 update -->
+	<update id="updateAnnualApply" parameterType="AnnualLeaveDetailVO">
+        UPDATE tb_annual_leave
+        SET    total_used_days = total_used_days + #{usedDays},
+               remaining_days = remaining_days - #{usedDays}
+        WHERE  user_id = #{userId}
+          AND  grant_year = TO_CHAR(sysdate, 'yyyy')
+    </update>
+	
+	<!-- 연차신청에 따른 근태기록테이블 insert -->    
+    <insert id="insertAttendance" parameterType="AnnualLeaveDetailVO">
+	    INSERT INTO tb_attendance (
+	        company_code,
+	        atten_code,
+	        user_id,
+	        work_date,
+	        attend_type,
+	        in_time,
+	        out_time
+	    ) VALUES (
+	        '0000',
+	        fn_make_date_code('ATTEN'),
+	        #{userId},
+	        TO_DATE(#{annualStartDate}, 'YYYY-MM-DD'),
+	        <choose>
+	        	<when test="leaveType == 'b1'">
+	                (SELECT a.code
+		 			 FROM   tb_cm_code a
+					       JOIN tb_cm_code b
+					       ON a.code_name = b.code_name
+					 WHERE  a.group_code = '0H'
+					   AND  b.code = #{leaveType}
+					   AND  a.code_name = b.code_name),
+			        NULL,
+	                NULL
+	            </when>
+	            <when test="leaveType == 'b2'">
+	            	(SELECT a.code
+ 					 FROM   tb_cm_code a
+					 JOIN   tb_cm_code b ON a.code_name = SUBSTR(b.code_name, 3)
+					 WHERE  a.group_code = '0H'
+					   AND  b.code = #{leaveType}),
+	                TO_DATE(#{annualStartDate} || ' 09:00:00', 'RRRR-MM-DD HH24:MI:SS'),
+	                TO_DATE(#{annualStartDate} || ' 13:00:00', 'RRRR-MM-DD HH24:MI:SS')
+	            </when>
+	            <when test="leaveType == 'b3'">
+	            	(SELECT a.code
+ 					 FROM   tb_cm_code a
+					 JOIN   tb_cm_code b ON a.code_name = SUBSTR(b.code_name, 3)
+					 WHERE  a.group_code = '0H'
+					   AND  b.code = #{leaveType}),
+                    TO_DATE(#{annualStartDate} || ' 14:00:00', 'RRRR-MM-DD HH24:MI:SS'),
+                    TO_DATE(#{annualStartDate} || ' 18:00:00', 'RRRR-MM-DD HH24:MI:SS')
+                </when>
+	        </choose>
+	    )
+</insert>
+          
 </mapper>
