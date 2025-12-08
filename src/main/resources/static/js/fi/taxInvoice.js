@@ -121,33 +121,29 @@ function updateTotalAmount() {
     let totalTax = 0;
 
     grid.getData().forEach(row => {
-        totalSupply += Number(row.supplyPrice || 0);
-        totalTax += Number(row.surtax || 0);
+        totalSupply += Number((row.supplyPrice || "0").toString().replace(/,/g, ""));
+        totalTax += Number((row.surtax || "0").toString().replace(/,/g, ""));
     });
 
     document.getElementById("supplyAmount").value = totalSupply.toLocaleString();
     document.getElementById("taxAmount").value = totalTax.toLocaleString();
 }
 
+
 function addEmptyRow() {
     grid.appendRow({
-        sku: '',
-        skuName: '',
-        inordDate: '',
-        qty: '',
-        unitPrice: '',
-        supplyPrice: '',
-        surtax: '',
-		inordNo:''
+        sku: "",
+        skuName: "",
+        qty: "",
+        unitPrice: "",
+        supplyPrice: "",
+        surtax: ""
     });
 
-    // 마지막 행의 rowKey 가져오기
-    const data = grid.getData();
-    const lastRow = data[data.length - 1];
-
-    // 포커스를 sku(품번) 셀로 이동
-    if (lastRow) {
-        grid.focus(lastRow.rowKey, 'sku');
+    const rows = grid.getData();
+    const last = rows[rows.length - 1];
+    if (last) {
+        grid.focus(last.rowKey, "sku");
     }
 }
 
@@ -197,10 +193,141 @@ function loadSkuInfo(rowKey, sku) {
             alert("품번 조회 중 오류가 발생했습니다.");
         });
 }
+function loadCompanyInfo(companyCode) {
+
+    fetch(`/api/com/baseinfo/${companyCode}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log("회사 기본정보:", data);
+
+            // ★ BaseInfoVO 기준으로 필드 매핑
+            document.getElementById("fromcompanyname").value = data.companyName;
+            document.getElementById("fromindustrytype").value = data.industryType;
+            document.getElementById("frombusinesstype").value = data.businessType;
+            document.getElementById("frommanagername").value = data.managerName;
+            document.getElementById("frombno").value = data.bno;
+            document.getElementById("fromcompanyaddress").value = data.companyAddress;
+        })
+        .catch(err => {
+            console.error("회사정보 조회 오류:", err);
+            alert("회사 기본정보를 불러오지 못했습니다.");
+        });
+}
+function saveInvoice() {
+
+	const header = {
+	    companyCode: document.getElementById("loginCompanyCode").value,
+	    invoiceNo: document.getElementById("invoiceNo").value,
+	    // ✅ docDate → documentDate 로 변경
+	    documentDate: document.getElementById("documentDate").value,
+
+	    custCode: searchCustCode,
+
+	    // ✅ supply → totalSupplyPrice
+	    totalSupplyPrice: Number(
+	        document.getElementById("supplyAmount").value.replace(/,/g, "")
+	    ),
+
+	    // ✅ tax → totalTaxPrice
+	    totalTaxPrice: Number(
+	        document.getElementById("taxAmount").value.replace(/,/g, "")
+	    ),
+
+	    // ✅ total → totalAmount
+	    totalAmount: 0,
+
+	    // (요약은 VO에 summary 같은 필드가 있다면 거기에 맞춰 이름을 정리)
+	    summary: "세금계산서 자동저장",
+
+	    // ✅ userId → createdBy (DB 컬럼 CREATED_BY 기준)
+	    createdBy: document.getElementById("loginUserId").value
+	};
+
+	header.totalAmount = header.totalSupplyPrice + header.totalTaxPrice;
+    // ===== DETAIL 수집 ===== //
+    const rows = grid.getData();
+	const detailList = [];
+
+	rows.forEach((row, idx) => {
+	    if (!row.sku) return;
+
+	    detailList.push({
+	        // invoiceDetailNo 는 DB에서 시퀀스로 만든다면 안 보내셔도 됩니다.
+	        companyCode: header.companyCode,
+	        invoiceNo: header.invoiceNo,
+	        sku: row.sku,
+
+	        qty: Number(row.qty || 0),
+	        unitPrice: Number(row.unitPrice || 0),
+
+	        // ✅ supply  → supplyPrice
+	        supplyPrice: Number(
+	            (row.supplyPrice || "0").toString().replace(/,/g, "")
+	        ),
+
+	        // ✅ tax → taxPrice (그리드 컬럼명은 surtax지만, DB 컬럼은 TAX_PRICE)
+	        taxPrice: Number(
+	            (row.surtax || "0").toString().replace(/,/g, "")
+	        ),
+			inordNo : row.inordNo,
+	        // total 은 마스터의 TOTAL_AMOUNT 에 반영되므로 굳이 필드 만들 필요 없음
+	        createdBy: header.createdBy
+	    });
+	});
+
+    if (detailList.length === 0) {
+        showToast("저장할 출고 항목이 없습니다.", "warning");
+        return;
+    }
+
+    const param = {
+        header: header,
+        details: detailList
+    };
+	
+	console.log(param);
+
+    // ===== 서버 전송 ===== //
+    fetch("/api/fi/taxinvoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(param)
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert(
+                "세금계산서 저장 완료!\n" +
+                "세금계산서번호: " + result.invoiceNo + "\n" +
+                "전표번호: " + result.slipNo
+            );
+
+            document.getElementById("invoiceNo").value = result.invoiceNo;
+        } else {
+            alert(result.message || "저장 실패");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("저장 중 오류 발생");
+    });
+}
+
+
+function loadInvoiceNo() {
+    fetch("/api/fi/taxinvoice/no")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("invoiceNo").value = data.invoiceNo;
+        });
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-	//console.log("로그인 사용자:", LOGIN_USER_ID);
-	//console.log("회사코드:", LOGIN_COMPANY_CODE);
+	const companyCode = document.getElementById("loginCompanyCode").value;
+	console.log(companyCode);
+	if (companyCode) {
+	    loadCompanyInfo(companyCode);
+	}
 	const today = new Date().toISOString().split("T")[0];
 	document.getElementById("documentDate").value = today;
 	// 모달에서 거래처 값 불러오기
@@ -269,25 +396,23 @@ document.addEventListener("DOMContentLoaded", function () {
 	btnCustClose.addEventListener('click', closeCustModal);
 	backdrop.addEventListener('click', closeCustModal);
 	grid.on("afterChange", ev => {
-	    ev.changes.forEach(change => {
-	        const { rowKey, columnName, value } = change;
+		ev.changes.forEach(change => {
+		    const { rowKey, columnName } = change;
+		    const row = grid.getRow(rowKey);
 
-	        // 단가 또는 수량 입력 시 계산 수행
-	        if (columnName === "unitPrice" || columnName === "inOrdQty") {
-	            const row = grid.getRow(rowKey);
+		    const qty = Number(row.qty || row.inOrdQty || 0);
+		    const unit = Number(row.unitPrice || 0);
 
-	            const qty = Number(row.inOrdQty || 0);
-	            const unit = Number(row.unitPrice || 0);
+		    if (columnName === "qty" || columnName === "unitPrice") {
+		        const supply = qty * unit;
+		        const tax = Math.floor(supply * 0.1);
 
-	            const supply = qty * unit;
-	            const tax = Math.floor(supply * 0.1);
+		        grid.setValue(rowKey, "supplyPrice", supply);
+		        grid.setValue(rowKey, "surtax", tax);
 
-	            grid.setValue(rowKey, "supplyPrice", supply);
-	            grid.setValue(rowKey, "taxPrice", tax);
-
-	            updateTotalAmount();
-	        }
-	    });
+		        updateTotalAmount();
+		    }
+		});
 	});
 	grid.on('gridUpdated', () => {
 	    updateTotalAmount();
@@ -315,5 +440,6 @@ document.addEventListener("DOMContentLoaded", function () {
 	    updateInvoiceAmount();  // 합산 함수
 	    currentSkuRowKey = null;
 	};
+	document.getElementById("btnSave").addEventListener("click", saveInvoice);
 })
 // 배경 클릭 시 닫기 (옵션)

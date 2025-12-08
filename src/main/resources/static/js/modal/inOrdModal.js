@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
             { header: '수주일자', name: 'inordDate', minWidth: 120 },
             { header: '거래처코드', name: 'custCode', minWidth: 100 },
             { header: '거래처명', name: 'custName', minWidth: 150 },
+			{ header: '품번', name: 'sku', minWidth: 150 },
+			{ header: '품명', name: 'skuName', minWidth: 150 },
             { header: '수량', name: 'qty', minWidth: 80, align:'right' },
             { header: '금액', name: 'price', minWidth: 120, align:'right' }
         ],
