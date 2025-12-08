@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final MenuPermissionMapper menuPermissionMapper;
+    //private final MenuPermissionMapper menuPermissionMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -36,13 +36,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String companyCode = "0000";
 
         // 1) DB에서 권한 조회 (선택 사항 – 기존에 쓰던 로직 유지)
-        List<MenuAuthSaveVO> authList =
-                menuPermissionMapper.selectUserMenuAuth(companyCode, userId);
+       // List<MenuAuthSaveVO> authList =
+                //menuPermissionMapper.selectUserMenuAuth(companyCode, userId);
 
         // 2) 세션 저장
         session.setAttribute("LOGIN_USER_ID", userId);
         session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
-        session.setAttribute("USER_MENU_AUTH", authList);
+        //session.setAttribute("USER_MENU_AUTH", authList);
 
         // 3) 메인 페이지로 이동
         response.sendRedirect("/");

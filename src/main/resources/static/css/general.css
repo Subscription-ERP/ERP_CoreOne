@@ -33,6 +33,7 @@
 
   /* fonts */
   --font-base: "Noto Sans KR", "Roboto", sans-serif;
+  --fs-bb: 20px;
   --fs-b: 17px;
   --fs-n: 15px;
   --fs-s: 13px;

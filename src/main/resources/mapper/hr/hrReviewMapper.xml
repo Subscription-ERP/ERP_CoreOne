@@ -77,7 +77,156 @@
 		ORDER BY review_start_date desc
 	</select>
 
+	<!-- 인사평가 기준관리 - 등록(상위) -->
+	<insert id="insertReview" parameterType="HrReviewMasterVO">
+		<selectKey keyProperty="reviewMasterCode" order="BEFORE" resultType="String">
+			SELECT fn_make_date_code('REVIEW_MASTER') 
+			FROM dual
+		</selectKey>
+		
+		INSERT INTO tb_hr_review_master (
+		    company_code,
+		    review_master_code,
+		    review_master_name,
+		    review_start_date,
+		    review_end_date,
+		    use_yn,
+		    remark,
+		    created_by,
+		    create_date)
+		VALUES (
+			#{companyCode}, 
+			#{reviewMasterCode},
+			#{reviewMasterName}, 
+			#{reviewStartDate},
+			#{reviewEndDate}, 
+			#{useYn},
+			#{remark}, 
+			#{createdBy},
+			SYSDATE)
+	</insert>
+	
+	<!-- 인사평가 기준관리 - 등록(하위) -->
+	<insert id="insertEvalItem" parameterType="EvalItemVO">
+		<selectKey keyProperty="evalSeq" order="BEFORE" resultType="long">
+			SELECT eval_seq.nextval
+			FROM dual
+		</selectKey>
+		
+		INSERT INTO tb_eval_item (
+			eval_seq,
+			company_code,
+			review_master_code,
+			eval_name,
+			eval_detail,
+			eval_weight,
+			created_by,
+			create_date)
+		VALUES (
+			#{evalSeq},
+			#{companyCode},
+			#{reviewMasterCode},
+			#{evalName},
+			#{evalDetail},
+			#{evalWeight},
+			#{createdBy},
+			SYSDATE)
+	</insert>
+	
+	<!-- 인사평가 기준관리 - 수정(상위) -->
+	<update id="updateReview" parameterType="HrReviewMasterVO">
+		UPDATE tb_hr_review_master 
+		SET review_master_name = #{reviewMasterName},
+		    review_start_date = #{reviewStartDate},
+		    review_end_date = #{reviewEndDate},
+		    use_yn = #{useYn},
+		    remark = #{remark},
+			updated_by = #{updatedBy},
+			update_date = #{updateDate}
+		WHERE review_master_code = #{reviewMasterCode} 
+	</update>
+	
+	<!-- 인사평가 기준관리 - 수정을 위한 삭제(하위) -->
+	<delete id="deleteEvalItem">
+		DELETE FROM tb_eval_item
+		WHERE review_master_code = #{reviewMasterCode}
+		  AND company_code = #{companyCode}
+	</delete>
+	
+	
+	
+	
+	<!-- 인사평가 관리- 전체조회(Y만 검색) -->
+	<select id="selectReviewOnlyY" resultType="HrReviewMasterVO">
+		SELECT 
+			company_code,
+			review_master_code,
+			review_master_name,
+			review_start_date,
+			review_end_date,
+			use_yn,
+			remark
+		FROM tb_hr_review_master
+		WHERE use_yn = 'Y'
+	</select>
+	
+	<!-- 인사평가 관리 - 팀장 기준 템플릿별 상태 계산 -->
+	<select id="selectReviewSatus" parameterType="String">
+	    SELECT
+	        m.company_code,
+	        m.review_master_code,
+	        m.reivew_master_name,
+	        m.review_start_date,
+	        m.review_end_date,
+	
+	        NVL(tm.total_member_cnt, 0) AS total_member_cnt, 
+	        NVL(SUM(CASE WHEN r.review_status = '2' THEN 1 ELSE 0 END), 0) AS completed_cnt,
+	
+	        CASE
+	            WHEN NVL(COUNT(r.review_code), 0) = 0
+	                 THEN '미평가'
+	            WHEN NVL(SUM(CASE WHEN r.review_status = '2' THEN 1 ELSE 0 END), 0)
+	                   <![CDATA[ < ]]> NVL(tm.total_member_cnt, 0)
+	                 THEN '진행중'
+	            ELSE '완료'
+	        END AS review_status
+	    FROM tb_hr_review_master m
+	
+	    LEFT JOIN tb_hr_review r
+	      ON r.company_code       = m.company_code
+	     AND r.review_master_code = m.review_master_code
+	     AND r.rater_user_id      = #{raterUserId}
+	
+	    LEFT JOIN (
+	        SELECT
+	            leader.company_code,
+	            leader.user_id AS rater_user_id,
+	            COUNT(member.USER_ID) AS total_member_cnt
+	        FROM tb_user_master leader
+	        JOIN tb_user_master member
+	          ON member.company_code = leader.company_code
+	         AND member.dept         = leader.dept
+	         AND member.user_id <![CDATA[ <> ]]> leader.user_id   
+	        GROUP BY leader.company_code, 
+	                 leader.user_id
+	    ) tm
+	      ON tm.company_code = m.company_code
+	     AND tm.rater_user_id = #{raterUserId}
+	
+	    WHERE m.company_code = #{companyCode}
+	      AND m.use_yn = 'Y'
+	    GROUP BY
+	        m.company_code,
+	        m.review_master_code,
+	        m.Review_master_name,
+	        m.review_start_date,
+	        m.review_end_date,
+	        tm.total_member_cnt
+	    ORDER BY m.review_start_date DESC
+	</select>
 
-
-
+	
+	
+	
+	
 </mapper>

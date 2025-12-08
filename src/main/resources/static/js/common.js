@@ -158,19 +158,24 @@ function setupNativeDatePicker(wrapperId, inputId) {
 
 	// wrapper 아무 곳이나 클릭해도 달력 뜨게
 	wrapper.addEventListener('click', () => {
-		if (input.showPicker) {
-			input.showPicker();      // 크롬/엣지에서 달력 팝업
-		} else {
-			input.focus();           // 지원 안 하는 브라우저용 최소한의 처리
-		}
-	});
+	    if (input.showPicker) {
+	      try {
+	        input.showPicker();      // 크롬/엣지에서 달력 팝업
+	      } catch (e) {
+	        // 혹시나 또 막히면 조용히 무시하고 포커스만 줌
+	        input.focus();
+	      }
+	    } else {
+	      input.focus();             // 지원 안 하는 브라우저용
+	    }
+	  });
 
 	// input이 포커스를 얻었을 때도 자동으로 달력 띄우기 (원하면)
-	input.addEventListener('focus', () => {
+/*	input.addEventListener('focus', () => {
 		if (input.showPicker) {
 			input.showPicker();
 		}
-	});
+	});*/
 }
 
 

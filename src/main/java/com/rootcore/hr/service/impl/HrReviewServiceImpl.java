@@ -3,6 +3,7 @@ package com.rootcore.hr.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rootcore.hr.mapper.HrReviewMapper;
 import com.rootcore.hr.service.HrReviewService;
@@ -48,6 +49,59 @@ public class HrReviewServiceImpl implements HrReviewService {
 	public List<HrReviewMasterVO> searchHrReview(HrReviewMasterVO hrReviewMasterVO) {
 		return hrReviewMapper.searchHrReview(hrReviewMasterVO);
 	}
+
+	// 인사평가 기준관리 - 등록
+	@Transactional
+	@Override
+	public int registerReview(HrReviewMasterVO hrReviewMasterVO) {
+		
+		int reviewResult = hrReviewMapper.insertReview(hrReviewMasterVO);
+		if(reviewResult == 0) return 0;
+		
+		String companyCode = hrReviewMasterVO.getCompanyCode();
+		String reviewMasterCode = hrReviewMasterVO.getReviewMasterCode();
+		
+		if(hrReviewMasterVO.getEvalItemList() != null && !hrReviewMasterVO.getEvalItemList().isEmpty()) {
+			for(EvalItemVO eval : hrReviewMasterVO.getEvalItemList()) {
+				eval.setCompanyCode(companyCode);
+				eval.setReviewMasterCode(reviewMasterCode);
+				int evalResult = hrReviewMapper.insertEvalItem(eval);
+				if(evalResult == 0) return 0;
+			}
+		}		
+		return 1;
+	}
+
+	// 인사평가 기준관리 - 수정
+	@Transactional
+	@Override
+	public int modifyReview(HrReviewMasterVO hrReviewMasterVO) {
+		
+		int reviewResult = hrReviewMapper.updateReview(hrReviewMasterVO);
+		if(reviewResult == 0) return 0;
+		
+		String companyCode = hrReviewMasterVO.getCompanyCode();
+		String reviewMasterCode = hrReviewMasterVO.getReviewMasterCode();
+		
+        hrReviewMapper.deleteEvalItem(reviewMasterCode, companyCode); // 기존 평가항목 삭제
+		
+		if(hrReviewMasterVO.getEvalItemList() != null) {
+			for(EvalItemVO eval : hrReviewMasterVO.getEvalItemList()) {
+				eval.setCompanyCode(companyCode);
+				eval.setReviewMasterCode(reviewMasterCode);
+				int evalResult = hrReviewMapper.insertEvalItem(eval);
+				if(evalResult == 0) return 0;
+			}
+		}
+		return 1;
+	}
+
+	// 인사평가관리 - 다건조회
+	@Override
+	public List<HrReviewMasterVO> selectReviewOnlyY() {
+		return hrReviewMapper.selectReviewOnlyY();
+	}
+
 
 
 
