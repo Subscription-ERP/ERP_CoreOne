@@ -33,7 +33,7 @@ public class InOrdRestController {
 
     // 수주헤더조회
     @GetMapping("/info")
-    public List<InOrdVO>ninOrdSearch(InOrdVO inOrd) {
+    public List<InOrdVO> inOrdSearch(InOrdVO inOrd) {
         return inOrdService.getInOrd(inOrd);
     }
 
@@ -43,4 +43,9 @@ public class InOrdRestController {
 		return inOrdService.getInOrdDetail(InOrdDetail);
     }
 
+    // 수주출고처리
+    @GetMapping("/output")
+    public void inOrdOutPut(@RequestBody InOrdSave req) {
+        inOrdService.updateOutputStatus(String.valueOf(req.getInordNo()), req.getDetail());
+    }
 }

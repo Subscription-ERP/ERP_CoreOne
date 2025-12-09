@@ -37,4 +37,15 @@ public class InOrdServiceImpl implements InOrdService {
 		return inOrdMapper.SelectInOrdDetailList(info);
 	}
 
+    @Transactional
+    public void updateOutputStatus(String inordNo, List<InOrdDetailVO> details) {
+        for (InOrdDetailVO detail : details) {
+            detail.setInordNo(inordNo);
+            inOrdMapper.updateInordInvoice(detail);
+        }
+
+        // 2) 헤더 출고여부 재계산
+        inOrdMapper.updateInord(inordNo);
+    }
+
 }
