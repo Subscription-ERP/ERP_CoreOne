@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.rootcore.hr.vo.EvalItemVO;
 import com.rootcore.hr.vo.HrReviewMasterVO;
+import com.rootcore.hr.vo.HrReviewResultVO;
 import com.rootcore.hr.vo.HrReviewVO;
 
 public interface HrReviewMapper {
@@ -37,11 +38,8 @@ public interface HrReviewMapper {
                                     @Param("raterUserId") String raterUserId,
                                     @Param("reviewMasterCode") String reviewMasterCode); 
 	
-	// 인사평가관리 - 검색
-	List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName);
-	
-	
-	
+	int insertReviewItem(HrReviewVO hrReviewVO);                  // 인사평가관리 - 등록(기본정보) 
+	int insertReviewResult(HrReviewResultVO hrReviewResultVO);    // 인사평가관리 - 등록(평가결과)
 	
 	
 	

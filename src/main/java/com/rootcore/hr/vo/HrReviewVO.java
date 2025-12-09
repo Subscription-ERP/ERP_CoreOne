@@ -1,6 +1,7 @@
 package com.rootcore.hr.vo;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -13,7 +14,7 @@ public class HrReviewVO {
 	private String companyCode;            //회사코드_FK
 	private String reviewMasterCode;       //인사평가기준코드_FK
 	private String reviewCode;             //인사평가번호
-	private String revieName;              //인사평가명
+	private String reviewName;             //인사평가명
 	private String raterUserId;            //평가자_FK
 	private String targetUserId;           //피평가자_FK
 	private String reviewStatus;           //평가상태
@@ -31,5 +32,7 @@ public class HrReviewVO {
 	private String targetDeptName;          // 피평가자 부서명
 	private String targetJobTitle;          // 피평가자 직급/직위
 	private String targetJobTitleName;      // 피평가자 직급/직위명
+	
+	private List<HrReviewResultVO> hrReviewResultList;     // 평가결과 리스트
 	
 }
