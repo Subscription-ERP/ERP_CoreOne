@@ -68,6 +68,7 @@
                 SYSDATE)
     </insert>
 
+    <!-- 수주 헤더 정보 불러오기 -->
     <select id="SelectInOrdList" resultType="InOrdVO">
         SELECT ior.company_code,
                ior.inord_no,
@@ -141,10 +142,35 @@
 		   AND ior.inord_date = ior.inord_date
 		   AND ior.inord_no = ior.inord_no
 	</select>
-	
-	<update id="updateInordInvoice">
+
+    <!-- 수주 헤더 출고처리 -->
+    <update id="updateInord" parameterType="string">
+        UPDATE tb_inord header
+        SET header.output_status =
+                (
+                    SELECT CASE
+                               WHEN detail.done_cnt = detail.total_cnt THEN 2
+                               WHEN detail.done_cnt = 0 THEN 0
+                               ELSE 1
+                           END
+                    FROM (
+                            SELECT  company_code,
+                                     inord_no,
+                                     SUM(CASE WHEN output_status = '2' THEN 1 ELSE 0 END) AS done_cnt,
+                                     COUNT (*) AS total_cnt
+                             FROM tb_inord_detail
+                             GROUP BY company_code, inord_no
+                         ) detail
+                    WHERE detail.company_code = header.company_code
+                      AND detail.inord_no = header.inord_no
+                )
+        WHERE header.inord_no = #{inordNo}
+    </update>
+
+	<!-- 수주 상세 출고처리 -->
+	<update id="updateInordInvoice" parameterType="InOrdDetailVO">
 		UPDATE tb_inord_detail
-		   SET invoice_status = '1'
+		   SET invoice_status = '2'
 		 WHERE inord_no = #{inordNo}
 		   AND inord_detail_no = #{inordDetailNo}
 	</update>
