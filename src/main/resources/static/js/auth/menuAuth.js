@@ -5,7 +5,8 @@ console.log("✅ menuAuth.js 로드됨");
    ✅ 저장 유지
    ✅ 전체선택 / 전체해제 / 되돌리기 100% 정상
    ✅ Row 꼬임 없음
-   ✅ ✅ ADMIN이 아닐 경우 SYSTEM 탭에서 SYS-MENU-AUTH 제거
+   ✅ 탭 이동 시 체크 유지 (fullAuthData 동기화)
+   ✅ ADMIN 아닐 경우 SYSTEM 탭에서 SYS-MENU-AUTH 제거
 ============================================================ */
 
 let COMPANY_CODE = '';
@@ -108,6 +109,29 @@ function checkboxFormatter({ value }) {
 }
 
 // ============================================================
+// ✅ ✅ ✅ 핵심: 현재 탭 데이터 → 전체 데이터 동기화
+// ============================================================
+function syncCurrentTabToFullData() {
+
+    const currentRows = authGrid.getData();
+
+    currentRows.forEach(gridRow => {
+
+        const target = fullAuthData.find(full =>
+            full.menuCode === gridRow.menuCode &&
+            full.systemType === gridRow.systemType
+        );
+
+        if (target) {
+            target.readYn   = gridRow.readYn;
+            target.createYn = gridRow.createYn;
+            target.updateYn = gridRow.updateYn;
+            target.deleteYn = gridRow.deleteYn;
+        }
+    });
+}
+
+// ============================================================
 // ✅ 5) 버튼 이벤트
 // ============================================================
 function bindEvents() {
@@ -167,13 +191,16 @@ function bindEvents() {
         filterBySystemType();
     });
 
-    // ✅ 저장
+    // ✅ ✅ ✅ 저장 (저장 전에 전체 데이터 동기화)
     $(document).on("click", "#btnSaveAuth", function () {
+        syncCurrentTabToFullData();
         saveRoleAuth();
     });
 
-    // ✅ 탭 필터
+    // ✅ ✅ ✅ 탭 이동 (탭 이동 전에 전체 데이터 동기화)
     $(document).on("click", ".menu-tab-btn", function () {
+
+        syncCurrentTabToFullData();
 
         $(".menu-tab-btn").removeClass("active");
         $(this).addClass("active");
@@ -215,7 +242,7 @@ function loadRoleList() {
 }
 
 // ============================================================
-// ✅ 8) ROLE → MENU 권한 조회 (🔥 여기만 변경됨)
+// ✅ 8) ROLE → MENU 권한 조회
 // ============================================================
 function loadRoleMenuAuth(roleCode) {
 
@@ -231,7 +258,7 @@ function loadRoleMenuAuth(roleCode) {
             });
         }
 
-        // ✅ ✅ ✅ 핵심: ADMIN이 아니면 "SYS-MENU-AUTH" 제거
+        // ✅ ADMIN 아닐 경우 SYS-MENU-AUTH 제거
         if (roleCode !== "ADMIN") {
             data = data.filter(item => item.menuCode !== "SYS-MENU-AUTH");
         }
@@ -264,7 +291,7 @@ function saveRoleAuth() {
         return;
     }
 
-    const saveData = authGrid.getData().map(row => ({
+    const saveData = fullAuthData.map(row => ({
         companyCode: COMPANY_CODE,
         roleCode: selectedRole.roleCode,
         menuCode: row.menuCode,

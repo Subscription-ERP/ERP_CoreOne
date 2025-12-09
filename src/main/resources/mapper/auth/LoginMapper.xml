@@ -5,20 +5,27 @@
 <mapper namespace="com.rootcore.auth.mapper.LoginMapper">
 
 	<!-- 1. 사용자 조회 -->
+	<!--  TB_USER_MASTER에서 ROLE_CODE 조인 -->
 	<select id="findByUserId"
-		resultType="com.rootcore.auth.vo.LoginVO">
-		SELECT
-		COMPANY_CODE,
-		USER_ID,
-		USER_NAME,
-		PASSWORD AS dbPassword,
-		FAIL_COUNT,
-		STATUS,
-		LOCKED_DATE,
-		LAST_LOGIN
-		FROM TB_LOGIN_MASTER
-		WHERE USER_ID = #{userId}
-	</select>
+ resultType="com.rootcore.auth.vo.LoginVO">
+
+ SELECT
+   L.COMPANY_CODE,
+   L.USER_ID,
+   U.USER_NAME,
+   L.PASSWORD AS dbPassword,
+   L.FAIL_COUNT,
+   L.STATUS,
+   L.LOCKED_DATE,
+   L.LAST_LOGIN,
+   U.ROLE_CODE
+ FROM TB_LOGIN_MASTER L
+ JOIN TB_USER_MASTER U
+   ON L.USER_ID = U.USER_ID
+ WHERE L.USER_ID = #{userId}
+
+</select>
+
 
 	<!-- 2. 현재 실패 횟수 조회 -->
 	<select id="getFailCount" resultType="int">
@@ -102,15 +109,20 @@
 	</update>
 
 	<select id="selectLoginUser"
-		resultType="com.rootcore.auth.vo.LoginUserVO">
-		SELECT
-		COMPANY_CODE,
-		USER_ID,
-		USER_NAME,
-		USER_ROLE
-		FROM TB_USER
-		WHERE USER_ID = #{userId}
-	</select>
+    resultType="com.rootcore.auth.vo.LoginUserVO">
+
+    SELECT
+        COMPANY_CODE,
+        USER_ID,
+        USER_NAME,
+        ROLE_CODE
+    FROM TB_USER_MASTER
+    WHERE USER_ID = #{userId}
+
+</select>
+
+
+
 
 
 </mapper>

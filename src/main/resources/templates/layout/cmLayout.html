@@ -18,11 +18,15 @@
   <ul class="nav nav-treeview">
     <li class="nav-item"
     th:if="${session.LOGIN_ROLE_CODE == 'ADMIN'}">
+
   <a th:href="@{/auth/menu_permission}" class="nav-link">
     <i class="nav-icon bi bi-dash"></i>
     <p>사용자권한관리</p>
   </a>
+
 </li>
+
+
 
     <li class="nav-item">
       <a th:href="@{/cm/itemManage}" class="nav-link">
