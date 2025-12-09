@@ -2,6 +2,34 @@
  * annualManage.js
  */
 
+/* =============
+ * 조회 초기화 기능
+ * ============= */
+function resetAnnualSearchForm() {
+	document.querySelector('#annualStartDateSearch').value = '';
+	document.querySelector('#annualStartEndSearch').value = '';
+	document.querySelector('#leaveApplyStartDateSearch').value = '';
+	document.querySelector('#leaveApplyEndDateSearch').value = '';
+}
+
+/* ===========
+ * 조건 조회 기능
+ * =========== */
+function annualSearch() {
+	const annualStartDateSearch = document.querySelector('#annualStartDateSearch').value;
+	const annualStartEndSearch = document.querySelector('#annualStartEndSearch').value;
+	const leaveApplyStartDateSearch = document.querySelector('#leaveApplyStartDateSearch').value;
+	const leaveApplyEndDateSearch = document.querySelector('#leaveApplyEndDateSearch').value;
+
+	const data = {
+		annualStartDateSearch: annualStartDateSearch,
+		annualStartEndSearch: annualStartEndSearch,
+		leaveApplyStartDateSearch: leaveApplyStartDateSearch,
+		leaveApplyEndDateSearch: leaveApplyEndDateSearch,
+	}
+	annualDetailGrid.readData(1, data, true);
+}
+
 /* ============
  * 연차신청이력조회
  * ============ */
@@ -20,23 +48,23 @@ const annualDetailGrid = new tui.Grid({
 	bodyHeight: 240,
 	rowKey: "user_id",
 	columns: [
-		{ header: "사번", name: "userId", align: "center",sortable: true },
-		{ header: "성명", name: "userName",sortable: true },
-		{ header: "부서명", name: "deptName",sortable: true },
-		{ header: "직급", name: "jobTitle",sortable: true },
-		{ header: "신청구분", name: "leaveType",sortable: true },
-		{ header: "사용일수", name: "usedDays", align: "right",sortable: true },
-		{ header: "연차시작일", name: "annualStartDate", align: "center" ,sortable: true},
-		{ header: "연차종료일", name: "annualEndDate", align: "center",sortable: true },
-		{ header: "연차신청일", name: "leaveApplyDate", align: "center" ,sortable: true},
+		{ header: "사번", name: "userId", align: "center", sortable: true },
+		{ header: "성명", name: "userName", sortable: true },
+		{ header: "부서명", name: "deptName", sortable: true },
+		{ header: "직급", name: "jobTitle", sortable: true },
+		{ header: "신청구분", name: "leaveType", sortable: true },
+		{ header: "사용일수", name: "usedDays", align: "right", sortable: true },
+		{ header: "연차시작일", name: "annualStartDate", align: "center", sortable: true },
+		{ header: "연차종료일", name: "annualEndDate", align: "center", sortable: true },
+		{ header: "연차신청일", name: "leaveApplyDate", align: "center", sortable: true },
 		{ header: "사유", name: "rm" },
 	],
 }); // end of payrollDetailGrid
 
 
-/* ============================================
- * 연차일때는 date 반차일때는 datetime-local 로 설정
- * ============================================ */
+/* ==============
+ * 연차일때 반차일때
+ * ============== */
 function annualDateChange() {
 	const leaveType = document.getElementById("leaveType");
 
@@ -98,6 +126,16 @@ function submitAnnualForm() {
 		// 사유
 		const rm = document.getElementById("rm").value;
 
+		// 연차시작일, 연차종료일이 비어있는경우 유효성검사알림창 뜨면서 빠져나가기
+		if (annualStartDate === '' || !annualStartDate) {
+			showToast('시작일을 작성해주세요!', 'warning');
+			return;
+		}
+		if (leaveType === 'b1' && (annualEndDate === '' || !annualEndDate)) {
+			showToast('종료일을 작성해주세요!', 'warning');
+			return;
+		}
+
 		// 서버전송할때 보낼 데이터 객체 생성
 		const data = {
 			userId: userId,
@@ -120,12 +158,13 @@ function submitAnnualForm() {
 			.then((response) => response.text())
 			.then((result) => {
 				if (result > 2) {
-					showToast("건의 연차 신청이 완료되었습니다.", 'success');
+					showToast("연차 신청이 완료되었습니다.", 'success');
 					resetAnnualForm();
 					// 내 연차 현황 다시 불러오기
 					getmyAnnualStatus();
 					// 그리드 데이터 다시 불러오기
 					annualDetailGrid.readData();
+
 				} else {
 					showToast("등록 실패 : " + result.message, 'error');
 				}
@@ -150,6 +189,8 @@ function calculateUsedDays() {
 		// 종료일이 시작일 보다 빠른 경우
 		if (endDate < startDate) {
 			showToast("종료일이 시작일보다 빠를 수 없습니다.", 'warning');
+			document.querySelector('#annualStartDate').value = ''; // 연차시작일
+			document.querySelector('#annualEndDate').value = ''; // 연차종료일
 			return;
 		}
 
@@ -168,13 +209,12 @@ function calculateUsedDays() {
  * 연차신청 초기화 버튼 
  * ================ */
 function resetAnnualForm() {
-	document.querySelector('#btnReset').addEventListener('click', () => {
-		document.querySelector('#leaveType').value = 'b1'; // 신청구분
-		document.querySelector('#annualStartDate').value = ''; // 연차시작일
-		document.querySelector('#annualEndDate').value = ''; // 연차종료일
-		document.querySelector('#rm').value = ''; // 사유
-	})
+	document.querySelector('#leaveType').value = 'b1'; // 신청구분
+	document.querySelector('#annualStartDate').value = ''; // 연차시작일
+	document.querySelector('#annualEndDate').value = ''; // 연차종료일
+	document.querySelector('#rm').value = ''; // 사유
 }
+
 
 /* ==============
  * 내 연차 현황 함수
@@ -204,11 +244,12 @@ function getmyAnnualStatus() {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-
 	/* ==================
 	 * 연차신청 초기화 버튼
 	 * ================== */
-	resetAnnualForm();
+	document.querySelector('#btnReset').addEventListener('click', () => {
+		resetAnnualForm();
+	});
 
 	/* ==================
 	 * 신청구분 (공통코드)
@@ -221,10 +262,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ================== */
 	getmyAnnualStatus();
 
-
-	/* ===================
+	/* =============================
 	 * 날짜 변경 시 자동 계산 이벤트 리스너
-	 * =================== */
+	 * ============================= */
 	const startInput = document.querySelector('#annualStartDate');
 	const endInput = document.querySelector('#annualEndDate');
 	startInput.addEventListener('change', calculateUsedDays);
@@ -250,4 +290,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * 연차신청 저장 버튼
 	 * =============== */
 	submitAnnualForm();
+
+	/* ===================
+	 * 연차신청이력조회 조회버튼
+	 * =================== */
+	document.querySelector('#btnAnnualManageSearch').addEventListener('click', () => {
+		console.log('클릭');
+		annualSearch();
+	})
+	
+	/* ====================
+	 * 조회에 초기화 버튼 활성화
+	 * ==================== */
+	document.querySelector('#btnAnnualManageReset').addEventListener('click', () => {
+		resetAnnualSearchForm();	
+	})
+	
 });
