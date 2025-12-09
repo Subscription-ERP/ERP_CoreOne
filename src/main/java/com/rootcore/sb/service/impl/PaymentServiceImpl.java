@@ -2,6 +2,7 @@ package com.rootcore.sb.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PaymentVO;
 import com.rootcore.sb.vo.PlanVO;
 import com.rootcore.sb.vo.SubscribeVO;
+import com.rootcore.sb.vo.TossBillingConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
 
@@ -101,16 +103,16 @@ public class PaymentServiceImpl implements PaymentService {
 		tossResponse.setCardCompanyCode(cardCode); // DB용 코드
 		// 회사등록
 		CompanyVO existCompany = companyMapper.selectCompany(company.getCompanyCode());
-		if(existCompany  == null) {
-		company.setCreatedBy("SYSTEM");
-		company.setCreateDate(LocalDateTime.now());
-		company.setUpdatedBy("SYSTEM");
-		company.setUpdateDate(LocalDateTime.now());
-		companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
+		if (existCompany == null) {
+			company.setCreatedBy("SYSTEM");
+			company.setCreateDate(LocalDateTime.now());
+			company.setUpdatedBy("SYSTEM");
+			company.setUpdateDate(LocalDateTime.now());
+			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
 			company = existCompany; // 기존 회사 정보 사용
 		}
-		
+
 		// 계약서 등록
 
 		contract.setCompanyCode(company.getCompanyCode());
@@ -126,6 +128,8 @@ public class PaymentServiceImpl implements PaymentService {
 		contractMapper.insertContract(contract);
 
 		// 구독생성
+		LocalDate today = LocalDate.now();
+		LocalDateTime now = LocalDateTime.now();
 		SubscribeVO subscribe = new SubscribeVO();
 		subscribe.setCompanyCode(company.getCompanyCode());
 		subscribe.setSubsStatus("ACTIVE");
@@ -140,6 +144,8 @@ public class PaymentServiceImpl implements PaymentService {
 		// subscribe.setBillingPeriod();
 		subscribe.setCurrentUserCount(contract.getUserCount());
 		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
+		subscribe.setRecentBillingDate(today);
+		subscribe.setNextBillingDate(null);
 
 		subscribeMapper.insertSubscribe(subscribe);
 
@@ -148,6 +154,8 @@ public class PaymentServiceImpl implements PaymentService {
 		PaymentVO payment = new PaymentVO();
 
 		payment.setOrderId(order.getOrderId());
+		payment.setSubCode(subscribe.getSubCode());
+		payment.setCompanyCode(company.getCompanyCode());
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
@@ -156,15 +164,14 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
-		payment.setRecentPayment(LocalDate.now());
-		payment.setNextPayment(payment.getBillingEnd().plusDays(1));
+		payment.setPaymentType("NORMAL"); 
+		payment.setBillingKey(null);        
+
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
 		payment.setUpdatedBy("SYSTEM");
 		payment.setUpdateDate(LocalDateTime.now());
-		payment.setCompanyCode(company.getCompanyCode());
 		// 고정데이터로 들어감
-		payment.setSubCode(subscribe.getSubCode());
 		// payment객체안에 값들을 채워넣음
 //		paymentMapper.insertPayment(payment);
 		// 셋팅된 payment객체를 mapper로 전달
@@ -182,21 +189,53 @@ public class PaymentServiceImpl implements PaymentService {
 		return tossResponse;
 
 	}
-	
 
-	 @Override
-	    public List<SubscribeVO> selectInactiveSubListByComCode(String companyCode) {
-	        return paymentMapper.selectInactiveSubListByComCode(companyCode);
-	    }
+	@Override
+	public List<SubscribeVO> selectInactiveSubListByComCode(String companyCode) {
+		return paymentMapper.selectInactiveSubListByComCode(companyCode);
+	}
 
-	 @Override
-	 public SubscribeVO selectSubDetail(String companyCode) {
-		return paymentMapper.selectSubDetail(companyCode);
-	 }
+	@Override
+	public SubscribeVO selectSubDetail(String companyCode) {
+
+		// 1) DB에서 구독 상세 조회
+		SubscribeVO subDetail = paymentMapper.selectSubDetail(companyCode);
+
+		LocalDate today = LocalDate.now();
+		LocalDate endDate = subDetail.getSubsEnd();
+		long diff = ChronoUnit.DAYS.between(today, endDate);
+		subDetail.setRemainDays((int) diff);
+
+		String label;
+		if (diff > 0)
+			label = "구독중";
+		else if (diff == 0)
+			label = "오늘 만료";
+		else
+			label = "만료됨";
+
+		subDetail.setSubsStatusLabel(label);
+
+		// 4) 최종 가공된 VO 반환
+		return subDetail;
+	}
 
 	@Override
 	public List<PaymentVO> selectPaymentHistory(String companyCode) {
 		return paymentMapper.selectPaymentHistory(companyCode);
+	}
+
+	@Override
+	public TossConfirmResponseVO createSubscriptionWithBillingKey(String billingKey, String customerKey,
+			CompanyVO company, PlanVO plan, ContractVO contract) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

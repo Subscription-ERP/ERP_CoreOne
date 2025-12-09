@@ -12,160 +12,218 @@
 
 <style>
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* 페이지 전체가 아니라 중앙에 적당한 폭만 사용 */
 .page-container {
-    padding: 24px 32px;
-    max-width: 1120px;       /* ⭐ 카드 최대 폭 */
-    margin: 0 auto;          /* ⭐ 가운데 정렬 */
+	padding: 24px 32px;
+	max-width: 1120px; /* ⭐ 카드 최대 폭 */
+	margin: 0 auto; /* ⭐ 가운데 정렬 */
 }
 
 /* 상단 카드 레이아웃 */
 .card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 28px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-
-    display: grid;
-    grid-template-columns: 2fr 1.4fr 1.8fr;  /* ⭐ 왼/가운데/오른쪽 비율 */
-    column-gap: 24px;
-    align-items: flex-start;
+	background: #ffffff;
+	border-radius: 16px;
+	padding: 24px 28px;
+	box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+	display: grid;
+	grid-template-columns: 2fr 1.4fr 1.8fr; /* ⭐ 왼/가운데/오른쪽 비율 */
+	column-gap: 24px;
+	align-items: flex-start;
 }
 
 /* 각 섹션 공통 */
 .card-section {
-    text-align: left;
+	text-align: left;
 }
 
 /* 가운데/오른쪽에 세로 구분선 */
-.card-section + .card-section {
-    border-left: 1px solid #e5e7eb;
-    padding-left: 24px;
+.card-section+.card-section {
+	border-left: 1px solid #e5e7eb;
+	padding-left: 24px;
 }
 
 /* 오른쪽 결제 정보는 버튼만 오른쪽 정렬 */
 .card-section.right {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
+
 .card-section.right .info-list {
-    width: 100%;
+	width: 100%;
 }
+
 .card-section.right .info-list div {
-    display: flex;
-    gap: 4px;
+	display: flex;
+	gap: 4px;
 }
 
 /* 버튼 영역만 오른쪽 정렬 */
 .card-section.right .btn-area {
-    margin-top: 4px;
-    text-align: right;
+	margin-top: 4px;
+	text-align: right;
 }
 
 /* 타이틀들 */
 h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 700;
+	margin: 0;
+	font-size: 20px;
+	font-weight: 700;
 }
 
 h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
 }
 
 /* 요금제 뱃지 */
 .plan-badges {
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+	margin-top: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .badge-plan {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 999px;
-    background: #111827;
-    color: #ffffff;
-    font-weight: 600;
+	display: inline-block;
+	padding: 6px 16px;
+	border-radius: 999px;
+	background: #111827;
+	color: #ffffff;
+	font-weight: 600;
 }
 
 /* 상태 뱃지 (나중에 쓸 거면 유지) */
 .badge-status {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: #d1fae5;
-    color: #16a34a;
-    font-size: 12px;
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: #d1fae5;
+	color: #16a34a;
+	font-size: 12px;
 }
 
 .info-list {
-    margin-top: 16px;
-    font-size: 14px;
-    line-height: 1.7;
+	margin-top: 16px;
+	font-size: 14px;
+	line-height: 1.7;
 }
 
 .info-label {
-    color: #6b7280;
+	color: #6b7280;
 }
 
 /* 사용 중인 서비스 태그 */
 .service-tags {
-    margin-top: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+	margin-top: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 
 .service-tag {
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    font-size: 13px;
+	padding: 6px 14px;
+	border-radius: 999px;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+	font-size: 13px;
 }
 
 /* 버튼 */
 .btn {
-    border-radius: 999px;
-    padding: 8px 16px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    cursor: pointer;
-    font-size: 13px;
+	border-radius: 999px;
+	padding: 8px 16px;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+	cursor: pointer;
+	font-size: 13px;
 }
 
-.btn + .btn {
-    margin-left: 8px;
+.btn+.btn {
+	margin-left: 8px;
 }
 
 .btn-primary {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: #ffffff;
+	background: #2563eb;
+	border-color: #2563eb;
+	color: #ffffff;
 }
 
 /* 아래 “결제 이력” 타이틀 */
 .section-title {
-    margin: 32px 0 12px;
-    font-size: 18px;
-    font-weight: 600;
+	margin: 32px 0 12px;
+	font-size: 18px;
+	font-weight: 600;
 }
 
 #paymentGrid {
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid #e5e7eb;
+	background: #ffffff;
+}
+/* 가운데 서비스 영역 높이 */
+.card-section.middle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 220px; /* ⭐ 오른쪽 섹션과 동일한 높이 확보 */
 }
 
+/* 제목 가운데 정렬 */
+.card-section.middle h3 {
+    text-align: center;
+    width: 100%;
+}
+
+/* 태그 중앙 정렬 */
+.card-section.middle .service-tags {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+}
+
+/* 버튼을 아래쪽에 자연스럽게 배치 */
+.card-section.middle .btn-area {
+    margin-top: auto;
+    padding-bottom: 6px; /* ⭐ 버튼이 너무 위로 붙는 문제 해결 */
+    text-align: center;
+    width: 100%;
+}
+
+/* 오른쪽 버튼 높이를 결제하기 버튼(약 38px) 에 맞춘다 */
+.card-section.right .btn {
+    height: 38px !important;
+    padding: 0 18px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+/* 모든 버튼 공통 높이 통일 */
+.btn,
+.btn-primary {
+    display: inline-flex !important;     /* 내부 텍스트 수직 가운데 */
+    align-items: center !important;
+    justify-content: center !important;
+
+    height: 38px !important;             /* ⭐ 모든 버튼 동일 높이 */
+    padding: 0 18px !important;          /* 좌우 여백 통일 */
+    font-size: 13px !important;          
+    box-sizing: border-box;              /* 높이 계산 안정화 */
+}
+
+/* 파란 버튼 스타일 유지 */
+.btn-primary {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
 </style>
 
 </head>
@@ -186,10 +244,10 @@ h3 {
 							th:text="${subDetail.planCode} + ' 월 ' + ${#numbers.formatInteger(subDetail.price, 0, 'COMMA')} + '원'">
 							Essential 월 9,900원 </span>
 
-					<!-- 구독 상태 + 남은일수 -->
-						<!-- 	<span class="badge-status"
+						<!-- 구독 상태 + 남은일수-->
+						<span class="badge-status"
 							th:text="${subDetail.subsStatusLabel} + ' · D-' + ${subDetail.remainDays}">
-							구독중 · D-30 </span> -->
+							구독중 · D-30 </span>
 					</div>
 
 					<div class="info-list">
@@ -211,11 +269,15 @@ h3 {
 				</div>
 
 				<!-- 가운데: 사용 중인 서비스 -->
-				<div class="card-section">
+				<div class="card-section middle">
 					<h3>사용 중인 서비스</h3>
 					<div class="service-tags">
 						<span class="service-tag">회계</span> <span class="service-tag">인사</span>
 						<span class="service-tag">영업</span>
+					</div>
+					<div class="btn-area">
+						<button class="btn btn-primary">결제하기</button>
+						<button class="btn">플랜 변경</button>
 					</div>
 				</div>
 
@@ -228,13 +290,14 @@ h3 {
 							<span class="info-label">결제 수단 : </span> <span
 								th:text="${subDetail.paymentMethod}"> 토스페이먼츠(****1234) </span>
 						</div>
-					<!-- 	<div>
-							<span class="info-label">결제 주기 : </span> <span
-								th:text="${subDetail.billingPeriod}">월 결제</span>
-						</div> -->
 						<div>
-							<span class="info-label">다음 결제일 : </span> <span
-								th:text="${subDetail.nextPayment}">2025-11-24</span>
+							<span class="info-label">이번달 결제금액 : </span> <span
+								th:text="${#numbers.formatInteger(subDetail.currentPrice, 0, 'COMMA')} + '원'">월
+								결제</span>
+						</div>
+						<div>
+							<span class="info-label">결제 상태 : </span> <span
+								th:text="${subDetail.paymentStat}">2025-11-24</span>
 						</div>
 						<div>
 							<span class="info-label">최근 결제일 : </span> <span
@@ -243,14 +306,11 @@ h3 {
 						</div>
 					</div>
 
-					 <div class="btn-area">
+					<div class="btn-area">
 						<button class="btn">영수증 보기</button>
 						<button class="btn">세금계산서</button>
 					</div>
-					 <div class="btn-area">
-						<button class="btn btn-primary">결제하기</button>
-						<button class="btn">플랜 변경</button>
-					</div>
+
 				</div>
 			</div>
 
@@ -263,7 +323,7 @@ h3 {
 		<!-- Toast Grid JS -->
 		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 		<!-- 결제이력용 JS -->
-		<script th:src="@{/js/sbUserManage.js}"></script>
+		<script th:src="@{/js/sb/sbUserManage.js}"></script>
 	</div>
 </body>
 </html>

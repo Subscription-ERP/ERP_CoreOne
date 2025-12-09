@@ -16,6 +16,11 @@ public class TossConfirmResponseVO {
 	private String cardCompany; // 내가 화면에 보여줄 매핑용 데이터로 null상태임
 	private String cardCompanyCode;
 	// 값을 꺼내와서 넣어야 들어감
+	
+	// 정기결제(빌링결제)일 때만 값이 들어오는 필드 (일반결제면 null)
+    private String billingKey;
+    private String customerKey;
+    
 
 	// 🔹 토스에서 내려주는 결제수단 (카드, 계좌이체, 간편결제 등)
 	private String method;
