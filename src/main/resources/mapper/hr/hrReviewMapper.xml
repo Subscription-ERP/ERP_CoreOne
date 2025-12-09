@@ -264,24 +264,63 @@
 	</select>
 	
 	
-	<!-- 인사평가관리 - 검색 -->
-	<select id="searchHrReviewManage" resultType="HrReviewMasterVO" parameterType="String">
-		SELECT 
+	<!-- 인사평가관리 - 등록(상위) -->
+	<insert id="insertReviewItem" parameterType="HrReviewVO">
+		<selectKey keyProperty="reviewCode" order="BEFORE" resultType="String">
+			SELECT fn_make_date_code('REVIEW') 
+			FROM dual
+		</selectKey>
+	
+		INSERT INTO tb_hr_review (
+		    review_code,
+			review_name,
+			rater_user_id,
+			target_user_id,
+			review_status,
+			final_score,
+			review_comment,
+			created_by,
+			create_date,
 			company_code,
-			review_master_code,
-			review_master_name,
-			review_start_date,
-			review_end_date,
-			use_yn,
-			remark
-		FROM tb_hr_review_master
-		<where>
-			<if test="review_master_name != null and review_master_name != ''">
-			 AND review_master_name LIKE '%' || #{reviewMasterName} || '%'
-			</if>
-		</where>		
-		AND use_yn = 'Y'
-	</select>
+			review_master_code)
+		VALUES (
+		    #{reviewCode},
+		    #{reviewName},
+		    #{raterUserId},
+		    #{targetUserId},
+		    #{reviewStatus},
+		    #{finalScore},
+		    #{reviewComment},
+		    #{createdBy},
+		    SYSDATE,
+		    #{companyCode},
+		    #{reviewMasterCode}
+		)
+	</insert>
+	
+	<!-- 인사평가관리 - 등록(상위) -->
+	<insert id="insertReviewResult" parameterType="HrReviewResultVO">
+		<selectKey keyProperty="reviewResultSeq" order="BEFORE" resultType="long">
+			SELECT review_result_seq.NEXTVAL
+			FROM dual
+		</selectKey>
+	
+		INSERT INTO tb_hr_review_result (
+		    review_result_seq,
+		    review_code,
+		    eval_item_score,
+		    created_by,
+		    create_date)
+		VALUES (
+		    #{reviewResultSeq},
+		    #{reviewCode},
+		    #{evalItemScore},
+		    #{createdBy},
+		    SYSDATE
+		)
+	</insert>
+	
+	
 
 
 </mapper>

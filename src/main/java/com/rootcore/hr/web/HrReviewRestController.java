@@ -17,6 +17,7 @@ import com.rootcore.hr.service.HrReviewService;
 import com.rootcore.hr.service.impl.HrReviewAiService;
 import com.rootcore.hr.vo.EvalItemVO;
 import com.rootcore.hr.vo.HrReviewMasterVO;
+import com.rootcore.hr.vo.HrReviewResultVO;
 import com.rootcore.hr.vo.HrReviewVO;
 import com.rootcore.hr.vo.ReviewCommentRequestVO;
 
@@ -143,8 +144,42 @@ public class HrReviewRestController {
 	
 	// 인사평가관리 - 검색
 	@GetMapping("/manage/search")
-	public List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName){
-		return hrReviewService.searchHrReviewManage(reviewMasterName);
+	public List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName, HttpSession session){
+		
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String raterUserId = (String) session.getAttribute("LOGIN_USER_ID");	
+		
+		return hrReviewService.searchHrReviewManage(companyCode, raterUserId, reviewMasterName);
 	}
+	
+	
+	// 인사평가관리 - 등록
+	@PostMapping("/manage/register")
+	public int RegisterReivewResult(@RequestBody HrReviewVO hrReviewVO, HttpSession session) {
+		
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");	
+		
+		hrReviewVO.setCompanyCode(companyCode);
+		hrReviewVO.setCreatedBy(userId);      // 생성자
+		hrReviewVO.setRaterUserId(userId);    // 평가자
+		
+		hrReviewVO.setReviewStatus("2"); // 등록시 작성완료로 변경
+		
+		if(hrReviewVO.getHrReviewResultList() != null) {
+			for(HrReviewResultVO hrReviewResultVO : hrReviewVO.getHrReviewResultList()) {
+				hrReviewResultVO.setCreatedBy(userId);
+			}
+		}		
+		
+		return hrReviewService.registerReviewResult(hrReviewVO);
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 }

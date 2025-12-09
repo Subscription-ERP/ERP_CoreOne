@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					if (el.type === "checkbox") el.checked = false;
 					else el.value = "";
 				})
-			initReviewMasterGrid();
+			loadReviewMasterList();
 		})
 	}
 
@@ -521,6 +521,92 @@ document.addEventListener("DOMContentLoaded", () => {
 				}).catch(err => console.error(err));
 
 		});
+	}
+
+	/* ------------------------------------------------------------------
+	 * 저장(등록/수정) 
+	 * ------------------------------------------------------------------ */
+
+	const btnDetailSave = document.querySelector("#btnDetailSave");
+
+	if (btnDetailSave) {
+		btnDetailSave.addEventListener("click", async () => {
+
+			// 선택 템플릿 확인
+			if (!currentReviewMasterCode) {
+				showToast("먼저 인사평가 템플릿을 선택해 주세요.", 'warning');
+				return;
+			}
+
+			// 현재 선택된 팀원 정보 가져오기
+			const member = getSelectedMemberInfo();
+			if (!member) {
+				return;
+			}
+
+			// 평가항목 점수 수집
+			const rows = document.querySelectorAll("#reviewTbody tr:not(.empty-row)");
+			const hrReviewResultList = [];
+
+			rows.forEach(row => {
+				const scoreSelect = row.querySelector('select[name="evalScore"]');
+				if (!scoreSelect) return;
+
+				const grade = scoreSelect.value;
+				if (!grade) return;
+
+				hrReviewResultList.push({
+					evalItemScore: grade
+				});
+			});
+
+			if (hrReviewResultList.length == 0) {
+				showToast("점수가 입력된 평가항목이 없습니다.", 'warning');
+				return;
+			}
+
+			// 최종점수,코멘트
+			const finalScoreInput = document.querySelector("#finalScore");
+			const commentInput = document.querySelector("#evalComment");
+
+			const payload = {
+				reviewMasterCode: currentReviewMasterCode,   // ★ 여기서 세팅
+				targetUserId: member.userId,                 // 피평가자
+				finalScore: finalScoreInput ? finalScoreInput.value : "",
+				reviewComment: commentInput ? commentInput.value : "",
+				hrReviewResultList: hrReviewResultList       // 상세 점수 리스트
+			};
+
+			try {
+				if (window.globalLoader) globalLoader.style.display = "flex";
+
+				const res = await fetch("/api/review/manage/register", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify(payload)
+				});
+
+				if (!res.ok) {
+					throw new Error("HTTP " + res.status);
+				}
+
+				const result = await res.json?.() ?? null;
+				showToast("인사평가가 저장되었습니다.", "success");
+
+				// 저장 후 목록/팀원 다시 로딩해도 좋고, 필요에 따라 추가 처리
+				loadTeamMemberList(currentReviewMasterCode);
+
+			} catch (err) {
+				console.error(err);
+				showToast("인사평가 저장 중 오류가 발생했습니다.", "error");
+			} finally {
+				if (window.globalLoader) globalLoader.style.display = "none";
+			}
+
+
+		})
 	}
 
 

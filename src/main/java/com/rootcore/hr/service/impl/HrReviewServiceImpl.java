@@ -2,6 +2,7 @@ package com.rootcore.hr.service.impl;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +10,7 @@ import com.rootcore.hr.mapper.HrReviewMapper;
 import com.rootcore.hr.service.HrReviewService;
 import com.rootcore.hr.vo.EvalItemVO;
 import com.rootcore.hr.vo.HrReviewMasterVO;
+import com.rootcore.hr.vo.HrReviewResultVO;
 import com.rootcore.hr.vo.HrReviewVO;
 
 import lombok.RequiredArgsConstructor;
@@ -140,17 +142,54 @@ public class HrReviewServiceImpl implements HrReviewService {
 
 	// 인사평가관리 - 검색
 	@Override
-	public List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName) {
-		return hrReviewMapper.searchHrReviewManage(reviewMasterName);
+	public List<HrReviewMasterVO> searchHrReviewManage(@Param("companyCode") String companyCode, 
+                                                       @Param("userId") String userId, 
+                                                       @Param("reviewMasterName") String reviewMasterName) {
+		
+		// 기존 상태 계산 로직 재사용
+		List<HrReviewMasterVO> list = selectCheckReviewCount(companyCode, userId);
+		
+		// reviewMasterName값이 없을 경우
+		if(reviewMasterName == null || reviewMasterName.isBlank()) {
+			return list;
+		}
+		
+		// reviewMasterName(검색어)가 있을 경우
+		return list.stream()
+				   .filter(vo -> vo.getReviewMasterName() != null && vo.getReviewMasterName().contains(reviewMasterName))
+				   .toList();
+	
+		
 	}
 
+	// 인사평가관리 - 등록
+	@Transactional
+	@Override
+	public int registerReviewResult(HrReviewVO hrReviewVO) {
+		
+		// ★ 디버깅용 로그
+	    System.out.println("[DEBUG] registerReviewResult - raterUserId = " + hrReviewVO.getRaterUserId());
+	    System.out.println("[DEBUG] registerReviewResult - companyCode = " + hrReviewVO.getCompanyCode());
+	    System.out.println("[DEBUG] registerReviewResult - createdBy   = " + hrReviewVO.getCreatedBy());
+	    System.out.println("[DEBUG] registerReviewResult - reviewStatus = " + hrReviewVO.getReviewStatus());
+		
+		int review = hrReviewMapper.insertReviewItem(hrReviewVO);
+		if(review == 0) return 0;
+		
+		String reviewCode = hrReviewVO.getReviewCode();
+		
+		if(hrReviewVO.getHrReviewResultList() != null && !hrReviewVO.getHrReviewResultList().isEmpty()) {
+			for(HrReviewResultVO reviewResult : hrReviewVO.getHrReviewResultList()) {
+				reviewResult.setReviewCode(reviewCode);
+				reviewResult.setCreatedBy(hrReviewVO.getCreatedBy());
+				
+				int evalResult = hrReviewMapper.insertReviewResult(reviewResult);
+				if(evalResult == 0) return 0;
+			}
+		}		
+		return 1;
 
-
-
-
-
-
-
+	}
 
 
 

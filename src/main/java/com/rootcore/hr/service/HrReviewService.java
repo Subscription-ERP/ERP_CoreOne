@@ -30,9 +30,11 @@ public interface HrReviewService {
                                     @Param("reviewMasterCode") String reviewMasterCode); 
 	
 	// 인사평가관리 - 검색
-	List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName);
+	List<HrReviewMasterVO> searchHrReviewManage(@Param("companyCode") String companyCode, 
+			                                    @Param("userId") String userId, 
+			                                    @Param("reviewMasterName") String reviewMasterName);
 	
-	
+	int registerReviewResult(HrReviewVO hrReviewVO);                    // 인사평가관리 - 등록
 	
 	
 }
