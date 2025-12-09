@@ -33,6 +33,7 @@ public class InOrdServiceImpl implements InOrdService {
 
     @Override
 	public List<InOrdDetailVO> getInOrdDetail(InOrdDetailVO info) {
+		System.out.println(info.getSearchDiv());
 		return inOrdMapper.SelectInOrdDetailList(info);
 	}
 

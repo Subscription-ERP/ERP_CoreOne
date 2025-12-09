@@ -11,5 +11,5 @@ public interface InOrdMapper {
     void insertInOrdDetail(InOrdDetailVO inOrdDeatil);
     List<InOrdVO> SelectInOrdList(InOrdVO inOrd);
     List<InOrdDetailVO> SelectInOrdDetailList(InOrdDetailVO inOrd);
-    void updateInOrdInvoce(String inOrdNo);
+    void updateInordInvoice(InOrdDetailVO inOrdDeatil);
 }

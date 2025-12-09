@@ -72,6 +72,7 @@ const grid = new tui.Grid({
 			}
 		},
 		{ name: 'inordNo', header: '수주번호', hidden: true },
+		{ name: 'inordDetailNo', header: '수주상세번호', hidden: true },
         { header:'출고수량', name:'qty', minWidth:120, align:'right' },
         { header:'단가', name:'unitPrice', minWidth:120, align:'right' },
         { header:'공급가액', name:'supplyPrice', minWidth:140, align:'right' },
@@ -270,6 +271,7 @@ function saveInvoice() {
 	            (row.surtax || "0").toString().replace(/,/g, "")
 	        ),
 			inordNo : row.inordNo,
+			inordDetailNo : row.inordDetailNo,
 	        // total 은 마스터의 TOTAL_AMOUNT 에 반영되므로 굳이 필드 만들 필요 없음
 	        createdBy: header.createdBy
 	    });
@@ -368,7 +370,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		const current = grid.getData();     // 기존 데이터
 		const appendList = [];              // 그리드에 넣을 최종 목록.
-
 		rows.forEach(r => {
 		    appendList.push({
 		        sku: r.sku,
@@ -378,7 +379,8 @@ document.addEventListener("DOMContentLoaded", function () {
 		        unitPrice: r.unitPrice,
 		        supplyPrice: r.supplyPrice,
 		        surtax: r.surtax,
-				inordNo: r.inordNo
+				inordNo: r.inordNo,
+				inordDetailNo: r.inordDetailNo
 		    });
 		});
 		

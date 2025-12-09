@@ -55,7 +55,6 @@ public class AnnualManageRestController {
 	// 연차신청
 	@PostMapping("/myAnnualApply")
 	public int myAnnualApply(@RequestBody AnnualLeaveDetailVO param) {
-		System.out.println(">>> 연차신청 param: " + param);
 		return annualManageService.insertmyAnnualApply(param);
 	}
 }

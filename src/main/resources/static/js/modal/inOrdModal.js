@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 ============================ */
 function getInOrdList(custCode = "") {
 	const url = custCode
-	    ? `/api/inOrd/detail?custCode=${encodeURIComponent(custCode)}`
+	    ? `/api/inOrd/detail?custCode=${encodeURIComponent(custCode)}&searchDiv=Modal`
 	    : `/api/inOrd/detail`;
 		
     fetch(url)
@@ -80,7 +80,7 @@ function searchInOrd() {
         const custCode = schInOrdCustCode.value.trim();
         const custName = schInOrdCustName.value.trim();
 
-    fetch("/api/inOrd/detail?custCode="+custCode+"&custName="+custName)
+    fetch("/api/inOrd/detail?custCode="+custCode+"&custName="+custName+"&searchdiv=Modal")
         .then(res => res.json())
         .then(data => {
             inOrdModalGrid.resetData(data);
@@ -117,9 +117,9 @@ function sendSelectedOrders() {
     // 2) 메인 그리드 중복 체크
     if (typeof grid !== "undefined") {
         const mainData = grid.getData();
-        const mainOrdNos = mainData.map(r => r.inordNo);
+        const mainDetailOrdNos = mainData.map(r => r.inordDetailNo);
 
-        const duplicate = rows.some(r => mainOrdNos.includes(r.inordNo));
+        const duplicate = rows.some(r => mainDetailOrdNos.includes(r.inordDetailNo));
 
         if (duplicate) {
             alert("이미 추가된 수주가 포함되어 있습니다.");

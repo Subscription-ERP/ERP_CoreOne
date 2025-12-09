@@ -75,6 +75,23 @@ public class PaymentController {
 
 	}
 
+	@GetMapping("/billing/success") 
+	public ModelAndView billingSuccess(@RequestParam String billingKey, @RequestParam(required = false) String customerKey,
+			 HttpSession session, Model model) {
+		ModelAndView modelAndView = new ModelAndView("sb/success");
+		
+		CompanyVO company = (CompanyVO) session.getAttribute("company");
+		PlanVO plan = (PlanVO) session.getAttribute("plan");
+		ContractVO contract = (ContractVO) session.getAttribute("contract");
+		
+
+        paymentService.createSubscriptionWithBillingKey(
+                billingKey, customerKey, company, plan, contract);
+        
+        model.addAttribute("billingKey", billingKey);
+        return modelAndView;
+	}
+
 	@GetMapping("/fail")
 	public String paymentFail(@RequestParam String code, @RequestParam String message, @RequestParam String orderId,
 			Model model) {

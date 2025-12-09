@@ -141,4 +141,11 @@
 		   AND ior.inord_date = ior.inord_date
 		   AND ior.inord_no = ior.inord_no
 	</select>
+	
+	<update id="updateInordInvoice">
+		UPDATE tb_inord_detail
+		   SET invoice_status = '1'
+		 WHERE inord_no = #{inordNo}
+		   AND inord_detail_no = #{inordDetailNo}
+	</update>
 </mapper>

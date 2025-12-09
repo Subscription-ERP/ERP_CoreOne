@@ -31,6 +31,18 @@
 		<if test="userId != null and userId != '' " >
           AND  al.user_id = #{userId}
 		</if>
+		<if test="annualStartDateSearch != null and annualStartDateSearch != '' " >
+          AND  ald.leave_start_date >= TO_DATE(#{annualStartDateSearch}, 'YYYY-MM-DD')
+		</if>
+		<if test="annualStartEndSearch != null and annualStartEndSearch != '' " >
+          AND  ald.leave_end_date &lt;= #{annualStartEndSearch}
+		</if>
+		<if test="leaveApplyStartDateSearch != null and leaveApplyStartDateSearch != '' " >
+          AND  ald.leave_apply_date >= #{leaveApplyStartDateSearch}
+		</if>
+		<if test="leaveApplyEndDateSearch != null and leaveApplyEndDateSearch != '' " >
+          AND  ald.leave_apply_date &lt;= #{leaveApplyEndDateSearch}
+		</if>
 	</select>
 	
 	<!-- 내연차현황 -->

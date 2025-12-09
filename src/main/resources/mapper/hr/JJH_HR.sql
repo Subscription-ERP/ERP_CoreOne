@@ -1555,4 +1555,131 @@ FROM dual;
 
 SELECT TO_CHAR(leave_start_date, 'YYYY-MM-DD HH24:MI:SS'), TO_CHAR(leave_end_date, 'YYYY-MM-DD HH24:MI:SS') FROM tb_annual_leave_detail;
 
-select * from tb_annual_leave_detail;
+/* ===========
+ * 2025-12-09
+ * =========== */
+SELECT *
+FROM   tb_company_master;
+SELECT *
+FROM   tb_user_master;
+
+-- tb_annual_leave 연차관리코드
+INSERT INTO tb_cm_code(code, group_code, code_name, ATTRIBUTE01, ATTRIBUTE02, REMARK)
+VALUES ('ANNUAL_LEAVE','MAKE_CODE','연차관리코드','TB_ANNUAL_LEAVE','ANL','ANNUAL_LEAVE_CODE');
+
+-- 연차관리코드 실행
+SELECT fn_make_date_code('ANNUAL_LEAVE') FROM DUAL;
+/* =======================================
+ * 매년 1월1일마다 경력별 연차가 생기는 프로시저
+ * ======================================= */
+CREATE OR REPLACE PROCEDURE sp_calculate_annual
+/* =============================================
+ * 프로시저명 : sp_calculate_annual
+ * 설명 : 매년 1월1일마다 경력별 연차가 생기는 프로시저
+ * 작성자 : 장준현
+ * 작성일 : 25.12.09
+ * 수정이력 :
+    * 수정일 :
+ * ============================================= */
+IS
+    -- 1) 커서정의
+    /* ============================
+     * 사원 조회
+     * 퇴사한 사람은 연차가 생기면 안됨
+     * ============================ */
+    CURSOR annual_user_cursor(p_company_code VARCHAR2) IS
+        SELECT user_id,
+               hire_date
+        FROM   tb_user_master
+        WHERE  leave_date IS NULL
+          AND  company_code = p_company_code;
+    
+    /* =======
+     * 회사조회
+     * ======= */
+    CURSOR annual_company_cursor IS
+        SELECT company_code
+        FROM   tb_company_master;
+    
+    v_annual_year NUMBER; -- 근속연수
+    v_annual_date NUMBER; -- 총연차일수
+BEGIN   
+    -- 2) 커서 실행
+    -- 3) 데이터 확인 및 인출
+    -- 회사, 사원들 연차 입력
+    FOR annual_company_info IN annual_company_cursor LOOP
+        FOR annual_user_info IN annual_user_cursor(annual_company_info.company_code) LOOP
+            -- 근속연수 생성
+            v_annual_year := TRUNC(MONTHS_BETWEEN(SYSDATE, annual_user_info.hire_date) / 12);
+            
+            -- 근속연수에 따라 연차 생성                  
+            IF v_annual_year >= 1 THEN
+                IF v_annual_year < 3 THEN
+                    -- 1년, 2년 근속 시 (2, 3년차)
+                    v_annual_date := 15;
+                ELSE
+                    -- 3년 이상 근속 시 (4년차부터)
+                    -- (근속연수 - 1) / 2 의 몫을 구함 (3년차부터 가산 시작)
+                    v_annual_date := 15 + TRUNC((v_annual_year - 1) / 2);
+                    
+                    -- 최대 연차 일수 25일 제한 (선택 사항이나 보통 포함)
+                    IF v_annual_date > 25 THEN
+                        v_annual_date := 25;
+                    END IF;
+                END IF;
+            ELSE
+                -- 1년 미만 (입사 1년차)는 정기 부여 대상이 아닙니다.
+                v_annual_date := 0; 
+            END IF;
+             
+            INSERT INTO tb_annual_leave 
+                (annual_leave_code,
+                 company_code,
+                 user_id,
+                 grant_year,
+                 total_grant_days,
+                 total_used_days,
+                 remaining_days,
+                 expiry_date)
+            VALUES 
+                (fn_make_date_code('ANNUAL_LEAVE'),
+                 annual_company_info.company_code,
+                 annual_user_info.user_id,
+                 TO_CHAR(SYSDATE, 'yyyy'),
+                 v_annual_date,
+                 0,
+                 v_annual_date,
+                 TRUNC(ADD_MONTHS(SYSDATE, 12), 'yyyy'));
+                 
+        END LOOP;
+    END LOOP;
+    -- 4) 커서 종료
+    COMMIT;
+END;
+/
+
+/* =======
+ * 부서조회
+ * ======= */
+    SELECT dept_code,
+           company_code,
+           dept_name,
+           upper_dept_no,
+           dept_level,
+           start_date,
+           end_date,
+           status,
+           dept_mng,
+           rm
+    FROM   tb_dept_master;
+    
+/* ================================
+ * 부서코드 공통코드에 등록 및 함수 생성
+ * ================================ */
+INSERT INTO tb_cm_code(code, group_code, code_name, ATTRIBUTE01, ATTRIBUTE02, remark)
+VALUES ('DEPT','MAKE_CODE','부서코드','TB_DEPT_MASTER','DPT','DEPT_CODE');
+SELECT fn_make_code('DEPT') FROM DUAL;
+
+UPDATE tb_dept_master
+SET dept_code = fn_make_code('DEPT')
+WHERE dept_code = 'D000';

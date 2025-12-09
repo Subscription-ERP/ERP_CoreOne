@@ -203,8 +203,8 @@
 				<div class="col-12 d-flex justify-content-center gap-3">
 					<a th:href="@{/contract/new}"
 						class="btn btn-outline-secondary px-5"> 이전으로 </a>
-
-					<button type="button" id="payment-button" class="btn btn-dark px-5">
+					<input type="checkbox" id="autoBilling"> 자동결제 사용
+					<button type="button" id="payBtn" class="btn btn-dark px-5">
 						결제하기</button>
 				</div>
 			</div>
@@ -212,57 +212,7 @@
 		</div>
 
 		<!-- Toss Payments 스크립트 -->
-		<script>
-        main();
-
-        async function main() {
-            const button = document.getElementById("payment-button");
-
-            // 서버에서 주문 정보 가져오기 (orderId, amount 등)
-            const response = await fetch("/api/payments/request", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
-            const data = await response.json();
-
-            // ------ 결제위젯 초기화 ------
-            const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-            const tossPayments = TossPayments(clientKey);
-
-            // 회원 결제 (비회원이면 ANONYMOUS 사용)
-            const customerKey = "qcE3458DWgfhY2eSgXQot";
-            const widgets = tossPayments.widgets({ customerKey });
-
-            // ------ 주문 금액 설정 ------
-            await widgets.setAmount({
-                currency: "KRW",
-                value: data.amount,
-            });
-
-            await Promise.all([
-                // 결제 수단 영역 렌더링
-                widgets.renderPaymentMethods({
-                    selector: "#payment-method",
-                    variantKey: "DEFAULT",
-                }),
-                // 이용약관 영역 렌더링
-                widgets.renderAgreement({
-                    selector: "#agreement",
-                    variantKey: "AGREEMENT",
-                }),
-            ]);
-
-            // ------ '결제하기' 버튼 클릭 시 결제 요청 ------
-            button.addEventListener("click", async function () {
-                await widgets.requestPayment({
-                    orderId: data.orderId,
-                    orderName: data.orderName,
-                    successUrl: data.successUrl,
-                    failUrl: data.failUrl,
-                });
-            });
-        }
-    </script>
+	 <script th:src="@{/js/sb/payment.js}"></script>
 	</div>
 </body>
 </html>

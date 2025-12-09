@@ -37,57 +37,43 @@
 				<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex;">
 					<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
 						<div class="filter-bar row g-4 align-items-center col-md-12">
-							<!-- 부서명 -->
-							<div class="col-12 col-md-3">
-								<div class="field-inline">
-									<label for="dept" class="field-inline__label">부서명</label> <select id="dept" class="form-select input-base" style="flex: 1; min-width: 0">
-									</select>
-								</div>
-							</div>
-
-							<!-- 성명 -->
-							<div class="col-12 col-md-3">
-								<div class="field-inline">
-									<label for="userName" class="field-inline__label">성명</label> <input id="userName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
-								</div>
-							</div>
-							
-							<!-- 연차신청일 범위 -->
+							<!-- 연차시작종료일 범위 -->
 							<div class="col-12 col-md-4">
 								<div class="field-inline">
 									<label for="payrollDate" class="field-inline__label">연차시작종료일</label>
 									<!-- 범위 input -->
 									<div id="paymentStartDateWrapper">
-										<input id="paymentStartDate" type="date" class="form-control input-base"  style="width: 145px"  />
+										<input id="annualStartDateSearch" type="date" class="form-control input-base"  style="width: 145px"  />
 									</div>
 									~
 									<div id="paymentEndDateWrapper">
-										<input id="paymentEndDate" type="date" class="form-control input-base" style="width: 145px"  />
+										<input id="annualStartEndSearch" type="date" class="form-control input-base" style="width: 145px"  />
+									</div>
+
+								</div>
+							</div>
+							<!-- 연차신청일 범위 -->
+							<div class="col-12 col-md-4">
+								<div class="field-inline">
+									<label for="payrollDate" class="field-inline__label">연차신청일</label>
+									<!-- 범위 input -->
+									<div id="paymentStartDateWrapper">
+										<input id="leaveApplyStartDateSearch" type="date" class="form-control input-base" style="width: 145px" />
+									</div>
+									~
+									<div id="paymentEndDateWrapper">
+										<input id="leaveApplyEndDateSearch" type="date" class="form-control input-base" style="width: 145px"  />
 									</div>
 
 								</div>
 							</div>
 
 							<!-- 초기화 조회 버튼 -->
-							<div class="col-12 col-md-2 d-flex align-items-center justify-content-end gap-2">
-								<button id="btnPayrollManageReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
-								<button id="btnPayrollManageSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
+							<div class="col-12 col-md-4 d-flex align-items-center justify-content-end gap-2">
+								<button id="btnAnnualManageReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
+								<button id="btnAnnualManageSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
 							</div>
-							<!-- 연차신청일 범위 -->
-							<div class="col-12 col-md-4 mt-0">
-								<div class="field-inline">
-									<label for="payrollDate" class="field-inline__label">연차신청일</label>
-									<!-- 범위 input -->
-									<div id="paymentStartDateWrapper">
-										<input id="paymentStartDate" type="date" class="form-control input-base" style="width: 145px" />
-									</div>
-									~
-									<div id="paymentEndDateWrapper">
-										<input id="paymentEndDate" type="date" class="form-control input-base" style="width: 145px"  />
-									</div>
-
-								</div>
-							</div>
+							
 						</div>
 					</div>
 				</section>
