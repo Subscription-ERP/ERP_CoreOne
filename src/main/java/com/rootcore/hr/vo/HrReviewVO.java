@@ -27,7 +27,9 @@ public class HrReviewVO {
 	private Date updateDate;
 	
 	private String targetUserName;          // 피평가자 이름
-	private String targetDept;              // 피평가자 부
+	private String targetDept;              // 피평가자 부서
+	private String targetDeptName;          // 피평가자 부서명
 	private String targetJobTitle;          // 피평가자 직급/직위
+	private String targetJobTitleName;      // 피평가자 직급/직위명
 	
 }

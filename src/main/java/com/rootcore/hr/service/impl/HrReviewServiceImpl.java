@@ -97,12 +97,18 @@ public class HrReviewServiceImpl implements HrReviewService {
 		return 1;
 	}
 
-	// 인사평가관리 - 다건조회
+	// 인사평가관리 - 기준관리 다건조회
 	@Override
 	public List<HrReviewMasterVO> selectReviewOnlyY() {
 		return hrReviewMapper.selectReviewOnlyY();
 	}
-
+	
+	// 인사평가관리 - 기준관리 평가항목
+	@Override
+	public List<EvalItemVO> selectEvalItemByMcode(String reviewMasterCode) {
+		return hrReviewMapper.selectEvalItemByMcode(reviewMasterCode);
+	}
+		
 	// 인사평가관리 - 다건조회 + 부서 팀장별 팀원수 계산, 리뷰작성 상태
 	@Override
 	public List<HrReviewMasterVO> selectCheckReviewCount(String companyCode, String userId) {
@@ -131,6 +137,16 @@ public class HrReviewServiceImpl implements HrReviewService {
 	public List<HrReviewVO> selectTeamList(String companyCode, String raterUserId, String reviewMasterCode) {
 		return hrReviewMapper.selectTeamList(companyCode, raterUserId, reviewMasterCode);
 	}
+
+	// 인사평가관리 - 검색
+	@Override
+	public List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName) {
+		return hrReviewMapper.searchHrReviewManage(reviewMasterName);
+	}
+
+
+
+
 
 
 
