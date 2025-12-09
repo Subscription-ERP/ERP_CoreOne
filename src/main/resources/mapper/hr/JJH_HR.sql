@@ -1683,3 +1683,23 @@ SELECT fn_make_code('DEPT') FROM DUAL;
 UPDATE tb_dept_master
 SET dept_code = fn_make_code('DEPT')
 WHERE dept_code = 'D000';
+
+UPDATE tb_dept_master
+SET company_code = '0000';
+SELECT *
+FROM tb_user_master;
+
+SELECT um.user_id,
+       um.user_name,
+       um.dept,
+       dm.dept_name,
+       ccj.code_name as job_title,
+       ccp.code_name as position
+FROM   tb_user_master um
+       JOIN tb_dept_master dm
+       ON dm.dept_code = um.dept
+       JOIN tb_cm_code ccj
+       ON ccj.code = um.job_title
+       JOIN tb_cm_code ccp
+       ON ccp.code = um.position;
+       
