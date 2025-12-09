@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.hr.service.HrReviewService;
+import com.rootcore.hr.service.impl.HrReviewAiService;
+import com.rootcore.hr.vo.EvalItemVO;
 import com.rootcore.hr.vo.HrReviewMasterVO;
 import com.rootcore.hr.vo.HrReviewVO;
+import com.rootcore.hr.vo.ReviewCommentRequestVO;
 
-import jakarta.servlet.http.HttpSession; 
-
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class HrReviewRestController {
 
 	final private HrReviewService hrReviewService;
+	final private HrReviewAiService hrReviewAiService;
 	
 	// 인사평가 기준관리 - 다건조회
 	@GetMapping("")
@@ -98,10 +101,16 @@ public class HrReviewRestController {
 	}
 	
 	
-	// 인사평가 관리 - 전체조회('Y'만)
+	// 인사평가 관리 - 기준관리 전체조회('Y'만)
 	@GetMapping("/manage")
 	public List<HrReviewMasterVO> reviewManageAllList(){
 		return hrReviewService.selectReviewOnlyY();
+	}
+	
+	// 인사평가 관리 - 기준관리 평가항목
+	@GetMapping("/manage/evalItem")
+	public List<EvalItemVO> reviewManageWithEvalItem(String reviewMasterCode){
+		return hrReviewService.selectEvalItemByMcode(reviewMasterCode);
 	}
 	
 	// 인사평가관리 - 다건조회 + 부서별 팀장제외 팀원수계산 + 현재리뷰상태
@@ -125,9 +134,17 @@ public class HrReviewRestController {
 		
 		return hrReviewService.selectTeamList(companyCode, raterUserId, reviewMasterCode);
 	}
+		
+	// 인사평가관리 - ai코멘트
+	@PostMapping("/ai-comment")
+    public String generateComment(@RequestBody ReviewCommentRequestVO request) {
+        return hrReviewAiService.generateReviewComment(request);
+    }
 	
-	
-	
-	
+	// 인사평가관리 - 검색
+	@GetMapping("/manage/search")
+	public List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName){
+		return hrReviewService.searchHrReviewManage(reviewMasterName);
+	}
 	
 }

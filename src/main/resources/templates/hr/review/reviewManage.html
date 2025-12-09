@@ -45,6 +45,26 @@
       box-shadow: none !important;
       border-color: var(--mid-light-gray-color) !important;
     }
+    
+    /* 카드 안에서 Grid가 높이를 가져갈 수 있게 */
+	.card-ui.card-ui--grid {
+	  /* 이미 inline style에서 높이를 주고 있으니 overflow만 관리 */
+	  display: flex;
+	  flex-direction: column;
+	}
+	
+	.card-ui.card-ui--grid .card-ui__body {
+	  flex: 1 1 auto;
+	  /* 높이를 계산 가능하게 만들기 위해 */
+	  min-height: 0;
+	  overflow: hidden; /* 외부 스크롤 제거, 내부는 ToastUI가 담당 */
+	  padding: 0 12px;  /* 필요 없으면 0으로 */
+	}
+	/* Grid가 body 높이를 그대로 쓰도록 */
+	.grid-root {
+	  height: 100%;   /* ★ 기존 min-height 대신 height:100% */
+	  min-height: 0;
+	}
   </style>
 
 </head>
@@ -59,14 +79,14 @@
           <!-- 인사평가명 -->
           <div class="col-12 col-md-4">
             <div class="field-inline">
-              <label for="keyEvalName" class="field-inline__label">인사평가명</label>
-              <input id="keyEvalName" type="text" class="form-control input-base" style="flex:1; min-width:0;" />
+              <label for="reviewMasterNameSearch" class="field-inline__label">인사평가명</label>
+              <input id="reviewMasterNameSearch" type="text" class="form-control input-base" style="flex:1; min-width:0;" />
             </div>
           </div>
 
           <!-- 조회 버튼 -->
           <div class="col-12 col-md-2 ms-auto text-end">
-            <button id="btnSearch" type="button" class="btn btn-white btn-outer">초기화</button>
+            <button id="btnResetSearch" type="button" class="btn btn-white btn-outer">초기화</button>
             <button id="btnSearch" type="button" class="btn btn-color btn-outer">조회</button>
           </div>
         </div>
@@ -76,12 +96,11 @@
     <!-- ==================== 인사평가 목록(Grid) ======================= -->
     <section class="card-ui card-ui--grid section-flex" style="flex: 0 0 190px; min-height: 190px;">
       <header class="card-ui__header">
-        <div>
           <h6 class="card-ui__title">인사평가 목록</h6>
-        </div>
+          <small class="text-muted">인사평가 선택시 아래에 팀원목록이 나타납니다.</small>
       </header>
 
-      <div class="card-ui__body p-0" >
+      <div class="card-ui__body p-0">
         <div id="reviewList"  class="grid-root" style="overflow-y: auto"></div>
       </div>
     </section>
@@ -89,9 +108,8 @@
     <!-- ==================== 인사평가 팀원 목록(Grid) ======================= -->
     <section class="card-ui card-ui--grid section-flex" style="flex: 0 0 190px; min-height: 190px;">
       <header class="card-ui__header">
-        <div>
           <h6 class="card-ui__title">팀원 목록</h6>
-        </div>
+          <small class="text-muted">팀원 선택시 아래에 인사평가서를 작성하실 수 있습니다.</small>
       </header>
 
       <div class="card-ui__body p-0">
@@ -101,14 +119,15 @@
 
 
     <!-- ==================== 상세 평가 ==================== -->
-    <section class="card-ui card-ui--detail section-fixed" style="flex: 0 0 300px;">
+    <section class="card-ui card-ui--detail section-fixed form-allwrapper" style="flex: 0 0 300px;">
       <header class="card-ui__header">
         <div>
-          <h3 style="font-size: var(--fs-bb); font-weight: 700;">제목영역</h3>
+          <h3 id="evalTitle" style="font-size: var(--fs-bb); font-weight: 700; display: none;">제목영역</h3>
         </div>
 
         <!-- 우측 액션 (상세 평가 영역용 버튼) -->
         <div class="toolbar">
+          <button id="btnAiComment" type="button" class="btn btn-white btn-inner">AI작성</button>
           <button id="btnDetailReset" type="button" class="btn btn-white btn-inner">초기화</button>
           <button id="btnDetailSave" type="button" class="btn btn-color btn-inner">등록</button>
         </div>
@@ -130,7 +149,7 @@
 
             <div class="form-grid__label">총 점수</div>
             <div class="form-grid__field">
-              <input id="totalScore" name="totalScore" class="form-control form-control-sm input-base disabled"
+              <input id="finalScore" name="finalScore" class="form-control form-control-sm input-base disabled"
                 readonly />
             </div>
           </div>
@@ -144,7 +163,7 @@
             <div class="sub-grid__header">
               <div class="sub-grid__title-wrap">
                 <span class="sub-grid__title">평가항목</span>
-                <span class="sub-grid__badge" id="certCount">0</span>
+                <span class="sub-grid__badge" id="reviewCount">0</span>
               </div>
             </div>
 
@@ -179,17 +198,26 @@
           </div>
 
           <!-- 입력 행 템플릿 -->
-          <template id="certRowTemplate">
+          <template id="reviewRowTemplate">
             <tr>
-              <td class="disabled"><input type="text" name="certiName"
+              <td class="disabled"><input type="text" name="evalSeq"
+                  class="form-control form-control-sm input-base disabled" readonly style="text-align: center;" /></td>
+              <td class="disabled"><input type="text" name="evalName"
                   class="form-control form-control-sm input-base disabled" readonly /></td>
-              <td class="disabled"><input type="text" name="issueOrgName"
+              <td class="disabled"><input type="text" name="evalDetail"
                   class="form-control form-control-sm input-base disabled" readonly /></td>
-              <td class="disabled"><input type="date" name="getDate"
-                  class="form-control form-control-sm input-base disabled" readonly /></td>
-              <td class="disabled"><input type="text" name="licenseNo"
-                  class="form-control form-control-sm input-base disabled" readonly /></td>
-              <td><input type="date" name="expireDate" class="form-control form-control-sm input-base" /></td>
+              <td class="disabled"><input type="text" name="evalWeight"
+                  class="form-control form-control-sm input-base disabled" readonly style="text-align: center;" /></td>
+              <td>
+              	<select name="evalScore" class="form-select form-select-sm input-base">
+			        <option value="">선택</option>
+			        <option value="A">A</option>
+			        <option value="B">B</option>
+			        <option value="C">C</option>
+			        <option value="D">D</option>
+			        <option value="E">E</option>
+			    </select>
+      		  </td>
             </tr>
           </template>
         </div>

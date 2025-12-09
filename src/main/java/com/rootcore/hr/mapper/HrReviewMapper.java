@@ -21,7 +21,8 @@ public interface HrReviewMapper {
 	int deleteEvalItem(@Param("reviewMasterCode") String reviewMasterCode, 
 			           @Param("companyCode") String companyCode); // 인사평가 기준관리 - 삭제(평가항목)
 	
-	List<HrReviewMasterVO> selectReviewOnlyY();                         // 인사평가관리 - 다건조회
+	List<HrReviewMasterVO> selectReviewOnlyY();                         // 인사평가관리 - 기준관리 다건조회
+	List<EvalItemVO> selectEvalItemByMcode(String reviewMasterCode);    // 인사평가관리 - 기준관리 평가항목                      
 	
 	// 인사평가관리 - 팀원수 계산
 	int selectTeamCount(@Param("companyCode") String companyCode,
@@ -36,7 +37,8 @@ public interface HrReviewMapper {
                                     @Param("raterUserId") String raterUserId,
                                     @Param("reviewMasterCode") String reviewMasterCode); 
 	
-	
+	// 인사평가관리 - 검색
+	List<HrReviewMasterVO> searchHrReviewManage(String reviewMasterName);
 	
 	
 	

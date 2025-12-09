@@ -156,7 +156,7 @@
 	
 	
 	
-	<!-- 인사평가 관리- 전체조회(Y만 검색) -->
+	<!-- 인사평가 관리- 기준관리 전체조회(Y만 검색) -->
 	<select id="selectReviewOnlyY" resultType="HrReviewMasterVO">
 		SELECT 
 			company_code,
@@ -170,6 +170,17 @@
 		WHERE use_yn = 'Y'
 	</select>
 	
+	<!-- 인사평가관리 - 기준관리 평가항목 -->	
+	<select id="selectEvalItemByMcode" parameterType="String">
+		SELECT 
+		    eval_seq,
+		    review_master_code,
+		    eval_name,
+		    eval_detail,
+		    eval_weight
+		FROM      tb_eval_item ei
+		WHERE     review_master_code = #{reviewMasterCode}
+	</select>	
 
 	<!-- 인사평가관리 - 팀장별 부서 팀원수 계산 및 평가상태 계산 -->
 	<!-- 1) 팀원 수(팀장 본인을 제외하고 가져오기) -->
@@ -216,10 +227,12 @@
 	<!-- 인사평가관리 - 팀원목록 -->
 	<select id="selectTeamList" resultType="HrReviewVO">
 		SELECT 
-		    staff.user_id       AS target_user_id,
-		    staff.user_name     AS target_user_name,
-		    staff.dept          AS target_dept,
-		    staff.job_title     AS target_job_title,
+		    staff.user_id            AS target_user_id,
+		    staff.user_name          AS target_user_name,
+		    staff.dept               AS target_dept,
+		    deptM.dept_name          AS target_dept_name,
+		    staff.job_title          AS target_job_title,
+		    cm.code_name             AS target_job_title_name,
 		    
 		    r.review_code,
 		    r.review_status,
@@ -239,28 +252,36 @@
 		 AND r.rater_user_id = manager.user_id
 		 AND r.target_user_id = staff.user_id
 		 
+		JOIN tb_cm_code cm
+		ON staff.job_title = cm.code
+		JOIN tb_dept_master deptM
+		ON staff.dept = deptM.dept_code
+		 
 		WHERE manager.company_code = #{companyCode}
 		 AND manager.user_id = #{raterUserId}
 		 
 		ORDER BY staff.user_name
-<!--		SELECT 
-		    u.user_id,
-		    u.user_name,
-		    u.dept,
-		    u.job_title,
-		    u.position,
-		    u.user_status
-		FROM tb_user_master u
-		WHERE u.company_code = #{companyCode}
-		AND u.dept = (SELECT dept
-		              FROM   tb_user_master
-		              WHERE  company_code = #{companyCode}
-		                AND  user_id = #{userId})
-		AND u.user_id <![CDATA[ <> ]]> #{userId}
-		AND u.user_status = '0'
-		ORDER BY u.user_name-->
 	</select>
 	
 	
-	
+	<!-- 인사평가관리 - 검색 -->
+	<select id="searchHrReviewManage" resultType="HrReviewMasterVO" parameterType="String">
+		SELECT 
+			company_code,
+			review_master_code,
+			review_master_name,
+			review_start_date,
+			review_end_date,
+			use_yn,
+			remark
+		FROM tb_hr_review_master
+		<where>
+			<if test="review_master_name != null and review_master_name != ''">
+			 AND review_master_name LIKE '%' || #{reviewMasterName} || '%'
+			</if>
+		</where>		
+		AND use_yn = 'Y'
+	</select>
+
+
 </mapper>
