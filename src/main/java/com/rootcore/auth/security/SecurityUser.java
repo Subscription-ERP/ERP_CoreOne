@@ -3,9 +3,11 @@ package com.rootcore.auth.security;
 import com.rootcore.auth.vo.LoginVO;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 public class SecurityUser implements UserDetails {
@@ -16,9 +18,22 @@ public class SecurityUser implements UserDetails {
         this.loginVO = loginVO;
     }
 
+    // ✅ ✅ ✅ 여기만 제대로 동작하면 403 끝난다
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null; // 메뉴 권한/ROLE은 추후 추가
+
+        // DB에서 가져온 ROLE_CODE (ADMIN / MANAGER / USER)
+        String roleCode = loginVO.getRoleCode();
+
+        // 안전장치 (혹시라도 null이면 권한 없음 처리)
+        if (roleCode == null || roleCode.isBlank()) {
+            return List.of();
+        }
+
+        // Spring Security는 "ROLE_권한명" 형식만 인식함
+        return List.of(
+            new SimpleGrantedAuthority("ROLE_" + roleCode.toUpperCase())
+        );
     }
 
     @Override
