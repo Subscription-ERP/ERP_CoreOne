@@ -1,98 +1,86 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.rootcore.auth.mapper.MenuPermissionMapper">
 
-	<!-- ✅ 1) USER 목록 조회 -->
-	<select id="selectUserList"
-		resultType="com.rootcore.auth.vo.UserAuthVO">
-		SELECT
-			U.COMPANY_CODE,
-			U.USER_ID,
-			U.USER_NAME,
-			U.DEPT,
-			U.POSITION,
-			U.ROLE_CODE,
-			R.ROLE_NAME
-		FROM TB_USER_MASTER U
-		LEFT JOIN TB_ROLE_MASTER R
-			ON U.COMPANY_CODE = R.COMPANY_CODE
-		   AND U.ROLE_CODE = R.ROLE_CODE
-		WHERE U.COMPANY_CODE = #{companyCode}
+    <!-- 1) ROLE 목록 조회 -->
+    <select id="selectRoleList" resultType="com.rootcore.auth.vo.RoleVO">
+        SELECT
+            COMPANY_CODE,
+            ROLE_CODE,
+            ROLE_NAME
+        FROM TB_ROLE_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+        <if test="roleCode != null and roleCode != ''">
+            AND ROLE_CODE = #{roleCode}
+        </if>
+        ORDER BY ROLE_CODE
+    </select>
 
-		<if test="userName != null and userName != ''">
-			AND U.USER_NAME LIKE '%' || #{userName} || '%'
-		</if>
+    <!-- 2) ROLE → MENU 권한 조회 -->
+    <select id="selectRoleMenuAuthList"
+            resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
 
-		<if test="dept != null and dept != ''">
-			AND U.DEPT LIKE '%' || #{dept} || '%'
-		</if>
+        SELECT
+            M.COMPANY_CODE,
+            #{roleCode} AS ROLE_CODE,
+            M.MENU_CODE,
+            M.MENU_NAME,
+            M.SYSTEM_TYPE,
 
-		<if test="position != null and position != ''">
-			AND U.POSITION LIKE '%' || #{position} || '%'
-		</if>
+            NVL(A.READ_YN,   'N') AS READ_YN,
+            NVL(A.CREATE_YN, 'N') AS CREATE_YN,
+            NVL(A.UPDATE_YN, 'N') AS UPDATE_YN,
+            NVL(A.DELETE_YN, 'N') AS DELETE_YN
 
-		ORDER BY U.USER_ID
-	</select>
+        FROM TB_MENU_MASTER M
+        LEFT JOIN TB_ROLE_MENU_AUTH A
+          ON M.COMPANY_CODE = A.COMPANY_CODE
+         AND M.MENU_CODE    = A.MENU_CODE
+         AND A.ROLE_CODE   = #{roleCode}
 
+        WHERE M.COMPANY_CODE = #{companyCode}
+          AND M.USE_YN = 'Y'
 
-	<!-- ✅ 2) ROLE → MENU 조회 + SYSTEM_TYPE 포함 -->
-	<select id="selectRoleMenuAuthList"
-		resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
+        ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
+    </select>
 
-		SELECT
-			M.COMPANY_CODE,
-			#{roleCode} AS ROLE_CODE,
-			M.MENU_CODE,
-			M.MENU_NAME,
-			M.SYSTEM_TYPE,   <!-- ✅ TAB 필터 핵심 -->
+    <!-- 3) ROLE → MENU 기존 권한 전체 삭제 -->
+    <delete id="deleteRoleMenuAuth">
+        DELETE FROM TB_ROLE_MENU_AUTH
+        WHERE COMPANY_CODE = #{companyCode}
+          AND ROLE_CODE = #{roleCode}
+    </delete>
 
-			NVL(A.READ_YN, 'N')   AS READ_YN,
-			NVL(A.CREATE_YN, 'N') AS CREATE_YN,
-			NVL(A.UPDATE_YN, 'N') AS UPDATE_YN,
-			NVL(A.DELETE_YN, 'N') AS DELETE_YN
-
-		FROM TB_MENU_MASTER M
-		LEFT JOIN TB_ROLE_MENU_AUTH A
-			ON M.COMPANY_CODE = A.COMPANY_CODE
-		   AND M.MENU_CODE = A.MENU_CODE
-		   AND A.ROLE_CODE = #{roleCode}
-
-		WHERE M.COMPANY_CODE = #{companyCode}
-		  AND M.USE_YN = 'Y'
-
-		ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
-	</select>
-
-
-	<!-- ✅ 3) ROLE → MENU 권한 전체 삭제 -->
-	<delete id="deleteRoleMenuAuth">
-		DELETE FROM TB_ROLE_MENU_AUTH
-		WHERE COMPANY_CODE = #{companyCode}
-		  AND ROLE_CODE = #{roleCode}
-	</delete>
-
-	<!-- ✅ 4) ROLE → MENU 권한 등록 -->
-	<insert id="insertRoleMenuAuth">
-		INSERT INTO TB_ROLE_MENU_AUTH (
-			COMPANY_CODE,
-			ROLE_CODE,
-			MENU_CODE,
-			READ_YN,
-			CREATE_YN,
-			UPDATE_YN,
-			DELETE_YN
-		) VALUES (
-			#{companyCode},
-			#{roleCode},
-			#{menuCode},
-			#{readYn},
-			#{createYn},
-			#{updateYn},
-			#{deleteYn}
-		)
-	</insert>
+    <!-- 4) ROLE → MENU 권한 저장 -->
+    <insert id="insertRoleMenuAuth">
+        INSERT INTO TB_ROLE_MENU_AUTH (
+            COMPANY_CODE,
+            ROLE_CODE,
+            MENU_CODE,
+            READ_YN,
+            CREATE_YN,
+            UPDATE_YN,
+            DELETE_YN,
+            CREATED_BY,
+            CREATED_AT,
+            UPDATED_BY,
+            UPDATED_AT
+        ) VALUES (
+            #{companyCode},
+            #{roleCode},
+            #{menuCode},
+            #{readYn},
+            #{createYn},
+            #{updateYn},
+            #{deleteYn},
+            #{createdBy},
+            SYSDATE,
+            #{updatedBy},
+            SYSDATE
+        )
+    </insert>
 
 </mapper>
