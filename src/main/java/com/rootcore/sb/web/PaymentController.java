@@ -76,21 +76,23 @@ public class PaymentController {
 	}
 
 	@GetMapping("/billing/success") 
-	public ModelAndView billingSuccess(@RequestParam String billingKey, @RequestParam(required = false) String customerKey,
-			 HttpSession session, Model model) {
-		ModelAndView modelAndView = new ModelAndView("sb/success");
-		
-		CompanyVO company = (CompanyVO) session.getAttribute("company");
-		PlanVO plan = (PlanVO) session.getAttribute("plan");
-		ContractVO contract = (ContractVO) session.getAttribute("contract");
-		
+	public ModelAndView billingSuccess(@RequestParam String authKey,
+	                                   @RequestParam String customerKey,
+	                                   HttpSession session, Model model) {
+	    ModelAndView modelAndView = new ModelAndView("sb/success");
+	    
+	    CompanyVO company = (CompanyVO) session.getAttribute("company");
+	    PlanVO plan = (PlanVO) session.getAttribute("plan");
+	    ContractVO contract = (ContractVO) session.getAttribute("contract");
 
-        paymentService.createSubscriptionWithBillingKey(
-                billingKey, customerKey, company, plan, contract);
-        
-        model.addAttribute("billingKey", billingKey);
-        return modelAndView;
+	    // authKey로 billingKey 발급하고, 구독/결제/계약/회사까지 한 번에 처리
+	    TossConfirmResponseVO res = paymentService.createSubscriptionWithBillingKey(
+	            authKey, customerKey, company, plan, contract);
+
+	    model.addAttribute("billingKey", res.getBillingKey()); // 응답 VO에 넣어두면 화면에서 볼 수 있음(선택)
+	    return modelAndView;
 	}
+
 
 	@GetMapping("/fail")
 	public String paymentFail(@RequestParam String code, @RequestParam String message, @RequestParam String orderId,
