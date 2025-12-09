@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.fi.service.CreditService;
+import com.rootcore.fi.service.HarpService;
 import com.rootcore.fi.service.TaxInvoiceService;
 import com.rootcore.fi.service.UnitPriceService;
 import com.rootcore.fi.vo.CreditVO;
+import com.rootcore.fi.vo.HarpInvoiceVO;
+import com.rootcore.fi.vo.HarpMasterVO;
 import com.rootcore.fi.vo.TaxInvoiceSaveVO;
 import com.rootcore.fi.vo.UnitPriceVO;
 
@@ -28,6 +31,7 @@ public class FiRestController {
     private final UnitPriceService unitPriceService;
     private final CreditService creditService;
     private final TaxInvoiceService taxInvoiceService;
+    private final HarpService harpService;
 
     //
     // 단가관리
@@ -118,6 +122,48 @@ public class FiRestController {
             String invoiceNo = taxInvoiceService.makeInvoiceNo();
             result.put("success", true);
             result.put("invoiceNo", invoiceNo);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+
+        return result;
+    }
+    
+    //
+    // 수금등록
+    //
+
+    /**
+     * 수금 대상 세금계산서 목록 조회
+     * - 요청: companyCode, custCode (쿼리스트링 → HarpInvoiceVO 필드로 바인딩)
+     * - 응답: HarpInvoiceVO 리스트
+     */
+    @GetMapping("/harp/invoice")
+    public List<HarpInvoiceVO> getHarpInvoiceList(HarpInvoiceVO param) {
+        // param.companyCode, param.custCode 가 JS에서 넘긴 값으로 들어옵니다.
+        return harpService.selectInvoiceTargetList(param);
+    }
+
+    /**
+     * 수금정보 저장
+     * - 요청: HarpMasterVO (TB_HARP_MASTER 기준 + detailList<List<HarpDetailVO>>)
+     * - 처리: Service에서 HARP + 전표까지 트랜잭션 처리
+     * - 응답: { success, harpNo, slipNo?, message }
+     */
+    @PostMapping("/harp")
+    public Map<String, Object> saveHarp(@RequestBody HarpMasterVO param) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            Map<String, Object> rtn = harpService.saveHarp(param);
+
+            result.put("success", true);
+            result.put("harpNo", rtn.get("harpNo"));   // 수금번호
+            result.put("slipNo", rtn.get("slipNo"));   // 전표번호 (전표 연동 시)
 
         } catch (Exception e) {
             e.printStackTrace();
