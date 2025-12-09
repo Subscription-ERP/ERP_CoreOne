@@ -100,7 +100,7 @@
 		     , nvl(iod.surtax, 0) surtax
 		     , nvl(iod.price, 0) price
 		     , iod.output_status                            -- 출고여부
-		     , cm_output.code_name "output_status_name",    -- 출고여부명
+		     , cm_output.code_name "output_status_name"    -- 출고여부명
 		     , iod.invoice_status                           -- 세금계산서발행여부
 		     , cm_invoice.code_name "invoice_status_name"   -- 세금계산서발행여부명
 		  FROM tb_inord ior
@@ -138,4 +138,11 @@
 		   AND ior.inord_date = ior.inord_date
 		   AND ior.inord_no = ior.inord_no
 	</select>
+	
+	<update id="updateInordInvoice">
+		UPDATE tb_inord_detail
+		   SET invoice_status = '1'
+		 WHERE inord_no = #{inordNo}
+		   AND inord_detail_no = #{inordDetailNo}
+	</update>
 </mapper>

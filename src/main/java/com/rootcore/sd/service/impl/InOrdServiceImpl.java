@@ -29,6 +29,7 @@ public class InOrdServiceImpl implements InOrdService {
 	@Override
 	public List<InOrdDetailVO> getInOrdDetail(InOrdDetailVO info) {
 		// TODO Auto-generated method stub
+		System.out.println(info.getSearchDiv());
 		return inOrdMapper.SelectInOrdDetailList(info);
 	}
 

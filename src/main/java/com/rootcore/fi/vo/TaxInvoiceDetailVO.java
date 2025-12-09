@@ -25,6 +25,9 @@ public class TaxInvoiceDetailVO {
 
     /** QTY NUMBER(10) */
     private int qty;
+    
+    private String inordNo;
+    private String inordDetailNo;
 
     /** UNIT_PRICE NUMBER(15,2) */
     private double unitPrice;

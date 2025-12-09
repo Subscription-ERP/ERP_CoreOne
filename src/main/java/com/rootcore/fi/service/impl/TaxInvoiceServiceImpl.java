@@ -16,6 +16,7 @@ import com.rootcore.fi.vo.TaxInvoiceDetailVO;
 import com.rootcore.fi.vo.TaxInvoiceSaveVO;
 import com.rootcore.fi.vo.TaxInvoiceVO;
 import com.rootcore.sd.mapper.InOrdMapper;
+import com.rootcore.sd.vo.InOrdDetailVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -83,7 +84,7 @@ public class TaxInvoiceServiceImpl implements TaxInvoiceService {
 
             if (d.getInvoiceDetailNo() == null || d.getInvoiceDetailNo().isEmpty()) {
                 // 예: 202412000001 + 001 → 202412000001001
-                d.setInvoiceDetailNo(invoiceNo + String.format("%03d", seq));
+                d.setInvoiceDetailNo(""+seq);
             }
 
             taxInvoiceMapper.insertInvoiceDetail(d);
@@ -97,7 +98,7 @@ public class TaxInvoiceServiceImpl implements TaxInvoiceService {
         SlipMasterVO sm = new SlipMasterVO();
         sm.setCompanyCode(header.getCompanyCode());
         sm.setSlipNo(slipNo);
-        sm.setSlipDate(header.getDocumentDate());   // 전표일자 = 세금계산서 작성일로 사용 (원하시면 ISSUE_DATE로 변경)
+        sm.setSlipDate(header.getDocumentDate()); 
         sm.setFiscalPeriod(header.getDocumentDate()); // 회계일자도 우선 동일하게
         sm.setCustCode(header.getCustCode());
         sm.setSlipType(header.getInvoiceType());   // 전표유형 = 세금계산서유형 사용(또는 고정코드로 변경 가능)
@@ -144,6 +145,15 @@ public class TaxInvoiceServiceImpl implements TaxInvoiceService {
         sd3.setAmount(header.getTotalTaxPrice());
         slipMapper.insertSlipDetail(sd3);
 
+        for(TaxInvoiceDetailVO d : details) {
+	        InOrdDetailVO io = new InOrdDetailVO();
+	        io.setInordNo(d.getInordNo());
+	        io.setInordDetailNo(d.getInordDetailNo());
+	        inOrdMapper.updateInordInvoice(io);
+        }
+        
+        
+        
         // 8. 리턴값 구성
         Map<String, Object> rtn = new HashMap<>();
         rtn.put("invoiceNo", invoiceNo);
