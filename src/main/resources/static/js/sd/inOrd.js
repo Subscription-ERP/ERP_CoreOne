@@ -14,16 +14,17 @@ document.getElementById('btnSave').addEventListener('click', async (e) => {
 
     const saveInOrdData = getInOrdData();
 
-    const res = await fetch('/api/sd/inord/save', {
+    const res = await fetch('/api/inOrd/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(saveInOrdData)
     });
 
     if (res.ok) {
-        console.log("등록 완료");
+        showToast('등록 완료', 'success');
+        window.location.href = '/sd/inordList';
     } else {
-        console.log("등록 실패");
+        showToast('등록 실패', 'error');
     }
 });
 
@@ -124,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 minWidth: 250,
                 editor: 'text'
             },
+            { name: 'taxYn', hidden: true }
         ],
         data: []
     });
@@ -162,12 +164,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     inOrdGrid.setValue(rowKey, 'spec',    sku.spec || '');
                     inOrdGrid.setValue(rowKey, 'unit',    sku.unit || '');
                     inOrdGrid.setValue(rowKey, 'unitPrice', sku.unitPrice || 0);
-
+                    inOrdGrid.setValue(rowKey, 'taxYn', sku.taxYn);
                 } else {
                     inOrdGrid.setValue(rowKey, 'skuName', '');
                     inOrdGrid.setValue(rowKey, 'spec',    '');
                     inOrdGrid.setValue(rowKey, 'unit',    '');
                     inOrdGrid.setValue(rowKey, 'unitPrice', 0);
+                    inOrdGrid.setValue(rowKey, 'taxYn', '');
                 }
 
                 inOrdGrid.focus(rowKey, 'qty');
@@ -187,11 +190,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     inOrdGrid.setValue(rowKey, 'spec',    sku.spec || '');
                     inOrdGrid.setValue(rowKey, 'unit',    sku.unit || '');
                     inOrdGrid.setValue(rowKey, 'unitPrice', sku.unitPrice || 0);
+                    inOrdGrid.setValue(rowKey, 'taxYn', sku.taxYn);
                 } else {
                     inOrdGrid.setValue(rowKey, 'sku', '');
                     inOrdGrid.setValue(rowKey, 'spec',    '');
                     inOrdGrid.setValue(rowKey, 'unit',    '');
                     inOrdGrid.setValue(rowKey, 'unitPrice', 0);
+                    inOrdGrid.setValue(rowKey, 'taxYn', '');
                 }
 
                 inOrdGrid.focus(rowKey, 'qty');
@@ -205,7 +210,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 const unitPrice = Number(row.unitPrice) || 0;
 
                 const supplyPrice = qty * unitPrice;
-                const surTax = Math.floor(supplyPrice * 0.1);
+                const taxYn = row.taxYn
+
+                const surTax = (taxYn === 'N') ? 0 : Math.floor(supplyPrice * 0.1);
+
 
                 inOrdGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
                 inOrdGrid.setValue(rowKey, 'surTax', surTax.toLocaleString());
@@ -350,7 +358,8 @@ function emptyRow(){
         unitPrice: 0,
         supplyPrice: 0,
         surTax: 0,
-        remark: ''
+        remark: '',
+        taxYn: ''
     });
 
     // 추가하는 행의 클래스 추가
@@ -507,9 +516,6 @@ function skuList() {
     }
 
     const url = `/api/cm/inOrdSkuList?custCode=${encodeURIComponent(custCode)}`;
-
-    console.log(custCode);
-    console.log(url);
 
     fetch(url)
         .then(res => res.json())

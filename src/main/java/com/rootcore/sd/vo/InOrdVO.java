@@ -26,7 +26,8 @@ public class InOrdVO {
     private double totalSupplyPrice;    // 총공급가액
     private double totalSurtax;         // 총부가세
     private double totalPrice;          // 총액
-    private String outputStatus;          // 출고여부
+    private String outputStatus;        // 출고여부
+    private String outputStatusName;    // 출고여부 이름
     private String createdBy;           // 생성자
     private Date createDate;            // 생성일자
     private String updatedBy;           // 수정자

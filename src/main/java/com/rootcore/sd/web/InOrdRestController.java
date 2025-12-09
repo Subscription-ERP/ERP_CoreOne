@@ -3,6 +3,7 @@ package com.rootcore.sd.web;
 
 import java.util.List;
 
+import com.rootcore.sd.vo.InOrdVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +31,16 @@ public class InOrdRestController {
         inOrdService.addInOrd(req.getInfo(), req.getDetail());
     }
 
+    // 수주헤더조회
+    @GetMapping("/info")
+    public List<InOrdVO>ninOrdSearch(InOrdVO inOrd) {
+        return inOrdService.getInOrd(inOrd);
+    }
+
+    // 수주세부사항조회
     @GetMapping("/detail")
     public List<InOrdDetailVO> inOrdDetailSearch(InOrdDetailVO InOrdDetail){
 		return inOrdService.getInOrdDetail(InOrdDetail);
-    	
     }
+
 }
