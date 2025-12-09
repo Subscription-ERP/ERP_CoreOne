@@ -3,7 +3,6 @@ package com.rootcore.sd.web;
 import com.rootcore.sd.service.CustService;
 import com.rootcore.sd.service.InOrdService;
 import com.rootcore.sd.vo.CustVO;
-import com.rootcore.sd.vo.InOrdVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +13,6 @@ public class SdController {
 
     @Autowired
     CustService custService;
-
-    @Autowired
-    InOrdService inOrdService;
     
     // 거래처 관련 ===========================================
 

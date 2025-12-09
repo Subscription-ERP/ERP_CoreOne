@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 저장시 유효성 검사
   btnSave.addEventListener('click', (e) => {
+    console.log("눌렀습니다");
     e.preventDefault(); // 필요 시 기본 submit 막기
     if (!alertInfo()) { // false면 에러
       return;
@@ -239,29 +240,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let useStatusChecked = document.querySelector('input[name="useStatus"]:checked');
 
     if (custName === "") {
-      alert("상호(이름)을 입력하시오");
-      // showToast('상호(이름)을 입력하시오', 'warning');
+      showToast('상호(이름)을 입력하시오', 'warning');
       return false;
     } else if (ceoName === "") {
-      alert("대표자명을 입력하시오");
+      showToast('대표자명을 입력하시오', 'warning');
       return false;
     } else if (bno === "") {
-      alert("사업자번호를 입력하시오");
+      showToast('사업자번호를 입력하시오', 'warning');
       return false;
     } else if (phone === "") {
-      alert("전화번호를 입력하시오");
+      showToast('전화번호를 입력하시오', 'warning');
       return false;
     } else if (zonecode === "" || address === "") {
-      alert("주소를 입력하시오");
+      showToast('주소를 입력하시오', 'warning');
       return false;
     } else if (custType === "") {
-      alert("거래처유형을 선택하시오");
+      showToast('거래처유형을 선택하시오', 'warning');
       return false;
     } else if (userName === "") {
-      alert("담당자를 입력하시오");
+      showToast('담당자를 입력하시오', 'warning');
       return false;
     } else if (!useStatusChecked) {
-      alert("사용여부를 선택하시오");
+      showToast('사용여부를 선택하시오', 'warning');
       return false;
     }
 

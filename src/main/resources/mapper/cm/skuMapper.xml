@@ -24,7 +24,8 @@
                 sku.unit,       -- 단위
                 unit.unit_price_type,           -- 단가유형
                 cmCode.code_name "type_name",   -- 단가유형이름
-                unit.unit_price                 -- 단가
+                unit.unit_price,                -- 단가
+                sku.tax_yn
         FROM tb_sku_master sku
         JOIN tb_unit_price_master unit
         ON sku.company_code = unit.company_code
@@ -62,4 +63,15 @@
 			AND sku.sku_name like '%'|| #{skuName} ||'%'
 		</if>
     </select>
+
+    <!-- 수주 출고 처리 -->
+    <update id="updateInOrdHearder">
+
+    </update>
+
+    <update id="updateInOrdDetail" parameterType="string">
+        UPDATE tb_inord_detail
+        SET output_status = 2
+        WHERE inord_detail_no = #{inordDetailNo}
+    </update>
 </mapper>

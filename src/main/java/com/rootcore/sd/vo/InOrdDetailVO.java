@@ -21,8 +21,10 @@ public class InOrdDetailVO {
     private double surtax;              // 부가세
     private double price;               // 가격(공급가액+부가세)
     private String remark;              // 비고
-    private String outputStatus;          // 출고여부
-    private String invoiceStatus;         // 세금계산서 발행여부
+    private String outputStatus;        // 출고여부
+    private String outputStatusName;    // 출고여부 이름
+    private String invoiceStatus;       // 세금계산서 발행여부
+    private String invoiceStatusName;   // 세금계산서 발행여부 이름
     private String createdBy;           // 생성자
     private Date createDate;            // 생성일자
     private String updatedBy;           // 수정자
