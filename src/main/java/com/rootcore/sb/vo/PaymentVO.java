@@ -21,12 +21,12 @@ public class PaymentVO {
 	private LocalDateTime paymentDate;
 	private String cardCompany;
 	private String paymentKey;
-	private LocalDate recentPayment;
-	private LocalDate nextPayment;
 	private LocalDate billingStart;
 	private LocalDate billingEnd;
 	private String createdBy;
 	private LocalDateTime createDate;
 	private String updatedBy;
 	private LocalDateTime updateDate;
+	private String paymentType;
+	private String billingKey;
 }

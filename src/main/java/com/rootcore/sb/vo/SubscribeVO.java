@@ -29,6 +29,10 @@ public class SubscribeVO {
 	    private Double currentPrice;     // CURRENT_PRICE (현재 청구금액)
 	    private Double Price;
 	    private String paymentMethod;
-		private LocalDate recentPayment;
-		private LocalDate nextPayment;
+		private LocalDate recentBillingDate;
+		private LocalDate nextBillingDate;
+		private String billingKey;
+		private String paymentStat;
+	    private String subsStatusLabel;  // 구독중 / 만료 등 사용자-friendly label
+	    private int remainDays;          // 남은 일자(D-30 용)
 }

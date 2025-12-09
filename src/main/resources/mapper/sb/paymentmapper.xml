@@ -114,7 +114,8 @@
             p.price,               
             pay.payment_method,                        
             pay.recent_payment,        
-            pay.next_payment,   
+            pay.next_payment,
+            pay.payment_stat,   
             s.created_by,
             s.create_date,
             s.updated_by,
@@ -126,7 +127,8 @@
             SELECT sub_code,
                    payment_method,
                    recent_payment,
-                   next_payment
+                   next_payment,
+                   payment_stat
             FROM (
                 SELECT 
                     t.*,
