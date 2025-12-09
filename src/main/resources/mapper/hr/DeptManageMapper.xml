@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.DeptManageMapper">
+
+	<select id="selectDeptList" resultType="DeptMasterVO" parameterType="DeptMasterVO">
+		SELECT dept_code,
+		       company_code,
+		       dept_name,
+		       upper_dept_no,
+		       dept_level,
+		       start_date,
+		       end_date,
+		       status,
+		       dept_mng,
+		       rm
+		FROM   tb_dept_master
+	</select>
+	
+
+</mapper>

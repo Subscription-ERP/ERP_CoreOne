@@ -22,4 +22,9 @@ public class AnnualLeaveDetailVO {
 	
 	private String annualLeaveCode;  // 연차관리코드
 	private Long annualLeaveDetailSeq; // 연차상세관리번호
+	
+	private String annualStartDateSearch; // 연차검색시작일
+	private String annualStartEndSearch; // 연차검색종료일
+	private String leaveApplyStartDateSearch; // 연차신청검색시작일
+	private String leaveApplyEndDateSearch; // 연차신청검색종료일
 }
