@@ -48,4 +48,21 @@ public class TossPaymentClient {
 
 		return mono.block();
 	}
+	   // 3) 빌링키 발급
+    public String issueBillingKey(String authKey, String customerKey) {
+
+        Map<String, String> body = Map.of(
+                "authKey", authKey,
+                "customerKey", customerKey
+        );
+
+        Mono<Map> mono = tossWebClient.post()
+                .uri("/v1/billing/authorizations/issue")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Map.class);
+
+        Map<String, Object> response = mono.block();
+        return (String) response.get("billingKey");
+    }
 }
