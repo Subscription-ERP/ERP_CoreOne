@@ -35,10 +35,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         HttpSession session = request.getSession();
 
-        // ✅ 1) 로그인 ID
+        //  로그인 ID
         String userId = authentication.getName();
 
-        // ✅ 2) DB에서 회사코드 + ROLE_CODE 조회
+        //  DB에서 회사코드 + ROLE_CODE 조회
         LoginUserVO loginUser = loginMapper.selectLoginUser(userId);
 
         if (loginUser == null) {
@@ -49,24 +49,24 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String companyCode = loginUser.getCompanyCode();
         String roleCode    = loginUser.getRoleCode();   // ✅ 이제 여기서 정확히 ROLE_CODE 받는다
 
-        // ✅ 3) 혹시 소문자나 ROLE_ADMIN 형태면 정리
+        //  혹시 소문자나 ROLE_ADMIN 형태면 정리
         roleCode = roleCode.replace("ROLE_", "").toUpperCase();
 
-        // ✅ 4) 역할 기준 메뉴 권한 조회
+        //  역할 기준 메뉴 권한 조회
         List<RoleMenuAuthVO> roleMenuAuthList =
                 menuPermissionService.getRoleMenuAuthList(companyCode, roleCode);
 
-        // ✅ 5) 세션 저장
+        //  세션 저장
         session.setAttribute("LOGIN_USER_ID", userId);
         session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
         session.setAttribute("LOGIN_ROLE_CODE", roleCode);   // ✅ ADMIN / MANAGER / USER
         session.setAttribute("LOGIN_MENU_AUTH", roleMenuAuthList);
 
-        // ✅ 6) 로그인 성공 처리
+        //  로그인 성공 처리
         loginMapper.resetFailCountAndLastLogin(userId);
         loginMapper.unlockUserAccount(userId);
 
-        // ✅ 7) 디버그 로그 (이거 꼭 한 번 봐라)
+        //  디버그 로그 (이거 꼭 한 번 봐라)
         System.out.println("✅ LOGIN ID = " + userId);
         System.out.println("✅ LOGIN ROLE_CODE = " + roleCode);
 

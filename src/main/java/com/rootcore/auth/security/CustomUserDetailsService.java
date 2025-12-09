@@ -17,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
 
-        // ★ 메서드명 변경됨(findByUserId)
+        // 메서드명 변경됨(findByUserId)
         LoginVO loginVO = loginMapper.findByUserId(userId);
 
         if (loginVO == null) {

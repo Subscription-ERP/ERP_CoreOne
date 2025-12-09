@@ -42,7 +42,7 @@ public class SecurityConfig {
         	        "/auth/password_reset_send_result.html"
         	    ).permitAll()
 
-        	    // ✅ ADMIN만 접근 가능
+        	    // ADMIN만 접근 가능
         	    .requestMatchers("/auth/menu_permission/**").hasAnyRole("ADMIN")
 
 

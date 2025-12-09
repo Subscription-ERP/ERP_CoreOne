@@ -18,7 +18,6 @@ public class SecurityUser implements UserDetails {
         this.loginVO = loginVO;
     }
 
-    // ✅ ✅ ✅ 여기만 제대로 동작하면 403 끝난다
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 

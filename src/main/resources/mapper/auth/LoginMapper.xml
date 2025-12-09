@@ -5,6 +5,7 @@
 <mapper namespace="com.rootcore.auth.mapper.LoginMapper">
 
 	<!-- 1. 사용자 조회 -->
+	<!--  TB_USER_MASTER에서 ROLE_CODE 조인 -->
 	<select id="findByUserId"
  resultType="com.rootcore.auth.vo.LoginVO">
 

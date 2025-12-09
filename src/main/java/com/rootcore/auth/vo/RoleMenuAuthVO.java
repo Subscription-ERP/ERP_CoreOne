@@ -17,7 +17,7 @@ public class RoleMenuAuthVO {
     private String createdBy;
     private String updatedBy;
     
-    private String menuName;   // ✅ 메뉴명
-    private String systemType;   // ✅ SYSTEM_TYPE 탭 필터용
+    private String menuName;   // 메뉴명
+    private String systemType;   // SYSTEM_TYPE 탭 필터용
 
 }

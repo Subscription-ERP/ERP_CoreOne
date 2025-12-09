@@ -35,7 +35,7 @@ public class LoginVO {
     private boolean loginSuccess;
     private String message;
     
- // LoginVO 맨 아래에 추가
+    // LoginVO 맨 아래에 추가
     private String roleCode;
 
 }
