@@ -14,4 +14,7 @@ public class DeptMasterVO {
     private String status;
     private String deptMng;
     private String rm;
+    
+    private String text;
+    
 }

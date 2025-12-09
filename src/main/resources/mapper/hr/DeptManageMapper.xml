@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.hr.mapper.DeptManageMapper">
-
+	
+	<!-- 부서조회 -->
 	<select id="selectDeptList" resultType="DeptMasterVO" parameterType="DeptMasterVO">
 		SELECT dept_code,
 		       company_code,
@@ -16,5 +17,24 @@
 		FROM   tb_dept_master
 	</select>
 	
+	<!-- 사원조회 -->
+	<select id="selectDeptUserList" resultType="UserVO" parameterType="DeptMasterVO">
+		SELECT um.user_id,
+		       um.user_name,
+		       um.dept,
+		       dm.dept_name,
+		       ccj.code_name as job_title,
+		       ccp.code_name as position
+		FROM   tb_user_master um
+		       JOIN tb_dept_master dm
+		       ON dm.dept_code = um.dept
+		       JOIN tb_cm_code ccj
+		       ON ccj.code = um.job_title
+		       JOIN tb_cm_code ccp
+		       ON ccp.code = um.position
+		<if test="text != null and text != '' ">
+            AND dm.dept_name = #{text}
+        </if>
+	</select>
 
 </mapper>

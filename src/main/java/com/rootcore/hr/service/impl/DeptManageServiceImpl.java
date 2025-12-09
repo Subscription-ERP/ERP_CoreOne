@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.rootcore.hr.mapper.DeptManageMapper;
 import com.rootcore.hr.service.DeptManageService;
 import com.rootcore.hr.vo.DeptMasterVO;
+import com.rootcore.hr.vo.UserVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,11 @@ public class DeptManageServiceImpl implements DeptManageService {
 	@Override
 	public List<DeptMasterVO> selectDeptList(DeptMasterVO param) {
 		return deptManageMapper.selectDeptList(param);
+	}
+
+	@Override
+	public List<UserVO> selectDeptUserList(DeptMasterVO param) {
+		return deptManageMapper.selectDeptUserList(param);
 	}
 
 }
