@@ -1,21 +1,27 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+    // ✅ 서버에서 세션으로 내려준 로그인 사용자 메뉴 목록
     const menuData = window.LOGIN_MENU_AUTH || [];
-    console.log("✅ 사이드바 메뉴 세션 데이터:", menuData);
 
-    const sideMenu = document.getElementById("navigation");
+    console.log("✅ 로그인 사용자 메뉴 권한:", menuData);
+
+    const sideMenu = document.getElementById("sideMenu");
+
     if (!sideMenu) {
-        console.error("❌ navigation 태그를 찾을 수 없음");
+        console.error("❌ sideMenu DOM을 찾을 수 없습니다.");
         return;
     }
 
+    // ✅ 기존 메뉴 전부 제거 (정적 HTML 완전 차단)
     sideMenu.innerHTML = "";
 
-    // ✅ SYSTEM_TYPE 별 그룹핑
+    // ✅ 시스템 타입별 그룹화 (CM / FI / HR / SD / SYSTEM ...)
     const groupMap = {};
 
     menuData.forEach(menu => {
-        if (menu.readYn !== 'Y') return;
+
+        // ✅ ✅ ✅ 핵심: READ 권한 없는 메뉴는 무조건 제외
+        if (menu.readYn !== "Y") return;
 
         if (!groupMap[menu.systemType]) {
             groupMap[menu.systemType] = [];
@@ -24,44 +30,34 @@ document.addEventListener("DOMContentLoaded", function () {
         groupMap[menu.systemType].push(menu);
     });
 
-    // ✅ 그룹 생성
-    for (const systemType in groupMap) {
+    // ✅ ✅ ✅ 실제 화면에 출력
+    Object.keys(groupMap).forEach(systemType => {
 
-        let systemName = systemType;
-        if (systemType === "CM") systemName = "공통";
-        if (systemType === "FI") systemName = "회계";
-        if (systemType === "HR") systemName = "인사";
-        if (systemType === "SALES") systemName = "영업";
-        if (systemType === "SUB") systemName = "구독";
-        if (systemType === "SYSTEM") systemName = "시스템";
-
+        // 1️⃣ 상위 그룹(li)
         const groupLi = document.createElement("li");
-        groupLi.className = "nav-item";
+        groupLi.className = "nav-item menu-open";
 
         groupLi.innerHTML = `
             <a href="#" class="nav-link">
                 <i class="nav-icon bi bi-folder"></i>
-                <p>
-                    ${systemName}
-                    <i class="bi bi-chevron-right"></i>
+                <p>${systemType}
+                    <i class="nav-arrow bi bi-chevron-right"></i>
                 </p>
             </a>
             <ul class="nav nav-treeview"></ul>
         `;
 
-        const subUl = groupLi.querySelector(".nav-treeview");
+        const subUl = groupLi.querySelector("ul");
 
+        // 2️⃣ 하위 메뉴들
         groupMap[systemType].forEach(menu => {
-
-            // ✅ ROOT 메뉴는 클릭 메뉴로 만들지 않음
-            if (!menu.menuUrl || menu.menuUrl === "null") return;
 
             const itemLi = document.createElement("li");
             itemLi.className = "nav-item";
 
             itemLi.innerHTML = `
                 <a href="${menu.menuUrl}" class="nav-link">
-                    <i class="bi bi-dash"></i>
+                    <i class="nav-icon bi bi-dash"></i>
                     <p>${menu.menuName}</p>
                 </a>
             `;
@@ -69,6 +65,8 @@ document.addEventListener("DOMContentLoaded", function () {
             subUl.appendChild(itemLi);
         });
 
+        // ✅ 최종적으로 사이드바에 추가
         sideMenu.appendChild(groupLi);
-    }
+    });
+
 });
