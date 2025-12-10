@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+  <meta charset="UTF-8" />
+  <title>세금계산서 발행현황 조회</title>
+
+  <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+  <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+  <link th:href="@{/css/general.css}" rel="stylesheet" />
+
+</head>
+
+<body>
+<div layout:fragment="content">
+
+<!-- ============================================
+      조회조건 CARD
+============================================ -->
+<div class="container-fluid px-2" style="height:120px; margin:5px 0;">
+  <div class="card h-100">
+    <div class="card-body py-2">
+
+      <div class="d-flex justify-content-between align-items-center h-100">
+
+        <!-- 좌측 조회조건 -->
+        <div class="flex-grow-1">
+
+          <div class="row g-3">
+
+            <!-- 발행일자 from -->
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:120px;">발행일자</label>
+              <input type="date" id="fromDate" class="form-control input-base">
+            </div>
+
+            <!-- 발행일자 to -->
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:20px;">~</label>
+              <input type="date" id="toDate" class="form-control input-base">
+            </div>
+
+          </div>
+
+          <div class="row g-3 mt-2">
+
+            <!-- 거래처코드 -->
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:120px;">거래처코드</label>
+              <div class="input-group">
+                <input type="text" id="custCode" class="form-control input-base-icon">
+                <button class="btn btn-icon"><i class="bi bi-search"></i></button>
+              </div>
+            </div>
+
+            <!-- 거래처명 -->
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              <label class="fw-semibold mb-0" style="width:120px;">거래처명</label>
+              <input type="text" id="custName" class="form-control input-base" readonly>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 버튼 영역 -->
+        <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
+          <div class="d-flex gap-2">
+            <button class="btn btn-white btn-outer" id="btnPrint">출력</button>
+            <button class="btn btn-color btn-outer" id="btnSearch">조회</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ============================================
+      GRID 영역
+============================================ -->
+<div class="container-fluid px-2" style="height: calc(98vh - 125px - 135px);">
+  <div class="card h-100">
+    <div class="card-body p-0">
+      <div id="taxInvoiceGrid" style="height:100%;"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ============================================
+      GRID SCRIPT
+============================================ -->
+<script src="@{/js/fi/taxInvoiceHistory.js"></script>
+
+
+<style>
+  body, html { overflow-x: hidden !important; }
+  .app-main { overflow-x: hidden !important; }
+  .card-header { border-bottom: none !important; }
+</style>
+
+</div>
+</body>
+</html>
