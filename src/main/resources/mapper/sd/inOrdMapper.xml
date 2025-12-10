@@ -69,7 +69,7 @@
     </insert>
 
     <!-- 수주 헤더 정보 불러오기 -->
-    <select id="SelectInOrdList" resultType="InOrdVO">
+    <select id="SelectInOrdList" parameterType="string" resultType="InOrdVO">
         SELECT ior.company_code,
                ior.inord_no,
                ior.inord_date,
@@ -82,6 +82,14 @@
         JOIN tb_cm_code cm_output
           ON ior.output_status = cm_output.code
          AND cm_output.group_code = '0L'
+        <where>
+            <if test="outputStatusFilter == 'NOT_DONE'">
+                AND ior.output_status != 2
+            </if>
+            <if test="outputStatusFilter == 'DONE'">
+                AND ior.output_status = 2
+            </if>
+        </where>
         ORDER BY ior.create_date DESC
     </select>
 
@@ -121,6 +129,12 @@
          <if test="inordNo != null and inordNo != ''">
            AND iod.inord_no = #{inordNo}
          </if>
+         <if test="outputStatusFilter == 'NOT_DONE'">
+           AND ior.output_status != 2
+         </if>
+         <if test="outputStatusFilter == 'DONE'">
+           AND ior.output_status = 2
+         </if>
 		 <if test="custCode != null and custCode != ''">
 		   AND ior.cust_code LIKE '%' || #{custCode} || '%'
 		 </if>
@@ -144,7 +158,7 @@
 	</select>
 
     <!-- 수주 헤더 출고처리 -->
-    <update id="updateInord" parameterType="string">
+    <update id="updateInordOutPut" parameterType="string">
         UPDATE tb_inord header
         SET header.output_status =
                 (
@@ -167,7 +181,15 @@
         WHERE header.inord_no = #{inordNo}
     </update>
 
-	<!-- 수주 상세 출고처리 -->
+    <!-- 수주 상세 출고처리 -->
+    <update id="updateInordDetailOutPut" parameterType="InOrdDetailVO">
+        UPDATE tb_inord_detail
+        SET output_status = '2'
+        WHERE inord_no = #{inordNo}
+          AND inord_detail_no = #{inordDetailNo}
+    </update>
+
+	<!-- 수주 세금계산서 처리 -->
 	<update id="updateInordInvoice" parameterType="InOrdDetailVO">
 		UPDATE tb_inord_detail
 		   SET invoice_status = '2'

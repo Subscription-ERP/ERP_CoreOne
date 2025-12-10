@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 
@@ -38,17 +39,20 @@
                             <div class="form-grid__row form-grid__row--3col">
                                 <div class="form-grid__label">수주번호</div>
                                 <div class="form-grid__field">
+                                    <label for="inordNo" hidden="hidden"></label>
                                     <input id="inordNo" name="inordNo" class="form-control form-control-sm input-base is-disabled" readonly placeholder="자동생성" />
                                 </div>
 
                                 <div class="form-grid__label">수주일</div>
                                 <div class="form-grid__field">
+                                    <label for="inordDate" hidden="hidden"></label>
                                     <input id="inordDate" name="inordDate" type="date" class="form-control form-control-sm input-base is-disabled" readonly
-                                           th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" />
+                                                                          th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" />
                                 </div>
 
                                 <div class="form-grid__label">납기일</div>
                                 <div class="form-grid__field">
+                                    <label for="dueDate" hidden="hidden"></label>
                                     <input id="dueDate" name="dueDate" type="date" class="form-control form-control-sm input-base" />
                                 </div>
                             </div>
@@ -57,6 +61,7 @@
                             <div class="form-grid__row form-grid__row--4col">
                                 <div class="form-grid__label">부서</div>
                                 <div class="form-grid__field">
+                                    <label for="dept"  hidden="hidden"></label>
                                     <input id="dept" name="dept" type="text" class="form-control form-control-sm input-base" />
                                     <button type="button" id="btnOpenHrModal"
                                             class="btn-grid">
@@ -66,12 +71,14 @@
 
                                 <div class="form-grid__label">담당자</div>
                                 <div class="form-grid__field">
+                                    <label for="pic" hidden="hidden"></label>
                                     <input id="pic" name="pic" type="text" class="form-control form-control-sm input-base" />
                                 </div>
 
                                 <div class="form-grid__label">거래처코드</div>
                                 <div class="form-grid__field">
                                     <div th:replace="modal/custModal :: custModal"></div>
+                                    <label for="custCodeSearch" hidden="hidden"></label>
                                     <input id="custCodeSearch" name="custSearchKeyword" type="text" class="form-control form-control-sm input-base" />
                                     <button type="button" id="btnOpenCustModal"
                                             class="btn-grid">
@@ -81,6 +88,7 @@
 
                                 <div class="form-grid__label">거래처명</div>
                                 <div class="form-grid__field">
+                                    <label for="custNameSearch" hidden="hidden"></label>
                                     <input id="custNameSearch" name="custSearchKeyword" type="text" class="form-control form-control-sm input-base" />
                                 </div>
 
@@ -156,6 +164,10 @@
                 <header class="card-ui__header">
                     <h6 class="card-ui__title">품목</h6>
                     <div class="toolbar">
+                        <div th:replace="modal/skuModal :: skuModal"></div>
+                        <button id="btnOpenSkuModal" type="button" class="btn btn-white btn-inner">
+                            품목
+                        </button>
                         <button id="btnDeleteRow" type="button" class="btn btn-white btn-inner">
                             삭제
                         </button>

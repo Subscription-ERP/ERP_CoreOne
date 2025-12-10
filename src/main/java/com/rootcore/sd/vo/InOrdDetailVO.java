@@ -39,5 +39,8 @@ public class InOrdDetailVO {
 	
 	// 조회구분 추가
 	private String searchDiv;
+
+    // 수주 목록 조건
+    private String outputStatusFilter;
 	
 }

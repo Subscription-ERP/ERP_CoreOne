@@ -8,5 +8,4 @@ import java.util.List;
 public class InOrdSave {
     private InOrdVO info;
     private List<InOrdDetailVO> detail;
-    private InOrdVO inordNo;
 }

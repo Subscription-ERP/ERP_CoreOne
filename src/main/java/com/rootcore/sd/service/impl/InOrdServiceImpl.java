@@ -16,6 +16,7 @@ public class InOrdServiceImpl implements InOrdService {
 
     final InOrdMapper inOrdMapper;
 
+    @Override
     @Transactional
     public void addInOrd(InOrdVO info, List<InOrdDetailVO> details) {
         inOrdMapper.insertInOrd(info);
@@ -27,8 +28,8 @@ public class InOrdServiceImpl implements InOrdService {
     }
 
     @Override
-    public List<InOrdVO> getInOrd(InOrdVO info) {
-        return inOrdMapper.SelectInOrdList(info);
+    public List<InOrdVO> getInOrd(String outputStatusFilter) {
+        return inOrdMapper.SelectInOrdList(outputStatusFilter);
     }
 
     @Override
@@ -37,15 +38,16 @@ public class InOrdServiceImpl implements InOrdService {
 		return inOrdMapper.SelectInOrdDetailList(info);
 	}
 
+    @Override
     @Transactional
     public void updateOutputStatus(String inordNo, List<InOrdDetailVO> details) {
         for (InOrdDetailVO detail : details) {
             detail.setInordNo(inordNo);
-            inOrdMapper.updateInordInvoice(detail);
+            inOrdMapper.updateInordDetailOutPut(detail);
         }
 
         // 2) 헤더 출고여부 재계산
-        inOrdMapper.updateInord(inordNo);
+        inOrdMapper.updateInordOutPut(inordNo);
     }
 
 }

@@ -32,5 +32,7 @@ public class InOrdVO {
     private Date createDate;            // 생성일자
     private String updatedBy;           // 수정자
     private Date updateDate;            // 수정일자
+
+    private String outputStatusFilter;  // 수주 목록 조건
 }
 
