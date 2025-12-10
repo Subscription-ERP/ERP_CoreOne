@@ -1,14 +1,5 @@
 console.log("✅ menuAuth.js 로드됨");
 
-/* ============================================================
-   menuAuth.js (ROLE 기반 메뉴권한 관리 - 최종 안정판)
-   ✅ 저장 유지
-   ✅ 전체선택 / 전체해제 / 되돌리기 100% 정상
-   ✅ Row 꼬임 없음
-   ✅ 탭 이동 시 체크 유지 (fullAuthData 동기화)
-   ✅ ADMIN 아닐 경우 SYSTEM 탭에서 SYS-MENU-AUTH 제거
-============================================================ */
-
 let COMPANY_CODE = '';
 
 let roleGrid;
@@ -34,7 +25,7 @@ $(document).ready(function () {
 });
 
 // ============================================================
-// ✅ 2) ROLE GRID
+// ✅ 2) ROLE GRID (🔥 클릭 문제 완전 해결 버전)
 // ============================================================
 function initRoleGrid() {
 
@@ -50,14 +41,18 @@ function initRoleGrid() {
         ]
     });
 
-    roleGrid.on('click', ev => {
+    // ✅ ✅ ✅ 클릭 이벤트 대신 focusChange 사용 (핵심 수정)
+    roleGrid.on('focusChange', ev => {
 
-        const rowKey = ev.rowKey;
-        selectedRole = roleGrid.getRow(rowKey);
+        if (ev.rowKey == null) return;
+
+        selectedRole = roleGrid.getRow(ev.rowKey);
         if (!selectedRole) return;
 
         $(".tui-grid-row").removeClass("row-selected");
-        roleGrid.addRowClassName(rowKey, 'row-selected');
+        roleGrid.addRowClassName(ev.rowKey, 'row-selected');
+
+        console.log("✅ 선택된 ROLE:", selectedRole.roleCode);
 
         loadRoleMenuAuth(selectedRole.roleCode);
     });
@@ -84,7 +79,6 @@ function initAuthGrid() {
         ]
     });
 
-    // ✅ 체크박스는 GRID 클릭 이벤트로만 처리
     authGrid.on('click', ev => {
 
         if (!ev.columnName) return;
@@ -109,7 +103,7 @@ function checkboxFormatter({ value }) {
 }
 
 // ============================================================
-// ✅ ✅ ✅ 핵심: 현재 탭 데이터 → 전체 데이터 동기화
+// ✅ ✅ ✅ 탭 동기화
 // ============================================================
 function syncCurrentTabToFullData() {
 
@@ -138,49 +132,36 @@ function bindEvents() {
 
     console.log("✅ bindEvents 실행됨");
 
-    // ✅ 조회
-    $(document).on("click", "#btnSearch", function () {
-        loadRoleList();
-    });
+    $("#btnSearch").on("click", loadRoleList);
 
-    // ✅ 초기화
-    $(document).on("click", "#btnReset", function () {
+    $("#btnReset").on("click", function () {
         $("#searchRole").val("");
         roleGrid.resetData([]);
         authGrid.clear();
         selectedRole = null;
     });
 
-    // ✅ 전체선택
-    $(document).on("click", "#btnAllCheck", function () {
+    $("#btnAllCheck").on("click", function () {
 
-        const rows = authGrid.getData();
-
-        rows.forEach(row => {
-            const rowKey = row.rowKey;
-            authGrid.setValue(rowKey, "readYn",   "Y");
-            authGrid.setValue(rowKey, "createYn", "Y");
-            authGrid.setValue(rowKey, "updateYn", "Y");
-            authGrid.setValue(rowKey, "deleteYn", "Y");
+        authGrid.getData().forEach(row => {
+            authGrid.setValue(row.rowKey, "readYn",   "Y");
+            authGrid.setValue(row.rowKey, "createYn", "Y");
+            authGrid.setValue(row.rowKey, "updateYn", "Y");
+            authGrid.setValue(row.rowKey, "deleteYn", "Y");
         });
     });
 
-    // ✅ 전체해제
-    $(document).on("click", "#btnAllClear", function () {
+    $("#btnAllClear").on("click", function () {
 
-        const rows = authGrid.getData();
-
-        rows.forEach(row => {
-            const rowKey = row.rowKey;
-            authGrid.setValue(rowKey, "readYn",   "N");
-            authGrid.setValue(rowKey, "createYn", "N");
-            authGrid.setValue(rowKey, "updateYn", "N");
-            authGrid.setValue(rowKey, "deleteYn", "N");
+        authGrid.getData().forEach(row => {
+            authGrid.setValue(row.rowKey, "readYn",   "N");
+            authGrid.setValue(row.rowKey, "createYn", "N");
+            authGrid.setValue(row.rowKey, "updateYn", "N");
+            authGrid.setValue(row.rowKey, "deleteYn", "N");
         });
     });
 
-    // ✅ 되돌리기
-    $(document).on("click", "#btnRevert", function () {
+    $("#btnRevert").on("click", function () {
 
         if (!originalAuthSnapshot) {
             alert("되돌릴 데이터가 없습니다.");
@@ -191,14 +172,12 @@ function bindEvents() {
         filterBySystemType();
     });
 
-    // ✅ ✅ ✅ 저장 (저장 전에 전체 데이터 동기화)
-    $(document).on("click", "#btnSaveAuth", function () {
+    $("#btnSaveAuth").on("click", function () {
         syncCurrentTabToFullData();
         saveRoleAuth();
     });
 
-    // ✅ ✅ ✅ 탭 이동 (탭 이동 전에 전체 데이터 동기화)
-    $(document).on("click", ".menu-tab-btn", function () {
+    $(".menu-tab-btn").on("click", function () {
 
         syncCurrentTabToFullData();
 
@@ -248,7 +227,6 @@ function loadRoleMenuAuth(roleCode) {
 
     $.get("/auth/menu_permission/api/role-menu", { roleCode }, function (data) {
 
-        // ✅ ADMIN이면 전체 Y
         if (roleCode === 'ADMIN') {
             data.forEach(row => {
                 row.readYn   = 'Y';
@@ -258,7 +236,6 @@ function loadRoleMenuAuth(roleCode) {
             });
         }
 
-        // ✅ ADMIN 아닐 경우 SYS-MENU-AUTH 제거
         if (roleCode !== "ADMIN") {
             data = data.filter(item => item.menuCode !== "SYS-MENU-AUTH");
         }

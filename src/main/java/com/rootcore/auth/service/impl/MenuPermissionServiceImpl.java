@@ -18,20 +18,19 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
 
     private final MenuPermissionMapper mapper;
 
-    
     // ROLE 목록 조회
     @Override
     public List<RoleVO> getRoleList(String companyCode, String roleCode) {
         return mapper.selectRoleList(companyCode, roleCode);
     }
 
-     
-    // ROLE → MENU 권한 조회
-    // ADMIN만 강제 FULL
-    // USER / MANAGER는 DB 값 그대로 사용
+    // ROLE → MENU 권한 조회 (관리자 화면용)
+    // ADMIN → 전체 Y
+    // MANAGER / USER → DB 그대로 (N 포함 절대 필터링 금지)
     @Override
     public List<RoleMenuAuthVO> getRoleMenuAuthList(String companyCode, String roleCode) {
 
+        // DB에서 그대로 전부 조회
         List<RoleMenuAuthVO> list =
                 mapper.selectRoleMenuAuthList(companyCode, roleCode);
 
@@ -39,21 +38,22 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
             return list;
         }
 
-        // ADMIN만 정책 강제 적용
+        // ADMIN만 전체 강제 Y
         if ("ADMIN".equals(roleCode)) {
             for (RoleMenuAuthVO vo : list) {
-                applyRolePolicy(vo, roleCode);
+                vo.setReadYn("Y");
+                vo.setCreateYn("Y");
+                vo.setUpdateYn("Y");
+                vo.setDeleteYn("Y");
             }
         }
 
-        // USER / MANAGER는 DB 값 그대로 반환
+        // 여기서는 절대 FILTER 하면 안 된다
         return list;
     }
 
-    
+
     // ROLE → MENU 권한 저장
-    // ADMIN만 보호
-    // USER / MANAGER는 화면 설정 그대로 저장  
     @Override
     @Transactional
     public int saveRoleMenuAuth(List<RoleMenuAuthVO> list) {
@@ -65,7 +65,7 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
         String companyCode = list.get(0).getCompanyCode();
         String roleCode = list.get(0).getRoleCode();
 
-        // ADMIN 권한은 수정 금지
+        // ADMIN 보호
         if ("ADMIN".equals(roleCode)) {
             return 1;
         }
@@ -73,23 +73,17 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
         // 기존 권한 전체 삭제
         mapper.deleteRoleMenuAuth(companyCode, roleCode);
 
-        // 신규 권한 저장
         int result = 0;
         for (RoleMenuAuthVO vo : list) {
 
-            // NULL 방지 처리만 적용
             applyRolePolicy(vo, roleCode);
-
             result += mapper.insertRoleMenuAuth(vo);
         }
 
         return result;
     }
 
-    
-    // ROLE 정책 적용 로직 (최종 안정판)
-    // ADMIN만 강제 FULL
-    // 나머지는 N 보정만 수행
+    // ROLE 정책
     private void applyRolePolicy(RoleMenuAuthVO vo, String roleCode) {
 
         if ("ADMIN".equals(roleCode)) {
@@ -100,11 +94,18 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
             return;
         }
 
-        // USER / MANAGER는 DB 값 그대로 두고
-        // 혹시 null이면 N으로만 보정
         if (vo.getReadYn()   == null) vo.setReadYn("N");
         if (vo.getCreateYn() == null) vo.setCreateYn("N");
         if (vo.getUpdateYn() == null) vo.setUpdateYn("N");
         if (vo.getDeleteYn() == null) vo.setDeleteYn("N");
+    }
+
+
+    // 로그인 사용자용 - 사이드바 전용
+    // 여기서만 READ_YN = 'Y' 필터 적용하는 게 정답
+
+    @Override
+    public List<RoleMenuAuthVO> getLoginMenuList(String companyCode, String roleCode) {
+        return mapper.selectLoginMenuList(companyCode, roleCode);
     }
 }
