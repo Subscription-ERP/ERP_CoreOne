@@ -34,7 +34,13 @@ public interface HrReviewService {
 			                                    @Param("userId") String userId, 
 			                                    @Param("reviewMasterName") String reviewMasterName);
 	
+	// 인사평가관리 - 상세조회
+	HrReviewVO reviewResultByTargetUserId(@Param("targetUserId") String targetUserId,
+			@Param("reviewCode") String reviewCode);
+	
 	int registerReviewResult(HrReviewVO hrReviewVO);                    // 인사평가관리 - 등록
+	int modifyReviewResult(HrReviewVO hrReviewVO);                      // 인사평가관리 - 수정
+	
 	
 	
 }

@@ -105,27 +105,63 @@ document.addEventListener("DOMContentLoaded", () => {
 					name: "reviewStatus",
 					align: "center",
 					formatter: ({ value }) => {
-						// 값이 null/undefined/빈문자면 "미평가"로 표시
-						if (!value || String(value).trim() === "") {
-							return "미평가";
-						}
-						return value;
+						const v = String(value ?? "").trim();
+
+						if (v === "" || v === "0") return "미평가";
+						if (v === "1") return "진행중";
+						if (v === "2") return "완료";
+
+						return v;
 					}
 				},
-				{ header: "총점", name: "finalScore", align: 'right' }
+				{ header: "총점", name: "finalScore", align: 'center' }
 			]
 		});
 
 		// 팀원 클릭시 사원정보+평가항목 조회
-		teamGrid.on("click", (ev) => {
+		teamGrid.on("click", async (ev) =>  {
 			const rowData = teamGrid.getRow(ev.rowKey);
 			if (!rowData) return;
 
+			// 기본정보 채우기
 			fillDetailBasicInfo(rowData); // 사원명/부서/총점 채우기
 
+			// 템플릿 항목 그리기
 			if (currentReviewMasterCode) {
 				loadEvalItemList(currentReviewMasterCode);
 			}
+
+			// 3) 저장된 결과가 있는 경우에만 서버에서 가져와 매핑
+			  if (rowData.reviewCode) {
+			    try {
+
+			      const url =
+			        `/api/review/manage/detail?` +
+			        `reviewCode=${encodeURIComponent(rowData.reviewCode)}` +
+			        `&targetUserId=${encodeURIComponent(rowData.targetUserId)}`;
+
+			      const res = await fetch(url);   // ← await
+			      if (!res.ok) {
+			        throw new Error("HTTP " + res.status);
+			      }
+
+			      const reviewData = await res.json();  // ← await
+
+			      applyReviewResultToForm(reviewData);
+
+			    } catch (err) {
+			      console.error(err);
+			      showToast("저장된 인사평가를 불러오는 중 오류가 발생했습니다.", "error");
+			    } 
+			  } else {
+			    // 미평가일 때 폼 초기화
+			    const finalScoreInput = document.querySelector("#finalScore");
+			    const commentInput = document.querySelector("#evalComment");
+			    if (finalScoreInput) finalScoreInput.value = "";
+			    if (commentInput) commentInput.value = "";
+			  }
+
+
 		});
 
 	}
@@ -138,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	async function loadReviewMasterList() {
 		try {
 			if (window.globalLoader) globalLoader.style.display = "flex";
-
+			
 			const response = await fetch("/api/review/manage/status");
 			if (!response.ok) {
 				throw new Error("HTTP " + response.status);
@@ -160,7 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 선택한 템플릿 평가항목 조회
 	async function loadEvalItemList(reviewMasterCode) {
 		try {
-			if (window.globalLoader) globalLoader.style.display = "flex";
 
 			const url = `/api/review/manage/evalItem?reviewMasterCode=${encodeURIComponent(reviewMasterCode)}`;
 			const response = await fetch(url);
@@ -182,16 +217,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			// 에러 시도 빈 테이블로 초기화
 			renderEvalItems([]);
 
-		} finally {
-			if (window.globalLoader) globalLoader.style.display = "none";
-		}
+		} 
 	}
 
 
 	// 선택한 템플릿의 팀원 목록 + 평가정보 조회
 	async function loadTeamMemberList(reviewMasterCode) {
 		try {
-			if (window.globalLoader) globalLoader.style.display = "flex";
 
 			const url =
 				`/api/review/manage/teamMember` +
@@ -211,9 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				showToast("팀원 평가 목록을 불러오지 못했습니다.", "error");
 			}
 			teamGrid.resetData([]);
-		} finally {
-			if (window.globalLoader) globalLoader.style.display = "none";
-		}
+		} 
 	}
 
 
@@ -443,6 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		return {
 			userId: row.targetUserId,
+			reviewCode: row.reviewCode || null,     
 			userName: row.targetUserName,
 			jobTitle: row.targetJobTitleName,   // 직위/직급명
 			deptName: row.targetDeptName
@@ -569,9 +600,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			const finalScoreInput = document.querySelector("#finalScore");
 			const commentInput = document.querySelector("#evalComment");
 
+			// 등록인지 수정인지 판단
+			const isModify = !!member.reviewCode;
+			
 			const payload = {
-				reviewMasterCode: currentReviewMasterCode,   // ★ 여기서 세팅
+				reviewMasterCode: currentReviewMasterCode,   
 				targetUserId: member.userId,                 // 피평가자
+				reviewCode: member.reviewCode || null,
 				finalScore: finalScoreInput ? finalScoreInput.value : "",
 				reviewComment: commentInput ? commentInput.value : "",
 				hrReviewResultList: hrReviewResultList       // 상세 점수 리스트
@@ -580,7 +615,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			try {
 				if (window.globalLoader) globalLoader.style.display = "flex";
 
-				const res = await fetch("/api/review/manage/register", {
+				const url = isModify ? "/api/review/manage/modify" : "/api/review/manage/register";
+								
+				const res = await fetch(url, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json"
@@ -593,10 +630,15 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 
 				const result = await res.json?.() ?? null;
-				showToast("인사평가가 저장되었습니다.", "success");
+				showToast(isModify ? "인사평가가 수정되었습니다." : "인사평가가 등록되었습니다.", "success");
 
-				// 저장 후 목록/팀원 다시 로딩해도 좋고, 필요에 따라 추가 처리
+				// 목록 로딩 및 초기화
 				loadTeamMemberList(currentReviewMasterCode);
+				btnDetailReset?.click();
+				const evalComment = document.querySelector('#evalComment');
+				if (evalComment) {
+					evalComment.value = "";
+				}
 
 			} catch (err) {
 				console.error(err);
@@ -607,6 +649,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 		})
+	}
+
+
+	/* ------------------------------------------------------------------
+	 * 저장된 평가결과를 화면에 반영
+	 * ------------------------------------------------------------------ */
+	function applyReviewResultToForm(reviewData) {
+		if (!reviewData) return;
+
+		// 1) 최종등급, 코멘트 세팅
+		const finalScoreInput = document.querySelector("#finalScore");
+		const commentInput = document.querySelector("#evalComment");
+
+		if (finalScoreInput) {
+			finalScoreInput.value = reviewData.finalScore ?? "";
+		}
+		if (commentInput) {
+			commentInput.value = reviewData.reviewComment ?? "";
+		}
+
+		// 2) 상세 항목 점수 세팅
+		const resultList = reviewData.hrReviewResultList || [];
+		const rows = document.querySelectorAll("#reviewTbody tr:not(.empty-row)");
+
+		rows.forEach((row, idx) => {
+			const result = resultList[idx];
+			if (!result) return;
+
+			const scoreSelect = row.querySelector('select[name="evalScore"]');
+			if (!scoreSelect) return;
+
+			// 백엔드 JSON에서 점수 필드명: evalItemScore
+			scoreSelect.value = result.evalItemScore || "";
+		});
 	}
 
 

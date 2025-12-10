@@ -26,6 +26,82 @@
 		ORDER  BY work_date
 	</select>
 	
+	<!-- 내 근태관리 ========================================================== -->
+	<!-- 내 근태 전체조회 -->
+	<select id="selectMyAttendanceAllList" resultType="AttendanceVO" parameterType="String">
+		SELECT
+		    att.company_code,
+		    att.atten_code,
+		    att.user_id,
+		    att.work_date,
+		    att.attend_type,
+		    cm.code_name AS attend_type_name,
+		    att.in_time,
+		    att.out_time,
+		    att.over_work_time,
+		    att.night_work_time,
+		    att.holiday_work_time,
+		    att.total_work_time,
+		    att.remark
+		FROM tb_attendance att
+		JOIN tb_cm_code cm
+		ON att.attend_type = cm.code
+		WHERE user_id = #{userId}
+		ORDER BY att.work_date DESC
+	</select>
+	
+	<!-- 검색 -->
+	<select id="searchMyAttendanceList" resultType="AttendanceVO">
+		SELECT
+		    att.company_code,
+		    att.atten_code,
+		    att.user_id,
+		    att.work_date,
+		    att.attend_type,
+		    cm.code_name AS attend_type_name,
+		    att.in_time,
+		    att.out_time,
+		    att.over_work_time,
+		    att.night_work_time,
+		    att.holiday_work_time,
+		    att.total_work_time,
+		    att.remark
+		FROM tb_attendance att
+		JOIN tb_cm_code cm
+		ON att.attend_type = cm.code
+		<where>
+			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+				AND work_date BETWEEN TRUNC(#{startDate})
+				                  AND TRUNC(#{endDate})
+			</if>
+			AND user_id = #{userId}
+		</where>		
+		ORDER BY att.work_date DESC 	
+	</select>
+	
+	<!-- 오늘 근태상태 -->
+	<select id="selectTodayMyAttendance" resultType="AttendanceVO" parameterType="String">
+		SELECT 
+		    att.company_code,
+		    att.atten_code,
+		    att.user_id,
+		    att.work_date,
+		    att.attend_type,
+		    cm.code_name AS attend_type_name,
+		    att.in_time,
+		    att.out_time,
+		    att.over_work_time,
+		    att.night_work_time,
+		    att.holiday_work_time,
+		    att.total_work_time,
+		    att.remark
+		FROM tb_attendance att
+		JOIN tb_cm_code cm
+		ON att.attend_type = cm.code
+		WHERE user_id = #{userId}
+		AND att.work_date = TRUNC(SYSDATE)
+	</select>
+	
 	
 	
 	

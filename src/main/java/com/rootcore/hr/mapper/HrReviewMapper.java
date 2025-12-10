@@ -38,8 +38,12 @@ public interface HrReviewMapper {
                                     @Param("raterUserId") String raterUserId,
                                     @Param("reviewMasterCode") String reviewMasterCode); 
 	
-	int insertReviewItem(HrReviewVO hrReviewVO);                  // 인사평가관리 - 등록(기본정보) 
-	int insertReviewResult(HrReviewResultVO hrReviewResultVO);    // 인사평가관리 - 등록(평가결과)
+	int insertReviewItem(HrReviewVO hrReviewVO);                      // 인사평가관리 - 등록(기본정보) 
+	int insertReviewResult(HrReviewResultVO hrReviewResultVO);        // 인사평가관리 - 등록(평가결과)
+	HrReviewVO selectReviewResultHeaderByTargetUserId(String targetUserId);       // 인사평가관리 - 상세조회(상위)
+	List<HrReviewResultVO> selectReviewResultByTargetUserId(String reviewCode);   // 인사평가관리 - 상세조회(하위)
+	int updateReviewResultHeader(HrReviewVO hrReviewVO);              // 인사평가관리 - 수정(기본정보)
+	int updateReviewResult(HrReviewResultVO hrReviewResultVO);        // 인사평가관리 - 수정(평가결과)
 	
 	
 	
