@@ -27,4 +27,9 @@ public class FiController {
 	public String harp() {
 	    return "fi/harp";
 	}
+
+	@GetMapping("/taxinvoicehistory")
+	public String taxInvoiceHistory() {
+	    return "fi/taxInvoiceHistory";
+	}
 }
