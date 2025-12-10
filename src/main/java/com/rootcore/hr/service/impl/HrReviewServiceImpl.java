@@ -167,12 +167,6 @@ public class HrReviewServiceImpl implements HrReviewService {
 	@Override
 	public int registerReviewResult(HrReviewVO hrReviewVO) {
 		
-		// ★ 디버깅용 로그
-	    System.out.println("[DEBUG] registerReviewResult - raterUserId = " + hrReviewVO.getRaterUserId());
-	    System.out.println("[DEBUG] registerReviewResult - companyCode = " + hrReviewVO.getCompanyCode());
-	    System.out.println("[DEBUG] registerReviewResult - createdBy   = " + hrReviewVO.getCreatedBy());
-	    System.out.println("[DEBUG] registerReviewResult - reviewStatus = " + hrReviewVO.getReviewStatus());
-		
 		int review = hrReviewMapper.insertReviewItem(hrReviewVO);
 		if(review == 0) return 0;
 		
@@ -190,6 +184,51 @@ public class HrReviewServiceImpl implements HrReviewService {
 		return 1;
 
 	}
+
+	
+	
+	// 인사평가관리 - 상세조회
+	@Override
+	public HrReviewVO reviewResultByTargetUserId(String targetUserId, String reviewCode) {
+
+		// 상위 조회
+		HrReviewVO hrReviewVO = hrReviewMapper.selectReviewResultHeaderByTargetUserId(targetUserId);
+		
+		// 하위 조회
+		List<HrReviewResultVO> reviewResult = hrReviewMapper.selectReviewResultByTargetUserId(reviewCode);
+		
+		// 값 담기
+		hrReviewVO.setHrReviewResultList(reviewResult);
+		
+		return hrReviewVO;
+	}
+
+	
+	// 인사평가관리 - 수정
+	@Transactional
+	@Override
+	public int modifyReviewResult(HrReviewVO hrReviewVO) {
+		
+		// 기본사항
+		int review = hrReviewMapper.updateReviewResultHeader(hrReviewVO);
+		if(review == 0) return 0;
+		
+		String reviewCode = hrReviewVO.getReviewCode();
+		
+		// 평가항목 결과
+		if(hrReviewVO.getHrReviewResultList() != null && !hrReviewVO.getHrReviewResultList().isEmpty()) {
+			for(HrReviewResultVO reviewResult : hrReviewVO.getHrReviewResultList()) {
+				reviewResult.setReviewCode(reviewCode);
+				reviewResult.setUpdatedBy(hrReviewVO.getUpdatedBy());
+				
+				int result = hrReviewMapper.updateReviewResult(reviewResult);
+				if(result == 0) return 0;
+			}
+		}
+		
+		return 1;
+	}
+
 
 
 

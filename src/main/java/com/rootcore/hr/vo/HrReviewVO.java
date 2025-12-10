@@ -14,7 +14,6 @@ public class HrReviewVO {
 	private String companyCode;            //회사코드_FK
 	private String reviewMasterCode;       //인사평가기준코드_FK
 	private String reviewCode;             //인사평가번호
-	private String reviewName;             //인사평가명
 	private String raterUserId;            //평가자_FK
 	private String targetUserId;           //피평가자_FK
 	private String reviewStatus;           //평가상태

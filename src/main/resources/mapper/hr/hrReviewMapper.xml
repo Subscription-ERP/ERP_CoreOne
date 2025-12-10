@@ -273,7 +273,6 @@
 	
 		INSERT INTO tb_hr_review (
 		    review_code,
-			review_name,
 			rater_user_id,
 			target_user_id,
 			review_status,
@@ -285,7 +284,6 @@
 			review_master_code)
 		VALUES (
 		    #{reviewCode},
-		    #{reviewName},
 		    #{raterUserId},
 		    #{targetUserId},
 		    #{reviewStatus},
@@ -298,7 +296,7 @@
 		)
 	</insert>
 	
-	<!-- 인사평가관리 - 등록(상위) -->
+	<!-- 인사평가관리 - 등록(하위, 평가결과) -->
 	<insert id="insertReviewResult" parameterType="HrReviewResultVO">
 		<selectKey keyProperty="reviewResultSeq" order="BEFORE" resultType="long">
 			SELECT review_result_seq.NEXTVAL
@@ -320,7 +318,55 @@
 		)
 	</insert>
 	
+	<!-- 인사평가관리 - 상세조회(target_user_id값) 상위-->
+	<select id="selectReviewResultHeaderByTargetUserId" resultType="HrReviewVO" parameterType="String">
+		SELECT 
+		    review_code,
+			rater_user_id,
+			target_user_id,
+			review_status,
+			final_score,
+			review_comment,
+			company_code,
+			review_master_code
+		FROM tb_hr_review
+		WHERE target_user_id = #{targetUserId}
+	</select>
 	
-
+	<!-- 인사평가관리 - 상세조회 -->
+	<select id="selectReviewResultByTargetUserId" resultType="HrReviewResultVO" parameterType="String">
+		SELECT 
+		    review_result_seq,
+		    eval_item_score
+		FROM tb_hr_review_result
+		WHERE review_code = #{reviewCode}
+	</select>
+	
+	<!-- 인사평가관리 - 수정(상위) -->
+	<update id="updateReviewResultHeader" parameterType="HrReviewVO">
+		UPDATE tb_hr_review
+		SET 
+			final_score = #{finalScore},
+			review_comment = #{reviewComment},
+			updated_by = #{updatedBy},
+			update_date = SYSDATE
+		WHERE target_user_id = #{targetUserId}
+		AND   review_code    = #{reviewCode} 
+	</update>
+	
+	<!-- 인사평가관리 - 수정(하위) -->
+	<update id="updateReviewResult" parameterType="HrReviewResultVO">
+		UPDATE tb_hr_review_result
+		SET 
+			eval_item_score = #{evalItemScore},
+			updated_by = #{updatedBy},
+			update_date = SYSDATE
+		WHERE review_code = #{reviewCode}
+		AND   review_result_seq = #{reviewResultSeq} 
+	</update>
+	
+	
+	
+	
 
 </mapper>

@@ -155,7 +155,7 @@ public class HrReviewRestController {
 	
 	// 인사평가관리 - 등록
 	@PostMapping("/manage/register")
-	public int RegisterReivewResult(@RequestBody HrReviewVO hrReviewVO, HttpSession session) {
+	public int registerReivewResult(@RequestBody HrReviewVO hrReviewVO, HttpSession session) {
 		
 		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
 		String userId = (String) session.getAttribute("LOGIN_USER_ID");	
@@ -176,9 +176,31 @@ public class HrReviewRestController {
 	}
 	
 	
+	// 인사평가 - 상세조회
+	@GetMapping("/manage/detail")
+	public HrReviewVO reviewResultByTargetUserId(String targetUserId, String reviewCode) {
+		return hrReviewService.reviewResultByTargetUserId(targetUserId, reviewCode);
+	}
 	
 	
-	
+	// 인사평가 - 수정
+	@PostMapping("/manage/modify")
+	public int modifyReviewResult(@RequestBody HrReviewVO hrReviewVO, HttpSession session) {
+		
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");	
+		
+		hrReviewVO.setCompanyCode(companyCode);
+		hrReviewVO.setUpdatedBy(userId);        //수정자
+		
+		if(hrReviewVO.getHrReviewResultList() != null) {
+			for(HrReviewResultVO hrReviewResultVO : hrReviewVO.getHrReviewResultList()) {
+				hrReviewResultVO.setUpdatedBy(userId);
+			}
+		}	
+		
+		return hrReviewService.modifyReviewResult(hrReviewVO);
+	}
 	
 	
 	
