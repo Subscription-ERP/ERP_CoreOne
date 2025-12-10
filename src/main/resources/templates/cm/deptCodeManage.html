@@ -1,15 +1,298 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
 
 <head>
-    <title>부서코드관리</title>
+
+<title>부서코드관리</title>
+
+<!-- TOAST UI GRID -->
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+<!-- general.css -->
+<link th:href="@{/css/general.css}" rel="stylesheet" />
+
+<style>
+/* 라디오 버튼 위치 조정 아래3개 */
+.form-grid__field--wide {
+	display: flex;
+	align-items: center; /* 수직 중앙 정렬 */
+}
+
+.form-grid__field--wide .form-check-input {
+	margin-right: 4px; /* 라디오와 글자 사이 여백 */
+	margin-left: 6px; /* 맨 앞쪽 여백 */
+}
+
+.form-grid__field--wide label {
+	margin-right: 12px; /* 라벨 사이 간격 */
+	margin-bottom: 0; /* Bootstrap label baseline 보정 */
+}
+
+/* 모달 X 아이콘 버튼 */
+#btnPayrollManageClose {
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Tui Grid 데이터 없는 배경색과 유사한 밝은 회색 */
+.table-summary tbody td {
+	background-color: #f7f7f7 !important;
+	/* !important를 사용하여 Bootstrap 기본 스타일을 덮어씁니다. */
+}
+
+/* 임금 항목 셀은 배경색을 제거하여 왼쪽은 흰색으로 남깁니다 (선택 사항) */
+.table-summary tbody tr td:first-child {
+	background-color: transparent !important;
+}
+
+/* 지급일 범위 너비 조정 */
+#paymentEndDateWrapper, #paymentStartDateWrapper {
+	width: 37%;
+}
+
+/* 지급일 왼쪽 여백 */
+#paymentStartDateWrapper {
+	margin-left: 12px;
+}
+</style>
 </head>
 
 <body>
-    <div layout:fragment="content">
-        <h3>부서코드관리</h3>
-    </div>
-</body>
+	<div layout:fragment="content" class="page page-fluid">
+		<div class="row">
+			<!-- ==================== 조회 ================================================================== -->
+			<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex; margin-left: 18px; width: 98%; padding: 0;">
+				<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center;">
+					<div class="filter-bar row g-4 align-items-center col-md-12">
+						<!-- 부서명 -->
+						<div class="col-12 col-md-3">
+							<div class="field-inline">
+								<label for="payrollType" class="field-inline__label me-4">부서명</label> <select id="payrollType" class="form-select input-base" style="flex: 1; min-width: 0"></select>
+							</div>
+						</div>
 
+						<!-- 상위 부서명 -->
+						<div class="col-12 col-md-3">
+							<div class="field-inline">
+								<label for="payrollName" class="field-inline__label">상위 부서명</label> <input id="payrollName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+							</div>
+						</div>
+
+						<!-- 상태 라디오버튼 -->
+						<div class="col-12 col-md-3">
+							<div class="field-inline">
+								<label for="payrollName" class="field-inline__label">상태값</label>
+								<div id="bonusTypeContainer"></div>
+							</div>
+						</div>
+
+						<!-- 초기화 조회 버튼 -->
+						<div class="col-12 col-md-3 d-flex justify-content-end gap-2">
+							<button id="btnPayrollReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
+							<button id="btnPayrollSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
+						</div>
+
+						<!-- 부서레벨 범위 -->
+						<div class="col-12 col-md-3 mt-0">
+							<div class="field-inline">
+								<label for="payrollDate" class="field-inline__label">부서레벨</label>
+								<!-- 범위 input -->
+								<div id="paymentStartDateWrapper">
+									<input id="paymentStartDate" type="number" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
+								~
+								<div id="paymentEndDateWrapper">
+									<input id="paymentEndDate" type="number" class="form-control input-base" style="flex: 1; min-width: 0" />
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<div class="col-lg-6 pe-0">
+
+				<!-- ================= 목록(Grid) 섹션 ================= -->
+				<section class="card-ui section-flex" style="margin-top: 10px">
+					<header class="card-ui__header">
+						<h6 class="card-ui__title">부서 목록</h6>
+					</header>
+					<!-- 부서목록조회 -->
+					<div id="deptGrid" class="grid-root"></div>
+				</section>
+			</div>
+			<div class="col-lg-6 ps-0">
+				<section class="card-ui section-flex" style="margin-top: 10px">
+					<header class="card-ui__header">
+						<h6 class="card-ui__title">부서 등록</h6>
+						<!-- 우측 액션 -->
+						<div class="toolbar" id="chogihwa">
+							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto" style="width:100px">부서선택</button>
+							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto">초기화</button>
+							<button id="btnSave" type="button" class="btn btn-color btn-inner ms-auto">저장</button>
+						</div>
+					</header>
+
+					<div class="card-ui__body section-scroll">
+						<div id="tab-basic" class="tab-panel active">
+							<div class="form-grid form-grid--sub">
+								<div class="form-grid__row">
+									<div class="form-grid__label">부서코드</div>
+									<div class="form-grid__field form-grid__field--wide" id="payrollPeriodParent">
+										<input id="payrollPeriod" name="payrollPeriod" type="text" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label" style="white-space: nowrap">부서명</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="payrollPeriod" name="payrollPeriod" type="text" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">상위부서코드</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input type="text" id="bonus" name="bonus" class="form-control form-control-sm input-base text-end" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">상위부서명</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input type="text" id="payrollBonusName" name="payrollBonusName" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">부서 레벨/계층</div>
+									<div class="form-grid__field form-grid__field--wide" id="payrollStartDateWrapper">
+										<input id="payrollStartDate" name="payrollStartDate" type="text" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">적용시작일</div>
+									<div class="form-grid__field form-grid__field--wide" id="payrollEndDateWrapper">
+										<input id="payrollEndDate" name="payrollEndDate" type="date" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">상태</div>
+									<div class="form-grid__field form-grid__field--wide" id="payrollBonusDateWrapper">
+										<input id="payrollBonusDate" name="payrollBonusDate" type="text" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">부서 관리자(창)</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="text" class="form-control form-control-sm input-base text-end" disabled />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">비고</div>
+									<div class="form-grid__field form-grid__field--wide">
+										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="text" class="form-control form-control-sm input-base text-end" disabled />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+			</div>
+		</div>
+		<!-- ==================== 급여관리모달창 ================================================================== -->
+		<div id="payrollManageModal" class="modal-layer" hidden>
+			<div class="modal-layer__backdrop"></div>
+
+			<div class="modal-layer__dialog">
+				<!-- 상단 헤더 -->
+				<header class="modal-card__header">
+					<h5 class="modal-card__title">급여관리</h5>
+					<button type="button" class="btn-icon modal-card__btn-close" id="btnPayrollManageClose">
+						<i class="bi bi-x-lg"></i>
+					</button>
+
+				</header>
+				<div style="padding-right: 30px; text-align: right; padding-bottom: 10px;">
+					<button id="btnPayrollSave" type="button" class="btn btn-color btn-inner ms-auto">확정</button>
+				</div>
+
+				<!-- 내용 -->
+				<div class="modal-card__body">
+
+					<!-- 급여대장 나오는 테이블 -->
+					<div id="payrollDetailGrid" class="grid-root" style="height: 240px; margin-bottom: 20px;"></div>
+					<!-- 상세 수당총액 -->
+					<h6 class="card-ui__title mb-2">상세 수당 총액</h6>
+					<table class="table table-bordered table-sm table-summary">
+						<thead>
+							<tr style="text-align: center;">
+								<th>임금 항목</th>
+								<th>연장근로수당</th>
+								<th>야간근로수당</th>
+								<th>휴일근로수당</th>
+								<th>가족수당</th>
+								<th>식대 (비과세)</th>
+								<th>연차휴가수당</th>
+								<th>총 수당 총액</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td style="text-align: center;">지급 금액(원)</td>
+								<td class="text-end" id="overtime"></td>
+								<td class="text-end" id="night"></td>
+								<td class="text-end" id="holiday"></td>
+								<td class="text-end" id="family"></td>
+								<td class="text-end" id="meal"></td>
+								<td class="text-end" id="annual_leave"></td>
+								<td class="text-end" id="total_allowance"></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h6 class="card-ui__title mb-2 mt-4">상세 공제 총액</h6>
+					<table class="table table-bordered table-sm table-summary">
+						<thead>
+							<tr style="text-align: center;">
+								<th>임금 항목</th>
+								<th>소득세</th>
+								<th>국민연금</th>
+								<th>고용보험</th>
+								<th>건강보험</th>
+								<th>장기요양보험</th>
+								<th>지방소득세</th>
+								<th>결근병가공제</th>
+								<th>총 공제 총액</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td style="text-align: center;">지급 금액(원)</td>
+								<td class="text-end" id=""></td>
+								<td class="text-end" id="national_pension"></td>
+								<td class="text-end" id="employment_insurance"></td>
+								<td class="text-end" id="health_insurance"></td>
+								<td class="text-end" id="long_time_care_insurance"></td>
+								<td class="text-end" id=""></td>
+								<td class="text-end" id="absence"></td>
+								<td class="text-end" id="total_deduction_amount"></td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+				<footer class="modal-card__footer d-flex justify-content-end"> </footer>
+				<!-- // modal-card__body -->
+			</div>
+			<!-- // modal-layer__dialog -->
+		</div>
+		<!-- 전역 토스트 알림 -->
+		<div id="toastContainer" class="rc-toast"></div>
+		<!-- 공통코드 불러오는 스크립트 -->
+		<script th:src="@{/js/common.js}"></script>
+		<script th:src="@{/js/cm/deptCodeManage.js}"></script>
+	</div>
+</body>
 </html>

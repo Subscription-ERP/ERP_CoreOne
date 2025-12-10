@@ -54,14 +54,18 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('total_deduction_amount').textContent = rowData.totalDeductionAmount === null || rowData.totalDeductionAmount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalDeductionAmount);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
+	// 부서랑 사원조회
+	const deptSelect = document.querySelector("#dept");
+	const userNameInput = document.querySelector("#userName");
+
 	// 부서 조회(공통코드)
 	getDeptOptions2(["#dept"]);
 
 	/* =========
 	 * 사원급여조회
 	 * ========= */
-
 	const payrollDetailGrid = new tui.Grid({
 		el: document.getElementById("payrollDetailGrid"),
 		scrollX: true,
@@ -116,6 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		],
 	}); // end of payrollDetailGrid
 
+
+
 	/* =============================================
 	 * Tui Grid 행 클릭 이벤트: 선택된 행의 상세 정보를 표시
 	 * ============================================= */
@@ -140,7 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	/* ========================
 	 * 급여관리-조건조회-사원급여관리
 	 * ======================== */
-
 	document.querySelector("#btnPayrollManageSearch").addEventListener("click", function() {
 		const dept = document.querySelector("#dept").value; // 부서명
 		const userName = document.querySelector("#userName").value; // 성명
@@ -282,6 +287,39 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	// input 상자만 눌러도 달력 나오게 설정
-	setupNativeDatePicker('payPeriodStartWrapper','payPeriodStart'); // 급여조회-사원급여조회-귀속연월 범위시작
-	setupNativeDatePicker('payPeriodEndWrapper','payPeriodEnd'); // 급여조회-사원급여조회-귀속연월 범위종료
+	setupNativeDatePicker('payPeriodStartWrapper', 'payPeriodStart'); // 급여조회-사원급여조회-귀속연월 범위시작
+	setupNativeDatePicker('payPeriodEndWrapper', 'payPeriodEnd'); // 급여조회-사원급여조회-귀속연월 범위종료
+
+	/* ======================================================================
+	 * Grid 데이터 로드 후 필터링 및 잠금 처리 (getData() 사용)
+	 * ====================================================================== */
+	/*payrollDetailGrid.on('response', (ev) => {
+		setTimeout(() => {
+			// ev.data에 의존하지 않고, Grid 인스턴스에서 직접 데이터를 가져옵니다.
+			const data = payrollDetailGrid.getData();
+			console.log(data);
+			// 1. 데이터가 존재하고 첫 번째 행에 필요한 정보가 있는지 확인
+			if (Array.isArray(data) && data.length > 0) {
+				const firstRow = data[0];
+
+				// Grid 데이터의 첫 번째 행에서 필요한 정보를 가져옵니다.
+				const userId = firstRow.userId;
+				const userName = firstRow.userName;
+
+				if (userId && userName) {
+
+					// 3. 검색 필드에 값 반영
+					userNameInput.value = userName;
+
+					// 4. 필드 잠금 (disabled 처리)
+					userNameInput.disabled = true;
+					deptSelect.disabled = true;
+				} else {
+					userNameInput.disabled = false;
+					deptSelect.disabled = false;
+				}
+			}
+		}, 100);
+	});*/
+
 });

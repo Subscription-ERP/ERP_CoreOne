@@ -125,6 +125,8 @@ function submitAnnualForm() {
 		const annualEndDate = document.getElementById("annualEndDate").value;
 		// 사유
 		const rm = document.getElementById("rm").value;
+		// 잔여연차
+		const remainingDays = document.querySelector('#remainingDays').textContent;
 
 		// 연차시작일, 연차종료일이 비어있는경우 유효성검사알림창 뜨면서 빠져나가기
 		if (annualStartDate === '' || !annualStartDate) {
@@ -133,6 +135,17 @@ function submitAnnualForm() {
 		}
 		if (leaveType === 'b1' && (annualEndDate === '' || !annualEndDate)) {
 			showToast('종료일을 작성해주세요!', 'warning');
+			return;
+		}
+		
+		// 작성한 사용일수가 잔여연차보다 많을 경우 알림창뜨면서 막기
+		if (usedDays > remainingDays) {
+			showToast('사용일수가 잔여연차보다 많습니다!','warning');
+			return;
+		}
+		// 잔여연차가 0일경우 연차를 사용할 수 없다고 알림창 띄우기
+		if (remainingDays === 0) {
+			showToast('잔여연차가 없습니다.', 'warning');
 			return;
 		}
 

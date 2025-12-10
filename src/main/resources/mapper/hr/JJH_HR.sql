@@ -292,7 +292,9 @@ FROM   tb_user_master um
 SELECT *
 FROM   tb_dept_master;
 
--- 급여 대장 목록 조회
+/* ==============
+ * 급여대장목록조회
+ * ============== */
 SELECT   pr.payroll_period,
          cc.code_name AS payroll_type,
          pr.payroll_name,
@@ -361,7 +363,9 @@ CREATE OR REPLACE TYPE T_PAYROLL_RESULTS_TAB IS TABLE OF T_PAYROLL_RESULT_REC;
 
 -- 정리해보자면 여러개의 T_PAYROLL_RESULT_REC 컬렉션 레코드가 하나의 테이블타입 T_PAYROLL_RESULTS_TAB 여기에 저장
 
--- 급여 계산 프로시저
+/* ================ 
+ * 급여 계산 프로시저
+ * ================ */
 CREATE OR REPLACE PROCEDURE sp_calculate_payroll(
     -- 어떤 대장을 급여계산할건지 선언
     p_payroll_period_code IN VARCHAR2, -- 계산할 대장 코드
@@ -1703,3 +1707,87 @@ FROM   tb_user_master um
        JOIN tb_cm_code ccp
        ON ccp.code = um.position;
        
+/* =========
+ * 25-12-10
+ * ========= */
+
+/* ==============
+ * 단순 SELECT 문
+ * ============== */
+SELECT * FROM tb_user_master;   
+SELECT * FROM tb_payroll;
+SELECT * FROM tb_dept_master;
+SELECT * FROM tb_cm_code;
+
+/* =======================
+ * 조직도 사원 조회
+ * 퇴사한 사람은 조회가 안되게
+ * ======================= */
+SELECT um.user_id,
+       um.user_name,
+       um.dept,
+       dm.dept_name,
+       ccj.code_name as job_title,
+       ccp.code_name as position
+FROM   tb_user_master um
+       JOIN tb_dept_master dm
+       ON dm.dept_code = um.dept
+       JOIN tb_cm_code ccj
+       ON ccj.code = um.job_title
+       JOIN tb_cm_code ccp
+       ON ccp.code = um.position
+WHERE  um.leave_date IS NULL;
+
+/* ==============================================
+ * 급여대장목록조회
+ * 세션에서 가져온 회사코드를 이용해서 조회가 되도록 하기
+ * ============================================== */
+SELECT   pr.payroll_period,
+         cc.code_name AS payroll_type,
+         pr.payroll_name,
+         pr.payroll_date,
+         pr.create_date,
+         pr.payroll_period_code,
+         COUNT(*) AS peopleNumber,
+         SUM(upm.total_payment) as totalPayment -- 지급총액
+FROM     tb_payroll pr
+         JOIN tb_cm_code cc
+         ON pr.payroll_type = cc.code
+         LEFT JOIN tb_user_pay_management upm
+         ON upm.payroll_code = pr.payroll_code
+WHERE    pr.company_code = '0000'
+GROUP BY pr.payroll_period, 
+         cc.code_name,
+         pr.payroll_name, 
+         pr.payroll_date, 
+         pr.create_date,
+         pr.payroll_period_code;
+         
+/* ============================
+ * 급여대장-상여등록-사원조회 쿼리문
+ * ============================ */
+SELECT um.user_id,
+       um.user_name,
+       dm.dept_name AS dept
+FROM   tb_user_master um
+       JOIN tb_dept_master dm
+       ON um.dept = dm.dept_code
+WHERE  um.company_code = '0000'
+  AND  um.leave_date IS NULL;
+  
+/* ============================
+ * 조직도-부서조회
+ * ============================ */  
+SELECT dept_code,
+       company_code,
+       dept_name,
+       upper_dept_no,
+       dept_level,
+       start_date,
+       end_date,
+       status,
+       dept_mng,
+       rm
+FROM   tb_dept_master
+WHERE  company_code = '0000'
+  AND  status = '0';

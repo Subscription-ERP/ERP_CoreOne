@@ -15,6 +15,16 @@
 		       dept_mng,
 		       rm
 		FROM   tb_dept_master
+		WHERE  1=1
+		<choose>
+        	<when test="companyCode == null or companyCode == ''">
+            	AND company_code = '0000'
+        	</when>
+        	<otherwise>
+        	    AND company_code = #{companyCode}
+      	 	</otherwise>
+    	</choose> 
+  		  AND  status = '0'
 	</select>
 	
 	<!-- 사원조회 -->
@@ -32,9 +42,20 @@
 		       ON ccj.code = um.job_title
 		       JOIN tb_cm_code ccp
 		       ON ccp.code = um.position
+		WHERE  1=1
+		  AND  um.leave_date IS NULL
+		<choose>
+        	<when test="companyCode == null or companyCode == ''">
+            	AND um.company_code = '0000'
+        	</when>
+        	<otherwise>
+        	    AND um.company_code = #{companyCode}
+      	  </otherwise>
+    	</choose> 
 		<if test="text != null and text != '' ">
-            AND dm.dept_name = #{text}
+          AND  dm.dept_name = #{text}
         </if>
+        
 	</select>
 
 </mapper>

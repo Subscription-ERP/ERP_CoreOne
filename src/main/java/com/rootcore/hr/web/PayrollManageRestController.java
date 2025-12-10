@@ -18,6 +18,7 @@ import com.rootcore.hr.vo.UserPayManageDetailVO;
 import com.rootcore.hr.vo.UserPayManageVO;
 import com.rootcore.hr.vo.UserVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,7 +29,13 @@ public class PayrollManageRestController {
 
 	// 급여관리-사원급여조회
 	@GetMapping("/payrollManageList")
-	public Map<String, Object> getPayrollManageList(PayrollManageSearchVO param) {
+	public Map<String, Object> getPayrollManageList(PayrollManageSearchVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");
+		param.setCompanyCode(CompanyCode);
+		param.setUserId(userId);
+
 		// 사원급여조회
 		List<UserPayManageVO> list = payrollManageService.selectPayrollManageList(param);
 
@@ -50,75 +57,86 @@ public class PayrollManageRestController {
 	@GetMapping("/payslip/preview")
 	public ModelAndView payslipPreview(@RequestParam String userPayManagementCode) {
 
-	    // 1. 데이터 조회
-	    UserPayManageDetailVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
-	    if (userPayManage == null) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
-	    }
+		// 1. 데이터 조회
+		UserPayManageDetailVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
+		if (userPayManage == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
+		}
 
-	    // 2. 귀속연월 포맷팅 (동적 제목에 사용할 문자열 생성)
-	    String payPeriodRaw = userPayManage.getPayPeriod(); // 예: "2025-02"
-	    String payPeriodFormatted = null;
-	    
-	    if (payPeriodRaw != null && payPeriodRaw.matches("\\d{4}-\\d{2}")) {
-	        // "2025-02" -> "2025년 02월"
-	        payPeriodFormatted = payPeriodRaw.replace("-", "년 ") + "월";
-	    }
+		// 2. 귀속연월 포맷팅 (동적 제목에 사용할 문자열 생성)
+		String payPeriodRaw = userPayManage.getPayPeriod(); // 예: "2025-02"
+		String payPeriodFormatted = null;
 
-	    // 3. 템플릿에 넘길 **data 맵 생성 (필수)**
-	    Map<String, Object> data = new HashMap<>();
-	    
-	    // (a) 기존 객체 유지
-	    data.put("userPayManage", userPayManage); 
-	    // (b) 새로 만든 포맷된 문자열을 data 맵 안에 추가
-	    data.put("payPeriodFormatted", payPeriodFormatted); 
+		if (payPeriodRaw != null && payPeriodRaw.matches("\\d{4}-\\d{2}")) {
+			// "2025-02" -> "2025년 02월"
+			payPeriodFormatted = payPeriodRaw.replace("-", "년 ") + "월";
+		}
 
-	    // 4. ModelAndView 설정
-	    ModelAndView mav = new ModelAndView("pdfView");
+		// 3. 템플릿에 넘길 **data 맵 생성 (필수)**
+		Map<String, Object> data = new HashMap<>();
 
-	    // PdfView가 요구하는 2가지 필수 키: 'templateName'과 'data'
-	    mav.addObject("templateName", "pdf/payslip");
-	    mav.addObject("data", data); // <--- data 맵 객체 전달 (PdfView의 핵심 요구사항)
-	    mav.addObject("disposition", "inline");
+		// (a) 기존 객체 유지
+		data.put("userPayManage", userPayManage);
+		// (b) 새로 만든 포맷된 문자열을 data 맵 안에 추가
+		data.put("payPeriodFormatted", payPeriodFormatted);
 
-	    return mav;
+		// 4. ModelAndView 설정
+		ModelAndView mav = new ModelAndView("pdfView");
+
+		// PdfView가 요구하는 2가지 필수 키: 'templateName'과 'data'
+		mav.addObject("templateName", "pdf/payslip");
+		mav.addObject("data", data); // <--- data 맵 객체 전달 (PdfView의 핵심 요구사항)
+		mav.addObject("disposition", "inline");
+
+		return mav;
 	}
-	
+
 	// 사원카드PDF 다운로드
 	@GetMapping("/payslip/download")
 	public ModelAndView payslipPDF(@RequestParam String userPayManagementCode) {
-		
+
 		// 1. 데이터 조회
-	    UserPayManageDetailVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
-	    if (userPayManage == null) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
-	    }
+		UserPayManageDetailVO userPayManage = payrollManageService.selectPayrollManageDetail(userPayManagementCode);
+		if (userPayManage == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, userPayManage + "급여내역을 찾을 수 없습니다.");
+		}
 
-	    // 2. 귀속연월 포맷팅 (동적 제목에 사용할 문자열 생성)
-	    String payPeriodRaw = userPayManage.getPayPeriod(); // 예: "2025-02"
-	    String payPeriodFormatted = null;
-	    
-	    if (payPeriodRaw != null && payPeriodRaw.matches("\\d{4}-\\d{2}")) {
-	        // "2025-02" -> "2025년 02월"
-	        payPeriodFormatted = payPeriodRaw.replace("-", "년 ") + "월";
-	    }
+		// 2. 귀속연월 포맷팅 (동적 제목에 사용할 문자열 생성)
+		String payPeriodRaw = userPayManage.getPayPeriod(); // 예: "2025-02"
+		String payPeriodFormatted = null;
 
-	    // 3. 템플릿에 넘길 **data 맵 생성 (필수)**
-	    Map<String, Object> data = new HashMap<>();
-	    
-	    // (a) 기존 객체 유지
-	    data.put("userPayManage", userPayManage); 
-	    // (b) 새로 만든 포맷된 문자열을 data 맵 안에 추가
-	    data.put("payPeriodFormatted", payPeriodFormatted); 
+		if (payPeriodRaw != null && payPeriodRaw.matches("\\d{4}-\\d{2}")) {
+			// "2025-02" -> "2025년 02월"
+			payPeriodFormatted = payPeriodRaw.replace("-", "년 ") + "월";
+		}
 
-	    // 4. ModelAndView 설정
-	    ModelAndView mav = new ModelAndView("pdfView");
+		// 3. 템플릿에 넘길 **data 맵 생성 (필수)**
+		Map<String, Object> data = new HashMap<>();
 
-	    // PdfView가 요구하는 2가지 필수 키: 'templateName'과 'data'
-	    mav.addObject("templateName", "pdf/payslip");
-	    mav.addObject("data", data); // <--- data 맵 객체 전달 (PdfView의 핵심 요구사항)
-	    mav.addObject("disposition", "payslip-" + userPayManage.getUserPayManagementCode() + ".pdf");
+		// (a) 기존 객체 유지
+		data.put("userPayManage", userPayManage);
+		// (b) 새로 만든 포맷된 문자열을 data 맵 안에 추가
+		data.put("payPeriodFormatted", payPeriodFormatted);
 
-	    return mav;
+		// 4. ModelAndView 설정
+		ModelAndView mav = new ModelAndView("pdfView");
+
+		// PdfView가 요구하는 2가지 필수 키: 'templateName'과 'data'
+		mav.addObject("templateName", "pdf/payslip");
+		mav.addObject("data", data); // <--- data 맵 객체 전달 (PdfView의 핵심 요구사항)
+		mav.addObject("disposition", "payslip-" + userPayManage.getUserPayManagementCode() + ".pdf");
+
+		return mav;
 	}
+
+	/*
+	 * // 세션에 있는 데이터 가져오기
+	 * 
+	 * @GetMapping("/payrollManageGetSession") public PayrollManageSearchVO
+	 * getSession(HttpSession session) { PayrollManageSearchVO result = null; //
+	 * 세션에서 회사코드 들고오기 String CompanyCode = (String)
+	 * session.getAttribute("LOGIN_COMPANY_CODE"); String userId = (String)
+	 * session.getAttribute("LOGIN_USER_ID"); result.setCompanyCode(CompanyCode);
+	 * result.setUserId(userId); return result; }
+	 */
 }

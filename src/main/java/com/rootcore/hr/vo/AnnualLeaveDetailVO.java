@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class AnnualLeaveDetailVO {
 	// 사원 기본 정보
+	private String companyCode; // 회사코드
 	private String userId; // 사번
 	private String userName; // 성명
 	private String deptName; // 부서명

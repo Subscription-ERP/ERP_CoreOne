@@ -36,6 +36,12 @@
 			   JOIN tb_dept_master dm 
 			   ON um.dept = dm.dept_code
 		WHERE  1=1
+		<if test="companyCode != null and companyCode != '' ">
+            AND upm.company_code like '%' || #{companyCode} || '%'
+        </if>
+		<if test="userId != null and userId != '' ">
+            AND upm.user_id like '%' || #{userId} || '%'
+        </if>
 		<if test="dept != null and dept != '' ">
             AND dm.dept_code like '%' || #{dept} || '%'
         </if>

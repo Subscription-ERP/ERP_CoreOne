@@ -2,8 +2,6 @@
  * deptManage.js
  */
 
-
-
 /* ============================================================================
  * 계층적 데이터 변환 함수 (CEO 노드 최상위 처리)
  * @description 플랫 리스트 형태의 부서 데이터를 TUI Tree가 요구하는 계층 구조로 변환합니다.
@@ -83,17 +81,7 @@ const deptUserGrid = new tui.Grid({
 	bodyHeight: 740,
 	columns: [
 		{ header: "사번", name: "userId", align: "center", sortable: true, },
-		{
-			header: "성명",
-			name: "userName",
-			sortable: true,
-			formatter: function(data) {
-				const userName = data.value;
-				const userId = data.row.userId;
-				const detailUrl = `/hr/userManage?userId=${userId}`;
-				return `<a href="${detailUrl}">${userName}</a>`;
-			}
-		},
+		{ header: "성명", name: "userName", sortable: true, },
 		{ header: "부서코드", name: "dept", sortable: true, align: "center" },
 		{ header: "부서명", name: "deptName", sortable: true, },
 		{ header: "직위/직급", name: "jobTitle", sortable: true, },

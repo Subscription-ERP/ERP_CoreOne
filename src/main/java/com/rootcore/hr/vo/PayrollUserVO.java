@@ -7,7 +7,7 @@ import lombok.Data;
 //급여대장-상여등록-사원조회VO
 @Data
 public class PayrollUserVO {
-	
+	private String companyCode; // 회사코드
 	private String userId; // 사원번호
 	private String userName; // 성명
 	private String dept; // 부서
