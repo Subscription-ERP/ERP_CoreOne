@@ -1718,6 +1718,10 @@ SELECT * FROM tb_user_master;
 SELECT * FROM tb_payroll;
 SELECT * FROM tb_dept_master;
 SELECT * FROM tb_cm_code;
+/* ==============
+ * 단순 update 문
+ * ============== */
+UPDATE tb_dept_master SET end_date = NULL;
 
 /* =======================
  * 조직도 사원 조회
@@ -1778,16 +1782,21 @@ WHERE  um.company_code = '0000'
 /* ============================
  * 조직도-부서조회
  * ============================ */  
-SELECT dept_code,
-       company_code,
-       dept_name,
-       upper_dept_no,
-       dept_level,
-       start_date,
-       end_date,
-       status,
-       dept_mng,
-       rm
-FROM   tb_dept_master
-WHERE  company_code = '0000'
-  AND  status = '0';
+SELECT dm.dept_code,
+       dm.company_code,
+       dm.dept_name,
+       dm.upper_dept_no,
+       dmu.dept_name as upper_dept_name,
+       dm.dept_level,
+       dm.start_date,
+       dm.end_date,
+       ccs.code_name as status,
+       dm.dept_mng,
+       dm.rm
+  FROM tb_dept_master dm
+       JOIN tb_cm_code ccs
+       ON ccs.group_code = '0R'
+       LEFT JOIN tb_dept_master dmu
+       ON dmu.dept_code = dm.upper_dept_no
+ WHERE dm.company_code = '0000'
+   AND ccs.code = dm.status;
