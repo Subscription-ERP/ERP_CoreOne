@@ -1,5 +1,6 @@
 package com.rootcore.sb.client;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -17,19 +18,20 @@ import reactor.core.publisher.Mono;
 @Component
 public class TossPaymentClient {
 
-	// webclient 호출해서 사용
-	private final WebClient tossWebClient;
-
-	// 토스 webclient 주입받는 생성자
-	public TossPaymentClient(WebClient tossWebClient) {
-		this.tossWebClient = tossWebClient;
-	}
-
+	//webclient 호출해서 사용
+    private final WebClient tossPaymentsWebClient;
+    private final WebClient legacyTossWebClient;
+    
+    //토스 webclient 주입받는 생성자
+    public TossPaymentClient(WebClient tossPaymentsWebClient,WebClient legacyTossWebClient) {
+        this.tossPaymentsWebClient = tossPaymentsWebClient;
+        this.legacyTossWebClient = legacyTossWebClient;
+    }
 	// 결제 승인용 데이터를 받고 토스 api로 승인 요청을 전송
 	public TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO) {
 
 		// WebClient를 사용해 토스 결제 승인 API 호출
-		Mono<TossConfirmResponseVO> mono = tossWebClient.post().uri("/v1/payments/confirm") // Toss Confirm API 엔드포인트
+		Mono<TossConfirmResponseVO> mono = legacyTossWebClient.post().uri("/v1/payments/confirm") // Toss Confirm API 엔드포인트
 				.bodyValue(requestVO) // HTTP Body에 JSON으로 들어갈 데이터
 				.retrieve() // HTTP 응답 가져오기
 				.bodyToMono(TossConfirmResponseVO.class);
@@ -41,13 +43,27 @@ public class TossPaymentClient {
 	// 정기결제(자동결제) 승인 API 호출
 	public TossConfirmResponseVO confirmBillingPayment(TossBillingConfirmRequestVO req) {
 
-		Map<String, Object> body = Map.of("amount", req.getAmount(), "orderId", req.getOrderId());
+		   Map<String, Object> body = new HashMap<>();
+		    body.put("amount", req.getAmount());
+		    body.put("orderId", req.getOrderId());
+		    body.put("orderName", req.getOrderName());
+		    body.put("customerKey", req.getCustomerKey());
 
-		Mono<TossConfirmResponseVO> mono = tossWebClient.post().uri("/v1/billing/{billingKey}", req.getBillingKey())
-				.bodyValue(body).retrieve().bodyToMono(TossConfirmResponseVO.class);
-
-		return mono.block();
-	}
+		    return tossPaymentsWebClient.post()
+		        .uri("/v1/billing/{billingKey}", req.getBillingKey())
+		        .bodyValue(body)
+		        .retrieve()
+		        .onStatus(
+		            status -> status.is4xxClientError() || status.is5xxServerError(),
+		            response -> response.bodyToMono(String.class).map(errorBody -> {
+		                System.out.println("🔥 TOSS API ERROR RESPONSE BODY:");
+		                System.out.println(errorBody);
+		                return new RuntimeException("Toss API Error: " + errorBody);
+		            })
+		        )
+		        .bodyToMono(TossConfirmResponseVO.class)
+		        .block();
+		}
 	   // 3) 빌링키 발급
     public String issueBillingKey(String authKey, String customerKey) {
 
@@ -56,7 +72,7 @@ public class TossPaymentClient {
                 "customerKey", customerKey
         );
 
-        Mono<Map> mono = tossWebClient.post()
+        Mono<Map> mono = tossPaymentsWebClient.post()
                 .uri("/v1/billing/authorizations/issue")
                 .bodyValue(body)
                 .retrieve()

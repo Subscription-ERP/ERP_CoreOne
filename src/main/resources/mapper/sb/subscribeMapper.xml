@@ -27,7 +27,10 @@
 		CONTRACT_CODE,
 		BILLING_PERIOD,
 		CURRENT_USER_COUNT,
-		CURRENT_PRICE
+		CURRENT_PRICE,
+		NEXT_BILLING_DATE,
+		RECENT_BILLING_DATE,
+		BILLING_KEY
 		)
 		VALUES
 		(
@@ -44,7 +47,10 @@
 		#{contractCode},
 		#{billingPeriod},
 		#{currentUserCount},
-		#{currentPrice}
+		#{currentPrice},
+		#{nextBillingDate},
+		#{recentBillingDate},
+		#{billingKey}
 		)
 	</insert>
 	

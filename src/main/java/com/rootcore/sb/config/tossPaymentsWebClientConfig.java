@@ -13,13 +13,12 @@ import java.util.Base64;
 //라고 알려주는 설정 클래스입니다.
 
 //토스 서버로 요청을 보내는 메소드
-public class TossWebClientConfig {
+public class tossPaymentsWebClientConfig {
 	
 	@Bean	//Spring 컨테이너에 WebClient 객체를 등록합니다.
     //이 Bean은 어디서든 주입받아 사용할 수 있습니다.
-    public WebClient legacyTossWebClient(
-            @Value("${toss.api.base-url}") String baseUrl,
-            @Value("${toss.api.secret-key}") String secretKey
+    public WebClient tossPaymentsWebClient(
+            @Value("${toss.payments.secret-key}") String secretKey
     ) {
     	//Toss Payments는 API 요청 시 Basic Auth 방식의 인증을 사용
         String credential = secretKey + ":";
@@ -28,7 +27,7 @@ public class TossWebClientConfig {
         String basicAuth = "Basic " + encoded;
 
         return WebClient.builder()
-                .baseUrl(baseUrl)
+                .baseUrl("https://api.tosspayments.com")
                 .defaultHeader(HttpHeaders.AUTHORIZATION, basicAuth)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                 .build();

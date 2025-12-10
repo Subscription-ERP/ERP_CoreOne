@@ -41,7 +41,7 @@ async function initNormalPayment() {
 }
 
 // 페이지 로드시 한 번만 초기화 (선택)
-initNormalPayment();
+/*initNormalPayment();*/
 
 
 // 🔹 자동결제(카드 등록) 쪽
@@ -53,8 +53,8 @@ const payment = tossPaymentsBilling.payment({ customerKey: customerKeyBilling })
 async function requestBillingAuth() {
     await payment.requestBillingAuth({
         method: "CARD",
-        successUrl: window.location.origin + "/success",
-        failUrl: window.location.origin + "/fail",
+        successUrl: window.location.origin + "/api/billing/success",
+        failUrl: window.location.origin + "/api/fail",
         customerEmail: "customer123@gmail.com",
         customerName: "김토스",
     });
