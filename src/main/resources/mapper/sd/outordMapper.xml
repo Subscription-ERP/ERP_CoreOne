@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sd.mapper.OutordMapper">
+
+    <!-- 발주 헤더 등록 -->
+    <insert id="insertOutordHeader" parameterType="OutputVO">
+        <selectKey keyProperty="outordNo" resultType="string" order="BEFORE">
+            SELECT FN_MAKE_DATE_CODE('OUTORD') FROM DUAL
+        </selectKey>
+
+        INSERT INTO tb_outord (company_code,
+                               outord_no,
+                               outord_date,
+                               due_date,
+                               dept,
+                               pic,
+                               cust_code,
+                               cust_name,
+                               total_qty,
+                               total_supply_price,
+                               total_surtax,
+                               total_price,
+                               created_by,
+                               create_date)
+        VALUES ('0000',
+                #{outordNo},
+                #{outordDate},
+                #{dueDate},
+                #{dept},
+                #{pic},
+                #{custCode},
+                #{custName},
+                #{totalQty},
+                #{totalSupplyPrice},
+                #{totalSurtax},
+                #{totalPrice},
+                '박봉근',
+                SYSDATE)
+    </insert>
+
+    <!-- 발주 상세 등록 -->
+    <insert id="insertOutordDetail" parameterType="OutordDetailVO">
+        <selectKey keyProperty="outordDetailNo" resultType="string" order="BEFORE">
+            SELECT FN_MAKE_DATE_CODE('OUTORD_DETAIL') FROM DUAL
+        </selectKey>
+
+        INSERT INTO tb_outord_detail (company_code,
+                                      outord_no,
+                                      outord_detail_no,
+                                      sku,
+                                      qty,
+                                      unit_price,
+                                      supply_price,
+                                      surtax,
+                                      price,
+                                      remark,
+                                      input_status,
+                                      created_by,
+                                      create_date)
+        VALUES ('0000',
+                #{outordNo},
+                #{outordDetailNo},
+                #{sku},
+                #{qty},
+                #{unitPrice},
+                #{supplyPrice},
+                #{surtax},
+                #{price},
+                #{remark},
+                #{inputStatus},
+                '박봉근',
+                SYSDATE)
+    </insert>
+</mapper>
