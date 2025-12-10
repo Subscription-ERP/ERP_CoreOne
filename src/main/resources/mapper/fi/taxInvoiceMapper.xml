@@ -102,5 +102,26 @@
             , #{taxPrice}
         )
     </insert>
-
+    <select id="selectTaxInvoiceHistory" resultType="com.rootcore.fi.vo.TaxInvoiceVO">
+        SELECT inv.company_code
+             , inv.invoice_no
+             , inv.issue_date
+             , inv.document_date
+             , inv.cust_code
+             , cst.cust_name
+             , inv.total_supply_price
+             , inv.total_tax_price
+             , inv.total_amount
+          FROM tb_invoice_master inv
+          JOIN tb_cust_master cst
+            ON inv.company_code = cst.company_code
+           AND inv.cust_code = cst.cust_code
+         WHERE inv.company_code = #{companyCode}
+           AND inv.issue_date BETWEEN #{fromDate} AND #{toDate}
+        <if test="custCode != null and custCode != ''">
+           AND inv.cust_code = #{custCode}
+        </if>
+         ORDER BY inv.issue_date ASC
+                , inv.invoice_no ASC
+    </select>
 </mapper>

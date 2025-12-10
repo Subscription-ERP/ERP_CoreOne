@@ -49,9 +49,10 @@
               <label class="fw-semibold mb-0" style="width:120px;">거래처코드</label>
               <div class="input-group">
                 <input type="text" id="custCode" class="form-control input-base-icon">
-                <button class="btn btn-icon"><i class="bi bi-search"></i></button>
+                <button class="btn btn-icon" id="btnOpenCustModal"><i class="bi bi-search"></i></button>
               </div>
             </div>
+			<div th:replace="modal/custModal :: custModal"></div>
 
             <!-- 거래처명 -->
             <div class="col-md-3 d-flex align-items-center gap-2">
@@ -67,7 +68,7 @@
         <div class="d-flex flex-column align-items-end justify-content-center" style="min-width:200px;">
           <div class="d-flex gap-2">
             <button class="btn btn-white btn-outer" id="btnPrint">출력</button>
-            <button class="btn btn-color btn-outer" id="btnSearch">조회</button>
+            <button class="btn btn-color btn-outer" id="btnHistorySearch">조회</button>
           </div>
         </div>
 
@@ -95,7 +96,7 @@
 <!-- ============================================
       GRID SCRIPT
 ============================================ -->
-<script src="@{/js/fi/taxInvoiceHistory.js"></script>
+<script th:src="@{/js/fi/taxInvoiceHistory.js}"></script>
 
 
 <style>

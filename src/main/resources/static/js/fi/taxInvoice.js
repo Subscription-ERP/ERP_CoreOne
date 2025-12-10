@@ -220,6 +220,7 @@ function saveInvoice() {
 	    companyCode: document.getElementById("loginCompanyCode").value,
 	    invoiceNo: document.getElementById("invoiceNo").value,
 	    // ✅ docDate → documentDate 로 변경
+		issueDate: new Date().toISOString().split("T")[0],
 	    documentDate: document.getElementById("documentDate").value,
 
 	    custCode: searchCustCode,
