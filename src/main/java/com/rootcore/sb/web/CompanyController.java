@@ -59,7 +59,7 @@ public class CompanyController {
 	/*
 	 * 2단계 플랜 조회 후 계약서 작성 화면으로 이동 (POST: 회사코드 + 플랜코드)
 	 */
-	@GetMapping("/company/plans/select") // 화면에서 넘겨준값이 플랜코드,기간,사용자수,회사코드 나머지 필드는 null값인 상태
+	@GetMapping("/company/plans/select") // 화면에서 넘어온값 vo 저장 
 	public String selectPlan(PlanVO plan, RedirectAttributes redirectAttributes, HttpSession session) {
 		PlanVO result = planService.getPlanDetail(plan.getPlanCode()); // 넘어온 플랜코드로 단건조회
 		// DB에서 조회한 데이터 복사
@@ -68,7 +68,7 @@ public class CompanyController {
 		plan.setPlanInfo(result.getPlanInfo());
 
 		session.setAttribute("plan", plan);
-		// 세션에는 플랜정보,가격,플랜명,플랜코드,기간,사용자수,회사코드이 담겨져있음
+		// 세션에는 화면에서 넘어온값 + DB 조회한값이 나옴 
 		// companyCode, planCode를 계약 작성 화면으로 넘김
 
 		// 예: /contract/new?companyCode=XXX&planCode=YYY
