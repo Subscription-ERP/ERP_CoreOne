@@ -29,4 +29,5 @@ public class PaymentVO {
 	private LocalDateTime updateDate;
 	private String paymentType;
 	private String billingKey;
+	private String cardNumberMask; 
 }

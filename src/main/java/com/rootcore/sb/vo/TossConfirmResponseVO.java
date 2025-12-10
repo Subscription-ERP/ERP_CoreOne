@@ -15,6 +15,7 @@ public class TossConfirmResponseVO {
 	private OffsetDateTime approvedAt;
 	private String cardCompany; // 내가 화면에 보여줄 매핑용 데이터로 null상태임
 	private String cardCompanyCode;
+	 private String cardNumberMask;   // ⭐ 선택(원하면 저장)
 	// 값을 꺼내와서 넣어야 들어감
 	
 	// 정기결제(빌링결제)일 때만 값이 들어오는 필드 (일반결제면 null)
@@ -34,6 +35,8 @@ public class TossConfirmResponseVO {
 		private String company; // 카드사명 (신한, 국민 등)
 		private String issuerCode; // 발급사
 		private String acquirerCode; // 매입사
+		
+		private String number;       // ⭐ 마스킹된 카드번호 (****-****-****-1234)
 
 		  // ✔ 카드사 "이름"은 issuerCode를 기준으로 공통코드에서 조회해야 한다.
 	    public String getCardCompanyCode() {

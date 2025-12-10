@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rootcore.sb.client.TossPaymentClient;
 import com.rootcore.sb.mapper.CompanyMapper;
@@ -74,6 +75,7 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
 	@Override
+	@Transactional
 	public TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO,
 
 			CompanyVO company, PlanVO plan, ContractVO contract) {
@@ -226,14 +228,15 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
 	@Override
+	/* @Transactional */
 	public TossConfirmResponseVO createSubscriptionWithBillingKey(String authKey, String customerKey, CompanyVO company,
 			PlanVO plan, ContractVO contract) {
 		// ---------------- 1) 빌링키 발급 ----------------
 		String billingKey = tossPaymentClient.issueBillingKey(authKey, customerKey);
 		// ---------------- 2) 주문 생성 ----------------
 		OrderVO order = new OrderVO();
-		order.setOrderName(order.getOrderName());
-		order.setOrderAmount(order.getOrderAmount());
+		order.setOrderName(plan.getPlanName());
+		order.setOrderAmount(contract.getTotalPrice().longValue());
 		order.setOrderStatus("READY"); // 주문 상태
 		order.setOrderType("BILLING"); // 필요시 상수/enum 처리
 		order.setCreateDate(LocalDateTime.now());
@@ -242,9 +245,28 @@ public class PaymentServiceImpl implements PaymentService {
 		order.setUpdatedBy("SYSTEM");
 		order.setCompanyCode("0000");
 		order.setPlanCode(plan.getPlanCode());
+		System.out.println(order);
 
 		orderMapper.insertOrder(order);
+		
 
+		// ---------------- 6) 빌링키로 첫 결제 승인 (정기결제) ----------------
+		TossBillingConfirmRequestVO billingReq = new TossBillingConfirmRequestVO();
+		billingReq.setBillingKey(billingKey);
+		billingReq.setAmount(order.getOrderAmount()); // 주문 금액 기준
+		billingReq.setOrderId(order.getOrderId());
+		billingReq.setOrderName(plan.getPlanName());  // 예: "스탠다드 구독"
+		billingReq.setCustomerKey(customerKey); 
+
+		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(billingReq);
+
+
+	    // ★ 결제 실패 시 롤백을 위해 상태 체크
+	    if (!"DONE".equalsIgnoreCase(tossResponse.getStatus())
+	        && !"SUCCESS".equalsIgnoreCase(tossResponse.getStatus())) {
+	        throw new IllegalStateException("Billing payment failed. status=" + tossResponse.getStatus());
+	    }
+		
 		// 회사등록
 		CompanyVO existCompany = companyMapper.selectCompany(company.getCompanyCode());
 		if (existCompany == null) {
@@ -275,6 +297,7 @@ public class PaymentServiceImpl implements PaymentService {
 		// 구독생성
 		LocalDate today = LocalDate.now();
 		LocalDateTime now = LocalDateTime.now();
+		int period = contract.getSubsPeriod();
 		SubscribeVO subscribe = new SubscribeVO();
 		subscribe.setCompanyCode(company.getCompanyCode());
 		subscribe.setSubsStatus("ACTIVE");
@@ -290,24 +313,18 @@ public class PaymentServiceImpl implements PaymentService {
 		subscribe.setCurrentUserCount(contract.getUserCount());
 		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
 		subscribe.setRecentBillingDate(today);
-		subscribe.setNextBillingDate(null);
+		subscribe.setNextBillingDate(today.plusMonths(period));
 		subscribe.setBillingKey(billingKey);
 
 		subscribeMapper.insertSubscribe(subscribe);
 
-		// ---------------- 6) 빌링키로 첫 결제 승인 (정기결제) ----------------
-		TossBillingConfirmRequestVO billingReq = new TossBillingConfirmRequestVO();
-		billingReq.setBillingKey(billingKey);
-		billingReq.setAmount(order.getOrderAmount()); // 주문 금액 기준
-		billingReq.setOrderId(order.getOrderId());
-
-		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(billingReq);
-
 		// 카드사 코드/이름 변환 (선택)
 		String cardCode = tossResponse.getCard().getCardCompanyCode();
 		String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
+		String maskedNumber = tossResponse.getCard().getNumber(); // 마스킹 번호
 		tossResponse.setCardCompany(cardName);
 		tossResponse.setCardCompanyCode(cardCode);
+		tossResponse.setCardNumberMask(maskedNumber);
 
 		PaymentVO payment = new PaymentVO();
 
@@ -324,6 +341,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
 		payment.setPaymentType("BILLING");
 		payment.setBillingKey(billingKey);
+		payment.setCardNumberMask(maskedNumber);
 
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
