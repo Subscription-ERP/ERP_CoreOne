@@ -1,5 +1,6 @@
 package com.rootcore.fi.service.impl;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,4 +170,16 @@ public class TaxInvoiceServiceImpl implements TaxInvoiceService {
     public String makeInvoiceNo() throws Exception {
         return taxInvoiceMapper.makeInvoiceNo();
     }
+
+	@Override
+	public List<TaxInvoiceVO> getTaxInvoiceHistory(String companyCode, LocalDate fromDate, LocalDate toDate, String custCode) {
+		// TODO Auto-generated method stub
+	    LocalDate toDateForQuery = toDate;
+
+	    if (toDateForQuery != null) {
+	        // plusDays(1)의 결과를 다시 변수에 담아야 실제로 +1일 된 값이 사용됩니다.
+	        toDateForQuery = toDateForQuery.plusDays(1);
+	    }
+        return taxInvoiceMapper.selectTaxInvoiceHistory(companyCode, fromDate, toDateForQuery, custCode);
+	}
 }

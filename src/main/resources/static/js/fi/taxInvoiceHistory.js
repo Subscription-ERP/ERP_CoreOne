@@ -1,25 +1,156 @@
-const sampleData = [
-  { 발행일자:'2025-11-01', 일련번호:'T251101-01', 거래처:'A업체', 공급가액:'9,000,000', 세액:'900,000', 합계금액:'9,900,000' },
-  { 발행일자:'2025-11-01', 일련번호:'T251101-02', 거래처:'C업체', 공급가액:'1,750,000', 세액:'0', 합계금액:'1,750,000' },
-  { 발행일자:'2025-11-01', 일련번호:'T251101-03', 거래처:'B업체', 공급가액:'10,000,000', 세액:'1,000,000', 합계금액:'11,000,000' },
-  { 발행일자:'2025-11-01', 일련번호:'T251105-01', 거래처:'D업체', 공급가액:'9,800,000', 세액:'980,000', 합계금액:'10,780,000' },
-  { 발행일자:'2025-11-01', 일련번호:'T251110-01', 거래처:'C업체', 공급가액:'100,000', 세액:'0', 합계금액:'100,000' }
-];
+// ==========================
+// 공통 DOM 요소
+// ==========================
+const btnOpenCustModal = document.getElementById('btnOpenCustModal');
+const custCodeSearch   = document.getElementById('custCode');
+const custNameSearch   = document.getElementById('custName');
+const btnCustClose     = document.getElementById('btnCustClose');
+const backdrop         = document.querySelector(".modal-layer__backdrop");
+const btnHistorySearch        = document.getElementById('btnHistorySearch');
 
+let searchCustCode    = '';
+let custSearchByEnter = false;
+
+// ==========================
+// GRID 생성
+// ==========================
 const grid = new tui.Grid({
   el: document.getElementById('taxInvoiceGrid'),
-  data: sampleData,
+  data: [],
   scrollX: false,
   scrollY: true,
   bodyHeight: 'fitToParent',
-  rowHeaders: ['rowNum'],
+  rowHeaders: ['checkbox'],
 
   columns: [
-    { header:'발행일자', name:'발행일자', width:120 },
-    { header:'일련번호', name:'일련번호', width:150 },
-    { header:'거래처', name:'거래처', width:120 },
-    { header:'공급가액', name:'공급가액', align:'right', width:130 },
-    { header:'세액', name:'세액', align:'right', width:130 },
-    { header:'합계금액', name:'합계금액', align:'right', width:130 }
+    { header:'발행일자',   name:'issueDate',       width:120 },
+    { header:'세금일자',   name:'documentDate',    width:120 },
+    { header:'일련번호',   name:'invoiceNo',       width:150 },
+    { header:'거래처코드', name:'custCode',        hidden: true },
+    { header:'거래처',     name:'custName',        width:120 },
+    { header:'공급가액',   name:'totalSupplyPrice', align:'right', width:130, formatter:numberFormatter },
+    { header:'세액',       name:'totalTaxPrice',    align:'right', width:130, formatter:numberFormatter },
+    { header:'합계금액',   name:'totalAmount',      align:'right', width:130, formatter:numberFormatter }
   ]
+});
+
+// 숫자 포맷터(세 자리 콤마)
+function numberFormatter({ value }) {
+  if (value === null || value === undefined || value === '') return '';
+  const num = Number(value);
+  if (isNaN(num)) return '';
+  return num.toLocaleString();
+}
+
+// ==========================
+// 거래처 모달 관련
+// ==========================
+function openCustModalOnly(e) {
+  e.preventDefault();
+  openCustModal();   // 기존 공통 함수
+  getCustList();     // 전체 목록 or 필요한 대로
+}
+
+// 거래처 모달 검색 결과 전달 받음
+function searchCustModal() {
+  const custCodeKeyword = custCodeSearch.value.trim();
+
+  // 1) 모달 쪽 검색 키워드 입력
+  const schCustCode = document.getElementById('schCustCode');
+  if (schCustCode) schCustCode.value = custCodeKeyword;
+
+  // 2) 모달 JS의 검색 함수 호출
+  if (typeof searchCust === 'function') {
+    custSearchByEnter = true;
+    searchCust();
+  }
+}
+
+function closeCustModal() {
+  custModal.hidden = true;
+  custModal.classList.add('hidden');
+}
+
+// Enter 입력 시 검색
+function handleEnter(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    searchCustModal();
+  }
+}
+
+// ==========================
+// 세금계산서 발행현황 조회
+// ==========================
+function loadTaxInvoiceHistory() {
+
+  const companyCode = document.getElementById("loginCompanyCode").value;
+  const fromDate    = document.getElementById("fromDate").value;
+  const toDate      = document.getElementById("toDate").value;
+  const custCode    = (custCodeSearch.value || '').trim();
+
+  if (!fromDate || !toDate) {
+    alert("발행일자 From/To 를 입력해 주세요.");
+    return;
+  }
+
+  const params = new URLSearchParams({
+    companyCode: companyCode,
+    fromDate: fromDate,
+    toDate: toDate
+  });
+
+  if (custCode) {
+    params.append("custCode", custCode);
+  }
+
+  fetch("/api/fi/taxinvoicehistory?" + params.toString())
+    .then(res => res.json())
+    .then(list => {
+      grid.resetData(list || []);
+    })
+    .catch(err => {
+      console.error("세금계산서 발행현황 조회 오류:", err);
+      alert("세금계산서 발행현황 조회 중 오류가 발생했습니다.");
+    });
+}
+
+// ==========================
+// DOM 로드 후 초기화
+// ==========================
+document.addEventListener("DOMContentLoaded", function () {
+  const companyCodeEl = document.getElementById("loginCompanyCode");
+
+  // 기본 발행일자 = 오늘
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("fromDate").value = today;
+  document.getElementById("toDate").value   = today;
+
+  // 거래처 선택 콜백 (공통 모달에서 호출)
+  window.handleSelectedCust = function(row) {
+    custCodeSearch.value = row.custCode;
+    custNameSearch.value = row.custName;
+  };
+
+  window.afterCustSearch = function(result) {
+    const byEnter = custSearchByEnter === true;
+    custSearchByEnter = false;
+
+    if (byEnter) {
+      returnOnlyOne(result);
+    } else {
+      // 버튼으로 모달을 열어 내부에서 검색한 경우 등: 그냥 모달 보여주기만
+      openCustModal();
+    }
+  };
+
+  // 이벤트 바인딩
+  custCodeSearch.addEventListener('keydown', handleEnter);
+  btnOpenCustModal.addEventListener('click', openCustModalOnly);
+  btnCustClose.addEventListener('click', closeCustModal);
+  backdrop.addEventListener('click', closeCustModal);
+
+  if (btnHistorySearch) {
+    btnHistorySearch.addEventListener('click', loadTaxInvoiceHistory);
+  }
 });

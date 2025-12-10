@@ -19,6 +19,7 @@ public class TaxInvoiceVO {
 
     /** CUST_CODE VARCHAR2(20) */
     private String custCode;
+    private String custName;
 
     /** INVOICE_TYPE VARCHAR2(20) */
     private String invoiceType;
