@@ -70,7 +70,7 @@
 		JOIN tb_cm_code cm
 		ON att.attend_type = cm.code
 		<where>
-			<if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+			<if test="startDate != null and endDate != null">
 				AND work_date BETWEEN TRUNC(#{startDate})
 				                  AND TRUNC(#{endDate})
 			</if>
@@ -102,6 +102,41 @@
 		AND att.work_date = TRUNC(SYSDATE)
 	</select>
 	
+	<!-- 출근 -->
+	
+	<!-- 퇴근 -->
+	<update id="checkoutTodayMyAtt">
+		UPDATE tb_attendance
+		SET
+		    -- 퇴근시간 : 지금시간
+		    out_time = SYSDATE,
+		    
+		    -- 총 근무시간
+		    total_work_time = ROUND((SYSDATE - in_time) * 24, 2),
+		    
+		    -- 연장근무시간(18:00 이후)
+		    over_work_time = 
+		        CASE
+		            WHEN SYSDATE > (TRUNC(work_date) + 18/24) THEN 
+		                ROUND((SYSDATE - (TRUNC(work_date) + 18/24)) * 24, 2)
+		            ELSE 0
+		        END,
+		    
+		    -- 야간근무(22:00이후)
+		    night_work_time = 
+		        CASE
+		            WHEN SYSDATE > (TRUNC(work_date) + 22/24) THEN
+		                ROUND( (SYSDATE - (TRUNC(work_date) + 22/24)) * 24, 2 )
+		            ELSE 0
+		        END,
+		    
+		    -- 수정자/수정일
+		    updated_by = #{updatedBy},
+		    update_date = SYSDATE
+		WHERE company_code = #{companyCode}
+		AND   user_id = #{userId}
+		AND   work_date = TRUNC(SYSDATE)
+	</update>
 	
 	
 	

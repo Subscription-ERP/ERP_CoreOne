@@ -6,12 +6,15 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.rootcore.hr.service.AttendanceService;
 import com.rootcore.hr.vo.AttendanceVO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -47,7 +50,10 @@ public class AttendanceRestController {
 	// 검색
 	@GetMapping("/my/search")
 	public List<AttendanceVO> searchMyAtt(HttpSession session,
-			                              Date startDate, Date endDate){
+	        @RequestParam(required = false)
+	        @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+	        @RequestParam(required = false)
+	        @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
 		String UserId = (String) session.getAttribute("LOGIN_USER_ID");	
 		return attendanceService.searchMyAttendanceList(UserId, startDate, endDate);
 	}

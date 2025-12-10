@@ -9,27 +9,29 @@ import lombok.Data;
 @Data
 public class AttendanceVO {
 	
-	String companyCode;    //회사코드
-	String attenCode;      //근태코드
-	String userId;         //사원번호_FK
+	private String companyCode;    //회사코드
+	private String attenCode;      //근태코드
+	private String userId;         //사원번호_FK
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-	Date workDate;         //근무일자
-	String attendType;     //근태상태
-	String attendTypeName; //근태상태명
+	private Date workDate;         //근무일자
+	private String attendType;     //근태상태
+	private String attendTypeName; //근태상태명
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-	Date inTime;           //출근시간
+	private Date inTime;           //출근시간
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-	Date outTime;          //퇴근시간
-	Long overWorkTime;     //연장근무시간
-	Long nightWorkTime;    //야간근무시간
-	Long holidayWorkTime;  //휴일근무시간
-	Long totalWorkTime;    //일일총근무시간
-	String remark;
-	String createdBy;
+	private Date outTime;          //퇴근시간
+	private Long overWorkTime;     //연장근무시간
+	private Long nightWorkTime;    //야간근무시간
+	private Long holidayWorkTime;  //휴일근무시간
+	private Long totalWorkTime;    //일일총근무시간
+	private String remark;
+	private String createdBy;
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-	Date createDate;
-	String updatedBy;
+	private Date createDate;
+	private String updatedBy;
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-	Date updateDate;
+	private Date updateDate;
+	
+	private String workPlaceType;   //근무형태
 
 }
