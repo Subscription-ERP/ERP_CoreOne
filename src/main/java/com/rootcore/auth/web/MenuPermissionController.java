@@ -1,5 +1,6 @@
 package com.rootcore.auth.web;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +24,7 @@ public class MenuPermissionController {
 
     private final MenuPermissionService service;
 
-
-    // ROLE 목록 조회
-
+    // ✅ ROLE 목록 조회 (JS Grid용 camelCase 강제 보정)
     @GetMapping("/role")
     public List<RoleVO> getRoleList(
             @RequestParam(required = false) String roleCode,
@@ -34,15 +33,24 @@ public class MenuPermissionController {
 
         String company = (String) session.getAttribute("LOGIN_COMPANY_CODE");
         if (company == null || company.isEmpty()) {
-            company = "0000";   // ✅ 개발용 기본 회사코드
+            company = "0000";   // ✅ 개발용 기본값
         }
 
-        return service.getRoleList(company, roleCode);
+        List<RoleVO> rawList = service.getRoleList(company, roleCode);
+
+        // ✅ 여기서 JS가 100% 인식 가능하도록 camelCase 강제 보정
+        List<RoleVO> safeList = new ArrayList<>();
+        for (RoleVO vo : rawList) {
+            RoleVO safe = new RoleVO();
+            safe.setRoleCode(vo.getRoleCode());   // ← 반드시 camelCase
+            safe.setRoleName(vo.getRoleName());
+            safeList.add(safe);
+        }
+
+        return safeList;
     }
 
-
-    // ROLE → MENU 권한 조회
-
+    // ✅ ROLE → MENU 권한 조회
     @GetMapping("/role-menu")
     public List<RoleMenuAuthVO> getRoleMenuAuthList(
             @RequestParam String roleCode,
@@ -57,50 +65,43 @@ public class MenuPermissionController {
         return service.getRoleMenuAuthList(company, roleCode);
     }
 
-
-    // ROLE → MENU 권한 저장 (DB 반영)
-
+    // ✅ ROLE → MENU 권한 저장
     @PostMapping("/role-menu/save")
     public int saveRoleMenuAuth(
             @RequestBody List<RoleMenuAuthVO> list,
             HttpSession session
     ) {
 
-        // 빈 리스트 방어
         if (list == null || list.isEmpty()) {
             return 0;
         }
 
-        // 회사코드 처리
         String company = (String) session.getAttribute("LOGIN_COMPANY_CODE");
         if (company == null || company.isEmpty()) {
             company = "0000";
         }
-        final String companyCode = company;
 
-        // 로그인 사용자
         String loginUser = (String) session.getAttribute("LOGIN_USER_ID");
         if (loginUser == null || loginUser.isEmpty()) {
             loginUser = "SYSTEM";
         }
-        final String loginUserId = loginUser;
 
-        // ADMIN 1차 보호 (이중 잠금)
         String roleCode = list.get(0).getRoleCode();
+
+        // ✅ ADMIN은 절대 DB 저장 금지
         if ("ADMIN".equals(roleCode)) {
-            return 1;   // 저장 안 해도 이미 전권자
+            return 1;
         }
 
-        // 회사코드 + 생성자 + 수정자 + 필수값 방어
         for (RoleMenuAuthVO vo : list) {
 
             if (vo.getRoleCode() == null || vo.getMenuCode() == null) {
-                continue;   // 깨진 데이터는 저장 안 함
+                continue;
             }
 
-            vo.setCompanyCode(companyCode);
-            vo.setCreatedBy(loginUserId);
-            vo.setUpdatedBy(loginUserId);
+            vo.setCompanyCode(company);
+            vo.setCreatedBy(loginUser);
+            vo.setUpdatedBy(loginUser);
         }
 
         return service.saveRoleMenuAuth(list);

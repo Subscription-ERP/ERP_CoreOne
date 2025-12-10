@@ -5,82 +5,111 @@
 
 <mapper namespace="com.rootcore.auth.mapper.MenuPermissionMapper">
 
-    <!-- 1) ROLE 목록 조회 -->
-    <select id="selectRoleList" resultType="com.rootcore.auth.vo.RoleVO">
-        SELECT
-            COMPANY_CODE,
-            ROLE_CODE,
-            ROLE_NAME
-        FROM TB_ROLE_MASTER
-        WHERE COMPANY_CODE = #{companyCode}
-        <if test="roleCode != null and roleCode != ''">
-            AND ROLE_CODE = #{roleCode}
-        </if>
-        ORDER BY ROLE_CODE
-    </select>
+	<!-- 1) ROLE 목록 조회 -->
+	<select id="selectRoleList"
+		resultType="com.rootcore.auth.vo.RoleVO">
+		SELECT
+		COMPANY_CODE,
+		ROLE_CODE,
+		ROLE_NAME
+		FROM TB_ROLE_MASTER
+		WHERE COMPANY_CODE = #{companyCode}
+		<if test="roleCode != null and roleCode != ''">
+			AND ROLE_CODE = #{roleCode}
+		</if>
+		ORDER BY ROLE_CODE
+	</select>
 
-    <!-- 2) ROLE → MENU 권한 조회 -->
-    <select id="selectRoleMenuAuthList"
-            resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
+	<!-- 2) ROLE → MENU 권한 조회 -->
+	<select id="selectRoleMenuAuthList"
+		resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
 
-        SELECT
-            M.COMPANY_CODE,
-            #{roleCode} AS ROLE_CODE,
-            M.MENU_CODE,
-            M.MENU_NAME,
-            M.SYSTEM_TYPE,
+		SELECT
+		M.COMPANY_CODE,
+		#{roleCode} AS ROLE_CODE,
+		M.MENU_CODE,
+		M.MENU_NAME,
+		M.SYSTEM_TYPE,
 
-            NVL(A.READ_YN,   'N') AS READ_YN,
-            NVL(A.CREATE_YN, 'N') AS CREATE_YN,
-            NVL(A.UPDATE_YN, 'N') AS UPDATE_YN,
-            NVL(A.DELETE_YN, 'N') AS DELETE_YN
+		NVL(A.READ_YN, 'N') AS READ_YN,
+		NVL(A.CREATE_YN, 'N') AS CREATE_YN,
+		NVL(A.UPDATE_YN, 'N') AS UPDATE_YN,
+		NVL(A.DELETE_YN, 'N') AS DELETE_YN
 
-        FROM TB_MENU_MASTER M
-        LEFT JOIN TB_ROLE_MENU_AUTH A
-          ON M.COMPANY_CODE = A.COMPANY_CODE
-         AND M.MENU_CODE    = A.MENU_CODE
-         AND A.ROLE_CODE   = #{roleCode}
+		FROM TB_MENU_MASTER M
+		LEFT JOIN TB_ROLE_MENU_AUTH A
+		ON M.COMPANY_CODE = A.COMPANY_CODE
+		AND M.MENU_CODE = A.MENU_CODE
+		AND A.ROLE_CODE = #{roleCode}
 
-        WHERE M.COMPANY_CODE = #{companyCode}
-          AND M.USE_YN = 'Y'
+		WHERE M.COMPANY_CODE = #{companyCode}
+		AND M.USE_YN = 'Y'
 
-        ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
-    </select>
+		ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
+	</select>
 
-    <!-- 3) ROLE → MENU 기존 권한 전체 삭제 -->
-    <delete id="deleteRoleMenuAuth">
-        DELETE FROM TB_ROLE_MENU_AUTH
-        WHERE COMPANY_CODE = #{companyCode}
-          AND ROLE_CODE = #{roleCode}
-    </delete>
+	<!-- 3) ROLE → MENU 기존 권한 전체 삭제 -->
+	<delete id="deleteRoleMenuAuth">
+		DELETE FROM TB_ROLE_MENU_AUTH
+		WHERE COMPANY_CODE = #{companyCode}
+		AND ROLE_CODE = #{roleCode}
+	</delete>
 
-    <!-- 4) ROLE → MENU 권한 저장 -->
-    <insert id="insertRoleMenuAuth">
-        INSERT INTO TB_ROLE_MENU_AUTH (
-            COMPANY_CODE,
-            ROLE_CODE,
-            MENU_CODE,
-            READ_YN,
-            CREATE_YN,
-            UPDATE_YN,
-            DELETE_YN,
-            CREATED_BY,
-            CREATED_AT,
-            UPDATED_BY,
-            UPDATED_AT
-        ) VALUES (
-            #{companyCode},
-            #{roleCode},
-            #{menuCode},
-            #{readYn},
-            #{createYn},
-            #{updateYn},
-            #{deleteYn},
-            #{createdBy},
-            SYSDATE,
-            #{updatedBy},
-            SYSDATE
-        )
-    </insert>
+	<!-- 4) ROLE → MENU 권한 저장 -->
+	<insert id="insertRoleMenuAuth">
+		INSERT INTO TB_ROLE_MENU_AUTH (
+		COMPANY_CODE,
+		ROLE_CODE,
+		MENU_CODE,
+		READ_YN,
+		CREATE_YN,
+		UPDATE_YN,
+		DELETE_YN,
+		CREATED_BY,
+		CREATED_AT,
+		UPDATED_BY,
+		UPDATED_AT
+		) VALUES (
+		#{companyCode},
+		#{roleCode},
+		#{menuCode},
+		#{readYn},
+		#{createYn},
+		#{updateYn},
+		#{deleteYn},
+		#{createdBy},
+		SYSDATE,
+		#{updatedBy},
+		SYSDATE
+		)
+	</insert>
 
+	<!-- ✅ 로그인 사용자 전용 메뉴 조회 -->
+	<select id="selectLoginMenuList"
+		resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
+
+		SELECT
+		M.COMPANY_CODE,
+		A.ROLE_CODE,
+		M.MENU_CODE,
+		M.MENU_NAME,
+		M.MENU_URL,
+		M.SYSTEM_TYPE,
+		A.READ_YN,
+		A.CREATE_YN,
+		A.UPDATE_YN,
+		A.DELETE_YN
+
+		FROM TB_ROLE_MENU_AUTH A
+		JOIN TB_MENU_MASTER M
+		ON A.COMPANY_CODE = M.COMPANY_CODE
+		AND A.MENU_CODE = M.MENU_CODE
+
+		WHERE A.COMPANY_CODE = #{companyCode}
+		AND A.ROLE_CODE = #{roleCode}
+		AND A.READ_YN = 'Y'
+		AND M.USE_YN = 'Y'
+
+		ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
+	</select>
 </mapper>
