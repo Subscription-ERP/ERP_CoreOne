@@ -87,7 +87,9 @@
 						등록가능합니다.</div>
 				</div>
 			</div>
-[[${session.company}]]
+			  [[${session.company}]] 
+			 [[${session.plan}]]
+			
 			<!-- 요금제 카드 영역 -->
 			<div class="row g-4 justify-content-center plan-cards">
 
@@ -102,39 +104,56 @@
 							</p>
 							<p class="text-secondary mb-3">핵심 서비스 : 회계/인사/영업</p>
 
-							<!-- ★★★ form 시작 ★★★ -->
-							<form th:action="@{/company/plans/select}" 
-								class="mt-auto">
+							<form th:action="@{/company/plans/select}" class="mt-auto">
 
-								<!-- 회사 코드 유지 -->
 								<input type="hidden" name="companyCode"
-									th:value="${companyCode}">
-
-								<!-- 필요한 플랜코드 -->
-								<input type="hidden" name="planCode" value="BASIC">
+									th:value="${companyCode}"> <input type="hidden"
+									name="planCode" value="BASIC">
 
 								<!-- 구독기간 -->
 								<div class="mb-3">
 									<label class="form-label mb-1">구독기간</label> <select
-										class="form-select" name="subsPeriod">
+										class="form-select form-select-sm" name="subsPeriod">
 										<option value="1">1개월</option>
-										<option value="3">3개월</option>
+										<option value="3" selected>3개월</option>
 										<option value="6">6개월</option>
 										<option value="12">1년</option>
 									</select>
 								</div>
 
-								<!-- 사용자 수 -->
+								<!-- 🔹 사용자 수 (고정) -->
 								<div class="mb-3">
-									<label class="form-label mb-1">사용자 수</label> <select
-										class="form-select" name="userCount">
-										<option value="50" selected>50명</option>
-									</select>
+									<label class="form-label mb-1">사용자 수</label> <input
+										type="hidden" name="userCount" value="50"> <input
+										type="text" class="form-control" value="50명" readonly>
+
 									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
 								</div>
 
+								<!-- 🔹 결제 방식 -->
+								<div class="mb-2">
+									<label class="form-label mb-1">결제 방식</label>
+
+									<div class="btn-group w-100" role="group">
+										<input type="radio" class="btn-check" name="billingPeriod"
+											id="basicMonthly" value="1" checked> <label
+											class="btn btn-outline-secondary btn-sm" for="basicMonthly">
+											매월 결제 </label> <input type="radio" class="btn-check"
+											name="billingPeriod" id="basicYearly" value="12"> <label
+											class="btn btn-outline-secondary btn-sm" for="basicYearly">
+											1년 선결제 (10%↓) </label>
+									</div>
+
+									<div class="form-text small mt-1">월 ₩15,000 / 1년 선결제 시 총
+										₩162,000 (약 10% 할인)</div>
+								</div>
+
 								<button type="submit" class="btn btn-dark w-100">구독하기</button>
+
 							</form>
+
+							<!-- ★★★ form 끝 ★★★ -->
+
 							<!-- ★★★ form 끝 ★★★ -->
 
 						</div>
@@ -145,21 +164,23 @@
 				<div class="col-12 col-md-4">
 					<div class="card h-100 shadow-sm">
 						<div class="card-body d-flex flex-column">
+
 							<h5 class="card-title fw-bold">STANDARD</h5>
 							<p class="mb-1">
 								<span class="fw-bold">₩20,000 / 월</span>
 							</p>
 							<p class="text-secondary mb-3">핵심 서비스 : 회계/인사/영업</p>
-							<form th:action="@{/company/plans/select}" 
-								class="mt-auto">
+
+							<form th:action="@{/company/plans/select}" class="mt-auto">
 
 								<input type="hidden" name="companyCode"
 									th:value="${companyCode}"> <input type="hidden"
 									name="planCode" value="STANDARD">
+
 								<!-- 구독기간 -->
 								<div class="mb-3">
 									<label class="form-label mb-1">구독기간</label> <select
-										class="form-select" name="subsPeriod">
+										class="form-select form-select-sm" name="subsPeriod">
 										<option value="1">1개월</option>
 										<option value="3" selected>3개월</option>
 										<option value="6">6개월</option>
@@ -169,13 +190,33 @@
 
 								<!-- 사용자 수 -->
 								<div class="mb-3">
-									<label class="form-label mb-1">사용자 수</label> <select
-										class="form-select" name="userCount">
-										<option value="100" selected>100명</option>
-									</select>
+									<label class="form-label mb-1">사용자 수</label> <input
+										type="hidden" name="userCount" value="100"> <input
+										type="text" class="form-control" value="100명" readonly>
+									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
+								</div>
+
+								<!-- 결제 방식 -->
+								<div class="mb-2">
+									<label class="form-label mb-1">결제 방식</label>
+
+									<div class="btn-group w-100" role="group">
+										<input type="radio" class="btn-check" name="billingPeriod"
+											id="standardMonthly" value="1" checked> <label
+											class="btn btn-outline-secondary btn-sm"
+											for="standardMonthly"> 매월 결제 </label> <input type="radio"
+											class="btn-check" name="billingPeriod" id="standardYearly"
+											value="12"> <label
+											class="btn btn-outline-secondary btn-sm" for="standardYearly">
+											1년 선결제 (10%↓) </label>
+									</div>
+
+									<div class="form-text small mt-1">월 ₩20,000 / 1년 선결제 시 총
+										₩216,000 (약 10% 할인)</div>
 								</div>
 
 								<button type="submit" class="btn btn-dark w-100">구독하기</button>
+
 							</form>
 						</div>
 					</div>
@@ -190,17 +231,18 @@
 								<span class="fw-bold">₩50,000 / 월</span>
 							</p>
 							<p class="text-secondary mb-3">핵심 서비스 : 회계/인사/영업</p>
-							<form th:action="@{/company/plans/select}" 
-								class="mt-auto">
+
+							<form th:action="@{/company/plans/select}" class="mt-auto">
 
 								<input type="hidden" name="companyCode"
 									th:value="${companyCode}"> <input type="hidden"
 									name="planCode" value="PREMIUM">
+
 								<!-- 구독기간 -->
 								<div class="mb-3">
 									<label class="form-label mb-1">구독기간</label> <select
-										class="form-select" name="subsPeriod">
-									<option value="1">1개월</option>
+										class="form-select form-select-sm" name="subsPeriod">
+										<option value="1">1개월</option>
 										<option value="3" selected>3개월</option>
 										<option value="6">6개월</option>
 										<option value="12">1년</option>
@@ -209,14 +251,33 @@
 
 								<!-- 사용자 수 -->
 								<div class="mb-3">
-									<label class="form-label mb-1">사용자 수</label> <select
-										class="form-select" name="userCount">
-										<option value="200" selected>200명</option>
-									</select>
+									<label class="form-label mb-1">사용자 수</label> <input
+										type="hidden" name="userCount" value="200"> <input
+										type="text" class="form-control" value="200명" readonly>
+									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
+								</div>
+
+								<!-- 결제 방식 -->
+								<div class="mb-2">
+									<label class="form-label mb-1">결제 방식</label>
+
+									<div class="btn-group w-100" role="group">
+										<input type="radio" class="btn-check" name="billingPeriod"
+											id="premiumMonthly" value="1" checked> <label
+											class="btn btn-outline-secondary btn-sm" for="premiumMonthly">
+											매월 결제 </label> <input type="radio" class="btn-check"
+											name="billingPeriod" id="premiumYearly" value="12">
+										<label class="btn btn-outline-secondary btn-sm"
+											for="premiumYearly"> 1년 선결제 (10%↓) </label>
+									</div>
+
+									<div class="form-text small mt-1">월 ₩50,000 / 1년 선결제 시 총
+										₩540,000 (약 10% 할인)</div>
 								</div>
 
 								<button type="submit" class="btn btn-dark w-100">구독하기</button>
-								</form>
+
+							</form>
 						</div>
 					</div>
 				</div>

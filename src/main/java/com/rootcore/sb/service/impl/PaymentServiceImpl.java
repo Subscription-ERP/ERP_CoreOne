@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rootcore.sb.client.TossPaymentClient;
+import com.rootcore.sb.crypto.BillingKeyCrypto;
 import com.rootcore.sb.mapper.CompanyMapper;
 import com.rootcore.sb.mapper.ContractMapper;
 import com.rootcore.sb.mapper.OrderMapper;
@@ -39,6 +40,8 @@ public class PaymentServiceImpl implements PaymentService {
 	private final SubscribeMapper subscribeMapper; // 구독
 	private final CompanyMapper companyMapper; // 회사 (상태 변경 정도용)
 	private final TossPaymentClient tossPaymentClient;
+	// 🔐 빌링키 양방향 암복호화 컴포넌트
+	private final BillingKeyCrypto billingKeyCrypto;
 
 	/**
 	 * 회사 등록이 끝난 상태에서: 회사코드 + 플랜정보 + 금액을 가지고 주문을 생성하고 프론트에서 Toss 위젯을 띄울 수 있도록 값 반환
@@ -233,6 +236,9 @@ public class PaymentServiceImpl implements PaymentService {
 			PlanVO plan, ContractVO contract) {
 		// ---------------- 1) 빌링키 발급 ----------------
 		String billingKey = tossPaymentClient.issueBillingKey(authKey, customerKey);
+		// 🔐 DB에 저장할 암호화된 빌링키
+		String encryptedBillingKey = billingKeyCrypto.encrypt(billingKey);
+
 		// ---------------- 2) 주문 생성 ----------------
 		OrderVO order = new OrderVO();
 		order.setOrderName(plan.getPlanName());
@@ -248,25 +254,23 @@ public class PaymentServiceImpl implements PaymentService {
 		System.out.println(order);
 
 		orderMapper.insertOrder(order);
-		
 
 		// ---------------- 6) 빌링키로 첫 결제 승인 (정기결제) ----------------
 		TossBillingConfirmRequestVO billingReq = new TossBillingConfirmRequestVO();
 		billingReq.setBillingKey(billingKey);
 		billingReq.setAmount(order.getOrderAmount()); // 주문 금액 기준
 		billingReq.setOrderId(order.getOrderId());
-		billingReq.setOrderName(plan.getPlanName());  // 예: "스탠다드 구독"
-		billingReq.setCustomerKey(customerKey); 
+		billingReq.setOrderName(plan.getPlanName()); // 예: "스탠다드 구독"
+		billingReq.setCustomerKey(customerKey);
 
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(billingReq);
 
+		// ★ 결제 실패 시 롤백을 위해 상태 체크
+		if (!"DONE".equalsIgnoreCase(tossResponse.getStatus())
+				&& !"SUCCESS".equalsIgnoreCase(tossResponse.getStatus())) {
+			throw new IllegalStateException("Billing payment failed. status=" + tossResponse.getStatus());
+		}
 
-	    // ★ 결제 실패 시 롤백을 위해 상태 체크
-	    if (!"DONE".equalsIgnoreCase(tossResponse.getStatus())
-	        && !"SUCCESS".equalsIgnoreCase(tossResponse.getStatus())) {
-	        throw new IllegalStateException("Billing payment failed. status=" + tossResponse.getStatus());
-	    }
-		
 		// 회사등록
 		CompanyVO existCompany = companyMapper.selectCompany(company.getCompanyCode());
 		if (existCompany == null) {
@@ -314,7 +318,8 @@ public class PaymentServiceImpl implements PaymentService {
 		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
 		subscribe.setRecentBillingDate(today);
 		subscribe.setNextBillingDate(today.plusMonths(period));
-		subscribe.setBillingKey(billingKey);
+		// ✅ 구독 테이블에는 "암호문" 저장
+		subscribe.setBillingKey(encryptedBillingKey);
 
 		subscribeMapper.insertSubscribe(subscribe);
 
@@ -340,7 +345,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
 		payment.setPaymentType("BILLING");
-		payment.setBillingKey(billingKey);
+		payment.setBillingKey(encryptedBillingKey);
 		payment.setCardNumberMask(maskedNumber);
 
 		payment.setCreatedBy("SYSTEM");
@@ -357,67 +362,74 @@ public class PaymentServiceImpl implements PaymentService {
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
 
 		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
-		  tossResponse.setBillingKey(billingKey);
+		tossResponse.setBillingKey(null);
 
-		    return tossResponse;
+		return tossResponse;
 	}
 
 	@Override
 	public TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req) {
 
-	    // 1) 토스에 정기결제 승인 요청
-	    TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
+		// 3) 관련 구독 조회 (req에 subCode를 세팅해놨다고 가정)
+		SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(req.getSubCode());
+		if (sub == null) {
+			throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + req.getSubCode());
+		}
 
-	    // 2) (선택) 카드사 코드 → 카드사명 맵핑
-	    String cardCode = tossResponse.getCard().getCardCompanyCode();
-	    String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
-	    tossResponse.setCardCompany(cardName);
-	    tossResponse.setCardCompanyCode(cardCode);
+		// 🔐 DB에 저장된 암호문 빌링키
+		String encryptedBillingKey = sub.getBillingKey();
 
-	    // 3) 관련 구독 조회 (req에 subCode를 세팅해놨다고 가정)
-	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(req.getSubCode());
-	    if (sub == null) {
-	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + req.getSubCode());
-	    }
+		// 🔓 토스에 보낼 평문 빌링키
+		String plainBillingKey = billingKeyCrypto.decrypt(encryptedBillingKey);
 
-	    // 4) 결제 이력 INSERT
-	    PaymentVO payment = new PaymentVO();
-	    payment.setOrderId(req.getOrderId());                // 스케줄러에서 생성한 주문ID
-	    payment.setSubCode(sub.getSubCode());
-	    payment.setCompanyCode(sub.getCompanyCode());
-	    payment.setTotalPrice(tossResponse.getTotalAmount());
-	    payment.setPaymentStat(tossResponse.getStatus());
-	    payment.setPaymentKey(tossResponse.getPaymentKey());
-	    payment.setPaymentMethod(tossResponse.getMethod());
-	    payment.setCardCompany(cardCode);
-	    payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
-	    payment.setBillingStart(LocalDate.now());
-	    payment.setBillingEnd(LocalDate.now().plusMonths(1)); // 매달 결제 가정
+		// 2) 토스에 정기결제 승인 요청 (평문 사용)
+		req.setBillingKey(plainBillingKey);
 
-	    payment.setPaymentType("BILLING");                   // 정기결제 구분값
-	    payment.setBillingKey(req.getBillingKey());          // 어떤 빌링키로 결제했는지
+		// 1) 토스에 정기결제 승인 요청
+		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
 
-	    payment.setCreatedBy("SYSTEM");
-	    payment.setCreateDate(LocalDateTime.now());
-	    payment.setUpdatedBy("SYSTEM");
-	    payment.setUpdateDate(LocalDateTime.now());
+		// 2) (선택) 카드사 코드 → 카드사명 맵핑
+		String cardCode = tossResponse.getCard().getCardCompanyCode();
+		String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
+		tossResponse.setCardCompany(cardName);
+		tossResponse.setCardCompanyCode(cardCode);
 
-	    paymentMapper.insertPayment(payment);
+		// 4) 결제 이력 INSERT
+		PaymentVO payment = new PaymentVO();
+		payment.setOrderId(req.getOrderId()); // 스케줄러에서 생성한 주문ID
+		payment.setSubCode(sub.getSubCode());
+		payment.setCompanyCode(sub.getCompanyCode());
+		payment.setTotalPrice(tossResponse.getTotalAmount());
+		payment.setPaymentStat(tossResponse.getStatus());
+		payment.setPaymentKey(tossResponse.getPaymentKey());
+		payment.setPaymentMethod(tossResponse.getMethod());
+		payment.setCardCompany(cardCode);
+		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
+		payment.setBillingStart(LocalDate.now());
+		payment.setBillingEnd(LocalDate.now().plusMonths(1)); // 매달 결제 가정
 
-	    // 5) 구독의 최근 청구일 / 다음 청구일 갱신
-	    LocalDate today = LocalDate.now();
-	    LocalDate next = today.plusMonths(1); // or 요금제/계약 단위에 따라 계산
+		payment.setPaymentType("BILLING"); // 정기결제 구분값
+		// ✅ 어떤 빌링키로 결제했는지 "암호문"으로 저장
+		payment.setBillingKey(encryptedBillingKey);
 
-	    subscribeMapper.updateBillingDates(
-	            sub.getSubCode(),
-	            today,  // recentBillingDate
-	            next    // nextBillingDate
-	    );
+		payment.setCreatedBy("SYSTEM");
+		payment.setCreateDate(LocalDateTime.now());
+		payment.setUpdatedBy("SYSTEM");
+		payment.setUpdateDate(LocalDateTime.now());
 
-	    // 필요하면 여기서 구독 상태, 회사 상태 갱신 같은 것도 추가 가능
+		paymentMapper.insertPayment(payment);
 
-	    return tossResponse;  // 스케줄러 내부에서 결과 안 쓰면 반환 없어도 되긴 함
+		// 5) 구독의 최근 청구일 / 다음 청구일 갱신
+		LocalDate today = LocalDate.now();
+		LocalDate next = today.plusMonths(1); // or 요금제/계약 단위에 따라 계산
+
+		subscribeMapper.updateBillingDates(sub.getSubCode(), today, // recentBillingDate
+				next // nextBillingDate
+		);
+
+		// 필요하면 여기서 구독 상태, 회사 상태 갱신 같은 것도 추가 가능
+
+		return tossResponse; // 스케줄러 내부에서 결과 안 쓰면 반환 없어도 되긴 함
 	}
-
 
 }

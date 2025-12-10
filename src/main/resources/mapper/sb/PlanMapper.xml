@@ -14,6 +14,7 @@
         <result property="createDate" column="CREATE_DATE" />
         <result property="updatedBy"  column="UPDATED_BY" />
         <result property="updateDate" column="UPDATE_DATE" />
+        <result property="billingPeriod" column="BILLING_PERIOD" />
     </resultMap>
 	<!-- 플랜 전체 조회 -->
     <select id="selectPlanList" resultMap="PlanResultMap">
@@ -24,6 +25,7 @@
             PRICE,
             SUBS_PERIOD,
             USER_COUNT,
+            BILLING_PERIOD,
             CREATED_BY,
             CREATE_DATE,
             UPDATED_BY,
@@ -41,6 +43,7 @@
             PRICE,
             SUBS_PERIOD,
             USER_COUNT,
+            BILLING_PERIOD,
             CREATED_BY,
             CREATE_DATE,
             UPDATED_BY,

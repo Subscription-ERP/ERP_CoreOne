@@ -13,6 +13,7 @@ public class PlanVO {
 	private BigDecimal price; // PRICE
 	private Integer subsPeriod; // SUBS_PERIOD
 	private Integer userCount; // USER_COUNT
+	private Integer billingPeriod;
 	private String createdBy; // CREATED_BY
 	private Date createDate; // CREATE_DATE
 	private String updatedBy; // UPDATED_BY
