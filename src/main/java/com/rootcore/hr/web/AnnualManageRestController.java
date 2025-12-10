@@ -14,6 +14,7 @@ import com.rootcore.hr.service.AnnualManageService;
 import com.rootcore.hr.vo.AnnualLeaveDetailVO;
 import com.rootcore.hr.vo.AnnualLeaveVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -24,9 +25,12 @@ public class AnnualManageRestController {
 
 	// 사원연차신청이력조회
 	@GetMapping("/annualManageList")
-	public Map<String, Object> annualManageList(AnnualLeaveDetailVO param) {
-
-		param.setUserId("EMP23030100003");
+	public Map<String, Object> annualManageList(AnnualLeaveDetailVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");
+		param.setCompanyCode(CompanyCode);
+		param.setUserId(userId);
 
 		// 사원급여조회
 		List<AnnualLeaveDetailVO> list = annualManageService.selectAnnualManageList(param);
@@ -47,14 +51,20 @@ public class AnnualManageRestController {
 
 	// 현재 내 연차 현황
 	@GetMapping("/myAnnualStatus")
-	public AnnualLeaveVO myAnnualStatus(AnnualLeaveVO param) {
-		param.setUserId("EMP23030100003");
+	public AnnualLeaveVO myAnnualStatus(AnnualLeaveVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");
+		param.setCompanyCode(CompanyCode);
+		param.setUserId(userId);
 		return annualManageService.selectmyAnnualStatus(param);
 	}
 
 	// 연차신청
 	@PostMapping("/myAnnualApply")
-	public int myAnnualApply(@RequestBody AnnualLeaveDetailVO param) {
+	public int myAnnualApply(@RequestBody AnnualLeaveDetailVO param, HttpSession session) {
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
 		return annualManageService.insertmyAnnualApply(param);
 	}
 }

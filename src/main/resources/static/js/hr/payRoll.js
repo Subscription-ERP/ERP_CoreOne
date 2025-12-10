@@ -5,13 +5,27 @@
 /* ====================
  * 전역 변수
  * 현재 선택된 급여대상 코드 
- * ====================*/
+ * ==================== */
 let currentPayrollPeriodCode = null;
+
+/* 상여등록 후 초기화 하는 함수 */
+function resetBonusRegisterForm() {
+	document.querySelector("#payrollPeriod").value = ""; // 귀속연월
+	document.querySelector('#bonusType_k1').checked = true; // 지급액(amount) 버튼 초기화 추가
+	document.querySelector('#bonusType_k2').checked = false; // 상여지급방법 라디오버튼 초기화
+	document.querySelector("#bonus").value = ""; // 지급률 및 지급액
+	document.querySelector("#payrollBonusName").value = "";
+	document.querySelector("#payrollStartDate").value = "";
+	document.querySelector("#payrollEndDate").value = "";
+	document.querySelector("#payrollBonusDate").value = "";
+	targetUserGrid.resetData([]); // 대상 사원 목록 초기화
+	updatePeopleNumber(); // 인원수 초기화
+}
 
 // 숫자 한국형 포맷팅 함수
 function formatKoreanNumber(value) {
-    // Number()를 사용하여 value가 문자열인 경우에도 숫자로 변환을 시도합니다.
-    return new Intl.NumberFormat('ko-KR').format(Number(value));
+	// Number()를 사용하여 value가 문자열인 경우에도 숫자로 변환을 시도합니다.
+	return new Intl.NumberFormat('ko-KR').format(Number(value));
 }
 
 // 공통코드(선택박스)
@@ -65,7 +79,6 @@ function getCmCodeRadio(divIdRadio) {
 						input.className = "form-check-input";
 						input.type = "radio";
 						input.id = `${radioName}_${d.code}`;
-						console.log('d.code : ', d.code);
 						input.name = radioName;
 						input.value = d.code;
 
@@ -149,21 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 부서 조회(공통코드)
 	getDeptOptions2(["#dept"]);
 
-	/* 상여등록 후 초기화 하는 함수 */
-	function resetBonusRegisterForm() {
-		document.querySelector("#payrollPeriod").value = ""; // 귀속연월
-		document.querySelector('#bonusType_k1').checked = true; // 지급액(amount) 버튼 초기화 추가
-		document.querySelector('#bonusType_k2').checked = false; // 상여지급방법 라디오버튼 초기화
-		document.querySelector("#bonus").value = ""; // 지급률 및 지급액
-		document.querySelector("#payrollBonusName").value = "";
-		document.querySelector("#payrollStartDate").value = "";
-		document.querySelector("#payrollEndDate").value = "";
-		document.querySelector("#payrollBonusDate").value = "";
-		targetUserGrid.resetData([]); // 대상 사원 목록 초기화
-		updatePeopleNumber(); // 인원수 초기화
-	}
-
-	/* 급여대장-상여등록-초기화버튼 */
+	// 급여대장-상여등록-초기화버튼
 	document.querySelector("#btnReset").addEventListener("click", function() {
 		resetBonusRegisterForm(); // 초기화 함수 호출
 	});
@@ -274,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const selectedRows = allUserGrid.getCheckedRows();
 
 			if (selectedRows.length === 0) {
-				showToast("추가할 사원을 선택해주세요.",'info');
+				showToast("추가할 사원을 선택해주세요.", 'info');
 				return;
 			}
 
@@ -287,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 
 			if (newRowsToAdd.length === 0) {
-				showToast("선택된 사원 중 추가할 수 있는 사원이 없습니다.",'info');
+				showToast("선택된 사원 중 추가할 수 있는 사원이 없습니다.", 'info');
 				allUserGrid.uncheckAll(); // 체크 해제
 				return;
 			}
@@ -310,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const checkedTargetRows = targetUserGrid.getCheckedRowKeys();
 
 			if (checkedTargetRows.length === 0) {
-				showToast("제외할 대상 사원을 선택해주세요.",'info');
+				showToast("제외할 대상 사원을 선택해주세요.", 'info');
 				return;
 			}
 
@@ -345,10 +344,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			allUserGrid.readData(1, data, true);
 		});
 
-	/* =======================================================================
+	/* ================================
 	 * 급여대장-상여등록
 	 * 저장버튼을 누르면 상여등록이 이루어진다.
-	 * ======================================================================= */
+	 * ================================ */
 	document.getElementById("btnSave").addEventListener("click", function() {
 		// 대상 그리드(targetUserGrid)의 모든 사원을 가져옴
 		const checkedEmployees = targetUserGrid.getData();
@@ -390,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			peopleNumber: employeeIds.length,
 			employeeIds: employeeIds,
 		};
-		
+
 		/* ======
 		 * 상여등록
 		 * ====== */
@@ -408,8 +407,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					targetUserGrid.resetData([]); // 성공 시 대상 목록 초기화
 					updatePeopleNumber();
 					resetBonusRegisterForm(); // 상여등록 폼 초기화
+					payrollGrid.reloadData(); // 상여등록 성공하면 급여대장목록 한번 리로드되게하기
 				} else {
-					showToast("등록 실패 : " + result.message,'error');
+					showToast("등록 실패 : " + result.message, 'error');
 				}
 			})
 			.catch((error) => console.error("Error:", error));
@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	targetUserGrid.on("afterRemoveRow", updatePeopleNumber);
 	targetUserGrid.on("afterAppendRow", updatePeopleNumber);
 
-	/* 급여대장-조회, 급여 대장 목록 */
+	/* 급여대장-급여대장목록조회, 급여대장목록 */
 	const payrollGrid = new tui.Grid({
 		el: document.getElementById("payrollGrid"),
 		scrollX: true,
@@ -510,7 +510,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						payrollDetailGrid.resetData(payList); // 실제 데이터 리스트(payList)를 Grid에 설정
 
 						if (payList.length === 0) {
-							showToast("계산된 급여 데이터가 없습니다.",'info');
+							showToast("계산된 급여 데이터가 없습니다.", 'info');
 						}
 					} else {
 						// 실패 시 처리 (result: false 인 경우)
@@ -553,24 +553,36 @@ document.addEventListener("DOMContentLoaded", () => {
 			{ header: "성명", name: "userName", width: 10 },
 			{ header: "부서명", name: "deptName", width: 100 },
 			{ header: "지급일", name: "payrollDate", align: "center", width: 100 },
-			{ header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
+			{
+				header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
-				} },
-			{ header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
+				}
+			},
+			{
+				header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
-				} },
-			{ header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
+				}
+			},
+			{
+				header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
-				} },
-			{ header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
+				}
+			},
+			{
+				header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
-				} },
-			{ header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
+				}
+			},
+			{
+				header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
-				} },
-			{ header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
+				}
+			},
+			{
+				header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
 					return formatKoreanNumber(e.value);
-				} }
+				}
+			}
 		],
 	}); // end of payrollDetailGrid
 
@@ -592,12 +604,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}); // end of payrollDetailGrid
 
-	/* ==============================================================================
+	/* =====================================
 	 * 확정 버튼
 	 * 급여대장-급여관리 모달창-확정버튼
 	 * 확정 버튼을 눌렀을때 사원급여관리 테이블에 삽입
 	 * 확정버튼 누르면 지급총액도 같이 나오게 만듬
-	 * ============================================================================== */
+	 * ===================================== */
 	document.querySelector('#btnPayrollSave').addEventListener('click', function() {
 		// 급여관리 테이블 데이터 가져오기
 		const data = payrollDetailGrid.getData();
@@ -639,13 +651,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	});
 
-    // 날짜 input박스만 눌러도 달력 선택창 뜨게 하기
-	setupNativeDatePicker('payrollPeriodParent','payrollPeriod'); // 급여대장-상여등록-귀속연월
-	setupNativeDatePicker('payrollStartDateWrapper','payrollStartDate'); // 급여대장-상여등록-대장기간시작일
-	setupNativeDatePicker('payrollEndDateWrapper','payrollEndDate'); // 급여대장-상여등록-대장기간종료일
-	setupNativeDatePicker('payrollBonusDateWrapper','payrollBonusDate'); // 급여대장-상여등록-지급일
-	setupNativeDatePicker('paymentStartDateWrapper','paymentStartDate'); // 급여대장-대장조회-지급일시작
-	setupNativeDatePicker('paymentEndDateWrapper','paymentEndDate'); // 급여대장-대장조회-지급일종료
-	
+	// 날짜 input박스만 눌러도 달력 선택창 뜨게 하기
+	setupNativeDatePicker('payrollPeriodParent', 'payrollPeriod'); // 급여대장-상여등록-귀속연월
+	setupNativeDatePicker('payrollStartDateWrapper', 'payrollStartDate'); // 급여대장-상여등록-대장기간시작일
+	setupNativeDatePicker('payrollEndDateWrapper', 'payrollEndDate'); // 급여대장-상여등록-대장기간종료일
+	setupNativeDatePicker('payrollBonusDateWrapper', 'payrollBonusDate'); // 급여대장-상여등록-지급일
+	setupNativeDatePicker('paymentStartDateWrapper', 'paymentStartDate'); // 급여대장-대장조회-지급일시작
+	setupNativeDatePicker('paymentEndDateWrapper', 'paymentEndDate'); // 급여대장-대장조회-지급일종료
+
 
 }); // end of DOMContentLoaded

@@ -12,6 +12,7 @@ import com.rootcore.hr.service.DeptManageService;
 import com.rootcore.hr.vo.DeptMasterVO;
 import com.rootcore.hr.vo.UserVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -22,13 +23,21 @@ public class DeptManageRestController {
 
 	// 조직도관리-부서조회
 	@GetMapping("/deptStructure")
-	public List<DeptMasterVO> selectDeptList(DeptMasterVO param) {
+	public List<DeptMasterVO> selectDeptList(DeptMasterVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
+		
 		return deptManageService.selectDeptList(param);
 	}
 
 	// 조직도관리-사원조회
 	@GetMapping("/deptUserList")
-	public Map<String, Object> selectDeptUserList(DeptMasterVO param) {
+	public Map<String, Object> selectDeptUserList(DeptMasterVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
+		
 		List<UserVO> list = deptManageService.selectDeptUserList(param);
 		
 		// RESULT에 실행결과 저장

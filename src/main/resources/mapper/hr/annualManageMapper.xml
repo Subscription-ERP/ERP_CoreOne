@@ -28,6 +28,9 @@
 		       JOIN tb_cm_code cmcl
 		       ON cmcl.code = ald.leave_type
 		WHERE  1=1
+		<if test="companyCode != null and companyCode != '' " >
+          AND  ald.company_code = #{companyCode}
+		</if>
 		<if test="userId != null and userId != '' " >
           AND  al.user_id = #{userId}
 		</if>
@@ -70,6 +73,9 @@
 		<if test="userId != null and userId != '' ">
 		  AND  al.user_id = #{userId}
 		</if>
+		<if test="companyCode != null and companyCode != '' " >
+          AND  al.company_code = #{companyCode}
+		</if>
 	</select>
 	
 	<!-- 사원연차신청등록, 연차상세관리 테이블 insert -->
@@ -87,7 +93,7 @@
 		         FROM   tb_annual_leave
 		         WHERE  user_id = #{userId}
 		         AND  grant_year = TO_CHAR(sysdate, 'yyyy')),
-		         '0000',
+		         #{companyCode},
 		         #{leaveType},
 		         #{usedDays},
 		         <choose>
@@ -127,7 +133,7 @@
 	        in_time,
 	        out_time
 	    ) VALUES (
-	        '0000',
+	        #{companyCode},
 	        fn_make_date_code('ATTEN'),
 	        #{userId},
 	        TO_DATE(#{annualStartDate}, 'YYYY-MM-DD'),

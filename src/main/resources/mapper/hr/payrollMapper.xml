@@ -26,7 +26,7 @@
 		)
 		VALUES (
 			fn_make_date_code('PAYROLL'),
-			'0000',
+			#{companyCode},
 			#{userId},
 			#{payrollPeriodCode},
 			#{payrollPeriod},
@@ -41,7 +41,7 @@
 		)
 	</insert>
 
-	<!-- 급여대장조회 -->
+	<!-- 급여대장목록조회 -->
 	<select id="selectPayrollList" resultType="PayrollVO">
 		SELECT   pr.payroll_period,
 		         cc.code_name AS payroll_type,
@@ -56,7 +56,8 @@
 		         ON pr.payroll_type = cc.code
 		         LEFT JOIN tb_user_pay_management upm
 		         ON upm.payroll_code = pr.payroll_code
-		WHERE    1=1
+		WHERE    1=1		 
+		  AND    pr.company_code = #{companyCode}
 		<if test="payrollType != null and payrollType != '' ">
             AND pr.payroll_type = #{payrollType}
         </if>
@@ -78,29 +79,22 @@
 	</select>
 
 	<!-- 급여대장-상여등록-사원조회 -->
-	<select id="selectUserList" resultType="PayrollUserVO">
+	<select id="selectUserList" resultType="PayrollUserVO" parameterType="PayrollUserVO">
 		SELECT um.user_id,
 		       um.user_name,
 		       dm.dept_name AS dept
-		       <!-- hire_date, -->
-		       <!-- job_title -->
 		FROM   tb_user_master um
 		       JOIN tb_dept_master dm
 		       ON um.dept = dm.dept_code
 		WHERE  1=1
-		AND    um.leave_date IS NULL
+		  AND  um.company_code = #{companyCode}
+		  AND  um.leave_date IS NULL
 		<if test="userName != null and userName != '' ">
 			AND um.user_name like '%' || #{userName} || '%'
 		</if>
 		<if test="dept != null and dept != '' ">
 			AND um.dept like '%' || #{dept} || '%'
 		</if>
-		<!-- <if test="payrollEmpStartDate != null and payrollEmpStartDate != '' ">
-			AND hire_date >= TO_DATE(#{payrollEmpStartDate} , 'YYYY-MM-DD')
-		</if>
-		<if test="payrollEmpEndDate != null and payrollEmpEndDate != '' ">
-			AND hire_date &lt;= TO_DATE(#{payrollEmpEndDate}, 'YYYY-MM-DD')
-		</if> --><!-- 임시제거 -->
 	</select>
 		
 	<!-- 계산하기누르면 모달창이 나타나면서 실행 -->

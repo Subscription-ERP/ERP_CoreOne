@@ -21,7 +21,6 @@ public class PayrollManageServiceImpl implements PayrollManageService {
 	@Override
 	public List<UserPayManageVO> selectPayrollManageList(PayrollManageSearchVO param) {
 		List<UserPayManageVO> list = payrollManageMapper.selectPayrollManageList(param);
-		System.out.println("서비스임플 리스트 확인: " + list);
 		return list;
 	}
 

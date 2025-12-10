@@ -16,6 +16,7 @@ import com.rootcore.hr.vo.PayrollUserVO;
 import com.rootcore.hr.vo.PayrollVO;
 import com.rootcore.hr.vo.UserPayManageVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,7 +27,11 @@ public class PayrollRestController {
 
 	// 급여대장-상여등록
 	@PostMapping("/bonusRegister")
-	public Map<String, Object> insertBonusPayroll(@RequestBody PayrollVO param) {
+	public Map<String, Object> insertBonusPayroll(@RequestBody PayrollVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
+
 		int count = payrollService.insertBonusPayroll(param);
 
 		Map<String, Object> result = new HashMap<>();
@@ -43,10 +48,14 @@ public class PayrollRestController {
 
 	// 급여대장-상여등록-사원조회
 	@GetMapping("/payrollEmpList")
-	public Map<String, Object> getUserList(PayrollUserVO param) {
+	public Map<String, Object> getUserList(PayrollUserVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
+
 		// 사원조회
 		List<PayrollUserVO> list = payrollService.selectUserList(param);
-		
+
 		// RESULT에 실행결과 저장
 		Map<String, Object> result = new HashMap<>();
 		result.put("result", true);
@@ -61,12 +70,16 @@ public class PayrollRestController {
 		return result;
 	}
 
-	// 급여대장-조회
+	// 급여대장-급여대장목록조회
 	@GetMapping("/payrollList")
-	public Map<String, Object> getPayrollList(PayrollVO param) {
+	public Map<String, Object> getPayrollList(PayrollVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
+
 		// 급여대장조회
 		List<PayrollVO> list = payrollService.selectPayrollList(param);
-		System.out.println("list>>>"+list);
+		System.out.println("list>>>" + list);
 		// RESULT에 실행결과 저장
 		Map<String, Object> result = new HashMap<>();
 		result.put("result", true);
@@ -109,16 +122,17 @@ public class PayrollRestController {
 
 		return result;
 	}
-	
+
 	// 급여대장-계산하기모달-확정버튼
 	@PostMapping("/registerUserPay")
 	public int registerUserPay(@RequestBody List<UserPayManageVO> userPayManageList) {
 		return payrollService.insertUserPay(userPayManageList);
 	}
-	
+
 	// 급여대장-계산하기-급여관리모달창-확정버튼-이미 있는 데이터인지 확인하는 select
 	@GetMapping("/checkUserPay")
 	public int checkUserPay(@RequestParam("payroll_code") String payrollCode) {
 		return payrollService.checkUserPay(payrollCode);
 	}
+
 }
