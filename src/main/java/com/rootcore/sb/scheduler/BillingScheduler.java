@@ -42,10 +42,10 @@ public class BillingScheduler {
                 // 2) 정기결제 요청 데이터 만들기
                 TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
                 req.setBillingKey(sub.getBillingKey());
-                req.setAmount(sub.getCurrentPrice().intValue());
+//                req.setAmount(sub.getCurrentPrice().intValue());
 
                 // 주문번호 규칙 예시: BILL_{subCode}_{timestamp}
-                req.setOrderId(orderId);
+//                req.setOrderId(orderId);
 
                 // 필요하면 subCode도 넣어두기
                 req.setSubCode(sub.getSubCode());
