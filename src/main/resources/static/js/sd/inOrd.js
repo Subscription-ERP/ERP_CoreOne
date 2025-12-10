@@ -1,9 +1,11 @@
 const btnOpenCustModal = document.getElementById('btnOpenCustModal');
+const btnOpenSkuModal = document.getElementById('btnOpenSkuModal');
 const custCodeSearch = document.getElementById('custCodeSearch');
 const custNameSearch = document.getElementById('custNameSearch');
 const btnCustClose     = document.getElementById('btnCustClose');
 const backdrop = document.querySelector(".modal-layer__backdrop");
 const btnAddRow = document.getElementById('btnAddRow');
+const btnDeleteRow = document.getElementById('btnDeleteRow');
 let inOrdGrid;
 let unitPriceTypeItems = [];
 let skuDataList = [];
@@ -31,7 +33,9 @@ document.getElementById('btnSave').addEventListener('click', async (e) => {
 // 조회
 document.addEventListener("DOMContentLoaded", function () {
 
-    /* 기본 입력 사항 */
+    /* ======================================================
+       기본 사항 입력
+    ====================================================== */
 
     // 거래처 검색
     custCodeSearch.addEventListener('keydown', handleEnter);
@@ -42,7 +46,27 @@ document.addEventListener("DOMContentLoaded", function () {
     btnCustClose.addEventListener('click', closeCustModal);
     backdrop.addEventListener('click', closeCustModal)
 
-    /* 수주 품목 목록 */
+    // 품목 모달 열기
+    btnOpenSkuModal.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        inOrdGrid.finishEditing();
+
+        const custCode = document.getElementById('custCodeSearch').value.trim();
+        const custName = document.getElementById('custNameSearch').value.trim();
+
+        if (!custCode && !custName) {
+            showToast('거래처를 먼저 선택하세요.', 'warning'); // 기존 showToast 패턴 재사용[web:50]
+            return;
+        }
+
+        // 거래처가 있으면 기존 모달 오픈 로직 실행
+        openSkuModalWindow(e);
+    });
+
+    /* ======================================================
+       품목 목록
+    ====================================================== */
 
     // grid 정보
     inOrdGrid = new tui.Grid({
@@ -132,9 +156,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     emptyRow();
 
-    // 추가버튼 클릭시 행 추가
+    // 행 추가
     btnAddRow.addEventListener('click', emptyRow);
     document.getElementById("btnReset").addEventListener('click', resetData);
+
+    // 행 삭제
+    btnDeleteRow.addEventListener('click', () => {
+        const checkedRows = inOrdGrid.getCheckedRows();
+        if (!checkedRows.length) {
+            showToast('삭제할 행을 선택하세요.', 'warning');
+            return;
+        }
+
+        inOrdGrid.removeCheckedRows(false); // confirm 없이 바로 삭제[web:6]
+
+        if (inOrdGrid.getRowCount() === 0) {
+            emptyRow();
+        }
+
+        sumPrice();
+    });
 
 
     // editor가 설정된 컬럼만 클릭시 편집 시작
@@ -172,9 +213,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     inOrdGrid.setValue(rowKey, 'unitPrice', 0);
                     inOrdGrid.setValue(rowKey, 'taxYn', '');
                 }
-
-                inOrdGrid.focus(rowKey, 'qty');
-                inOrdGrid.startEditing(rowKey, 'qty');
             }
 
             // 품목명 입력시 자동 완성
@@ -198,9 +236,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     inOrdGrid.setValue(rowKey, 'unitPrice', 0);
                     inOrdGrid.setValue(rowKey, 'taxYn', '');
                 }
-
-                inOrdGrid.focus(rowKey, 'qty');
-                inOrdGrid.startEditing(rowKey, 'qty');
             }
 
             // 공급가액, 부가세 계산
@@ -296,8 +331,60 @@ window.afterCustSearch = function(result) {
     }
 };
 
+// 품목 모달에서 값 불러오기
+window.handleSelectedSku = function (row) {
+    const data = inOrdGrid.getData();
+    if (!data.length) return;
 
-/* 함수 */
+    // 1) 중복 품목 여부 체크 (sku 기준, 필요하면 skuName도 같이 체크)
+    const isDup = data.some(r => String(r.sku).trim() === String(row.sku).trim());
+    if (isDup) {
+        showToast('이미 선택된 품목입니다.', 'warning');
+        return;
+    }
+
+    // 2) 마지막 행 rowKey 구하기
+    const lastRow = data[data.length - 1];
+
+    const rowKey = lastRow.rowKey;
+
+    // 3) 마지막 행에 값 세팅
+    inOrdGrid.setValue(rowKey, 'sku',       row.sku || '');
+    inOrdGrid.setValue(rowKey, 'skuName',   row.skuName || '');
+    inOrdGrid.setValue(rowKey, 'spec',      row.spec || '');
+    inOrdGrid.setValue(rowKey, 'unit',      row.unit || '');
+    inOrdGrid.setValue(rowKey, 'unitPrice', row.unitPrice || 0);
+    inOrdGrid.setValue(rowKey, 'taxYn',     row.taxYn || '');
+
+    // 4) 공급가/부가세 재계산
+    const qty        = Number(inOrdGrid.getValue(rowKey, 'qty')) || 0;
+    const unitPrice  = Number(row.unitPrice) || 0;
+    const supplyPrice = qty * unitPrice;
+    const surTax      = (row.taxYn === 'N') ? 0 : Math.floor(supplyPrice * 0.1);
+
+    inOrdGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
+    inOrdGrid.setValue(rowKey, 'surTax',      surTax.toLocaleString());
+    sumPrice();
+
+    // 5) 방금 채운 행이 마지막 행이면 다음 빈 행 자동 추가
+    const hasSkuOrName =
+        (lastRow.sku && String(lastRow.sku).trim() !== '') ||
+        (lastRow.skuName && String(lastRow.skuName).trim() !== '');
+
+    if (hasSkuOrName) {
+        emptyRow();
+    }
+
+    // 필요하면 모달 닫기
+    // closeSkuModal();
+};
+
+
+
+
+/* ======================================================
+   함수
+====================================================== */
 
 // 모달 열기
 function openCustModalOnly(e) {
@@ -376,10 +463,6 @@ function emptyRow(){
         inOrdGrid.addCellClassName(rowKey, 'unit', 'block');
         inOrdGrid.addCellClassName(rowKey, 'supplyPrice', 'block');
         inOrdGrid.addCellClassName(rowKey, 'surTax', 'block');
-
-        // 품목코드 셀에 포커스
-        inOrdGrid.focus(rowKey, 'sku');
-        inOrdGrid.startEditing(rowKey, 'sku');
     }
 }
 
@@ -393,6 +476,11 @@ function resetData() {
     document.querySelector('#totalSupplyPrice').value  = '';
     document.querySelector('#totalSurtax').value  = '';
     document.querySelector('#totalPrice').value  = '';
+
+    if (inOrdGrid) {
+        inOrdGrid.resetData([]);
+        emptyRow();
+    }
 }
 
 // 총공급액/총부가세/총액/잔여여신 계산
@@ -430,8 +518,6 @@ function sumPrice() {
 
 // 등록 전 데이터 불러오기
 function getInOrdData() {
-    // creditMax: toNumber(document.getElementById('creditMax')?.value)  // 여신한도
-    
     // 기본정보
     const info = {
         inordNo: document.getElementById('inordNo').value || null,
@@ -501,17 +587,12 @@ function handleUnitPriceTypeChange(rowKey, value) {
     }
 }
 
-
-
-
-// 나중에 삭제할 것!! ==============================================
-
-// 품목 불러오기
+// 품목 불러오기 (직접 입력)
 function skuList() {
     const custCode = document.getElementById('custCodeSearch').value.trim();
 
     if (!custCode) {
-        console.warn('거래처 코드가 없습니다. 모달에서 거래처를 먼저 선택하세요.');
+        showToast('거래처 코드가 없습니다. 모달에서 거래처를 먼저 선택하세요.', 'warning');
         return;
     }
 

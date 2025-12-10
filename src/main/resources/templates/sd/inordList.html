@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 
 <head>
     <meta charset="UTF-8" />
     <title>수주완료처리</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" th:href="@{/css/sd/inordList.css}">
 </head>
 <body layout:fragment="content">
     <div class="page page-fluid">
@@ -33,14 +31,6 @@
                         </div>
                     </div>
 
-                    <!-- 출고여부 -->
-                    <div class="col-12 col-md-2">
-                        <div class="field-inline">
-                            <label for="searchCustType" class="field-inline__label">출고여부</label>
-                            <select id="searchCustType" name="custType" class="form-select input-base" style="flex: 1; min-width: 0"></select>
-                        </div>
-                    </div>
-
                     <!-- 조회 버튼 -->
                     <div class="col-12 col-md-2 ms-auto text-end">
                         <button id="btnSearch" type="button" class="btn btn-color btn-outer">
@@ -53,11 +43,22 @@
 
 
         <!-- ================= 목록(Grid) 섹션 ================= -->
-        <section class="card-ui card-ui--grid section-flex">
+        <section class="card-ui card-ui--grid section-fixe">
             <header class="card-ui__header">
-                <h6 class="card-ui__title">수주 목록</h6>
+                <!-- 탭 -->
+                <ul class="nav nav-tabs ui-tabs" id="empTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active tab-btn" type="button" data-tab="notdone" data-status="NOT_DONE">미출고/부분출고</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link tab-btn" type="button" data-tab="done" data-status="DONE">
+                            출고완료</button>
+                    </li>
+                </ul>
+
+                <!-- 우측 액션 -->
                 <div class="toolbar">
-                    <button id="btnAddRow" type="button" class="btn btn-color btn-inner">
+                    <button id="btnOutPut" type="button" class="btn btn-color btn-inner">
                         출고
                     </button>
                 </div>

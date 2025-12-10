@@ -1,11 +1,57 @@
 let grid;
+let currentStatus = 'NOT_DONE';
 
 document.addEventListener('DOMContentLoaded', () => {
+    /* ------------------------------------------------------------------
+     * 탭 전환
+     * ------------------------------------------------------------------ */
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+
+            btn.classList.add("active");
+            const targetId = "tab-" + btn.dataset.tab;
+            const panel = document.getElementById(targetId);
+            if (panel) panel.classList.add("active");
+
+            const status = btn.dataset.status;
+            currentStatus = status;
+
+            if (status === 'DONE') {
+                btnOutPut.disabled = true;
+            } else {
+                btnOutPut.disabled = false;
+            }
+
+            loadInOrdHeader(status);
+        });
+    });
+    
+
+    /* ------------------------------------------------------------------
+     * 출고버튼
+     * ------------------------------------------------------------------ */
+    const btnOutPut = document.getElementById('btnOutPut');
+
+    btnOutPut.addEventListener('click', (e) => {
+        e.preventDefault();
+        processOutput()
+            .then(r => r.json())
+            .then(result => {
+                console.log(result);
+            })
+            .catch(err => console.error(err));
+
+    });
+
+
+    /* ------------------------------------------------------------------
+     * 목록
+     * ------------------------------------------------------------------ */
     const Grid = tui.Grid;
 
     Grid.applyTheme('clean');
-
-    /* 수주 품목 목록 */
 
     // grid 정보
     grid = new Grid({
@@ -17,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollY: true,
         treeColumnOptions: {
             name: 'inordNo',
-            useCascadingCheckbox: true
+            useCascadingCheckbox: false
         },
         columns: [
             {
@@ -77,17 +123,38 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     });
 
-    loadInOrdHeader();
-
     grid.on('expand', e => {
         loadInOrdDetail(e.rowKey);
     });
 
+    // 부모 체크/해제 시 자식도 같이 체크/해제
+    grid.on('check', e => {
+        const { rowKey } = e;
+        const children = grid.getDescendantRows(rowKey);   // 모든 자식(손자 포함)
+        children.forEach(row => {
+            grid.check(row.rowKey);
+        });
+    });
+
+    grid.on('uncheck', ev => {
+        const { rowKey } = ev;
+        const children = grid.getDescendantRows(rowKey);
+        children.forEach(row => {
+            grid.uncheck(row.rowKey);
+        });
+    });
+
+    loadInOrdHeader('NOT_DONE');
+
+
 
 })
 
-function loadInOrdHeader() {
-    fetch('/api/inOrd/info')
+// 수주 헤더 정보
+function loadInOrdHeader(outputStatusFilter) {
+    const url = '/api/inOrd/info?status=' + encodeURIComponent(outputStatusFilter);
+
+    fetch(url)
         .then(res => res.json())
         .then(headerList => {
             const treeData = headerList.map(h => ({
@@ -107,6 +174,7 @@ function loadInOrdHeader() {
         .catch(console.error);
 }
 
+// 수주 세부 정보
 function loadInOrdDetail(rowKey) {
     const parentRow = grid.getRow(rowKey);
     if (!parentRow) return;
@@ -123,7 +191,6 @@ function loadInOrdDetail(rowKey) {
     fetch(`/api/inOrd/detail?inordNo=${encodeURIComponent(inordNo)}`)
         .then(res => res.json())
         .then(detailList => {
-            console.log(detailList);
             const children = detailList.map(d => ({
                 inordNo: d.inordNo,
                 inordDetailNo: d.inordDetailNo,
@@ -152,4 +219,45 @@ function loadInOrdDetail(rowKey) {
         .catch(err => {
             console.error('수주 상세 로딩 실패:', err);
         });
+}
+
+async function processOutput() {
+    if (currentStatus === 'DONE') {
+        showToast('출고완료 건은 다시 출고할 수 없습니다.', 'error');
+        return;
+    }
+
+    const checked = getSelectedRowsFromGrid(grid);
+    if (!checked.length) {
+        showToast('출고할 수주를 선택하세요.', 'warning');
+        return;
+    }
+
+    const inordNo = checked[0].inordNo;
+
+    const details = checked.map(row => ({
+        inordNo: row.inordNo,
+        inordDetailNo: row.inordDetailNo
+    }));
+
+    const payload = { inordNo, details };
+
+    const res = await fetch('/api/inOrd/output', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        showToast('출고 처리에 실패했습니다.', 'error');
+        return;
+    }
+
+    loadInOrdHeader('NOT_DONE');
+}
+
+
+function getSelectedRowsFromGrid(grid) {
+    const rowKeys = grid.getCheckedRowKeys();
+    return rowKeys.map(key => grid.getRow(key));
 }

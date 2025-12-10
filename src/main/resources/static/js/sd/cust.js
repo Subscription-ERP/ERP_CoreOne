@@ -240,28 +240,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let useStatusChecked = document.querySelector('input[name="useStatus"]:checked');
 
     if (custName === "") {
-      showToast('상호(이름)을 입력하시오', 'warning');
+      showToast('상호(이름)을 입력하세요.', 'warning');
       return false;
     } else if (ceoName === "") {
-      showToast('대표자명을 입력하시오', 'warning');
+      showToast('대표자명을 입력하세요.', 'warning');
       return false;
     } else if (bno === "") {
-      showToast('사업자번호를 입력하시오', 'warning');
+      showToast('사업자번호를 입력하세요.', 'warning');
       return false;
     } else if (phone === "") {
-      showToast('전화번호를 입력하시오', 'warning');
+      showToast('전화번호를 입력하세요.', 'warning');
       return false;
     } else if (zonecode === "" || address === "") {
-      showToast('주소를 입력하시오', 'warning');
+      showToast('주소를 입력하세요.', 'warning');
       return false;
     } else if (custType === "") {
-      showToast('거래처유형을 선택하시오', 'warning');
+      showToast('거래처유형을 선택하세요.', 'warning');
       return false;
     } else if (userName === "") {
-      showToast('담당자를 입력하시오', 'warning');
+      showToast('담당자를 입력하세요.', 'warning');
       return false;
     } else if (!useStatusChecked) {
-      showToast('사용여부를 선택하시오', 'warning');
+      showToast('사용여부를 선택하세요.', 'warning');
       return false;
     }
 

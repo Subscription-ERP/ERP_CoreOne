@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 
@@ -104,16 +105,19 @@
               <div class="form-grid__row form-grid__row--3col">
                 <div class="form-grid__label">거래처코드</div>
                 <div class="form-grid__field">
+                  <label for="custCode" hidden="hidden"></label>
                   <input id="custCode" name="custCode" class="form-control form-control-sm input-base is-disabled" readonly placeholder="자동생성" />
                 </div>
 
                 <div class="form-grid__label">상호(이름)</div>
                 <div class="form-grid__field">
+                  <label for="custName" hidden="hidden"></label>
                   <input id="custName" name="custName" type="text" class="form-control form-control-sm input-base" />
                 </div>
 
                 <div class="form-grid__label">대표자명</div>
                 <div class="form-grid__field">
+                  <label for="ceoName" hidden="hidden"></label>
                   <input id="ceoName" name="ceoName" type="text" class="form-control form-control-sm input-base" />
                 </div>
               </div>
@@ -122,16 +126,19 @@
               <div class="form-grid__row form-grid__row--3col">
                 <div class="form-grid__label">사업자번호</div>
                 <div class="form-grid__field">
+                  <label for="bno" hidden="hidden"></label>
                   <input id="bno" name="bno" type="text" class="form-control form-control-sm input-base" placeholder="- 포함"/>
                 </div>
 
                 <div class="form-grid__label">업태</div>
                 <div class="form-grid__field">
+                  <label for="bType" hidden="hidden"></label>
                   <input id="bType" name="bType" type="text" class="form-control form-control-sm input-base" />
                 </div>
 
                 <div class="form-grid__label">종목</div>
                 <div class="form-grid__field">
+                  <label for="bItem" hidden="hidden"></label>
                   <input id="bItem" name="bItem" type="text" class="form-control form-control-sm input-base" />
                 </div>
               </div>
@@ -140,16 +147,19 @@
               <div class="form-grid__row form-grid__row--3col">
                 <div class="form-grid__label">전화</div>
                 <div class="form-grid__field">
+                  <label for="phone" hidden="hidden"></label>
                   <input id="phone" name="phone" type="text" class="form-control form-control-sm input-base" placeholder="010-0000-0000"/>
                 </div>
 
                 <div class="form-grid__label">Fax</div>
                 <div class="form-grid__field">
+                  <label for="faxNo" hidden="hidden"></label>
                   <input id="faxNo" name="faxNo" type="text" class="form-control form-control-sm input-base" placeholder="- 포함"/>
                 </div>
 
                 <div class="form-grid__label">이메일</div>
                 <div class="form-grid__field">
+                  <label for="custEmail" hidden="hidden"></label>
                   <input id="custEmail" name="custEmail" type="email" class="form-control form-control-sm input-base" />
                 </div>
               </div>
@@ -159,8 +169,9 @@
                 <div class="form-grid__label">우편번호</div>
                 <div class="form-grid__field_sd" style="background-color: #f6f6f6">
                   <div class="d-flex gap-3">
+                    <label for="zonecode" hidden="hidden"></label>
                     <input id="zonecode" name="zonecode" type="text" class="form-control form-control-sm input-base is-disabled"
-                      readonly placeholder="우편번호" />
+                                                         readonly placeholder="우편번호" />
                     <button type="button" id="btnOfficeSearch"
                       class="btn-grid">
                       <i class="bi bi-search"></i>
@@ -170,13 +181,15 @@
 
                 <div class="form-grid__label">주소</div>
                 <div class="form-grid__field">
+                  <label for="address" hidden="hidden"></label>
                   <input id="address" name="address" type="text" class="form-control form-control-sm input-base is-disabled" readonly placeholder="도로명주소" />
                 </div>
 
                 <div class="form-grid__label">상세주소</div>
                 <div class="form-grid__field">
+                  <label for="addressDetail" hidden="hidden"></label>
                   <input id="addressDetail" name="addressDetail" type="text" class="form-control form-control-sm input-base"
-                    placeholder="상세주소" />
+                                                            placeholder="상세주소" />
                 </div>
               </div>
 
@@ -207,11 +220,13 @@
               <div class="form-grid__row form-grid__row--3col">
                 <div class="form-grid__label">거래처유형</div>
                 <div class="form-grid__field">
+                  <label for="custType" hidden="hidden"></label>
                   <select id="custType" name="custType" class="form-select form-select-sm input-base"></select>
                 </div>
 
                 <div class="form-grid__label">부서</div>
                 <div class="form-grid__field">
+                  <label for="dept" hidden="hidden"></label>
                   <input id="dept" name="dept" type="text" class="form-control form-control-sm input-base" />
                   <button type="button" id="btnOpenHrModal"
                           class="btn-grid">
@@ -221,6 +236,7 @@
 
                 <div class="form-grid__label">담당자</div>
                 <div class="form-grid__field">
+                  <label for="userName" hidden="hidden"></label>
                   <input id="userName" name="userName" type="text" class="form-control form-control-sm input-base" />
                 </div>
               </div>

@@ -3,13 +3,10 @@ package com.rootcore.sd.web;
 
 import java.util.List;
 
+import com.rootcore.sd.vo.InOrdOutPut;
 import com.rootcore.sd.vo.InOrdVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.rootcore.sd.service.InOrdService;
 import com.rootcore.sd.vo.InOrdDetailVO;
@@ -33,8 +30,9 @@ public class InOrdRestController {
 
     // 수주헤더조회
     @GetMapping("/info")
-    public List<InOrdVO> inOrdSearch(InOrdVO inOrd) {
-        return inOrdService.getInOrd(inOrd);
+    public List<InOrdVO> inOrdSearch(@RequestParam(name = "status", required = false, defaultValue = "NOT_DONE")
+                                         String statusFilter) {
+        return inOrdService.getInOrd(statusFilter);
     }
 
     // 수주세부사항조회
@@ -44,8 +42,8 @@ public class InOrdRestController {
     }
 
     // 수주출고처리
-    @GetMapping("/output")
-    public void inOrdOutPut(@RequestBody InOrdSave req) {
-        inOrdService.updateOutputStatus(String.valueOf(req.getInordNo()), req.getDetail());
+    @PutMapping("/output")
+    public void inOrdOutPut(@RequestBody InOrdOutPut req) {
+        inOrdService.updateOutputStatus(String.valueOf(req.getInordNo()), req.getDetails());
     }
 }
