@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>인사 layout</title>
+</head>
+
+<body layout:fragment="layout">
+  <a href="#" class="nav-link">
+    <i class="nav-icon bi bi-person-badge"></i>
+    <p>
+      인사
+      <i class="nav-arrow bi bi-chevron-right"></i>
+    </p>
+  </a>
+  <ul class="nav nav-treeview">
+    <li class="nav-item">
+      <a th:href="@{/hr/userManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>사원관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/deptManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>조직관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/certificationManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>증명서관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/attendanceManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>근태관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/attendanceMe}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>내 근태관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/payrollManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>급여관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/payrollReport}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>급여대장</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/annualStatus}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>연차현황조회</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/annualManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>연차관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/reviewMaster}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>인사평가 기준관리</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/hr/reviewManage}" class="nav-link">
+        <i class="nav-icon bi bi-dash"></i>
+        <p>인사평가관리</p>
+      </a>
+    </li>
+  </ul>
+</body>
+
+</html>

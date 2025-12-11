@@ -24,10 +24,12 @@ public class ContractVO {
 
     private Integer subsPeriod;
     private Integer userCount;
-
+    private Integer billingPeriod;
+    
     private BigDecimal totalPrice;
     private BigDecimal vat;
     private BigDecimal discountAmount;
+    private BigDecimal baseTotal;
 
     private String status;
 

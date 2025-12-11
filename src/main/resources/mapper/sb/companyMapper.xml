@@ -5,7 +5,7 @@
 		parameterType="com.rootcore.sb.vo.CompanyVO">
 		<selectKey resultType="String" order="BEFORE"
 			keyProperty="companyCode">
-			SELECT FN_MAKE_COMPANY_CODE() FROM DUAL
+			SELECT FN_MAKE_CODE('COMPANY') FROM DUAL
 
 		</selectKey>
 		INSERT INTO TB_COMPANY_MASTER (
@@ -52,8 +52,8 @@
 	<select id="selectCompany" parameterType="String"
 		resultType="com.rootcore.sb.vo.CompanyVO">
 		SELECT COMPANY_CODE,
-		COMPANY_NAME,
-		CEO_NAME,
+		       COMPANY_NAME,
+		       CEO_NAME,
 		COMPANY_ADDRESS,
 		CEO_PHONE
 		FROM TB_COMPANY_MASTER
@@ -113,7 +113,6 @@
             created_by,
             create_date,
             updated_by,
-            update_date
             update_date
         FROM TB_COMPANY_MASTER
         WHERE company_code = #{companyCode}

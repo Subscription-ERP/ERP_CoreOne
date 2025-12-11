@@ -87,7 +87,7 @@
 <body>
 	<div layout:fragment="content">
 		<div class="subscription-container">
-
+			[[${session.contract}]]
 			<!-- 상단 단계 표시 -->
 			<div class="row step-header">
 				<div class="col-12 d-flex justify-content-center step-header-inner">
@@ -167,7 +167,12 @@
 						<div class="summary-row">
 							<span>월 구독료</span> <span th:text="${session.plan.price + '원'}">20,000원</span>
 						</div>
-
+						<!-- 할인금액: 구독기간 12개월 AND 결제주기 12개월일 때만 노출 -->
+						<div class="summary-row"
+							th:if="${session.contract.subsPeriod == 12 and session.contract.billingPeriod == 12}">
+							<span>할인 금액</span> <span
+								th:text="'-' + ${#numbers.formatInteger(session.contract.discountAmount, 3, 'COMMA')} + '원'">-24,000원</span>
+						</div>
 						<div class="summary-row">
 							<span>부가세(10%)</span> <span
 								th:text="${session.contract.vat + '원'}">6,000원</span>
@@ -202,8 +207,8 @@
 			<div class="row mt-4">
 				<div class="col-12 d-flex justify-content-center gap-3">
 					<a th:href="@{/contract/new}"
-						class="btn btn-outline-secondary px-5"> 이전으로 </a>
-					<input type="checkbox" id="autoBilling"> 자동결제 사용
+						class="btn btn-outline-secondary px-5"> 이전으로 </a> <input
+						type="checkbox" id="autoBilling"> 자동결제 사용
 					<button type="button" id="payBtn" class="btn btn-dark px-5">
 						결제하기</button>
 				</div>
@@ -212,7 +217,7 @@
 		</div>
 
 		<!-- Toss Payments 스크립트 -->
-	 <script th:src="@{/js/sb/payment.js}"></script>
+		<script th:src="@{/js/sb/payment.js}"></script>
 	</div>
 </body>
 </html>
