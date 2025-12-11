@@ -344,11 +344,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			allUserGrid.readData(1, data, true);
 		});
 
-	/* ================================
+	/* ======================================
 	 * 급여대장-상여등록
-	 * 저장버튼을 누르면 상여등록이 이루어진다.
-	 * ================================ */
-	document.getElementById("btnSave").addEventListener("click", function() {
+	 * 설명 : 저장버튼을 누르면 상여등록이 이루어진다.
+	 * ====================================== */
+	document.getElementById("btnSave").addEventListener("click", () => {
 		// 대상 그리드(targetUserGrid)의 모든 사원을 가져옴
 		const checkedEmployees = targetUserGrid.getData();
 		const employeeIds = checkedEmployees.map((row) => row.userId);

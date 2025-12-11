@@ -1193,14 +1193,15 @@ SELECT   pr.payroll_period,
          pr.payroll_name,
          pr.payroll_date,
          pr.create_date,
-         pr.payroll_period_code,
-         COUNT(*) AS peopleNumber,
-         SUM(upm.total_payment) AS totalPayment -- 지급총액
+         pr.payroll_period_code
+         -- COUNT(*) AS peopleNumber
+         -- SUM(upm.total_payment) AS totalPayment -- 지급총액
 FROM     tb_payroll pr
          JOIN tb_cm_code cc
          ON pr.payroll_type = cc.code
          LEFT JOIN tb_user_pay_management upm
          ON upm.payroll_code = pr.payroll_code
+GROUP BY pr.payroll_period_code;
 GROUP BY pr.payroll_period, 
          cc.code_name,
          pr.payroll_name, 
@@ -1800,3 +1801,44 @@ SELECT dm.dept_code,
        ON dmu.dept_code = dm.upper_dept_no
  WHERE dm.company_code = '0000'
    AND ccs.code = dm.status;
+   
+/* ==========
+ * 2025-12-11
+ * ========== */
+ 
+/* ========
+ * 단순쿼리문
+ * ======== */
+SELECT * FROM tb_payroll;
+SELECT (SELECT payroll_period_code
+        FROM   tb_payroll
+        GROUP BY payroll_period_code)
+FROM    tb_payroll;
+ 
+/* =================================
+ * 부서코드관리 - 부서 등록 - 저장버튼기능
+ * ================================= */
+INSERT INTO tb_dept_master (
+    dept_code,
+    company_code,
+    dept_name,
+    upper_dept_no,
+    dept_level,
+    start_date,
+    end_date,
+    status,
+    dept_mng,
+    rm
+)
+VALUES (
+    fn_make_code('DEPT'),
+    #{companyCode},
+    #{deptName},
+    #{upperDeptNo},
+    #{deptLevel},
+    #{startDate},
+    #{endDate},
+    #{status},
+    #{deptMng},
+    #{rm}
+)
