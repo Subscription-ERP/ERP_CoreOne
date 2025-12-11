@@ -1,5 +1,6 @@
 package com.rootcore.sb.vo;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class PaymentVO {
 	private String planCode;     // PLAN_CODE
 
 	private Long totalPrice;
+	private BigDecimal discountAmount;
 	private String paymentStat;
 	private String paymentMethod;
 	private LocalDateTime paymentDate;

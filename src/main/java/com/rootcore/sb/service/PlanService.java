@@ -14,4 +14,8 @@ public interface PlanService {
     
     BigDecimal calculateTotalPrice(PlanVO plan);
     BigDecimal calculateVat(PlanVO plan);
+    BigDecimal calculateDiscountedBase(PlanVO plan);
+    BigDecimal calculateBaseTotal(PlanVO plan);
+    BigDecimal calculateDiscountAmount(PlanVO plan);
+    BigDecimal getDiscountedBase(PlanVO plan);
 }
