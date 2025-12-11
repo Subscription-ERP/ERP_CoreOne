@@ -15,18 +15,62 @@ const DeptMng = document.querySelector('#deptCodeManageDeptMng'); // 부서 등�
 const Rm = document.querySelector('#deptCodeManageRm'); // 부서 등록 - 비고
 const UpperDeptName = document.querySelector('#deptCodeManageUpperDeptName'); // 부서 등록 - 상위부서명
 
+/* ===================================================================================
+ * 부서 등록 - 부서 목록에서 부서를 선택 할 경우 부서 등록에 선택한 부서의 내용들이 나타나고 수정 할 수 있음
+ * =================================================================================== */
+function selectRow() {
+	
+}
+
+/* =======================================================
+ * 부서 등록 - 적용종료일이 적용시작일보다 작게 반영할 경우 안된다고 막기
+ * ======================================================= */
+function endStartDate() {
+	if (StartDate.value && EndDate.value && EndDate.value < StartDate.value) {
+		showToast("적용종료일은 적용시작일보다 이전일 수 없습니다.", 'error');
+		EndDate.value = '';
+		return false; // 유효성검사 실패 반환
+	}
+	return true; // 유효성검사 성공 반환
+}
+
 /* ==============================================
  * 부서 등록 - 적용시작일이 입력되면 상태값을 '종료'으로 넣기
  * ============================================== */
 function deptCodeManageEndDate() {
-	Status.value = '종료';
+	if (endStartDate()) {
+		Status.value = '종료';
+	} else {
+		// 유효성 검사에 실패하여 EndDate 값이 초기화되었으므로, 상태를 재검토
+        handleStatusUpdate();
+	}
 }
 
 /* ==============================================
  * 부서 등록 - 적용시작일이 입력되면 상태값을 '운영'으로 넣기
  * ============================================== */
 function deptCodeManageStartDate() {
-	Status.value = '운영';
+	endStartDate(); // 종료일이 이미 있다면 유효성만 체크하고 잘못된 EndDate를 초기화 (상태 변경은 아래 함수에서)
+    handleStatusUpdate();
+}
+
+/* ================================================
+ * 부서 등록 - StartDate와 EndDate에 기반하여 상태값을 결정
+ * ================================================ */
+function handleStatusUpdate() {
+    const start = StartDate.value;
+    const end = EndDate.value;
+
+    if (end) {
+        // EndDate가 있으면 무조건 '종료' 상태로 간주
+        Status.value = '종료';
+    } else if (start) {
+        // StartDate는 있으나 EndDate가 없으면 '운영' 상태로 간주
+        Status.value = '운영';
+    } else {
+        // StartDate도 없으면 상태 초기화 (또는 기본값 설정)
+        Status.value = ''; 
+    }
 }
 
 /* ===================
@@ -40,16 +84,16 @@ const DeptCancelBtnElement = document.querySelector('#DeptCancelBtn'); // 부서
  * 부서 등록 - 부서선택 버튼 기능 구현
  * ============================ */
 function DeptSelectBtn() {
-	if(isDeptSelectionMode) return; // 부서 선택 모드 상태가 true면 빠져나가기(중복 실행 막는거임)
-	
+	if (isDeptSelectionMode) return; // 부서 선택 모드 상태가 true면 빠져나가기(중복 실행 막는거임)
+
 	// 상태 플래그 활성화
 	isDeptSelectionMode = true; // 상태 활성화
 	DeptSelectBtnElement.disabled = true; // 부서선택 버튼 비활성화
 	// DeptCancelBtnElement.style.display = 'inline'; // 취소 버튼 활성화 
-	
+
 	// 그리드에 이벤트 리스너 추가
 	deptCodeManageGrid.on('click', onDeptGridSelect);
-	
+
 	showToast("부서 목록에서 상위 부서로 지정할 부서를 선택하세요. (부서 선택 모드 활성화)", 'info');
 }
 
@@ -57,16 +101,16 @@ function DeptSelectBtn() {
  * 부서 등록 - 부서선택 버튼 기능 구현 - 부서 선택 모드를 해제하고 리스너를 제거하는 함수
  * ==================================================================== */
 function disableDeptSelectionMode() {
-    if (!isDeptSelectionMode) return; // 모드가 true면 빠져나가기
-    
-    // 1. 상태 플래그 비활성화 및 버튼 상태 변경
-    isDeptSelectionMode = false;
-    DeptSelectBtnElement.disabled = false; // 부서선택 버튼 재활성화
-    // DeptSelectCancelBtnElement.style.display = 'none'; // 취소 버튼 비활성화 (선택 사항)
+	if (!isDeptSelectionMode) return; // 모드가 true면 빠져나가기
 
-    // 2. 그리드 이벤트 리스너 제거
-    // TUI Grid의 off() 함수를 사용하여 'click' 이벤트에 연결된 리스너 해제
-    deptCodeManageGrid.off('click', onDeptGridSelect);
+	// 1. 상태 플래그 비활성화 및 버튼 상태 변경
+	isDeptSelectionMode = false;
+	DeptSelectBtnElement.disabled = false; // 부서선택 버튼 재활성화
+	// DeptSelectCancelBtnElement.style.display = 'none'; // 취소 버튼 비활성화 (선택 사항)
+
+	// 2. 그리드 이벤트 리스너 제거
+	// TUI Grid의 off() 함수를 사용하여 'click' 이벤트에 연결된 리스너 해제
+	deptCodeManageGrid.off('click', onDeptGridSelect);
 }
 
 /* =====================================================
@@ -74,22 +118,22 @@ function disableDeptSelectionMode() {
  * (이 함수는 DeptSelectBtn()이 호출했을 때만 TUI Grid에 연결됨)
  * ===================================================== */
 function onDeptGridSelect(ev) {
-    if (!isDeptSelectionMode) return; // 모드가 true면 빠져나가기
+	if (!isDeptSelectionMode) return; // 모드가 true면 빠져나가기
 
-    const rowKey = ev.rowKey; // 선택한 행의 key값을 저장
-    const selectedDept = deptCodeManageGrid.getRow(rowKey); // key값의 데이터를 저장
+	const rowKey = ev.rowKey; // 선택한 행의 key값을 저장
+	const selectedDept = deptCodeManageGrid.getRow(rowKey); // key값의 데이터를 저장
 
-    if (selectedDept) { // 데이터가 있으면
-        // 선택한 데이터를 오른쪽 '부서 등록' 영역의 필드에 반영
-        UpperDeptCode.value = selectedDept.deptCode;
-        UpperDeptName.value = selectedDept.deptName;
-        DeptLevel.value = parseInt(selectedDept.deptLevel) + 1; // 필요하다면 레벨 자동 설정
+	if (selectedDept) { // 데이터가 있으면
+		// 선택한 데이터를 오른쪽 '부서 등록' 영역의 필드에 반영
+		UpperDeptCode.value = selectedDept.deptCode;
+		UpperDeptName.value = selectedDept.deptName;
+		DeptLevel.value = parseInt(selectedDept.deptLevel) + 1; // 필요하다면 레벨 자동 설정
 
-        showToast(`상위 부서 '${selectedDept.deptName}'가 설정되었습니다.`, 'success');
+		showToast(`상위 부서 '${selectedDept.deptName}'가 설정되었습니다.`, 'success');
 
-        // 데이터 반영 후, 선택 모드 해제
-        disableDeptSelectionMode();
-    }
+		// 데이터 반영 후, 선택 모드 해제
+		disableDeptSelectionMode();
+	}
 }
 
 /* ========================
@@ -316,15 +360,21 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * 부서 등록 - 부서선택 버튼 기능 구현
 	 * ============================ */
 	document.querySelector('#DeptSelectBtn').addEventListener('click', DeptSelectBtn);
-	
+
 	/* ==============================================
 	 * 부서 등록 - 적용시작일이 입력되면 상태값을 '운영'으로 넣기
 	 * ============================================== */
 	StartDate.addEventListener('change', deptCodeManageStartDate);
-	
+
 	/* ==============================================
 	 * 부서 등록 - 적용시작일이 입력되면 상태값을 '종료'으로 넣기
 	 * ============================================== */
 	EndDate.addEventListener('change', deptCodeManageEndDate);
+
+	/* ==================================================
+	 * 부서 등록 - 적용시작일 달력 input상자만 눌러도 달력이 나타나게
+	 * ================================================== */
+	setupNativeDatePicker('deptCodeManageStartWrapper', 'deptCodeManageStartDate'); // 부서코드관리-부서등록-적용시작일
+	setupNativeDatePicker('deptCodeManageEndWrapper', 'deptCodeManageEndDate'); // 부서코드관리-부서등록-적용종료일
 
 }); // end of DOMContentLoaded
