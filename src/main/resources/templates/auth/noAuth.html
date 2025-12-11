@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>접근 권한 없음</title>
+
+    <link rel="stylesheet" href="/css/adminlte.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #1d3557, #457b9d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Pretendard', sans-serif;
+            color: #fff;
+        }
+
+        .card {
+            width: 420px;
+            padding: 32px 36px 36px;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.55);
+            text-align: center;
+        }
+
+        .card .icon {
+            font-size: 42px;
+            margin-bottom: 16px;
+        }
+
+        .card h1 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #e3e3e3;
+            margin-bottom: 24px;
+        }
+
+        .btn-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: none;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-main:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="icon">
+        <i class="bi bi-shield-lock"></i>
+    </div>
+    <h1>접근 권한이 없습니다</h1>
+    <p>
+        선택하신 메뉴에 대한 사용 권한이 없습니다.<br>
+        관리자에게 권한을 요청하거나, 다른 메뉴를 이용해 주세요.
+    </p>
+
+    <a href="/" class="btn-main">
+        <i class="bi bi-house-door"></i>
+        메인 화면으로 이동
+    </a>
+</div>
+
+</body>
+</html>
