@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.HrDocumentMapper">
+
+	<!-- 증명서관리 -->
+	
+	<!-- 사원검색 (조건없을시 전체조회)-->
+	<select id="selectUser" resultType="UserVO">
+		SELECT 
+		    u.user_id,
+		    u.user_name,
+		    d.dept_name,
+		    FN_FIND_CODENAME('0C', u.job_title) AS job_title_name,
+		    FN_FIND_CODENAME('0D', u.position) AS position_name
+		FROM tb_user_master u
+		JOIN tb_dept_master d
+		ON u.dept = d.dept_code
+		<where>
+			<!-- 이름 검색 -->
+			<if test="userName != null and userName != ''">
+				AND user_name LIKE '%' || #{userName} || '%'
+			</if>
+			<!-- 사번 검색 -->
+			<if test="userId != null and userId != ''">
+				AND user_id = #{userId}
+			</if>
+		</where>
+		ORDER BY user_id DESC
+	</select>
+
+
+
+
+
+</mapper>

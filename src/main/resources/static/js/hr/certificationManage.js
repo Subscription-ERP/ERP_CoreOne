@@ -40,32 +40,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 	/* ------------------------------------------------------------------
 	 * 모달
 	 * ------------------------------------------------------------------ */
-	
-	
 
-	  // ================= 사원 선택 모달 연동 =================
-	  const empNameInput = document.getElementById("empName");
-	  const empIdInput   = document.getElementById("empId");
+	// 화면에 보이는 사원명 input
+	const empNameInput     = document.getElementById("empName");
+	// 실제 선택된 사원 ID (hidden)
+	const selectedUserIdInput = document.getElementById("selectedUserId");  // ← 위에서 id 바꾼 것 기준
 
-	  if (empNameInput) {
-	    empNameInput.addEventListener("click", (e) => {
-	      // hrEmpModal.js 안의 openHrEmpModal 호출
-	      if (typeof openHrEmpModal === 'function') {
-	        openHrEmpModal(e);
-	      } else {
-	        console.error("openHrEmpModal 함수가 로드되지 않았습니다.");
-	      }
-	    });
+	// 사원명 input 클릭 시 모달 열기
+	if (empNameInput) {
+	  empNameInput.addEventListener("click", (e) => {
+	    if (typeof openHrEmpModal === 'function') {
+	      openHrEmpModal(e);
+	    } else {
+	      console.error("openHrEmpModal 함수가 로드되지 않았습니다.");
+	    }
+	  });
+	}
+
+	// 모달에서 row 선택 시 호출되는 콜백 (전역)
+	window.handleSelectedEmp = function(row) {
+	  if (selectedUserIdInput) {
+	    selectedUserIdInput.value = row.userId;
 	  }
-
-	  // 모달에서 row 선택 시 호출되는 콜백 (전역)
-	  window.handleSelectedEmp = function(row) {
-	    // row의 필드명은 hrEmpModalGrid에서 지정한 name과 동일
-	    empIdInput.value   = row.userId;
+	  if (empNameInput) {
 	    empNameInput.value = row.userName;
-	  };
+	  }
+	};
 
-	  // ================= 이하 기존 코드 (증명서 미리보기, 저장 등) =================
 
 
 	
