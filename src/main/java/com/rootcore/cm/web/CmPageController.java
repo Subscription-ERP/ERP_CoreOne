@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping
 public class CmPageController {
 
-    // 회사 등록 페이지
-    @GetMapping("/cm/company")
-    public String company() {
-        return "cm/company";
-    }
+//    // 회사 등록 페이지
+//    @GetMapping("/cm/company")
+//    public String company() {
+//        return "cm/company";
+//    }
 
     // 품번/상품관리
     @GetMapping("/cm/item")

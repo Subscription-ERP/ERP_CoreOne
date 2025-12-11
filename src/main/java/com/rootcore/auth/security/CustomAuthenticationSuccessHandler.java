@@ -93,7 +93,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         attendanceService.checkinTodayIfNeeded(companyCode, userId);
         
         // ⭐⭐⭐ 이제 사이드 메뉴는 이것만 사용해야 한다
-        session.setAttribute("LOGIN_MENU_AUTH", loginMenuList);
+//        session.setAttribute("LOGIN_MENU_AUTH", loginMenuList);
 
         // 실패횟수 초기화 & 계정 잠금 해제
         loginMapper.resetFailCountAndLastLogin(userId);
