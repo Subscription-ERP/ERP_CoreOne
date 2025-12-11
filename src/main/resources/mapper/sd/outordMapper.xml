@@ -3,7 +3,7 @@
 <mapper namespace="com.rootcore.sd.mapper.OutordMapper">
 
     <!-- 발주 헤더 등록 -->
-    <insert id="insertOutordHeader" parameterType="OutputVO">
+    <insert id="insertOutordHeader" parameterType="OutordVO">
         <selectKey keyProperty="outordNo" resultType="string" order="BEFORE">
             SELECT FN_MAKE_DATE_CODE('OUTORD') FROM DUAL
         </selectKey>
