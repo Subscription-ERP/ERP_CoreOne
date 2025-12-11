@@ -43,6 +43,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private final TossPaymentClient tossPaymentClient;
 	// 🔐 빌링키 양방향 암복호화 컴포넌트
 	private final BillingKeyCrypto billingKeyCrypto;
+	
 
 	@Value("${project.url}")
 	String url;
@@ -110,6 +111,7 @@ public class PaymentServiceImpl implements PaymentService {
 		if (existCompany == null) {
 			company.setCreatedBy("SYSTEM");
 			company.setCreateDate(LocalDateTime.now());
+			company.setCompanyCode("0000");
 			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
 			company = existCompany; // 기존 회사 정보 사용
@@ -117,7 +119,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 계약서 등록
 
-		contract.setCompanyCode(company.getCompanyCode());
+//		contract.setCompanyCode(company.getCompanyCode());
+		contract.setCompanyCode("0000");
 		contract.setPlanCode(plan.getPlanCode());
 		contract.setCompanyName(company.getCompanyName());
 		contract.setCeoName(company.getCeoName());
@@ -131,7 +134,8 @@ public class PaymentServiceImpl implements PaymentService {
 		LocalDate today = LocalDate.now();
 		LocalDateTime now = LocalDateTime.now();
 		SubscribeVO subscribe = new SubscribeVO();
-		subscribe.setCompanyCode(company.getCompanyCode());
+//		subscribe.setCompanyCode(company.getCompanyCode());
+		subscribe.setCompanyCode("0000");
 		subscribe.setSubsStatus("ACTIVE");
 		subscribe.setSubsStart(LocalDate.now());
 		subscribe.setSubsEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
@@ -154,7 +158,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 		payment.setOrderId(order.getOrderId());
 		payment.setSubCode(subscribe.getSubCode());
-		payment.setCompanyCode(company.getCompanyCode());
+//		payment.setCompanyCode(company.getCompanyCode());
+		payment.setCompanyCode("0000");
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
@@ -177,7 +182,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// ORDER 업데이트
 		orderMapper.updateOrderSubCode(payment.getOrderId(), payment.getSubCode(), "SYSTEM");
-		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
+//		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
 		orderMapper.updateOrderBilling(order.getOrderId(), contract.getContractStart(), contract.getContractEnd());
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
 
@@ -271,6 +276,7 @@ public class PaymentServiceImpl implements PaymentService {
 			company.setCreateDate(LocalDateTime.now());
 			company.setUpdatedBy("SYSTEM");
 			company.setUpdateDate(LocalDateTime.now());
+			company.setCompanyCode("0000");
 			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
 			company = existCompany; // 기존 회사 정보 사용
@@ -280,7 +286,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 		contract.setCompanyCode(company.getCompanyCode());
 		contract.setPlanCode(plan.getPlanCode());
-		contract.setCompanyName(company.getCompanyName());
+//		contract.setCompanyName(company.getCompanyName());
+		contract.setCompanyName("0000");
 		contract.setCeoName(company.getCeoName());
 		contract.setCreatedBy("SYSTEM");
 		contract.setCreateDate(LocalDateTime.now());
@@ -296,7 +303,8 @@ public class PaymentServiceImpl implements PaymentService {
 		LocalDateTime now = LocalDateTime.now();
 		int period = contract.getSubsPeriod();
 		SubscribeVO subscribe = new SubscribeVO();
-		subscribe.setCompanyCode(company.getCompanyCode());
+//		subscribe.setCompanyCode(company.getCompanyCode());
+		subscribe.setCompanyCode("0000");
 		subscribe.setSubsStatus("ACTIVE");
 		subscribe.setSubsStart(LocalDate.now());
 		subscribe.setSubsEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
@@ -328,7 +336,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 		payment.setOrderId(order.getOrderId());
 		payment.setSubCode(subscribe.getSubCode());
-		payment.setCompanyCode(company.getCompanyCode());
+//		payment.setCompanyCode(company.getCompanyCode());
+		payment.setCompanyCode("0000");
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
@@ -350,7 +359,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// ORDER 업데이트
 		orderMapper.updateOrderSubCode(payment.getOrderId(), payment.getSubCode(), "SYSTEM");
-		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
+//		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
 		orderMapper.updateOrderBilling(order.getOrderId(), contract.getContractStart(), contract.getContractEnd());
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
 

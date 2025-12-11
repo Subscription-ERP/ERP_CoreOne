@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			{ header: '결제 금액', name: 'totalPrice', width: 120, align: 'right' },
 			{ header: '결제 수단', name: 'paymentMethod', minWidth: 200 },
 			{ header: '결제 상태', name: 'paymentStat', width: 100, align: 'center' },
-			{ header: '기간', name: 'billingPeriod', minWidth: 220 }
+			{ header: '결제 시작일', name: 'billingStart', minWidth: 220 },
+			{ header: '결제 종료일', name: 'billingEnd', minWidth: 220 }
 		]
 	});
 
@@ -98,17 +99,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				const billingStart = item.billingStart || '';
 				const billingEnd = item.billingEnd || '';
-				const billingPeriod =
-					billingStart && billingEnd
-						? billingStart + ' ~ ' + billingEnd
-						: '';
+			
 
 				return {
 					paymentDate: paymentDate,
 					totalPrice: formatCurrency(item.totalPrice),
 					paymentMethod: mapPaymentMethod(item.paymentMethod, item.cardCompany),
 					paymentStat: mapPaymentStat(item.paymentStat),
-					billingPeriod: billingPeriod
+					billingStart:billingStart,
+					billingEnd:billingEnd
 				};
 			});
 

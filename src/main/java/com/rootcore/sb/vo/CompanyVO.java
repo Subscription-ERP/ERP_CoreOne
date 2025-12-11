@@ -23,6 +23,7 @@ public class CompanyVO {
     private String companyAddress;   // 회사 주소
     private String companyPhone;     // 회사 전화번호
     private String managerPhone;     // 담당자 연락처
+    private String managerEmail;	 // 담당자 이메일
     
     private String subCode;
     private String subsStatus;
