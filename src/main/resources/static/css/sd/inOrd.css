@@ -15,3 +15,8 @@
 .tui-grid-cell.block {
     background-color: #f6f6f6;
 }
+
+.tui-grid-summary-area .tui-grid-cell {
+    background-color: #4B5561;
+    text-align: right;
+}
