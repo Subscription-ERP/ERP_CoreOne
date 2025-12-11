@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	/* ------------------------------------------------------------------
 	 * Toast UI Grid (근태 조회)
 	 * ------------------------------------------------------------------ */
-	let grid;
+	let grid;                    // ToastUIGrid 
+	let todayAttendance = null;  // 오늘 내 근태정보 저장용
 
 	function initGrid() {
 		grid = new tui.Grid({
@@ -218,6 +219,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 			}
 			const data = await res.json();
 
+			todayAttendance = data; // 근태정보 저장
+
 			const inTimeRaw = data.inTime;
 			const outTimeRaw = data.outTime;
 			const overWorkTime = data.overWorkTime ?? 0;
@@ -236,6 +239,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 			document.querySelector("#todayTotalWorkTime").textContent = totalWorkText;
 
 			updateTodayWorkStatusBadge(inTimeRaw, outTimeRaw); // 배지업데이트
+			
+			// 출근/퇴근 상태에 따라 퇴근 버튼 활성/비활성
+			if (btnLeaveWork) {
+			    if (data.outTime) {
+			        // 이미 퇴근 했으므로 비활성
+			        btnLeaveWork.disabled = true;
+			        btnLeaveWork.classList.add("disabled");
+			    } else if (data.inTime) {
+			        // 출근은 했고 퇴근은 안 한 경우 → 활성화
+			        btnLeaveWork.disabled = false;
+			        btnLeaveWork.classList.remove("disabled");
+			    } else {
+			        // 오늘 출근도 안 했으면 비활성
+			        btnLeaveWork.disabled = true;
+			        btnLeaveWork.classList.add("disabled");
+			    }
+			}
 
 		} catch (err) {
 			console.error(err);
@@ -425,14 +445,86 @@ document.addEventListener("DOMContentLoaded", async () => {
 				select.selectedIndex = 0;
 			}
 
+			// 현재 선택한 값 기억(나중에 되돌릴 용도)
+			let currentWorkPlaceType = select.value;
+
 			// 배지도 바로 한 번 동기화
 			syncWorkPlaceBadge();
 
 			// 변경될 때마다 배지 업데이트
-			select.addEventListener('change', syncWorkPlaceBadge);
+			select.addEventListener('change', async (e) => {
+
+				const newValue = e.target.value;
+
+				// 1) 출근 기록 없거나 이미 퇴근했으면 → 변경 막기
+				const hasIn = todayAttendance && todayAttendance.inTime;
+				const hasOut = todayAttendance && todayAttendance.outTime;
+
+				if (!hasIn || hasOut) {
+					// 셀렉트 값을 원래 값으로 되돌리기
+					e.target.value = currentWorkPlaceType;
+					syncWorkPlaceBadge();
+
+					if (typeof showToast === 'function') {
+						if (!hasIn) {
+							showToast('출근 기록이 없어 근무형태를 변경할 수 없습니다.', 'warning');
+						} else if (hasOut) {
+							showToast('이미 퇴근하여 근무형태를 변경할 수 없습니다.', 'warning');
+						}
+					} else {
+						alert('출근 기록이 없거나 이미 퇴근하여 근무형태를 변경할 수 없습니다.');
+					}
+					return;
+				}
+
+
+				// 화면 배지 먼저 업데이트
+				syncWorkPlaceBadge();
+
+				// 서버에 오늘 근무형태 업데이트 요청
+				// 출근은 했고 퇴근은 하지 않은 상태 -> 서버에 변경 요청
+				try {
+					const res = await fetch('/api/att/my/workPlace', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							workPlaceType: e.target.value, // q1, q2 ...
+						}),
+					});
+
+					const data = await res.json();
+
+					if (typeof showToast === 'function') {
+						showToast("근무형태가 변경되었습니다.", 'success');
+					} else {
+						alert(result.message || '근무형태가 변경되었습니다.');
+					}
+
+				} catch (err) {
+					console.error(err);
+					if (typeof showToast === 'function') {
+						showToast('오늘 출근기록이 없거나 이미 퇴근처리 되었습니다..', 'error');
+					} else {
+						alert(result.message || '오늘 출근기록이 없거나 이미 퇴근 처리되었습니다.');
+					}
+				}
+
+			});
 
 		} catch (err) {
 			console.error(err);
+
+			e.target.value = currentWorkPlaceType;
+			syncWorkPlaceBadge();
+
+			if (typeof showToast === 'function') {
+				showToast('근무형태 변경 중 오류가 발생했습니다.', 'error');
+			} else {
+				alert('근무형태 변경 중 오류가 발생했습니다.');
+			}
+
 		}
 	}
 	await loadWorkPlaceType();
@@ -503,8 +595,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 			const startInput = document.querySelector("#reviewStartDate-search");
 			const endInput = document.querySelector("#reviewEndDate-search");
 
-			if (startInput) startInput.value = null;  
-			if (endInput) endInput.value = null;   
+			if (startInput) startInput.value = null;
+			if (endInput) endInput.value = null;
 
 			// 조회 초기화
 			await loadMyAttendanceList();
@@ -512,12 +604,60 @@ document.addEventListener("DOMContentLoaded", async () => {
 		})
 	}
 
-	
-	
-	
-	
-	
-	
+
+	/* ------------------------------------------------------------------
+	 * 퇴근
+	 * ------------------------------------------------------------------ */
+
+	const btnLeaveWork = document.querySelector("#btnLeaveWork");
+
+	if (btnLeaveWork) {
+		btnLeaveWork.addEventListener("click", async () => {
+
+			try {
+				const res = await fetch('/api/att/my/checkout', {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({})
+				});
+
+				if (!res.ok) {
+					throw new Error("서버오류");
+				}
+
+				const data = await res.json();
+				
+				if(data.success){
+					showToast("퇴근처리가 완료되었습니다.", 'success');
+					
+					// 오늘 근태 상태 새로고침(퇴근시간 갱신)
+					await loadTodayMyAttendance();
+					
+					// 근태 목록 전체 새로고침
+					await loadMyAttendanceList();
+					
+					// 퇴근 버튼 비활성화
+					btnLeaveWork.disabled = true;
+					btnLeaveWork.classList.add("disabled");	
+				} else{
+					showToast("퇴근 처리 실패하였습니다.", "warning");
+				}
+			} catch (err) {
+				console.error(err);
+				showToast("퇴근처리 중 에러가 발생했습니다.", "error");
+			}
+
+		});
+	};
+
+
+
+
+
+
+
 
 
 });

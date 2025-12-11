@@ -16,6 +16,8 @@ public class HrController {
 	public String hrMain() {
 		return "hr/main";
 	}
+	
+	// 사원관리
 	@GetMapping("/hr/userManage")
 	public String userManage() {
 		return "hr/userManage";

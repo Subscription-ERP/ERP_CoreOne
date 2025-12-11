@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 import com.rootcore.hr.vo.ReviewCommentRequestVO;
 import com.rootcore.hr.vo.ReviewItemScoreVO;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
 public class HrReviewAiService {
 
