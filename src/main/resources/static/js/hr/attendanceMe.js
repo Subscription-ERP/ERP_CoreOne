@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupNativeDatePicker('reviewStartDate-wrapper', 'reviewStartDate-search');
 	setupNativeDatePicker('reviewEndDate-wrapper', 'reviewEndDate-search');
 
+	// 공통코드
+	//const divId = { '0Q': 'workPlaceType' };
+	//getCmCodeOptions(divId);
 
 	/* ------------------------------------------------------------------
 	 * Toast UI Grid (근태 조회)
@@ -232,6 +235,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 			document.querySelector("#todayNightTime").textContent = nightWorkTime;
 			document.querySelector("#todayTotalWorkTime").textContent = totalWorkText;
 
+			updateTodayWorkStatusBadge(inTimeRaw, outTimeRaw); // 배지업데이트
+
 		} catch (err) {
 			console.error(err);
 			if (typeof showToast === 'function') {
@@ -307,14 +312,212 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 
 		bar.style.width = `${percent}%`;
+
+		// 야근 여부에 따라 색상 변경
+		if (now >= end) {
+			// 야근 → 붉은색 계열
+			bar.style.background = "#e57373"; // 연한 빨강
+		} else {
+			// 근무시간 내 → 기본 파랑
+			bar.style.background = "#788bc9";
+		}
 	}
 
 	updateWorkTimeline();
 	setInterval(updateWorkTimeline, 60 * 1000); 	// 1분마다 갱신
 
 
+	/* ------------------------------------------------------------------
+	 * 근무상태 배지
+	 * ------------------------------------------------------------------ */
+
+	function updateTodayWorkStatusBadge(inTimeRaw, outTimeRaw) {
+		const badge = document.querySelector("#todayWorkStatusBadge");
+		if (!badge) return;
+
+		const now = new Date();
+		const end = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate(),
+			18, 0, 0
+		);
+
+		const hasIn = !!inTimeRaw;
+		const hasOut = !!outTimeRaw;
+
+		let text = '근무중';
+		let colorClass = 'bg-light text-dark';
+
+		if (hasOut) {
+			// 1) 퇴근시간이 찍혀 있으면
+			text = '퇴근';
+			colorClass = 'bg-secondary text-light';
+		} else if (!hasIn) {
+			// 2) 출근시간 없음 → 출근 전
+			text = '출근 전';
+			colorClass = 'bg-light text-dark';
+		} else {
+			// 3) 출근했는데 퇴근 안 했음
+			if (now <= end) {
+				text = '근무중';
+				colorClass = 'bg-primary text-light';
+			} else {
+				text = '야근중😵';
+				colorClass = 'bg-danger text-light';
+			}
+		}
+
+		badge.textContent = text;
+		badge.className = `badge ms-2 ${colorClass}`;
+	}
+
+	/* ------------------------------------------------------------------
+	 * 근무형태 배지
+	 * ------------------------------------------------------------------ */
+	// 근무장소 배지 동기화 함수
+	function syncWorkPlaceBadge() {
+		const select = document.querySelector('#workPlaceType');
+		const badge = document.querySelector('#todayWorkPlaceBadge');
+		if (!select || !badge) return;
+
+		const opt = select.options[select.selectedIndex];
+		const text = opt ? opt.textContent : '';
+
+		if (text) {
+			badge.textContent = text;          // 예: "사무실", "외근"
+			badge.classList.remove('d-none');  // 보이게
+		} else {
+			badge.textContent = '';
+			badge.classList.add('d-none');     // 숨기기
+		}
+	}
+
+	// 근무장소 코드
+	async function loadWorkPlaceType() {
+		try {
+			const res = await fetch('/api/com/commonCodes?code=0Q');
+			if (!res.ok) throw new Error('공통코드 조회 실패');
+
+			const data = await res.json();   // 예: { "0Q": [ {code:"q1", codeName:"사무실"}, ... ] }
+			const list = data['0Q'] || [];
+
+			const select = document.querySelector('#workPlaceType');
+			if (!select) return;
+
+			// 기존 옵션 초기화
+			select.innerHTML = '';
+
+			// 옵션 채우기
+			list.forEach(item => {
+				const opt = document.createElement('option');
+				opt.value = item.code;
+				opt.textContent = item.codeName;
+				select.appendChild(opt);
+			});
+
+			// 기본값: q1(사무실)로 선택 시도
+			const hasQ1 = Array.from(select.options).some(o => o.value === 'q1');
+			if (hasQ1) {
+				select.value = 'q1';
+			} else if (select.options.length > 0) {
+				// q1이 없으면 첫 번째 항목
+				select.selectedIndex = 0;
+			}
+
+			// 배지도 바로 한 번 동기화
+			syncWorkPlaceBadge();
+
+			// 변경될 때마다 배지 업데이트
+			select.addEventListener('change', syncWorkPlaceBadge);
+
+		} catch (err) {
+			console.error(err);
+		}
+	}
+	await loadWorkPlaceType();
 
 
+	/* ------------------------------------------------------------------
+	 * 검색
+	 * ------------------------------------------------------------------ */
+	const btnSearch = document.querySelector("#btnSearch");
+
+	if (btnSearch) {
+		btnSearch.addEventListener("click", async () => {
+			const start = document.querySelector("#reviewStartDate-search")?.value || '';
+			const end = document.querySelector("#reviewEndDate-search")?.value || '';
+
+			// 둘다 비어져 있으면 -> 전체조회로 되돌리기
+			if (!start && !end) {
+				await loadMyAttendanceList();
+				return;
+			}
+
+			//하나만 있을 경우 경고
+			if ((start && !end) || (!start && end)) {
+				if (typeof showToast === 'function') {
+					showToast('조회 기간은 시작일과 종료일을 모두 입력해 주세요.', 'warning');
+				} else {
+					alert('조회 기간은 시작일과 종료일을 모두 입력해 주세요.');
+				}
+				return;
+			}
+
+			try {
+				// 스피너 ON
+				if (globalLoader) globalLoader.style.display = 'flex';
+
+				const params = new URLSearchParams();
+				params.append('startDate', start); // 예: 2025-12-01
+				params.append('endDate', end);     // 예: 2025-12-10
+
+				const res = await fetch(`/api/att/my/search?${params.toString()}`);
+				if (!res.ok) throw new Error('근태 검색 실패');
+
+				const data = await res.json();
+				grid.resetData(data);
+				grid.refreshLayout();
+
+			} catch (err) {
+				console.error(err);
+				if (typeof showToast === 'function') {
+					showToast('근태 목록 조회 중 오류가 발생했습니다.', 'error');
+				}
+			} finally {
+				// 스피너 OFF
+				if (globalLoader) globalLoader.style.display = 'none';
+			}
+		});
+	}
+
+	/* ------------------------------------------------------------------
+	 * 초기화
+	 * ------------------------------------------------------------------ */
+	const btnResetSearch = document.querySelector("#btnResetSearch");
+
+	if (btnResetSearch) {
+		btnResetSearch.addEventListener("click", async () => {
+
+			// input 초기화
+			const startInput = document.querySelector("#reviewStartDate-search");
+			const endInput = document.querySelector("#reviewEndDate-search");
+
+			if (startInput) startInput.value = null;  
+			if (endInput) endInput.value = null;   
+
+			// 조회 초기화
+			await loadMyAttendanceList();
+
+		})
+	}
+
+	
+	
+	
+	
+	
+	
 
 
 });

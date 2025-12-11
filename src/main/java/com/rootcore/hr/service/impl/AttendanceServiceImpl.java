@@ -1,9 +1,11 @@
 package com.rootcore.hr.service.impl;
 
+import java.beans.Transient;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rootcore.hr.mapper.AttendanceMapper;
 import com.rootcore.hr.service.AttendanceService;
@@ -42,5 +44,7 @@ public class AttendanceServiceImpl implements AttendanceService  {
 	public List<AttendanceVO> searchMyAttendanceList(String userId, Date startDate, Date endDate) {
 		return attendanceMapper.searchMyAttendanceList(userId, startDate, endDate);
 	}
+
+
 
 }

@@ -20,4 +20,15 @@ public interface AttendanceService {
 	List<AttendanceVO> searchMyAttendanceList(@Param("userId") String userId,
 			                                  @Param("startDate") Date startDate,
 				                              @Param("endDate") Date endDate);
+	
+	// 퇴근
+	/*
+	 * int checkoutTodayMyAtt(@Param("companyCode") String companyCode,
+	 * 
+	 * @Param("userId") String userId,
+	 * 
+	 * @Param("updatedBy") String updatedBy);
+	 */
+	
+	
 }
