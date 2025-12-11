@@ -1,7 +1,6 @@
 package com.rootcore.sd.web;
 
 import com.rootcore.sd.service.CustService;
-import com.rootcore.sd.service.InOrdService;
 import com.rootcore.sd.vo.CustVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
