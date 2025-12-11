@@ -24,4 +24,14 @@ public class DeptCodeManageImpl implements DeptCodeManageService {
 		return deptCodeManageMapper.selectDeptCodeManage(param);
 	}
 
+	/* ===================
+	 * 부서 등록 - 저장버튼기능
+	 * =================== */
+	@Override
+	public int insertDeptCodeManage(DeptMasterVO param) {
+		return deptCodeManageMapper.insertDeptCodeManage(param);
+	}
+	
+	
+
 }

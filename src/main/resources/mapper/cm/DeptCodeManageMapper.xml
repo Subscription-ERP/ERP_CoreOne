@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.cm.mapper.DeptCodeManageMapper">
+
 	<!-- ================= 부서코드관리 부서조회 ================= -->
 	<select id="selectDeptCodeManage" resultType="DeptMasterVO"
 		parameterType="DeptMasterVO">
@@ -8,28 +9,28 @@
 				dm.company_code,
 				dm.dept_name,
 				dm.upper_dept_no,
+				
 				dmu.dept_name as upper_dept_name,
+				
 				dm.dept_level,
 				dm.start_date,
 				dm.end_date,
+				
 				ccs.code_name as status,
+				
 				dm.dept_mng,
 				dm.rm
 		FROM 	tb_dept_master dm
+		
 				JOIN tb_cm_code ccs
 				ON ccs.group_code = '0R'
+				
 				LEFT JOIN tb_dept_master dmu
 				ON dmu.dept_code = dm.upper_dept_no
+				
 		WHERE 	1=1
-		<choose>
-			<when test="companyCode == null or companyCode == ''">
-				AND dm.company_code = '0000'
-			</when>
-			<otherwise>
-				AND dm.company_code = #{companyCode}
-			</otherwise>
-		</choose>
-			AND ccs.code = dm.status
+		  AND 	dm.company_code = #{companyCode}
+		  AND   ccs.code = dm.status
 		<if test="deptName != null and deptName != '' ">
 			AND	dm.dept_code = #{deptName}	
 		</if>
@@ -46,4 +47,32 @@
 			AND	dm.dept_level &lt;= #{deptCodeManageEndLevel}	
 		</if>
 	</select>
+	
+	<!-- ================= 부서 등록 - 저장버튼기능 ================= -->
+	<insert id="insertDeptCodeManage" parameterType="DeptMasterVO">
+		INSERT INTO tb_dept_master (
+		    dept_code,
+		    company_code,
+		    dept_name,
+		    upper_dept_no,
+		    dept_level,
+		    start_date,
+		    end_date,
+		    status,
+		    dept_mng,
+		    rm
+		)
+		VALUES (
+		    fn_make_code('DEPT'),
+		    #{companyCode},
+		    #{deptName},
+		    #{upperDeptNo},
+		    #{deptLevel},
+		    #{startDate},
+		    #{endDate},
+		    #{status},
+		    #{deptMng},
+		    #{rm}
+		)
+	</insert>
 </mapper>

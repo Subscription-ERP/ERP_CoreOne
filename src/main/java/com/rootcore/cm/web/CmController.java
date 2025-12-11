@@ -22,7 +22,8 @@ public class CmController {
 	public String skuManage() {
 		return "cm/skuManage";
 	}
-
+	
+	// 부서코드관리 페이지
 	@GetMapping("/cm/deptCodeManage")
 	public String deptCodeManage() {
 		return "cm/deptCodeManage";

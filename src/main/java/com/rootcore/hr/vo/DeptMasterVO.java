@@ -17,17 +17,17 @@ public class DeptMasterVO {
 	private String deptName;
 	private String upperDeptNo;
 	private String upperDeptName;
-	private String deptLevel;
+	private String deptLevel; // 부서 레벨
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date startDate;
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date endDate;
 	private String status;
-	private String deptMng;
-	private String rm;
+	private String deptMng; // 부서관리자
+	private String rm; // 비고
 
 	private String text;
-	private String deptCodeManageStartLevel;
+	private String deptCodeManageStartLevel; // 적용시작일
 	private String deptCodeManageEndLevel;
 	
 

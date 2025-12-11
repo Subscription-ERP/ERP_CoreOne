@@ -49,21 +49,20 @@
 						<!-- 상위 부서명 -->
 						<div class="col-12 col-md-3">
 							<div class="field-inline">
-								<label for="upperDeptName" class="field-inline__label">상위 부서명</label> <select id="upperDeptName" class="form-select input-base" style="flex: 1; min-width: 0"></select>
+								<label for="upperDeptNameSearch" class="field-inline__label">상위 부서명</label> <select id="upperDeptNameSearch" class="form-select input-base" style="flex: 1; min-width: 0"></select>
 							</div>
 						</div>
 
-						<!-- 상태 라디오버튼 -->
+						<!-- 상태 -->
 						<div class="col-12 col-md-3">
 							<div class="field-inline">
-								<label for="payrollName" class="field-inline__label">상태값</label>
-								<select id="status" class="form-select input-base" style="flex: 1; min-width: 0"></select>
+								<label for="status" class="field-inline__label">상태값</label> <select id="status" class="form-select input-base" style="flex: 1; min-width: 0"></select>
 							</div>
 						</div>
 
 						<!-- 초기화 조회 버튼 -->
 						<div class="col-12 col-md-3 d-flex justify-content-end gap-2">
-							<button id="btnPayrollReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
+							<button id="deptCodeManageBtnReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
 							<button id="deptCodeManageBtnSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
 						</div>
 
@@ -102,9 +101,9 @@
 						<h6 class="card-ui__title">부서 등록</h6>
 						<!-- 우측 액션 -->
 						<div class="toolbar" id="chogihwa">
-							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto" style="width: 100px">부서선택</button>
-							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto">초기화</button>
-							<button id="btnSave" type="button" class="btn btn-color btn-inner ms-auto">저장</button>
+							<button id="DeptSelectBtn" type="button" class="btn btn-white btn-inner ms-auto" style="width: 100px">부서선택</button>
+							<button id="deptCodeManageInsertBtnReset" type="button" class="btn btn-white btn-inner ms-auto">초기화</button>
+							<button id="deptCodeManageBtnSave" type="button" class="btn btn-color btn-inner ms-auto">저장</button>
 						</div>
 					</header>
 
@@ -114,61 +113,61 @@
 								<div class="form-grid__row">
 									<div class="form-grid__label">부서코드</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollPeriodParent">
-										<input id="payrollPeriod" name="payrollPeriod" type="text" class="form-control form-control-sm input-base" disabled readonly />
+										<input id="deptCodeManageDeptCode" name="deptCodeManageDeptCode" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label" style="white-space: nowrap">부서명</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input id="payrollPeriod" name="payrollPeriod" type="text" class="form-control form-control-sm input-base" />
+										<input id="deptCodeManageDeptName" name="deptCodeManageDeptName" type="text" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">상위부서코드</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input type="text" id="bonus" name="bonus" class="form-control form-control-sm input-base" disabled readonly placeholder="부서선택 버튼을 클릭하고 왼쪽 부서목록에서 상위부서를 지정해주세요" />
+										<input type="text" id="deptCodeManageUpperDeptCode" name="deptCodeManageUpperDeptCode" class="form-control form-control-sm input-base" disabled readonly placeholder="부서선택 버튼을 클릭하고 왼쪽 부서목록에서 상위부서를 지정해주세요" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">상위부서명</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input type="text" id="payrollBonusName" name="payrollBonusName" class="form-control form-control-sm input-base" disabled readonly placeholder="지정안할시 최상위 부서(부서 레벨 1)로 등록됩니다." />
+										<input type="text" id="deptCodeManageUpperDeptName" name="deptCodeManageUpperDeptName" class="form-control form-control-sm input-base" disabled readonly placeholder="지정안할시 최상위 부서(부서 레벨 1)로 등록됩니다." />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">부서 레벨/계층</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollStartDateWrapper">
-										<input id="payrollStartDate" name="payrollStartDate" type="text" class="form-control form-control-sm input-base" disabled readonly />
+										<input id="deptCodeManagedeptLevel" name="deptCodeManagedeptLevel" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">적용시작일</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollEndDateWrapper">
-										<input id="payrollEndDate" name="payrollEndDate" type="date" class="form-control form-control-sm input-base" />
+										<input id="deptCodeManageStartDate" name="deptCodeManageStartDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">적용종료일</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollEndDateWrapper">
-										<input id="payrollEndDate" name="payrollEndDate" type="date" class="form-control form-control-sm input-base" />
+										<input id="deptCodeManageEndDate" name="deptCodeManageEndDate" type="date" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">상태</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollBonusDateWrapper">
-										<input id="payrollBonusDate" name="payrollBonusDate" type="text" class="form-control form-control-sm input-base" disabled readonly />
+										<input id="deptCodeManageStatus" name="deptCodeManageStatus" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
-									<div class="form-grid__label">부서 관리자(창)</div>
+									<div class="form-grid__label">부서 관리자</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="text" class="form-control form-control-sm input-base" />
+										<input id="deptCodeManageDeptMng" name="deptCodeManageDeptMng" type="text" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
 								<div class="form-grid__row" style="height: 200px">
 									<div class="form-grid__label">비고</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<textarea id="memo" name="memo" style="height: 200px; box-shadow: none; resize: none; border: none;" class="form-control form-control-sm"></textarea>
+										<textarea id="deptCodeManageRm" name="deptCodeManageRm" style="height: 200px; box-shadow: none; resize: none; border: none;" class="form-control form-control-sm"></textarea>
 										<!-- resize:none;을하면 textarea가 크기변경할수없이 고정된다. border:none하면 테두리가 사라진다 -->
 									</div>
 								</div>
