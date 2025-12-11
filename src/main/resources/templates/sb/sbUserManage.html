@@ -263,7 +263,7 @@ h3 {
 						</div>
 						<div>
 							<span class="info-label">다음 결제일 : </span> <span
-								th:text="${subDetail.nextPayment}">2026-01-02</span>
+								th:text="${subDetail.nextBillingDate}">2026-01-02</span>
 						</div>
 					</div>
 				</div>
@@ -301,7 +301,7 @@ h3 {
 						</div>
 						<div>
 							<span class="info-label">최근 결제일 : </span> <span
-								th:text="${subDetail.recentPayment}">2025-10-24</span> (<span
+								th:text="${subDetail.recentBillingDate}">2025-10-24</span> (<span
 								th:text="${subDetail.subsStatus}">결제완료</span>)
 						</div>
 					</div>
