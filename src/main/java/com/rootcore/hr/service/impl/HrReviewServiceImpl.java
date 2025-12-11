@@ -2,7 +2,6 @@ package com.rootcore.hr.service.impl;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,9 +141,9 @@ public class HrReviewServiceImpl implements HrReviewService {
 
 	// 인사평가관리 - 검색
 	@Override
-	public List<HrReviewMasterVO> searchHrReviewManage(@Param("companyCode") String companyCode, 
-                                                       @Param("userId") String userId, 
-                                                       @Param("reviewMasterName") String reviewMasterName) {
+	public List<HrReviewMasterVO> searchHrReviewManage(String companyCode, 
+                                                       String userId, 
+                                                       String reviewMasterName) {
 		
 		// 기존 상태 계산 로직 재사용
 		List<HrReviewMasterVO> list = selectCheckReviewCount(companyCode, userId);

@@ -5,6 +5,7 @@ import com.rootcore.auth.service.MenuPermissionService;
 import com.rootcore.auth.vo.LoginUserVO;
 import com.rootcore.auth.vo.RoleMenuAuthVO;
 import com.rootcore.auth.vo.UserMenuAuthVO;
+import com.rootcore.hr.service.AttendanceService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     private final MenuPermissionService menuPermissionService;
     private final LoginMapper loginMapper;
+    private final AttendanceService attendanceService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -85,6 +87,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         session.setAttribute("LOGIN_MENU_AUTH", sideMenuList);
         session.setAttribute("LOGIN_USER_AUTH_LIST", userAuthList);
+        session.setAttribute("LOGIN_ROLE_CODE", roleCode);
+        
+        // 출근 로직 호출(인사)
+        attendanceService.checkinTodayIfNeeded(companyCode, userId);
+        
+        // ⭐⭐⭐ 이제 사이드 메뉴는 이것만 사용해야 한다
+        session.setAttribute("LOGIN_MENU_AUTH", loginMenuList);
 
         // 실패횟수 초기화 & 계정 잠금 해제
         loginMapper.resetFailCountAndLastLogin(userId);

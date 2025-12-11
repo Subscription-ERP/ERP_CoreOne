@@ -29,12 +29,15 @@ public class PaymentRestController {
 	 */
 	@GetMapping("/request")
 	public ResponseEntity<PaymentReadyResponseVO> insertOrder(HttpSession session) {
-		OrderVO ordervo = new OrderVO();
+		
 		ContractVO contract = (ContractVO) session.getAttribute("contract");
 		PlanVO plan = (PlanVO) session.getAttribute("plan");
+		
+		OrderVO ordervo = new OrderVO();
 		ordervo.setOrderAmount(contract.getTotalPrice().longValue());
 		ordervo.setOrderName(plan.getPlanName());
 
+		
 		PaymentReadyResponseVO responseDto = paymentService.insertOrder(ordervo, plan);
 		return ResponseEntity.ok(responseDto);
 	}

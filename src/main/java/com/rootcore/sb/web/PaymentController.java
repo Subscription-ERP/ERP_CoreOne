@@ -17,6 +17,10 @@ import com.rootcore.sb.vo.TossConfirmResponseVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+/*
+ * 토스페이 승인 응답
+ */
+
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/api")
@@ -30,19 +34,18 @@ public class PaymentController {
 	@GetMapping("/success")
 	public String paymentSuccess(@RequestParam String paymentKey, @RequestParam String orderId,
 			@RequestParam Long amount, HttpSession session, Model model) {
-		OrderVO order = new OrderVO();
 
 		// 1) Pay Confirm Request 생성
 		TossConfirmRequestVO req = new TossConfirmRequestVO();
 		req.setPaymentKey(paymentKey);
 		req.setOrderId(orderId);
 		req.setAmount(amount);
-
+		
+	
 		CompanyVO company = (CompanyVO) session.getAttribute("company");
 		PlanVO plan = (PlanVO) session.getAttribute("plan");
 		ContractVO contract = (ContractVO) session.getAttribute("contract");
-		order.setOrderAmount(contract.getTotalPrice().longValue());
-		order.setOrderName(plan.getPlanName());
+	
 
 		// 2) 결제 승인 API 호출
 		TossConfirmResponseVO res = paymentService.confirmPayment(req, company, plan, contract);

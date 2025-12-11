@@ -35,7 +35,7 @@ public class BillingScheduler {
      * cron = 초 분 시 일 월 요일
      * 0 0 3 * * *  → 매일 03:00:00
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 31 16 * * *")
     public void runMonthlyBillingScheduler() {
 
         LocalDate today = LocalDate.now();

@@ -66,8 +66,7 @@
 		UPDATED_BY,
 		UPDATE_DATE
 		FROM TB_PAYMENT_ORDER
-		WHERE ORDER_ID
-		= #{orderId}
+		WHERE ORDER_ID	= #{orderId}
 	</select>
 
 	<update id="updateOrderStatus">
@@ -83,8 +82,7 @@
 		SET SUB_CODE = #{subCode},
 		UPDATED_BY = #{updatedBy},
 		UPDATE_DATE = SYSDATE
-		WHERE ORDER_ID =
-		#{orderId}
+		WHERE ORDER_ID = #{orderId}
 	</update>
 	<update id="updateOrderCompanyCode">
 		UPDATE TB_PAYMENT_ORDER

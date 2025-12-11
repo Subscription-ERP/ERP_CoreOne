@@ -102,42 +102,78 @@
 		AND att.work_date = TRUNC(SYSDATE)
 	</select>
 	
-	<!-- 출근 -->
+	<!-- 로그인시 자동출근 -->
+	<insert id="insertTodayMyAtt" parameterType="AttendanceVO">
+		<selectKey keyProperty="attenCode" order="BEFORE" resultType="String">
+			SELECT fn_make_date_code('ATTENDANCE') 
+			FROM dual
+		</selectKey>
+	
+		INSERT INTO tb_attendance (
+		    company_code,
+		    atten_code,
+		    user_id,
+		    work_date,
+		    attend_type,
+		    in_time,
+		    out_time,
+		    over_work_time,
+		    night_work_time,
+		    holiday_work_time,
+		    total_work_time,
+		    remark,
+		    created_by,
+		    create_date,
+		    work_place_type )
+		VALUES (
+		    #{companyCode},
+		    #{attenCode},
+		    #{userId},
+		    TRUNC(SYSDATE),
+		    #{attendType},             -- h1 / h2
+		    SYSDATE,                   -- 출근시간
+		    NULL,                      -- 퇴근 전이므로 null
+		    0,                         -- 연장 0
+		    0,                         -- 야간 0
+		    0,                         -- 휴일 0
+		    0,                         -- 총 근무시간 0 (퇴근 시 계산)
+		    #{remark},
+		    #{createdBy},
+		    SYSDATE,
+		    #{workPlaceType}
+		)
+	</insert>
 	
 	<!-- 퇴근 -->
-	<update id="checkoutTodayMyAtt">
+	<update id="checkoutTodayMyAtt" parameterType="AttendanceVO">
 		UPDATE tb_attendance
 		SET
-		    -- 퇴근시간 : 지금시간
-		    out_time = SYSDATE,
-		    
-		    -- 총 근무시간
-		    total_work_time = ROUND((SYSDATE - in_time) * 24, 2),
-		    
-		    -- 연장근무시간(18:00 이후)
-		    over_work_time = 
-		        CASE
-		            WHEN SYSDATE > (TRUNC(work_date) + 18/24) THEN 
-		                ROUND((SYSDATE - (TRUNC(work_date) + 18/24)) * 24, 2)
-		            ELSE 0
-		        END,
-		    
-		    -- 야간근무(22:00이후)
-		    night_work_time = 
-		        CASE
-		            WHEN SYSDATE > (TRUNC(work_date) + 22/24) THEN
-		                ROUND( (SYSDATE - (TRUNC(work_date) + 22/24)) * 24, 2 )
-		            ELSE 0
-		        END,
-		    
-		    -- 수정자/수정일
-		    updated_by = #{updatedBy},
-		    update_date = SYSDATE
+			out_time = SYSDATE,
+			over_work_time = #{overWorkTime},
+			night_work_time = #{nightWorkTime},
+			total_work_time = #{totalWorkTime},
+			updated_by = #{updatedBy},
+			update_date = SYSDATE
 		WHERE company_code = #{companyCode}
-		AND   user_id = #{userId}
+		AND   user_id = #{userId}	
 		AND   work_date = TRUNC(SYSDATE)
+		AND   in_time IS NOT NULL
+		AND   out_time IS NULL
 	</update>
 	
+	<!-- 근무형태 변경 -->
+	<update id="updateTodayWorkPlaceType">
+	    UPDATE tb_attendance
+	    SET
+	        work_place_type = #{workPlaceType},
+	        updated_by      = #{updatedBy},
+	        update_date     = SYSDATE
+	    WHERE company_code = #{companyCode}
+	    AND   user_id      = #{userId}
+	    AND   work_date    = TRUNC(SYSDATE)
+	    AND   in_time IS NOT NULL
+	    AND   out_time IS NULL
+	</update>
 	
 	
 

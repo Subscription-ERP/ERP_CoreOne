@@ -16,15 +16,20 @@
 		       ald.leave_end_date as annualEndDate, -- 연차종료일
 		       ald.leave_apply_date, -- 연차신청일
 		       ald.rm -- 사유
+		       
 		FROM   tb_annual_leave_detail ald
 		       JOIN tb_annual_leave al
 		       ON al.annual_leave_code = ald.annual_leave_code
+		       
 		       JOIN tb_user_master um
 		       ON um.user_id = al.user_id
+		       
 		       JOIN tb_dept_master dm
 		       ON dm.dept_code = um.dept
+		       
 		       JOIN tb_cm_code cmcj
 		       ON cmcj.code = um.job_title
+		       
 		       JOIN tb_cm_code cmcl
 		       ON cmcl.code = ald.leave_type
 		WHERE  1=1

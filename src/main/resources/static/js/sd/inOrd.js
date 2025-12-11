@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 거래처 모달 닫기
     btnCustClose.addEventListener('click', closeCustModal);
-    backdrop.addEventListener('click', closeCustModal)
+    backdrop.addEventListener('click', closeCustModal);
 
     // 품목 모달 열기
     btnOpenSkuModal.addEventListener('click', (e) => {
@@ -156,9 +156,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     emptyRow();
 
+    // 초기화 버튼
+    document.getElementById("btnReset").addEventListener('click', resetData);
+
     // 행 추가
     btnAddRow.addEventListener('click', emptyRow);
-    document.getElementById("btnReset").addEventListener('click', resetData);
 
     // 행 삭제
     btnDeleteRow.addEventListener('click', () => {
@@ -168,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        inOrdGrid.removeCheckedRows(false); // confirm 없이 바로 삭제[web:6]
+        inOrdGrid.removeCheckedRows(false);
 
         if (inOrdGrid.getRowCount() === 0) {
             emptyRow();
@@ -189,8 +191,6 @@ document.addEventListener("DOMContentLoaded", function () {
     inOrdGrid.on('afterChange', (e) => {
         e.changes.forEach(change => {
             let { rowKey, columnName, value } = change;
-
-            // 입력시 자동 완성 ===========================================
 
             // 품목코드 입력시 자동 완성
             if (columnName === 'sku') {
@@ -256,8 +256,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 총공급가액, 총부가세, 총액 화면에 표시
                 sumPrice();
             }
-
-            // 자동 행 추가 ===========================================
+            
+            // 데이터 입력 후 다음 행 추가
             if (columnName === 'sku' || columnName === 'skuName') {
                 const data = inOrdGrid.getData();
                 if (!data.length) return;
@@ -276,8 +276,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    inOrdGrid.on('editingStart', ev => {
-        const { rowKey, columnName } = ev;
+    inOrdGrid.on('editingStart', e => {
+        const { rowKey, columnName } = e;
         if (columnName !== 'unitPriceType') return;
 
         const editor = inOrdGrid.getColumn(columnName).editor;
@@ -326,7 +326,6 @@ window.afterCustSearch = function(result) {
     if (byEnter) {
         returnOnlyOne(result);
     } else {
-        // 버튼으로 모달을 열어 내부에서 검색한 경우 등: 그냥 모달 보여주기만
         openCustModal();
     }
 };
@@ -439,7 +438,6 @@ function emptyRow(){
     inOrdGrid.appendRow({
         sku: '',
         skuName: '',
-        spec: '',
         qty: 0,
         unitPriceType: defaultType,
         unitPrice: 0,
@@ -469,6 +467,8 @@ function emptyRow(){
 // 초기화 함수
 function resetData() {
     document.querySelector('#dueDate').value  = '';
+    document.querySelector('#dept').value  = '';
+    document.querySelector('#pic').value  = '';
     document.querySelector('#custCodeSearch').value  = '';
     document.querySelector('#custNameSearch').value  = '';
     document.querySelector('#creditMax').value  = '';

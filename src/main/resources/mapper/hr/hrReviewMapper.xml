@@ -232,7 +232,8 @@
 		    staff.dept               AS target_dept,
 		    deptM.dept_name          AS target_dept_name,
 		    staff.job_title          AS target_job_title,
-		    cm.code_name             AS target_job_title_name,
+		    --cm.code_name             AS target_job_title_name,
+		    FN_FIND_CODENAME('0C', staff.job_title) AS target_job_title_name,
 		    
 		    r.review_code,
 		    r.review_status,
@@ -252,8 +253,9 @@
 		 AND r.rater_user_id = manager.user_id
 		 AND r.target_user_id = staff.user_id
 		 
-		JOIN tb_cm_code cm
-		ON staff.job_title = cm.code
+		-- JOIN tb_cm_code cm
+		-- ON staff.job_title = cm.code
+		
 		JOIN tb_dept_master deptM
 		ON staff.dept = deptM.dept_code
 		 
@@ -364,8 +366,6 @@
 		WHERE review_code = #{reviewCode}
 		AND   review_result_seq = #{reviewResultSeq} 
 	</update>
-	
-	
 	
 	
 

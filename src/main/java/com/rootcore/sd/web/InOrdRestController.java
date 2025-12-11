@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rootcore.sd.service.InOrdService;
 import com.rootcore.sd.vo.InOrdDetailVO;
-import com.rootcore.sd.vo.InOrdSave;
+import com.rootcore.sd.vo.OrdSave;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,8 +24,8 @@ public class InOrdRestController {
 
     // 수주 등록
     @PostMapping("/save")
-    public void inOrdSave(@RequestBody InOrdSave req) {
-        inOrdService.addInOrd(req.getInfo(), req.getDetail());
+    public void inOrdSave(@RequestBody OrdSave req) {
+        inOrdService.addInOrd(req.getInordInfo(), req.getInordDetail());
     }
 
     // 수주헤더조회

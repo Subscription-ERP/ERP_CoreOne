@@ -57,36 +57,36 @@
 	    <!-- ✅ subCode로 구독 상세 조회 -->
     <select id="selectSubscribeBySubCode" parameterType="string" resultType="com.rootcore.sb.vo.SubscribeVO">
         SELECT
-            sub_code        AS subCode,
-            company_code    AS companyCode,
-            plan_code       AS planCode,
-            contract_code   AS contractCode,
-            subs_status     AS subsStatus,
-            subs_start      AS subsStart,
-            subs_end        AS subsEnd,
-            billing_key     AS billingKey,
-            current_price   AS currentPrice,
-            recent_billing_date AS recentBillingDate,
-            next_billing_date   AS nextBillingDate
-        FROM SUBSCRIBE
+            sub_code,       
+            company_code,    
+            plan_code,       
+            contract_code,   
+            subs_status,     
+            subs_start,     
+            subs_end,       
+            billing_key,    
+            current_price,   
+            recent_billing_date, 
+            next_billing_date,   
+        FROM TB_SUBSCRIBE
         WHERE sub_code = #{subCode}
     </select>
 	
     <!-- ✅ 오늘 정기결제를 해야 하는 구독 목록 -->
     <select id="selectNeedBilling" parameterType="java.time.LocalDate" resultType="com.rootcore.sb.vo.SubscribeVO">
         SELECT
-            sub_code        AS subCode,
-            company_code    AS companyCode,
-            plan_code       AS planCode,
-            contract_code   AS contractCode,
-            subs_status     AS subsStatus,
-            subs_start      AS subsStart,
-            subs_end        AS subsEnd,
-            billing_key     AS billingKey,
-            current_price   AS currentPrice,
-            recent_billing_date AS recentBillingDate,
-            next_billing_date   AS nextBillingDate
-        FROM SUBSCRIBE
+            sub_code,
+            company_code,
+            plan_code,
+            contract_code,
+            subs_status,
+            subs_start,
+            subs_end,
+            billing_key,
+            current_price,
+            recent_billing_date,
+            next_billing_date
+        FROM TB_SUBSCRIBE
         WHERE subs_status = 'ACTIVE'
           AND billing_key IS NOT NULL          <!-- 빌링키 있는 애들만 -->
           AND next_billing_date = #{today}     <!-- 오늘이 청구일인 애들만 -->
@@ -94,7 +94,7 @@
 
     <!-- ✅ 결제 후 청구일 갱신 -->
     <update id="updateBillingDates">
-        UPDATE SUBSCRIBE
+        UPDATE TB_SUBSCRIBE
         SET
             recent_billing_date = #{recentBillingDate},
             next_billing_date   = #{nextBillingDate},

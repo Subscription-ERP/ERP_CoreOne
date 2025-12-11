@@ -64,14 +64,4 @@
 		</if>
     </select>
 
-    <!-- 수주 출고 처리 -->
-    <update id="updateInOrdHearder">
-
-    </update>
-
-    <update id="updateInOrdDetail" parameterType="string">
-        UPDATE tb_inord_detail
-        SET output_status = 2
-        WHERE inord_detail_no = #{inordDetailNo}
-    </update>
 </mapper>

@@ -9,8 +9,10 @@
 			   upm.company_code,
 			   upm.pay_period,
 			   upm.user_id,
+
 			   um.user_name,
 			   dm.dept_name,
+
 			   upm.pay_date as payrollDate, 
 			   upm.salary,
 			   upm.bonus,
@@ -30,11 +32,15 @@
 			   upm.total_deduction AS totalDeductionAmount,
 			   upm.net_pay,
 			   upm.absence
+
 		FROM   tb_user_pay_management upm
+
 			   JOIN tb_user_master um 
 			   ON upm.user_id = um.user_id
+
 			   JOIN tb_dept_master dm 
 			   ON um.dept = dm.dept_code
+
 		WHERE  1=1
 		<if test="companyCode != null and companyCode != '' ">
             AND upm.company_code like '%' || #{companyCode} || '%'

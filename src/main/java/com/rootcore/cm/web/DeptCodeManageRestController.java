@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +16,9 @@ import com.rootcore.hr.vo.DeptMasterVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+/* ================
+ * 부서코드관리 컨트롤러 
+ * ================ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cm")
@@ -21,9 +26,9 @@ public class DeptCodeManageRestController {
 
 	private final DeptCodeManageService deptCodeManageService;
 
-	/* =================
-	 * 부서코드관리 부서조회 
-	 * ================= */
+	/* ======
+	 * 부서조회 
+	 * ====== */
 	@GetMapping("/selectDeptCodeManage")
 	public Map<String, Object> selectDeptCodeManage(DeptMasterVO param, HttpSession session) {
 		// 세션에서 회사코드 들고오기
@@ -45,5 +50,16 @@ public class DeptCodeManageRestController {
 		
 		return result;
 	}
-
+	
+	/* ===================
+	 * 부서 등록 - 저장버튼기능
+	 * =================== */
+	@PostMapping("/deptRegister")
+	public int insertDeptCodeManage(@RequestBody DeptMasterVO param, HttpSession session) {
+		// 세션에서 회사코드 들고오기
+		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		param.setCompanyCode(CompanyCode);
+		
+		return deptCodeManageService.insertDeptCodeManage(param);
+	}
 }

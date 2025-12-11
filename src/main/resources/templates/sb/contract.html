@@ -121,7 +121,9 @@
 			
 
 		</div>
-[[${session.contract}]]
+
+	 [[${session.plan}]]
+	 [[${session.contract}]]
 		<!-- ===== 계약서 모달 ===== -->
 		<div class="modal fade contract-modal" id="contractModal"
 			tabindex="-1" aria-labelledby="contractModalLabel" aria-hidden="true">
@@ -262,7 +264,7 @@
 							data-bs-dismiss="modal">닫기</button>
 
 						<!-- 동의 시 결제 페이지로 이동 -->
-						<a th:href="@{/payment}" class="btn btn-dark"
+						<a th:href="@{/sub/payment}" class="btn btn-dark"
 							onclick="return document.getElementById('agreeCheck').checked;">
 							동의하고 결제 단계로 이동 </a>
 					</div>

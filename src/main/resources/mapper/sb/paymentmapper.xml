@@ -31,6 +31,7 @@
 		BILLING_KEY,
 		PAYMENT_TYPE,
 		CARD_NUMBER_MASK,
+		DISCOUNT_AMOUNT,
 		CREATED_BY,
 		CREATE_DATE,
 		UPDATED_BY,
@@ -53,6 +54,7 @@
 		#{billingKey},
 		#{paymentType},
 		#{cardNumberMask},
+		#{discountAmount},
 		#{createdBy},
 		#{createDate},
 		#{updatedBy},
@@ -113,10 +115,10 @@
             s.current_price,
             s.current_user_count,
             s.billing_period,
-            p.price,               
+            s.recent_billing_date,
+            s.next_billing_date,
+            p.price,
             pay.payment_method,                        
-            pay.recent_payment,        
-            pay.next_payment,
             pay.payment_stat,   
             s.created_by,
             s.create_date,
@@ -128,13 +130,11 @@
         LEFT JOIN (
             SELECT sub_code,
                    payment_method,
-                   recent_payment,
-                   next_payment,
                    payment_stat
             FROM (
                 SELECT 
                     t.*,
-                    ROW_NUMBER() OVER (PARTITION BY t.sub_code ORDER BY t.recent_payment DESC) rn
+                    ROW_NUMBER() OVER (PARTITION BY t.sub_code ORDER BY  t.payment_date DESC) rn
                 FROM TB_PAYMENT t
             )
             WHERE rn = 1
@@ -165,10 +165,10 @@
 		PAYMENT_DATE,
 		CARD_COMPANY,
 		PAYMENT_KEY,
-		RECENT_PAYMENT,
-		NEXT_PAYMENT,
 		BILLING_START,
 		BILLING_END,
+		PAYMENT_TYPE,
+		CARD_NUMBER_MASK,
 		CREATED_BY,
 		CREATE_DATE,
 		UPDATED_BY,
