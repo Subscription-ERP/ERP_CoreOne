@@ -20,10 +20,10 @@ public class AttendanceVO {
 	private Date inTime;           //출근시간
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Date outTime;          //퇴근시간
-	private Long overWorkTime;     //연장근무시간
-	private Long nightWorkTime;    //야간근무시간
-	private Long holidayWorkTime;  //휴일근무시간
-	private Long totalWorkTime;    //일일총근무시간
+	private Double overWorkTime;     //연장근무시간
+	private Double nightWorkTime;    //야간근무시간
+	private Double holidayWorkTime;  //휴일근무시간
+	private Double totalWorkTime;    //일일총근무시간
 	private String remark;
 	private String createdBy;
 	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")

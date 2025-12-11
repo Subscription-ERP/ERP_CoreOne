@@ -23,10 +23,22 @@ public interface AttendanceMapper {
 			                                  @Param("startDate") Date startDate,
 				                              @Param("endDate") Date endDate);
 	
+	// 출근
+	int insertTodayMyAtt(AttendanceVO vo);
+	
 	// 퇴근
 	int checkoutTodayMyAtt(@Param("companyCode") String companyCode,
 	                       @Param("userId") String userId,
-	                       @Param("updatedBy") String updatedBy);
+	                       @Param("updatedBy") String updatedBy,
+	                       @Param("overWorkTime")   double overWorkTime,
+	                       @Param("nightWorkTime")  double nightWorkTime,
+	                       @Param("totalWorkTime")  double totalWorkTime);
+	
+	// 근무형태 변경 
+	int updateTodayWorkPlaceType(@Param("companyCode")  String companyCode,
+	                             @Param("userId")       String userId,
+	                             @Param("workPlaceType") String workPlaceType,
+	                             @Param("updatedBy")    String updatedBy);
 	
 	
 }

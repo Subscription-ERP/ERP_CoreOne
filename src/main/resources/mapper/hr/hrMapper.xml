@@ -212,13 +212,6 @@
 	            AND um.dept = #{deptSearch}
 	        </if>
 	
-<!-- 			<if test="leavedYN == null or leavedYN == ''">
-			    AND um.user_status != '2'
-			</if>
-			
-			<if test="leavedYN == 'Y'">
-			    AND um.user_status = '2'
-			</if> -->
 		</where>
 		ORDER BY
 		    user_id DESC
@@ -229,16 +222,8 @@
 	<insert id="insertUserBasic" parameterType="UserVO">
 		<!-- 사원번호 -->
 		<selectKey keyProperty="userId" order="BEFORE" resultType="string">
-		    SELECT 
-		        'EMP'
-		        || TO_CHAR(#{hireDate}, 'YYMMDD')
-		        || LPAD(
-		             NVL(MAX(TO_NUMBER(SUBSTR(user_id, 10, 5))) + 1, 1),
-		             5,
-		             '0'
-		           ) AS user_id
-		    FROM tb_user_master
-		    WHERE TRUNC(hire_date) = TRUNC(#{hireDate})
+			SELECT fn_make_date_code('USER') 
+			FROM dual
 		</selectKey>
 	
 		INSERT INTO tb_user_master (
