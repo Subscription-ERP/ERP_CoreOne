@@ -4,60 +4,30 @@
 
 <title>부서코드관리</title>
 
-<!-- TOAST UI GRID -->
+<!-- SheetJS CDN -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<!-- ToastUI Grid -->
 <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<!-- ToastUI Date/Time Picker CSS -->
+<link rel="stylesheet" href="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.css" />
+<link rel="stylesheet" href="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.css" />
+<!-- ToastUI JS -->
+<script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.js"></script>
+<script src="https://uicdn.toast.com/tui.dom/latest/tui-dom.js"></script>
+<script src="https://uicdn.toast.com/tui.time-picker/latest/tui-time-picker.min.js"></script>
+<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script>
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-
 <!-- general.css -->
 <link th:href="@{/css/general.css}" rel="stylesheet" />
+<link th:href="@{/css/hr/hrUser.css}" rel="stylesheet" />
 
 <style>
-/* 라디오 버튼 위치 조정 아래3개 */
-.form-grid__field--wide {
-	display: flex;
-	align-items: center; /* 수직 중앙 정렬 */
-}
-
-.form-grid__field--wide .form-check-input {
-	margin-right: 4px; /* 라디오와 글자 사이 여백 */
-	margin-left: 6px; /* 맨 앞쪽 여백 */
-}
-
-.form-grid__field--wide label {
-	margin-right: 12px; /* 라벨 사이 간격 */
-	margin-bottom: 0; /* Bootstrap label baseline 보정 */
-}
-
-/* 모달 X 아이콘 버튼 */
-#btnPayrollManageClose {
-	border: none;
-	background: transparent;
-	cursor: pointer;
-	padding: 0;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-/* Tui Grid 데이터 없는 배경색과 유사한 밝은 회색 */
-.table-summary tbody td {
-	background-color: #f7f7f7 !important;
-	/* !important를 사용하여 Bootstrap 기본 스타일을 덮어씁니다. */
-}
-
-/* 임금 항목 셀은 배경색을 제거하여 왼쪽은 흰색으로 남깁니다 (선택 사항) */
-.table-summary tbody tr td:first-child {
-	background-color: transparent !important;
-}
-
-/* 지급일 범위 너비 조정 */
-#paymentEndDateWrapper, #paymentStartDateWrapper {
-	width: 37%;
-}
-
-/* 지급일 왼쪽 여백 */
-#paymentStartDateWrapper {
-	margin-left: 12px;
+/* =========================================
+ * 상단 검색바 상태값 운영, 종료 라디오 버튼 위치 조정
+ * ========================================= */
+#status_0, #status_1 {
+	margin-left: 10px;
+	margin-right: 10px;
 }
 </style>
 </head>
@@ -67,19 +37,19 @@
 		<div class="row">
 			<!-- ==================== 조회 ================================================================== -->
 			<section class="card-ui card-ui--search" style="margin-top: 10px; display: flex; margin-left: 18px; width: 98%; padding: 0;">
-				<div class=" card-ui__body" style="flex: 1; display: flex; align-items: center;">
+				<div class="card-ui__body" style="flex: 1; display: flex; align-items: center;">
 					<div class="filter-bar row g-4 align-items-center col-md-12">
 						<!-- 부서명 -->
 						<div class="col-12 col-md-3">
 							<div class="field-inline">
-								<label for="payrollType" class="field-inline__label me-4">부서명</label> <select id="payrollType" class="form-select input-base" style="flex: 1; min-width: 0"></select>
+								<label for="deptName" class="field-inline__label me-4">부서명</label> <select id="deptName" class="form-select input-base" style="flex: 1; min-width: 0"></select>
 							</div>
 						</div>
 
 						<!-- 상위 부서명 -->
 						<div class="col-12 col-md-3">
 							<div class="field-inline">
-								<label for="payrollName" class="field-inline__label">상위 부서명</label> <input id="payrollName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+								<label for="upperDeptName" class="field-inline__label">상위 부서명</label> <select id="upperDeptName" class="form-select input-base" style="flex: 1; min-width: 0"></select>
 							</div>
 						</div>
 
@@ -87,27 +57,27 @@
 						<div class="col-12 col-md-3">
 							<div class="field-inline">
 								<label for="payrollName" class="field-inline__label">상태값</label>
-								<div id="bonusTypeContainer"></div>
+								<select id="status" class="form-select input-base" style="flex: 1; min-width: 0"></select>
 							</div>
 						</div>
 
 						<!-- 초기화 조회 버튼 -->
 						<div class="col-12 col-md-3 d-flex justify-content-end gap-2">
 							<button id="btnPayrollReset" type="button" class="btn btn-white btn-outer" style="flex-shrink: 0;">초기화</button>
-							<button id="btnPayrollSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
+							<button id="deptCodeManageBtnSearch" type="button" class="btn btn-color btn-outer" style="flex-shrink: 0;">조회</button>
 						</div>
 
 						<!-- 부서레벨 범위 -->
 						<div class="col-12 col-md-3 mt-0">
 							<div class="field-inline">
-								<label for="payrollDate" class="field-inline__label">부서레벨</label>
+								<label for="payrollDate" class="field-inline__label" style="width: 80px">부서레벨</label>
 								<!-- 범위 input -->
-								<div id="paymentStartDateWrapper">
-									<input id="paymentStartDate" type="number" class="form-control input-base" style="flex: 1; min-width: 0" />
+								<div id="deptCodeManageStartLevelWrapper">
+									<input id="deptCodeManageStartLevel" type="number" class="form-control input-base" style="flex: 1; min-width: 0" />
 								</div>
 								~
-								<div id="paymentEndDateWrapper">
-									<input id="paymentEndDate" type="number" class="form-control input-base" style="flex: 1; min-width: 0" />
+								<div id="deptCodeManageEndLevelWrapper">
+									<input id="deptCodeManageEndLevel" type="number" class="form-control input-base" style="flex: 1; min-width: 0" />
 								</div>
 
 							</div>
@@ -115,24 +85,24 @@
 					</div>
 				</div>
 			</section>
-			<div class="col-lg-6 pe-0">
+			<div class="col-lg-8 pe-0">
 
 				<!-- ================= 목록(Grid) 섹션 ================= -->
-				<section class="card-ui section-flex" style="margin-top: 10px">
+				<section class="card-ui section-flex" style="margin-top: 10px; height: 650px;">
 					<header class="card-ui__header">
 						<h6 class="card-ui__title">부서 목록</h6>
 					</header>
 					<!-- 부서목록조회 -->
-					<div id="deptGrid" class="grid-root"></div>
+					<div id="deptCodeManageGrid" class="grid-root"></div>
 				</section>
 			</div>
-			<div class="col-lg-6 ps-0">
+			<div class="col-lg-4 ps-0">
 				<section class="card-ui section-flex" style="margin-top: 10px">
 					<header class="card-ui__header">
 						<h6 class="card-ui__title">부서 등록</h6>
 						<!-- 우측 액션 -->
 						<div class="toolbar" id="chogihwa">
-							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto" style="width:100px">부서선택</button>
+							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto" style="width: 100px">부서선택</button>
 							<button id="btnReset" type="button" class="btn btn-white btn-inner ms-auto">초기화</button>
 							<button id="btnSave" type="button" class="btn btn-color btn-inner ms-auto">저장</button>
 						</div>
@@ -140,11 +110,11 @@
 
 					<div class="card-ui__body section-scroll">
 						<div id="tab-basic" class="tab-panel active">
-							<div class="form-grid form-grid--sub">
+							<div class="form-grid">
 								<div class="form-grid__row">
 									<div class="form-grid__label">부서코드</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollPeriodParent">
-										<input id="payrollPeriod" name="payrollPeriod" type="text" class="form-control form-control-sm input-base" />
+										<input id="payrollPeriod" name="payrollPeriod" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
@@ -156,19 +126,19 @@
 								<div class="form-grid__row">
 									<div class="form-grid__label">상위부서코드</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input type="text" id="bonus" name="bonus" class="form-control form-control-sm input-base text-end" />
+										<input type="text" id="bonus" name="bonus" class="form-control form-control-sm input-base" disabled readonly placeholder="부서선택 버튼을 클릭하고 왼쪽 부서목록에서 상위부서를 지정해주세요" />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">상위부서명</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input type="text" id="payrollBonusName" name="payrollBonusName" class="form-control form-control-sm input-base" />
+										<input type="text" id="payrollBonusName" name="payrollBonusName" class="form-control form-control-sm input-base" disabled readonly placeholder="지정안할시 최상위 부서(부서 레벨 1)로 등록됩니다." />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">부서 레벨/계층</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollStartDateWrapper">
-										<input id="payrollStartDate" name="payrollStartDate" type="text" class="form-control form-control-sm input-base" />
+										<input id="payrollStartDate" name="payrollStartDate" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
@@ -178,21 +148,28 @@
 									</div>
 								</div>
 								<div class="form-grid__row">
+									<div class="form-grid__label">적용종료일</div>
+									<div class="form-grid__field form-grid__field--wide" id="payrollEndDateWrapper">
+										<input id="payrollEndDate" name="payrollEndDate" type="date" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
 									<div class="form-grid__label">상태</div>
 									<div class="form-grid__field form-grid__field--wide" id="payrollBonusDateWrapper">
-										<input id="payrollBonusDate" name="payrollBonusDate" type="text" class="form-control form-control-sm input-base" />
+										<input id="payrollBonusDate" name="payrollBonusDate" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
 									<div class="form-grid__label">부서 관리자(창)</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="text" class="form-control form-control-sm input-base text-end" disabled />
+										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="text" class="form-control form-control-sm input-base" />
 									</div>
 								</div>
-								<div class="form-grid__row">
+								<div class="form-grid__row" style="height: 200px">
 									<div class="form-grid__label">비고</div>
 									<div class="form-grid__field form-grid__field--wide">
-										<input id="bonusPeopleNumber" name="bonusPeopleNumber" type="text" class="form-control form-control-sm input-base text-end" disabled />
+										<textarea id="memo" name="memo" style="height: 200px; box-shadow: none; resize: none; border: none;" class="form-control form-control-sm"></textarea>
+										<!-- resize:none;을하면 textarea가 크기변경할수없이 고정된다. border:none하면 테두리가 사라진다 -->
 									</div>
 								</div>
 							</div>
