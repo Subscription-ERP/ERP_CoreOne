@@ -47,6 +47,7 @@ public class UserVO {
 	private String updatedBy;
 	private Date updateDate;
 	
+	
 	private List<CertificationVO> certificationList;          // 자격증
 	private List<WorkExperienceVO> workExperienceList;        // 경력사항
 	private List<UserHistoryVO> historyList;                  // 이력
