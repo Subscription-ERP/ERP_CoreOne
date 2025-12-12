@@ -24,7 +24,6 @@ document.getElementById('btnSave').addEventListener('click', async (e) => {
 
     if (res.ok) {
         showToast('등록 완료', 'success');
-        window.location.href = '/sd/inordList';
     } else {
         showToast('등록 실패', 'error');
     }
@@ -60,8 +59,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // 거래처가 있으면 기존 모달 오픈 로직 실행
-        openSkuModalWindow(e);
+        window.skuModalType = 'sell';
+        openSkuModalWindow();
     });
 
     /* ======================================================
@@ -366,9 +365,10 @@ window.handleSelectedSku = function (row) {
     sumPrice();
 
     // 5) 방금 채운 행이 마지막 행이면 다음 빈 행 자동 추가
+    const updatedRow = inOrdGrid.getRow(rowKey);
     const hasSkuOrName =
-        (lastRow.sku && String(lastRow.sku).trim() !== '') ||
-        (lastRow.skuName && String(lastRow.skuName).trim() !== '');
+        (updatedRow.sku && String(updatedRow.sku).trim() !== '') ||
+        (updatedRow.skuName && String(updatedRow.skuName).trim() !== '');
 
     if (hasSkuOrName) {
         emptyRow();
