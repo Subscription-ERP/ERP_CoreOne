@@ -17,6 +17,6 @@ public interface DeptCodeManageService {
 	/* ===================
 	 * 부서 등록 - 저장버튼기능
 	 * =================== */
-	int insertDeptCodeManage(DeptMasterVO param);
+	String insertDeptCodeManage(DeptMasterVO param);
 	
 }

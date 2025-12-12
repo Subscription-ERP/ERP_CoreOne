@@ -12,6 +12,7 @@ import lombok.Data;
  * ================== */
 @Data
 public class DeptMasterVO {
+	private String userId; 
 	private String deptCode;
 	private String companyCode;
 	private String deptName;
@@ -23,7 +24,6 @@ public class DeptMasterVO {
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date endDate;
 	private String status;
-	private String deptMng; // 부서관리자
 	private String rm; // 비고
 
 	private String text;

@@ -101,7 +101,7 @@
 						<h6 class="card-ui__title">부서 등록</h6>
 						<!-- 우측 액션 -->
 						<div class="toolbar" id="chogihwa">
-							<button id="DeptSelectBtn" type="button" class="btn btn-white btn-inner ms-auto" style="width: 100px">부서선택</button>
+							<button id="DeptSelectBtn" type="button" class="btn btn-white btn-inner ms-auto" style="width: 150px">상위부서선택</button>
 							<button id="deptCodeManageInsertBtnReset" type="button" class="btn btn-white btn-inner ms-auto">초기화</button>
 							<button id="deptCodeManageBtnSave" type="button" class="btn btn-color btn-inner ms-auto">저장</button>
 						</div>
@@ -112,7 +112,7 @@
 							<div class="form-grid">
 								<div class="form-grid__row">
 									<div class="form-grid__label">부서코드</div>
-									<div class="form-grid__field form-grid__field--wide" id="payrollPeriodParent">
+									<div class="form-grid__field form-grid__field--wide" id="deptCodeManageDeptCodeWrapper">
 										<input id="deptCodeManageDeptCode" name="deptCodeManageDeptCode" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
@@ -120,6 +120,12 @@
 									<div class="form-grid__label" style="white-space: nowrap">부서명</div>
 									<div class="form-grid__field form-grid__field--wide">
 										<input id="deptCodeManageDeptName" name="deptCodeManageDeptName" type="text" class="form-control form-control-sm input-base" />
+									</div>
+								</div>
+								<div class="form-grid__row">
+									<div class="form-grid__label">부서 레벨/계층</div>
+									<div class="form-grid__field form-grid__field--wide" id="deptCodeManagedeptWrapper">
+										<input id="deptCodeManagedeptLevel" name="deptCodeManagedeptLevel" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
 								<div class="form-grid__row">
@@ -134,12 +140,7 @@
 										<input type="text" id="deptCodeManageUpperDeptName" name="deptCodeManageUpperDeptName" class="form-control form-control-sm input-base" disabled readonly placeholder="지정안할시 최상위 부서(부서 레벨 1)로 등록됩니다." />
 									</div>
 								</div>
-								<div class="form-grid__row">
-									<div class="form-grid__label">부서 레벨/계층</div>
-									<div class="form-grid__field form-grid__field--wide" id="deptCodeManagedeptWrapper">
-										<input id="deptCodeManagedeptLevel" name="deptCodeManagedeptLevel" type="text" class="form-control form-control-sm input-base" disabled readonly />
-									</div>
-								</div>
+								
 								<div class="form-grid__row">
 									<div class="form-grid__label">적용시작일</div>
 									<div class="form-grid__field form-grid__field--wide" id="deptCodeManageStartWrapper">
@@ -158,12 +159,6 @@
 										<input id="deptCodeManageStatus" name="deptCodeManageStatus" type="text" class="form-control form-control-sm input-base" disabled readonly />
 									</div>
 								</div>
-								<div class="form-grid__row">
-									<div class="form-grid__label">부서 관리자</div>
-									<div class="form-grid__field form-grid__field--wide">
-										<input id="deptCodeManageDeptMng" name="deptCodeManageDeptMng" type="text" class="form-control form-control-sm input-base" />
-									</div>
-								</div>
 								<div class="form-grid__row" style="height: 200px">
 									<div class="form-grid__label">비고</div>
 									<div class="form-grid__field form-grid__field--wide">
@@ -176,93 +171,6 @@
 					</div>
 				</section>
 			</div>
-		</div>
-		<!-- ==================== 급여관리모달창 ================================================================== -->
-		<div id="payrollManageModal" class="modal-layer" hidden>
-			<div class="modal-layer__backdrop"></div>
-
-			<div class="modal-layer__dialog">
-				<!-- 상단 헤더 -->
-				<header class="modal-card__header">
-					<h5 class="modal-card__title">급여관리</h5>
-					<button type="button" class="btn-icon modal-card__btn-close" id="btnPayrollManageClose">
-						<i class="bi bi-x-lg"></i>
-					</button>
-
-				</header>
-				<div style="padding-right: 30px; text-align: right; padding-bottom: 10px;">
-					<button id="btnPayrollSave" type="button" class="btn btn-color btn-inner ms-auto">확정</button>
-				</div>
-
-				<!-- 내용 -->
-				<div class="modal-card__body">
-
-					<!-- 급여대장 나오는 테이블 -->
-					<div id="payrollDetailGrid" class="grid-root" style="height: 240px; margin-bottom: 20px;"></div>
-					<!-- 상세 수당총액 -->
-					<h6 class="card-ui__title mb-2">상세 수당 총액</h6>
-					<table class="table table-bordered table-sm table-summary">
-						<thead>
-							<tr style="text-align: center;">
-								<th>임금 항목</th>
-								<th>연장근로수당</th>
-								<th>야간근로수당</th>
-								<th>휴일근로수당</th>
-								<th>가족수당</th>
-								<th>식대 (비과세)</th>
-								<th>연차휴가수당</th>
-								<th>총 수당 총액</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td style="text-align: center;">지급 금액(원)</td>
-								<td class="text-end" id="overtime"></td>
-								<td class="text-end" id="night"></td>
-								<td class="text-end" id="holiday"></td>
-								<td class="text-end" id="family"></td>
-								<td class="text-end" id="meal"></td>
-								<td class="text-end" id="annual_leave"></td>
-								<td class="text-end" id="total_allowance"></td>
-							</tr>
-						</tbody>
-					</table>
-
-					<h6 class="card-ui__title mb-2 mt-4">상세 공제 총액</h6>
-					<table class="table table-bordered table-sm table-summary">
-						<thead>
-							<tr style="text-align: center;">
-								<th>임금 항목</th>
-								<th>소득세</th>
-								<th>국민연금</th>
-								<th>고용보험</th>
-								<th>건강보험</th>
-								<th>장기요양보험</th>
-								<th>지방소득세</th>
-								<th>결근병가공제</th>
-								<th>총 공제 총액</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td style="text-align: center;">지급 금액(원)</td>
-								<td class="text-end" id=""></td>
-								<td class="text-end" id="national_pension"></td>
-								<td class="text-end" id="employment_insurance"></td>
-								<td class="text-end" id="health_insurance"></td>
-								<td class="text-end" id="long_time_care_insurance"></td>
-								<td class="text-end" id=""></td>
-								<td class="text-end" id="absence"></td>
-								<td class="text-end" id="total_deduction_amount"></td>
-							</tr>
-						</tbody>
-					</table>
-
-				</div>
-				<footer class="modal-card__footer d-flex justify-content-end"> </footer>
-				<!-- // modal-card__body -->
-			</div>
-			<!-- // modal-layer__dialog -->
 		</div>
 		<!-- 전역 토스트 알림 -->
 		<div id="toastContainer" class="rc-toast"></div>
