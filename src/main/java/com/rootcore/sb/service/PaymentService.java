@@ -1,6 +1,7 @@
 package com.rootcore.sb.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
@@ -26,6 +27,9 @@ public interface PaymentService {
 	 // 3) 정기결제 - 특정 구독 1건에 대해 결제 1번 실행
 	/* 서비스 로직은 매퍼인터페이스 선언 X */
     TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req);
+    
+    Map<String, String> createCompanyManagerAccount(CompanyVO company);
+    
 	// 회사별 비활성 구독 이력 조회
 	List<SubscribeVO> selectInactiveSubListByComCode(String companyCode);
 

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.sb.mapper.UserMapper">
+
+
+	<insert id="insertLogin"
+		parameterType="com.rootcore.sb.vo.SbLoginVO">
+		<selectKey resultType="String" order="BEFORE"
+			keyProperty="userId">
+			SELECT FN_MAKE_DATE_CODE('USER') FROM DUAL
+		</selectKey>
+		INSERT INTO TB_LOGIN_MASTER (
+		COMPANY_CODE,
+		USER_ID,
+		PASSWORD,
+		USER_NAME,
+		STATUS,
+		FAIL_COUNT,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		)
+		VALUES (
+		#{companyCode}
+		, #{userId}
+		, #{passWord}   <!-- 주의: VO필드명이 passWord -->
+		, #{userName}
+		, #{status}
+		, #{failCount}
+		, #{createdBy}
+		, #{createDate}
+		, #{updatedBy}
+		, #{updateDate}
+		)
+	</insert>
+	<insert id="insertUser"
+		parameterType="com.rootcore.sb.vo.SbUserVO">
+		INSERT INTO TB_USER_MASTER (
+		COMPANY_CODE,
+		USER_ID,
+		USER_NAME,
+		SALARY,
+		DEPT,
+		JOB_TITLE,
+		POSITION,
+		ROLE_CODE,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
+		)
+		VALUES (
+		#{companyCode}
+		, #{userId}
+		, #{userName}
+		, #{salary}
+		, #{dept}
+		, #{jobTitle}
+		, #{position}
+		, #{roleCode}
+		, #{createdBy}
+		, #{createDate}
+		, #{updatedBy}
+		, #{updateDate}
+		)
+	</insert>
+
+
+
+	<select id="countCompanyManager" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_USER_MASTER
+		WHERE COMPANY_CODE = #{companyCode}
+		AND ROLE_CODE = 'ADMIN'
+	</select>
+	<insert id="insertRoleMenu">
+	INSERT INTO TB_ROLE_MENU_AUTH (
+		COMPANY_CODE,
+		ROLE_CODE,
+		MENU_CODE,
+		READ_YN,
+		CREATE_YN,
+		UPDATE_YN,
+		DELETE_YN,
+		CREATED_BY,
+		CREATED_AT
+		) 
+  SELECT #{companyCode} ,'ADMIN',MENU_CODE,'Y','Y','Y','Y','SYSTEM',SYSDATE
+ FROM TB_MENU_MASTER
+	
+	</insert>
+</mapper>

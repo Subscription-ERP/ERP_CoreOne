@@ -3,12 +3,17 @@ package com.rootcore.sb.service.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rootcore.auth.util.PasswordUtil;
 import com.rootcore.sb.client.TossPaymentClient;
 import com.rootcore.sb.crypto.BillingKeyCrypto;
 import com.rootcore.sb.mapper.CompanyMapper;
@@ -16,6 +21,7 @@ import com.rootcore.sb.mapper.ContractMapper;
 import com.rootcore.sb.mapper.OrderMapper;
 import com.rootcore.sb.mapper.PaymentMapper;
 import com.rootcore.sb.mapper.SubscribeMapper;
+import com.rootcore.sb.mapper.UserMapper;
 import com.rootcore.sb.service.PaymentService;
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
@@ -23,6 +29,8 @@ import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PaymentVO;
 import com.rootcore.sb.vo.PlanVO;
+import com.rootcore.sb.vo.SbLoginVO;
+import com.rootcore.sb.vo.SbUserVO;
 import com.rootcore.sb.vo.SubscribeVO;
 import com.rootcore.sb.vo.TossBillingConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
@@ -40,10 +48,11 @@ public class PaymentServiceImpl implements PaymentService {
 
 	private final SubscribeMapper subscribeMapper; // 구독
 	private final CompanyMapper companyMapper; // 회사 (상태 변경 정도용)
+	private final UserMapper userMapper;
 	private final TossPaymentClient tossPaymentClient;
 	// 🔐 빌링키 양방향 암복호화 컴포넌트
 	private final BillingKeyCrypto billingKeyCrypto;
-	
+	private final PasswordEncoder passwordEncoder;
 
 	@Value("${project.url}")
 	String url;
@@ -80,10 +89,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	@Transactional
-	public TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO,
-			                                    CompanyVO company, 
-			                                    PlanVO plan, 
-			                                    ContractVO contract) {
+	public TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO, CompanyVO company, PlanVO plan,
+			ContractVO contract) {
 
 		// 1. ORDER 테이블에서 주문 조회 및 금액 검증
 		OrderVO order = orderMapper.selectByOrderId(requestVO.getOrderId());
@@ -97,15 +104,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 2. 토스 결제 승인 API 호출
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmPayment(requestVO);
-		// ① Toss가 내려준 카드사 코드
-		String cardCode = tossResponse.getCard().getCardCompanyCode(); // issuerCode 그대로
+	
 
-		// ② 화면에 보여줄 카드사명 → 공통코드에서 조회
-		String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
-
-		tossResponse.setCardCompany(cardName); // 화면용 한글 카드사명
-		tossResponse.setCardCompanyCode(cardCode); // DB용 코드
-		
 		// 회사등록
 		CompanyVO existCompany = companyMapper.selectCompany(company.getCompanyCode());
 		if (existCompany == null) {
@@ -152,6 +152,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 		subscribeMapper.insertSubscribe(subscribe);
 
+		
+		String method = tossResponse.getMethod(); // ex) "CARD", "VBANK", "BANK", ...
 		// 3. PAYMENT 테이블에 결제 이력 INSERT
 		// payment 객체생성
 		PaymentVO payment = new PaymentVO();
@@ -164,7 +166,6 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentMethod(tossResponse.getMethod());
-		payment.setCardCompany(cardCode);
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
@@ -174,6 +175,27 @@ public class PaymentServiceImpl implements PaymentService {
 
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
+		
+		// ✅ 여기부터 “카드 결제인 경우에만” 실행
+		if ("CARD".equalsIgnoreCase(method)) {
+		    TossConfirmResponseVO.Card card = tossResponse.getCard();
+
+		    if (card != null) { // 혹시 모르니 한 번 더 방어
+		        String cardCode = card.getCardCompanyCode();
+		        String maskedNumber = card.getNumber();  // 마스킹된 번호
+
+		        String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
+
+		        // 응답 객체에 세팅
+		        tossResponse.setCardCompany(cardName);
+		        tossResponse.setCardCompanyCode(cardCode);
+		        tossResponse.setCardNumberMask(maskedNumber);
+
+		        // 결제 VO에도 세팅
+		        payment.setCardCompany(cardName);      // 또는 cardCode
+		        payment.setCardNumberMask(maskedNumber);
+		    }
+		}
 		// 고정데이터로 들어감
 		// payment객체안에 값들을 채워넣음
 //		paymentMapper.insertPayment(payment);
@@ -187,7 +209,12 @@ public class PaymentServiceImpl implements PaymentService {
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
 
 		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
+		
+		// 회사 관리자 계정 생성
+		Map<String, String> accountInfo = createCompanyManagerAccount(company);
 
+		tossResponse.setUserId(accountInfo.get("userId"));
+		tossResponse.setPassword(accountInfo.get("Password"));
 		// 5. 그대로 Toss 응답 반환 (프론트가 필요로 하는 경우)
 		return tossResponse;
 
@@ -245,7 +272,7 @@ public class PaymentServiceImpl implements PaymentService {
 		order.setOrderType("BILLING"); // 필요시 상수/enum 처리
 		order.setCreateDate(LocalDateTime.now());
 		order.setUpdateDate(LocalDateTime.now());
-		order.setCreatedBy("SYSTEM"); 
+		order.setCreatedBy("SYSTEM");
 		order.setUpdatedBy("SYSTEM");
 		order.setCompanyCode("0000");
 		order.setPlanCode(plan.getPlanCode());
@@ -366,6 +393,16 @@ public class PaymentServiceImpl implements PaymentService {
 		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
 		tossResponse.setBillingKey(null);
 
+		int adminCount = userMapper.countCompanyManager(company.getCompanyCode());
+
+		if (adminCount == 0) {
+		    Map<String, String> accountInfo = 
+		        createCompanyManagerAccount(company);
+
+		    tossResponse.setUserId(accountInfo.get("userId"));
+		    tossResponse.setPassword(accountInfo.get("password"));
+		}
+		
 		return tossResponse;
 	}
 
@@ -434,4 +471,57 @@ public class PaymentServiceImpl implements PaymentService {
 		return tossResponse; // 스케줄러 내부에서 결과 안 쓰면 반환 없어도 되긴 함
 	}
 
+	@Override
+	public Map<String, String> createCompanyManagerAccount(CompanyVO company) {
+
+		Map<String, String> result = new HashMap<>();
+		Date now = new Date();
+
+		/* 1) 임시 비밀번호 생성 */
+		String rawPassword = PasswordUtil.generateRandomPassword();
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+
+		// 4) LOGIN_MST INSERT
+		SbLoginVO login = new SbLoginVO();
+		login.setCompanyCode(company.getCompanyCode());
+		login.setPassWord(encodedPassword); // 암호문만 DB 저장
+		login.setUserName("-");
+		login.setStatus("ACTIVE");
+		login.setFailCount(0);
+		login.setCreatedBy("SYSTEM");
+		login.setCreateDate(now);
+		login.setUpdatedBy("SYSTEM");
+		login.setUpdateDate(now);
+
+		userMapper.insertLogin(login);
+
+		// 자동 생성된 USER_ID 가져오기
+		String userId = login.getUserId();
+
+		// 2) USER_MST INSERT
+		SbUserVO user = new SbUserVO();
+		user.setCompanyCode(company.getCompanyCode());
+		user.setUserId(userId);
+		user.setUserName("-");
+		user.setSalary(0);
+		user.setDept("-");
+		user.setJobTitle("-");
+		user.setPosition("-");
+		user.setCreatedBy("SYSTEM");
+		user.setCreateDate(now);
+		user.setUpdatedBy("SYSTEM");
+		user.setUpdateDate(now);
+		user.setRoleCode("ADMIN");
+
+		userMapper.insertUser(user);
+		
+		userMapper.insertRoleMenu(company.getCompanyCode());
+		
+
+		// 6) 화면에 보여줄 정보만 반환
+		result.put("userId", userId);
+		result.put("password", rawPassword);
+
+		return result;
+	}
 }
