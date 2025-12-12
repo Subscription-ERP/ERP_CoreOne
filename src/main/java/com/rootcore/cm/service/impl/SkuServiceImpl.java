@@ -15,17 +15,13 @@ public class SkuServiceImpl implements SkuService {
     final SkuMapper skuMapper;
 
     @Override
-    public List<SkuVO> getSkuList(SkuVO sku) {
-        return skuMapper.selectAllSku(sku);
+    public List<SkuVO> getSku(String unitPriceType, String sku, String skuName) {
+        return skuMapper.selectSku(unitPriceType, sku, skuName);
     }
 
     @Override
     public List<SkuVO> getInOrdSkuList(String custCode) {
         return skuMapper.selectInOrdSku(custCode);
     }
-	@Override
-	public List<SkuVO> getOneSku(SkuVO sku) {
-		// TODO Auto-generated method stub
-		return skuMapper.selectOneSku(sku);
-	}
+
 }

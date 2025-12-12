@@ -1,18 +1,26 @@
 /**
  * 품번 조회 모달
  * 작성: ChatGPT ERP 구조 최적화 버전
+ *
+ * 이력
+ * 2025-12-08 최초 생성
+ * 2025-12-12 단가 유형을 지정하여 필요한 품목을 지정할 수 있도록 변경
+ * 
+ * 최초 생성자: 고유한
+ * 최종 수정자: 박봉근
  */
 
 let skuModalGrid;
+let unitPriceType = null;
 
 // 요소
-const skuModal      = document.getElementById("skuModal");
-const btnSkuClose   = document.getElementById("btnSkuClose");
-const btnSkuSearch  = document.getElementById("btnSkuSearch");
+const skuModal = document.getElementById("skuModal");
+const btnSkuClose = document.getElementById("btnSkuClose");
+const btnSkuSearch = document.getElementById("btnSkuSearch");
 
-const schSkuCode    = document.getElementById("schSkuCode");
-const schSkuName    = document.getElementById("schSkuName");
-const skuBackdrop   = document.querySelector("#skuModal .modal-layer__backdrop");
+const schSkuCode = document.getElementById("schSkuCode");
+const schSkuName = document.getElementById("schSkuName");
+const skuBackdrop = document.querySelector("#skuModal .modal-layer__backdrop");
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -27,17 +35,15 @@ document.addEventListener("DOMContentLoaded", () => {
         scrollY: true,
         scrollX: false,
         columns: [
-            { header: '품번', name: 'sku', minWidth: 120 },
-            { header: '품명', name: 'skuName', minWidth: 150 },
-            { header: '규격', name: 'spec', minWidth: 100 },
-            { header: '단위', name: 'unit', minWidth: 70 },
-            { header: '단가', name: 'unitPrice', minWidth: 100, align: 'right' }
+            {header: '품번', name: 'sku', minWidth: 120},
+            {header: '품명', name: 'skuName', minWidth: 150},
+            {header: '규격', name: 'spec', minWidth: 100, align: 'right'},
+            {header: '단위', name: 'unit', minWidth: 70},
+            {header: '단가유형', name: 'unitPriceType', minWidth: 80},
+            {header: '단가', name: 'unitPrice', minWidth: 100, align: 'right'}
         ],
         data: []
     });
-
-    // 초기 데이터 로드
-    getSkuList();
 
     // 검색 버튼
     btnSkuSearch.addEventListener("click", searchSku);
@@ -67,9 +73,15 @@ document.addEventListener("DOMContentLoaded", () => {
    API 호출
 ====================================================== */
 
-// 전체 품번 목록 조회
-function getSkuList() {
-    fetch("/api/cm/skuOne")
+// 전체 품번 목록 조회 (초기/재조회)
+function getSkuList(type) {
+    const params = new URLSearchParams({
+        unitPriceType: type || ''
+    });
+
+    const url = `/api/cm/skuList?${params.toString()}`;
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const list = Array.isArray(data) ? data : [];
@@ -79,11 +91,17 @@ function getSkuList() {
 }
 
 // 검색
-function searchSku(custCode) {
-        const sku= schSkuCode.value.trim();
-        const skuName = schSkuName.value.trim();
+function searchSku() {
+    const sku     = schSkuCode.value.trim();
+    const skuName = schSkuName.value.trim();
 
-     fetch("/api/cm/skuOne?sku="+sku+"&skuName="+skuName+"%custCode=" + custCode)
+    const params = new URLSearchParams({
+        unitPriceType: unitPriceType || '',
+        sku: sku || '',
+        skuName: skuName || ''
+    });
+
+    fetch(`/api/cm/skuList?${params.toString()}`)
         .then(res => res.json())
         .then(data => {
             const list = Array.isArray(data) ? data : [];
@@ -105,8 +123,14 @@ function handleEnterSku(e) {
 ====================================================== */
 
 function openSkuModalWindow() {
+    unitPriceType = window.skuModalType || '';
+
     skuModal.hidden = false;
     skuModal.classList.remove("hidden");
+
+    if (unitPriceType) {
+        getSkuList(unitPriceType);
+    }
 
     skuModalGrid.refreshLayout();
 }

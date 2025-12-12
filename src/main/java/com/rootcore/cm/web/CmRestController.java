@@ -20,8 +20,12 @@ public class CmRestController {
     SkuService skuService;
 
     @GetMapping("/skuList")
-    public List<SkuVO> skuList(SkuVO param) {
-        return skuService.getSkuList(param);
+    public List<SkuVO> skuList(
+            @RequestParam(required = false) String unitPriceType,
+            @RequestParam(required = false) String sku,
+            @RequestParam(required = false) String skuName
+    ) {
+        return skuService.getSku(unitPriceType, sku, skuName);
     }
 
     @GetMapping("/inOrdSkuList")
@@ -30,8 +34,4 @@ public class CmRestController {
     }
 
 
-    @GetMapping("/skuOne")
-    public List<SkuVO> skuOne(SkuVO param) {
-        return skuService.getOneSku(param);
-    }
 }
