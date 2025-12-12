@@ -5,15 +5,25 @@ import java.util.List;
 import com.rootcore.hr.vo.DeptMasterVO;
 
 public interface DeptCodeManageMapper {
-	
-	/* ================
+
+	/*
 	 * 부서코드관리 부서조회
-	 * ================ */
+	 */
 	List<DeptMasterVO> selectDeptCodeManage(DeptMasterVO param);
 
-	/* ===================
-	 * 부서 등록 - 저장버튼기능
-	 * =================== */
+	/*
+	 * 부서 등록 - 저장버튼기능 - 등록기능
+	 */
 	int insertDeptCodeManage(DeptMasterVO param);
+
+	/*
+	 * 부서 등록 - 저장버튼기능 - 수정기능
+	 */
+	int updateDeptCodeManage(DeptMasterVO param);
 	
+	/*
+	 * 부서 등록 - 저장버튼기능 - 수정기능(하위부서 dept_level업데이트)
+	 */
+	int updateDescendantLevels(DeptMasterVO param);
+
 }

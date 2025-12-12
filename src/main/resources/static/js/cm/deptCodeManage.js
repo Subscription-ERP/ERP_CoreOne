@@ -5,21 +5,38 @@
 /* ======
  * 전역변수
  * ====== */
+const deptCode = document.querySelector('#deptCodeManageDeptCode'); // 부서 등록 - 부서코드
 const DeptName = document.querySelector('#deptCodeManageDeptName'); // 부서 등록 - 부서이름
 const UpperDeptCode = document.querySelector('#deptCodeManageUpperDeptCode'); // 부서 등록 - 상위부서코드
 const DeptLevel = document.querySelector('#deptCodeManagedeptLevel'); // 부서 등록 - 부서레벨
 const StartDate = document.querySelector('#deptCodeManageStartDate'); // 부서 등록 - 적용시작일
 const EndDate = document.querySelector('#deptCodeManageEndDate'); // 부서 등록 - 적용종료일
 const Status = document.querySelector('#deptCodeManageStatus'); // 부서 등록 - 상태
-const DeptMng = document.querySelector('#deptCodeManageDeptMng'); // 부서 등록 - 부서관리자
 const Rm = document.querySelector('#deptCodeManageRm'); // 부서 등록 - 비고
 const UpperDeptName = document.querySelector('#deptCodeManageUpperDeptName'); // 부서 등록 - 상위부서명
 
-/* ===================================================================================
+/* ====================================================================================
  * 부서 등록 - 부서 목록에서 부서를 선택 할 경우 부서 등록에 선택한 부서의 내용들이 나타나고 수정 할 수 있음
- * =================================================================================== */
+ * ==================================================================================== */
 function selectRow() {
-	
+	deptCodeManageGrid.on('click', (ev) => {
+		const rowKey = ev.rowKey; // 이벤트가 발생한 rowkey를 가져오고
+		const rowData = deptCodeManageGrid.getRow(rowKey); // 그 rowkey에 해당하는 그리드의 행 데이터를 가져옴
+		console.log(rowData);
+
+		// 가져온 rowData를 오른쪽 등록쪽에 보내기
+		if (!isDeptSelectionMode) { // 부서선택 상태값이 false일때만 작동되도록
+			deptCode.value = rowData.deptCode; // 부서코드
+			DeptName.value = rowData.deptName; // 부서이름
+			UpperDeptCode.value = rowData.upperDeptNo; // 상위부서코드
+			UpperDeptName.value = rowData.upperDeptName; // 상위부서이름
+			DeptLevel.value = rowData.deptLevel; // 부서레벨
+			StartDate.value = rowData.startDate; // 적용시작일
+			EndDate.value = rowData.endDate; // 적용종료일
+			Status.value = rowData.status; // 상태
+			Rm.value = rowData.rm; // 비고
+		}
+	})
 }
 
 /* =======================================================
@@ -42,7 +59,7 @@ function deptCodeManageEndDate() {
 		Status.value = '종료';
 	} else {
 		// 유효성 검사에 실패하여 EndDate 값이 초기화되었으므로, 상태를 재검토
-        handleStatusUpdate();
+		handleStatusUpdate();
 	}
 }
 
@@ -51,26 +68,26 @@ function deptCodeManageEndDate() {
  * ============================================== */
 function deptCodeManageStartDate() {
 	endStartDate(); // 종료일이 이미 있다면 유효성만 체크하고 잘못된 EndDate를 초기화 (상태 변경은 아래 함수에서)
-    handleStatusUpdate();
+	handleStatusUpdate();
 }
 
 /* ================================================
  * 부서 등록 - StartDate와 EndDate에 기반하여 상태값을 결정
  * ================================================ */
 function handleStatusUpdate() {
-    const start = StartDate.value;
-    const end = EndDate.value;
+	const start = StartDate.value;
+	const end = EndDate.value;
 
-    if (end) {
-        // EndDate가 있으면 무조건 '종료' 상태로 간주
-        Status.value = '종료';
-    } else if (start) {
-        // StartDate는 있으나 EndDate가 없으면 '운영' 상태로 간주
-        Status.value = '운영';
-    } else {
-        // StartDate도 없으면 상태 초기화 (또는 기본값 설정)
-        Status.value = ''; 
-    }
+	if (end) {
+		// EndDate가 있으면 무조건 '종료' 상태로 간주
+		Status.value = '종료';
+	} else if (start) {
+		// StartDate는 있으나 EndDate가 없으면 '운영' 상태로 간주
+		Status.value = '운영';
+	} else {
+		// StartDate도 없으면 상태 초기화 (또는 기본값 설정)
+		Status.value = '';
+	}
 }
 
 /* ===================
@@ -140,6 +157,7 @@ function onDeptGridSelect(ev) {
  * 부서 등록 초기화 버튼 기능 구현
  * ======================== */
 function deptCodeManageInsertBtnReset() {
+	deptCode.value = ''; // 부서코드
 	DeptName.value = '';
 	UpperDeptCode.value = '';
 	UpperDeptName.value = '';
@@ -147,8 +165,8 @@ function deptCodeManageInsertBtnReset() {
 	StartDate.value = '';
 	EndDate.value = '';
 	Status.value = '';
-	DeptMng.value = '';
 	Rm.value = '';
+	disableDeptSelectionMode(); // 상위 부서 선택 상태값 false로
 }
 
 /* ========================
@@ -156,27 +174,26 @@ function deptCodeManageInsertBtnReset() {
  * ======================== */
 function deptCodeManageBtnSave() {
 	// 각각 입력한 값들 가져오기
+	const deptCodeValue = deptCode.value; // 부서코드
 	const DeptNameValue = DeptName.value; // 부서이름
 	const UpperDeptCodeValue = UpperDeptCode.value; // 상위부서코드
-	const DeptLevelValue = DeptLevel.value; // 부서레벨
+	const DeptLevelValue = DeptLevel.value || 1; // 부서레벨
 	const StartDateValue = StartDate.value; // 적용시작일
 	const EndDateValue = EndDate.value; // 적용종료일
-	const StatusValue = Status.value; // 상태
-	const DeptMngValue = DeptMng.value; // 부서관리자
+	const StatusValue = (Status.value === '운영' ? 0 : 1); // 상태
 	const RmValue = Rm.value; // 비고
-
+	
 	// data로 하나로 묶기
 	const data = {
+		deptCode: deptCodeValue || null,
 		deptName: DeptNameValue,
 		upperDeptNo: UpperDeptCodeValue,
 		deptLevel: DeptLevelValue,
 		startDate: StartDateValue,
 		endDate: EndDateValue,
 		status: StatusValue,
-		deptMng: DeptMngValue,
 		rm: RmValue
 	}
-	console.log(data);
 
 	// fetch로 data값 POST로 보내기
 	fetch("/api/cm/deptRegister", {
@@ -188,8 +205,11 @@ function deptCodeManageBtnSave() {
 	})
 		.then(res => res.text())
 		.then(result => {
-			if (result > 0) {
-				showToast(result + "건의 부서등록이 완료되었습니다.");
+			if (result === '등록완료') {
+				showToast(result + "되었습니다.");
+				deptCodeManageGrid.reloadData();
+			} else if (result === '수정완료') {
+				showToast(result + "되었습니다.");
 				deptCodeManageGrid.reloadData();
 			} else {
 				showToast("등록 실패 : " + result.message, 'error');
@@ -298,18 +318,16 @@ const deptCodeManageGrid = new tui.Grid({
 			},
 		},
 	},
-	rowkey: "deptCode",
 	bodyHeight: 590,
 	columns: [
 		{ header: "부서코드", name: "deptCode", align: "center", sortable: true },
 		{ header: "부서명", name: "deptName", sortable: true, },
+		{ header: "부서 레벨", name: "deptLevel", align: "right", sortable: true, },
 		{ header: "상위 부서코드", name: "upperDeptNo", align: "center", sortable: true, },
 		{ header: "상위 부서명", name: "upperDeptName", sortable: true, },
-		{ header: "부서 레벨", name: "deptLevel", align: "right", sortable: true, },
 		{ header: "적용시작일", name: "startDate", align: "center", sortable: true, },
 		{ header: "적용종료일", name: "endDate", align: "center", sortable: true, },
 		{ header: "상태", name: "status", sortable: true, },
-		{ header: "부서관리자", name: "deptMng", sortable: true, },
 	],
 }); // end of deptGrid
 
@@ -376,5 +394,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * ================================================== */
 	setupNativeDatePicker('deptCodeManageStartWrapper', 'deptCodeManageStartDate'); // 부서코드관리-부서등록-적용시작일
 	setupNativeDatePicker('deptCodeManageEndWrapper', 'deptCodeManageEndDate'); // 부서코드관리-부서등록-적용종료일
+
+	/* ===================================================================================
+	 * 부서 등록 - 부서 목록에서 부서를 선택 할 경우 부서 등록에 선택한 부서의 내용들이 나타나고 수정 할 수 있음
+	 * =================================================================================== */
+	selectRow();
 
 }); // end of DOMContentLoaded

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.hr.mapper.AnnaulStatusMapper">
+	<select id="selectAnnualStatusList" resultType="AnnualLeaveVO" parameterType="AnnualLeaveVO">
+		SELECT al.annual_leave_code,
+		       al.company_code,
+		       al.user_id,
+		       um.user_name,
+		       dm.dept_name,
+		       FN_FIND_CODENAME('0C',job_title) as job_title,       
+		       al.grant_year,
+		       al.total_grant_days,
+		       al.total_used_days,
+		       al.remaining_days,
+		       al.expiry_date
+		  FROM tb_annual_leave al
+		       JOIN tb_user_master um
+		       ON um.user_id = al.user_id
+		       JOIN tb_dept_master dm
+		       ON dm.dept_code = um.dept
+		 WHERE al.company_code = #{companyCode}
+		   AND um.leave_date IS NULL
+		 <if test="userName != null and userName != '' ">
+		 	AND um.user_name like '%' || #{userName} || '%'
+		 </if>
+		 <if test="deptCode != null and deptCode != '' ">
+		 	AND dm.dept_code = #{deptCode}
+		 </if>
+		 <if test="remainingDaysStart != null and remainingDaysStart != '' ">
+			AND al.remaining_days >= #{remainingDaysStart}		 
+		 </if>
+		 <if test="remainingDaysEnd != null and remainingDaysEnd != '' ">
+			AND al.remaining_days &lt;= #{remainingDaysEnd}		 
+		 </if>
+		 ORDER BY TO_NUMBER(grant_year) DESC
+		 
+	</select>
+</mapper>

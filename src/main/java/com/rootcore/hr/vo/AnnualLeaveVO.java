@@ -17,4 +17,10 @@ public class AnnualLeaveVO {
     private String deptName; // 부서이름
     private String userName; // 사원이름
     private String jobTitle; // 직위직급
+    
+    // 검색조건
+    private double remainingDaysStart; // 잔여연차범위시작
+    private double remainingDaysEnd; // 잔여연차범위종료
+    private String deptCode; // 부서코드
+    
 }

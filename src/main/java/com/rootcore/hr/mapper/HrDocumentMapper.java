@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.rootcore.hr.vo.HrDocumentVO;
 import com.rootcore.hr.vo.UserVO;
 
 @Mapper
@@ -14,7 +15,8 @@ public interface HrDocumentMapper {
 	List<UserVO> selectUser(@Param("userName") String userName,
 			                @Param("userId") String userId);
 	
-	
+	// 증명서 등록
+	int insertHrDocument(HrDocumentVO hrDocumentVO);
 	
 	
 	

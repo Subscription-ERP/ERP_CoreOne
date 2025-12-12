@@ -15,4 +15,7 @@ public interface CommonService {
     // PDF - HTML 문자열을 PDF byte[]로 변환
     byte[] generatePdfFromHTML(String htmlContent) throws Exception;
 
+    // JasperReport PDF
+    byte[] generatePdfFromJasper(String reportName, Map<String, Object> params) throws Exception;
+ 
 }

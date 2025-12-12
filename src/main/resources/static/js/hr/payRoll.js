@@ -8,7 +8,9 @@
  * ==================== */
 let currentPayrollPeriodCode = null;
 
-/* 상여등록 후 초기화 하는 함수 */
+/* ======================
+ * 상여등록 후 초기화 하는 함수 
+ * ====================== */
 function resetBonusRegisterForm() {
 	document.querySelector("#payrollPeriod").value = ""; // 귀속연월
 	document.querySelector('#bonusType_k1').checked = true; // 지급액(amount) 버튼 초기화 추가
@@ -586,7 +588,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		],
 	}); // end of payrollDetailGrid
 
-	/* Tui Grid 행 클릭 이벤트: 선택된 행의 상세 정보를 표시 */
+	/* ============================================
+	 * Tui Grid 행 클릭 이벤트: 선택된 행의 상세 정보를 표시
+	 * ============================================ */
 	payrollDetailGrid.on('click', (ev) => {
 		// 클릭된 행의 rowKey를 가져옵니다.
 		const rowKey = ev.rowKey;
