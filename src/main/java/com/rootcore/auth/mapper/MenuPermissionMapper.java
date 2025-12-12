@@ -5,49 +5,60 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.rootcore.auth.vo.MenuPermissionUserVO;
 import com.rootcore.auth.vo.RoleMenuAuthVO;
 import com.rootcore.auth.vo.RoleVO;
 
 @Mapper
 public interface MenuPermissionMapper {
 
-    // =====================================================
-    // ✅ [관리자 화면용]
-    // =====================================================
+    // ==============================
+    // 1) 사용자 목록 조회 (LEFT GRID)
+    // ==============================
+    List<MenuPermissionUserVO> selectUserList(
+            @Param("companyCode") String companyCode,
+            @Param("userName") String userName,
+            @Param("dept") String dept,
+            @Param("position") String position
+    );
 
-    // ROLE 목록 조회
+    // ==============================
+    // 2) ROLE 목록 조회 (CENTER GRID)
+    // ==============================
     List<RoleVO> selectRoleList(
             @Param("companyCode") String companyCode,
             @Param("roleCode") String roleCode
     );
 
-    // ROLE → MENU 권한 조회 (관리자 화면용)
+    // ==============================
+    // 3) ROLE → MENU 권한 조회/저장 (RIGHT GRID)
+    // ==============================
     List<RoleMenuAuthVO> selectRoleMenuAuthList(
             @Param("companyCode") String companyCode,
             @Param("roleCode") String roleCode
     );
 
-    // ROLE → MENU 기존 권한 전체 삭제
     int deleteRoleMenuAuth(
             @Param("companyCode") String companyCode,
             @Param("roleCode") String roleCode
     );
 
-    // ROLE → MENU 권한 저장
     int insertRoleMenuAuth(RoleMenuAuthVO vo);
 
-
-    // =====================================================
-    // ✅ [로그인 사용자용 - ⭐ 이번에 추가된 핵심]
-    // =====================================================
-
-    /**
-     * ✅ 로그인 사용자용 실제 메뉴 조회
-     * - READ_YN = 'Y' 인 메뉴만 조회
-     * - sidebarMenu.js 에서 사용
-     */
+    // ==============================
+    // 4) 로그인 사용자용 메뉴 조회 (기존 그대로)
+    // ==============================
     List<RoleMenuAuthVO> selectLoginMenuList(
             @Param("companyCode") String companyCode,
             @Param("roleCode") String roleCode
+    );
+
+    // ==============================
+    // 5) 선택 사용자 ROLE 일괄 변경
+    // ==============================
+    int updateUserRoleBatch(
+            @Param("companyCode") String companyCode,
+            @Param("roleCode") String roleCode,
+            @Param("userIds") List<String> userIds
     );
 }

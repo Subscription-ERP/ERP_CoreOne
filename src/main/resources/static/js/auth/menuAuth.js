@@ -1,296 +1,193 @@
-console.log("✅ menuAuth.js 로드됨");
+/* ============================================================
+   menuAuth.js  (2025-12 최신 안정본)
+============================================================ */
 
-let COMPANY_CODE = '';
-
-let roleGrid;
-let authGrid;
-
+let COMPANY_CODE = "";
+let userGrid, roleGrid;
 let selectedRole = null;
-let originalAuthSnapshot = null;
-let fullAuthData = [];
-let currentSystemType = 'SYSTEM';
 
-// ============================================================
-// ✅ 1) 초기 로딩
-// ============================================================
+/* ============================================================
+   초기 실행
+============================================================ */
 $(document).ready(function () {
-
     COMPANY_CODE = $("#sessionCompanyCode").val();
     if (!COMPANY_CODE) COMPANY_CODE = "0000";
 
+    initUserGrid();
     initRoleGrid();
-    initAuthGrid();
+
+    loadUserList();
+    loadRoleList();
+
     bindEvents();
-    loadRoleSelectBox();
 });
 
-// ============================================================
-// ✅ 2) ROLE GRID (🔥 클릭 문제 완전 해결 버전)
-// ============================================================
+/* ============================================================
+   1) USER GRID
+============================================================ */
+function initUserGrid() {
+    userGrid = new tui.Grid({
+        el: document.getElementById("userGrid"),
+        scrollX: true,
+        scrollY: true,
+        rowHeaders: ["checkbox"],
+        bodyHeight: 600,
+        columns: [
+            { header: "사번", name: "userId", width: 120, align: "center" },
+            { header: "사원명", name: "userName", width: 100, align: "center" },
+            { header: "부서", name: "dept", width: 100, align: "center" },
+            { header: "직급", name: "position", width: 80, align: "center" },
+            { header: "ROLE", name: "roleCode", width: 80, align: "center" },
+            { header: "ROLE명", name: "roleName", width: 120, align: "center" }
+        ]
+    });
+}
+
+function loadUserList() {
+    $.ajax({
+        url: "/auth/menu_permission/api/user",
+        type: "GET",
+        data: {
+            companyCode: COMPANY_CODE,
+            userName: $("#srchUserName").val()
+        },
+        success: function (res) {
+            userGrid.resetData(res);
+        }
+    });
+}
+
+/* ============================================================
+   2) ROLE GRID
+============================================================ */
 function initRoleGrid() {
-
     roleGrid = new tui.Grid({
-        el: document.getElementById('roleGrid'),
+        el: document.getElementById("roleGrid"),
         scrollX: false,
         scrollY: true,
-        bodyHeight: 'fitToParent',
-        rowHeight: 34,
+        bodyHeight: 600,
         columns: [
-            { header: 'ROLE CODE', name: 'roleCode', width: 150, align: 'center' },
-            { header: 'ROLE NAME', name: 'roleName', width: 200, align: 'center' }
+            { header: "ROLE CODE", name: "roleCode", width: 100, align: "center" },
+            { header: "ROLE NAME", name: "roleName", width: 140 }
         ]
     });
 
-    // ✅ ✅ ✅ 클릭 이벤트 대신 focusChange 사용 (핵심 수정)
-    roleGrid.on('focusChange', ev => {
+    roleGrid.on("click", (ev) => {
+        const row = roleGrid.getRow(ev.rowKey);
+        if (!row) return;
 
-        if (ev.rowKey == null) return;
-
-        selectedRole = roleGrid.getRow(ev.rowKey);
-        if (!selectedRole) return;
-
-        $(".tui-grid-row").removeClass("row-selected");
-        roleGrid.addRowClassName(ev.rowKey, 'row-selected');
-
-        console.log("✅ 선택된 ROLE:", selectedRole.roleCode);
-
-        loadRoleMenuAuth(selectedRole.roleCode);
+        selectedRole = row.roleCode;
+        loadMenuAuth(selectedRole);
     });
 }
 
-// ============================================================
-// ✅ 3) AUTH GRID
-// ============================================================
-function initAuthGrid() {
-
-    authGrid = new tui.Grid({
-        el: document.getElementById('authGrid'),
-        scrollX: false,
-        scrollY: true,
-        bodyHeight: 'fitToParent',
-        rowHeight: 34,
-        columns: [
-            { header: '메뉴코드', name: 'menuCode', width: 170 },
-            { header: '메뉴명', name: 'menuName', width: 180 },
-            { header: '조회',   name: 'readYn',   width: 70, align: 'center', formatter: checkboxFormatter },
-            { header: '등록',   name: 'createYn', width: 70, align: 'center', formatter: checkboxFormatter },
-            { header: '수정',   name: 'updateYn', width: 70, align: 'center', formatter: checkboxFormatter },
-            { header: '삭제',   name: 'deleteYn', width: 70, align: 'center', formatter: checkboxFormatter }
-        ]
-    });
-
-    authGrid.on('click', ev => {
-
-        if (!ev.columnName) return;
-
-        const field = ev.columnName;
-        if (!['readYn', 'createYn', 'updateYn', 'deleteYn'].includes(field)) return;
-
-        const rowKey = ev.rowKey;
-        const row    = authGrid.getRow(rowKey);
-
-        const newValue = row[field] === 'Y' ? 'N' : 'Y';
-        authGrid.setValue(rowKey, field, newValue, false);
-    });
-}
-
-// ============================================================
-// ✅ 4) 체크박스 렌더러
-// ============================================================
-function checkboxFormatter({ value }) {
-    const checked = value === 'Y' ? 'checked' : '';
-    return `<input type="checkbox" ${checked} onclick="return false;">`;
-}
-
-// ============================================================
-// ✅ ✅ ✅ 탭 동기화
-// ============================================================
-function syncCurrentTabToFullData() {
-
-    const currentRows = authGrid.getData();
-
-    currentRows.forEach(gridRow => {
-
-        const target = fullAuthData.find(full =>
-            full.menuCode === gridRow.menuCode &&
-            full.systemType === gridRow.systemType
-        );
-
-        if (target) {
-            target.readYn   = gridRow.readYn;
-            target.createYn = gridRow.createYn;
-            target.updateYn = gridRow.updateYn;
-            target.deleteYn = gridRow.deleteYn;
-        }
-    });
-}
-
-// ============================================================
-// ✅ 5) 버튼 이벤트
-// ============================================================
-function bindEvents() {
-
-    console.log("✅ bindEvents 실행됨");
-
-    $("#btnSearch").on("click", loadRoleList);
-
-    $("#btnReset").on("click", function () {
-        $("#searchRole").val("");
-        roleGrid.resetData([]);
-        authGrid.clear();
-        selectedRole = null;
-    });
-
-    $("#btnAllCheck").on("click", function () {
-
-        authGrid.getData().forEach(row => {
-            authGrid.setValue(row.rowKey, "readYn",   "Y");
-            authGrid.setValue(row.rowKey, "createYn", "Y");
-            authGrid.setValue(row.rowKey, "updateYn", "Y");
-            authGrid.setValue(row.rowKey, "deleteYn", "Y");
-        });
-    });
-
-    $("#btnAllClear").on("click", function () {
-
-        authGrid.getData().forEach(row => {
-            authGrid.setValue(row.rowKey, "readYn",   "N");
-            authGrid.setValue(row.rowKey, "createYn", "N");
-            authGrid.setValue(row.rowKey, "updateYn", "N");
-            authGrid.setValue(row.rowKey, "deleteYn", "N");
-        });
-    });
-
-    $("#btnRevert").on("click", function () {
-
-        if (!originalAuthSnapshot) {
-            alert("되돌릴 데이터가 없습니다.");
-            return;
-        }
-
-        fullAuthData = JSON.parse(JSON.stringify(originalAuthSnapshot));
-        filterBySystemType();
-    });
-
-    $("#btnSaveAuth").on("click", function () {
-        syncCurrentTabToFullData();
-        saveRoleAuth();
-    });
-
-    $(".menu-tab-btn").on("click", function () {
-
-        syncCurrentTabToFullData();
-
-        $(".menu-tab-btn").removeClass("active");
-        $(this).addClass("active");
-
-        currentSystemType = $(this).data("system");
-        filterBySystemType();
-    });
-}
-
-// ============================================================
-// ✅ 6) ROLE SelectBox
-// ============================================================
-function loadRoleSelectBox() {
-
-    $.get("/auth/menu_permission/api/role", function (data) {
-
-        const $select = $("#searchRole");
-        $select.empty().append(`<option value="">전체</option>`);
-
-        data.forEach(role => {
-            $select.append(`<option value="${role.roleCode}">${role.roleName}</option>`);
-        });
-    });
-}
-
-// ============================================================
-// ✅ 7) ROLE 조회
-// ============================================================
 function loadRoleList() {
-
-    const roleCode = $("#searchRole").val();
-
-    $.get("/auth/menu_permission/api/role", { roleCode }, function (data) {
-
-        roleGrid.resetData(data);
-        selectedRole = null;
-        authGrid.clear();
+    $.ajax({
+        url: "/auth/menu_permission/role",
+        type: "GET",
+        data: { companyCode: COMPANY_CODE },
+        success: function (roles) {
+            roleGrid.resetData(roles);
+        }
     });
 }
 
-// ============================================================
-// ✅ 8) ROLE → MENU 권한 조회
-// ============================================================
-function loadRoleMenuAuth(roleCode) {
-
-    $.get("/auth/menu_permission/api/role-menu", { roleCode }, function (data) {
-
-        if (roleCode === 'ADMIN') {
-            data.forEach(row => {
-                row.readYn   = 'Y';
-                row.createYn = 'Y';
-                row.updateYn = 'Y';
-                row.deleteYn = 'Y';
-            });
+/* ============================================================
+   3) 메뉴권한 로드
+============================================================ */
+function loadMenuAuth(roleCode) {
+    $.ajax({
+        url: "/auth/menu_permission/menu",
+        type: "GET",
+        data: {
+            companyCode: COMPANY_CODE,
+            roleCode: roleCode
+        },
+        success: function (list) {
+            renderMenuTree(list);
         }
-
-        if (roleCode !== "ADMIN") {
-            data = data.filter(item => item.menuCode !== "SYS-MENU-AUTH");
-        }
-
-        fullAuthData = data;
-        originalAuthSnapshot = JSON.parse(JSON.stringify(data));
-        filterBySystemType();
     });
 }
 
-// ============================================================
-// ✅ 9) SYSTEM 필터
-// ============================================================
-function filterBySystemType() {
+function renderMenuTree(list) {
+    $("#menuTreeArea").empty();
 
-    const filtered = fullAuthData.filter(item =>
-        item.systemType === currentSystemType
-    );
-
-    authGrid.resetData(filtered);
+    list.forEach(menu => {
+        $("#menuTreeArea").append(`
+            <div style="margin-bottom:6px;">
+                <b>[${menu.systemType}]</b> ${menu.menuName} (${menu.menuCode})
+                <label><input type="checkbox" class="auth-read" data-code="${menu.menuCode}" ${menu.readYn === 'Y' ? 'checked' : ''}> 조회</label>
+                <label><input type="checkbox" class="auth-create" data-code="${menu.menuCode}" ${menu.createYn === 'Y' ? 'checked' : ''}> 등록</label>
+                <label><input type="checkbox" class="auth-update" data-code="${menu.menuCode}" ${menu.updateYn === 'Y' ? 'checked' : ''}> 수정</label>
+                <label><input type="checkbox" class="auth-delete" data-code="${menu.menuCode}" ${menu.deleteYn === 'Y' ? 'checked' : ''}> 삭제</label>
+            </div>
+        `);
+    });
 }
 
-// ============================================================
-// ✅ 10) 저장
-// ============================================================
-function saveRoleAuth() {
+/* ============================================================
+   4) ROLE 저장
+============================================================ */
+$("#btnSaveMenuAuth").on("click", function () {
+    if (!selectedRole) return alert("ROLE을 선택해주세요.");
 
-    if (!selectedRole) {
-        alert("ROLE을 먼저 선택하세요.");
-        return;
-    }
+    const list = [];
 
-    const saveData = fullAuthData.map(row => ({
-        companyCode: COMPANY_CODE,
-        roleCode: selectedRole.roleCode,
-        menuCode: row.menuCode,
-        readYn:   row.readYn   === "Y" ? "Y" : "N",
-        createYn: row.createYn === "Y" ? "Y" : "N",
-        updateYn: row.updateYn === "Y" ? "Y" : "N",
-        deleteYn: row.deleteYn === "Y" ? "Y" : "N"
-    }));
+    $(".auth-read").each(function () {
+        const menuCode = $(this).data("code");
+        list.push({
+            companyCode: COMPANY_CODE,
+            roleCode: selectedRole,
+            menuCode: menuCode,
+            readYn: $(this).is(":checked") ? "Y" : "N",
+            createYn: $(`.auth-create[data-code='${menuCode}']`).is(":checked") ? "Y" : "N",
+            updateYn: $(`.auth-update[data-code='${menuCode}']`).is(":checked") ? "Y" : "N",
+            deleteYn: $(`.auth-delete[data-code='${menuCode}']`).is(":checked") ? "Y" : "N"
+        });
+    });
 
     $.ajax({
-        url: "/auth/menu_permission/api/role-menu/save",
+        url: "/auth/menu_permission/menu/save",
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify(saveData),
-
+        data: JSON.stringify(list),
         success: function () {
-            alert("✅ 권한 저장 완료");
-            loadRoleMenuAuth(selectedRole.roleCode);
-        },
-
-        error: function () {
-            alert("❌ 저장 실패");
+            alert("저장 완료");
+            loadMenuAuth(selectedRole);
         }
     });
+});
+
+/* ============================================================
+   5) 선택 사용자에게 ROLE 부여
+============================================================ */
+$("#btnAssignRole").on("click", function () {
+    const checked = userGrid.getCheckedRowKeys();
+    if (checked.length === 0) return alert("사용자를 선택해주세요.");
+
+    if (!selectedRole) return alert("ROLE을 선택해주세요.");
+
+    const userList = checked.map(r => userGrid.getRow(r).userId);
+
+    $.ajax({
+        url: "/auth/menu_permission/assignRole",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            companyCode: COMPANY_CODE,
+            roleCode: selectedRole,
+            userIdList: userList
+        }),
+        success: function () {
+            alert("역할 부여 완료");
+            loadUserList();
+        }
+    });
+});
+
+/* ============================================================
+   6) 이벤트 바인딩
+============================================================ */
+function bindEvents() {
+    $("#btnUserSearch").on("click", loadUserList);
 }
