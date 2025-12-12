@@ -167,6 +167,20 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+		<!-- PDF jasper -->
+		<dependency>
+		    <groupId>net.sf.jasperreports</groupId>
+		    <artifactId>jasperreports</artifactId>
+		    <version>6.20.0</version>
+		</dependency>
+		
+		<!-- iText (JasperReports PDF 출력용) -->
+	    <dependency>
+	        <groupId>com.lowagie</groupId>
+	        <artifactId>itext</artifactId>
+	        <version>2.1.7</version>
+	    </dependency>
+
     </dependencies>
 
     <dependencyManagement>

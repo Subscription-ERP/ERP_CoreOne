@@ -35,12 +35,12 @@
       <div class=" card-ui__body" style="flex: 1; display: flex; align-items: center; padding: 0 12px">
         <div class="filter-bar row g-4 align-items-center col-md-12">
 
-          <div class="col-12 col-md-9" style="display: flex; gap:20px; flex-wrap: wrap;">
+          <div class="col-12 col-md-9 form-allwrapper" style="display: flex; gap:20px; flex-wrap: wrap;">
             <!-- 증명서 -->
             <div class="col-12 col-md-3">
               <div class="field-inline">
-                <label for="doc-search" class="field-inline__label">증명서</label>
-                <select id="doc-search" class="form-select input-base" style="flex: 1; min-width: 0">
+                <label for="docType" class="field-inline__label">증명서</label>
+                <select id="docType" class="form-select input-base" style="flex: 1; min-width: 0">
                 </select>
               </div>
             </div>
@@ -50,34 +50,34 @@
               <div class="field-inline">
                 <label for="user" class="field-inline__label">사원</label>
                 <!-- 화면에 보이는 사원명 -->
-                <input id="empName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" placeholder="사원을 선택하세요" readonly />
+                <input id="UserName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" placeholder="사원을 선택하세요" readonly />
               	<!-- 실제 사원 ID -->
-              	<input id="selectedUserId" type="hidden">
+              	<input id="UserId" type="hidden">
               </div>
             </div>
 
             <!-- 발급일 -->
             <div class="col-12 col-md-3">
               <div class="field-inline">
-                <label for="keyName" class="field-inline__label">발급일</label>
-                <input id="keyName" type="Date" class="form-control input-base" style="flex: 1; min-width: 0" />
+                <label for="IssueDate" class="field-inline__label">발급일</label>
+                <input id="IssueDate" type="Date" class="form-control input-base" style="flex: 1; min-width: 0" />
               </div>
             </div>
 
             <!-- 용도 -->
             <div class="col-12 col-md-10">
               <div class="field-inline">
-                <label for="keyName" class="field-inline__label">용도</label>
-                <input id="keyName" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
+                <label for="purpose" class="field-inline__label">용도</label>
+                <input id="purpose" type="text" class="form-control input-base" style="flex: 1; min-width: 0" />
               </div>
             </div>
 
           </div>
 
-          <!-- 조회 버튼 -->
-          <div class="col-12 col-md-2 ms-auto text-end">
+          <!-- 확인 버튼 -->
+          <div class="col-12 col-md-3 ms-auto text-end">
             <button id="btnReset" type="button" class="btn btn-white btn-outer">초기화</button>
-            <button id="btnSearch" type="button" class="btn btn-color btn-outer">확인</button>
+            <button id="btnConfirm" type="button" class="btn btn-color btn-outer">확인</button>
           </div>
         </div>
       </div>

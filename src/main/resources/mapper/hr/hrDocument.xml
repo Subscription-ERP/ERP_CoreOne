@@ -30,7 +30,36 @@
 	</select>
 
 
-
+	<!-- 증명서 등록 -->
+	<insert id="insertHrDocument" parameterType="HrDocumentVO">
+		<selectKey keyProperty="docCode" order="BEFORE" resultType="String">
+			SELECT fn_make_date_code('HR_DOCUMENT') 
+			FROM dual
+		</selectKey>
+	
+		INSERT INTO tb_hr_document (
+		    company_code,
+		    doc_code,
+		    user_id,
+		    doc_type,
+		    issue_date,
+		    purpose,
+		    created_by,
+		    create_date)
+		VALUES (
+		    #{companyCode},
+		    #{docCode},
+		    #{userId},
+		    #{docType},
+		    #{issueDate},
+		    #{purpose},
+		    #{createdBy},
+		    SYSDATE
+		)
+	</insert>
+	
+	
+	
 
 
 </mapper>
