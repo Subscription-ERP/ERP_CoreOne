@@ -26,9 +26,9 @@ public class DeptCodeManageRestController {
 
 	private final DeptCodeManageService deptCodeManageService;
 
-	/* ======
-	 * 부서조회 
-	 * ====== */
+	/*
+	 * 부서조회 - 다건조회
+	 */
 	@GetMapping("/selectDeptCodeManage")
 	public Map<String, Object> selectDeptCodeManage(DeptMasterVO param, HttpSession session) {
 		// 세션에서 회사코드 들고오기
@@ -47,19 +47,22 @@ public class DeptCodeManageRestController {
 
 		// 그럼 RESULT에 실행결과, DATA(사원조회한거) 요렇게 저장되서 넘어감
 		result.put("data", data);
-		
+
 		return result;
 	}
-	
-	/* ===================
+
+	/*
 	 * 부서 등록 - 저장버튼기능
-	 * =================== */
+	 */
 	@PostMapping("/deptRegister")
-	public int insertDeptCodeManage(@RequestBody DeptMasterVO param, HttpSession session) {
+	public String insertDeptCodeManage(@RequestBody DeptMasterVO param, HttpSession session) {
 		// 세션에서 회사코드 들고오기
 		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");
+		param.setUserId(userId);
 		param.setCompanyCode(CompanyCode);
-		
+
 		return deptCodeManageService.insertDeptCodeManage(param);
 	}
+	
 }
