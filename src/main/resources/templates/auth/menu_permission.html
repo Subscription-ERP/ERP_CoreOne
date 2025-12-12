@@ -1,133 +1,179 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{layout/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
 
 <head>
-<title>ROLE 기반 메뉴권한 관리</title>
+    <title>사용자/역할 기반 메뉴권한 관리</title>
 
-<link rel="stylesheet"
-	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <!-- TUI Grid -->
+    <link rel="stylesheet"
+          href="https://uicdn.toast.com/grid/latest/tui-grid.css"/>
 
-<style>
-.menu-auth-container {
-	display: grid;
-	grid-template-columns: 500px 1fr;
-	gap: 14px;
-	height: calc(100vh - 140px);
-}
+    <style>
+        /* 3단 레이아웃 구성 */
+        .menu-auth-container {
+            display: grid;
+            grid-template-columns: 480px 320px 1fr; /* 사용자 / ROLE / 메뉴권한 */
+            gap: 14px;
+            height: calc(100vh - 160px);
+        }
 
-.grid-root {
-	height: 100% !important;
-	min-height: 550px !important;
-}
+        .grid-root {
+            height: 100% !important;
+            min-height: 550px !important;
+        }
 
-.tui-grid-row.row-selected td {
-	background-color: #d9e8ff !important;
-}
+        .tui-grid-row.row-selected td {
+            background-color: #d9e8ff !important;
+        }
 
-.toolbar .btn {
-	height: 30px !important;
-	padding: 0 12px !important;
-	font-size: 13px !important;
-}
-</style>
+        .toolbar .btn {
+            height: 30px !important;
+            padding: 0 12px !important;
+            font-size: 13px !important;
+        }
+    </style>
 </head>
 
 <body>
 
-	<input type="hidden" id="sessionCompanyCode"
-		th:value="${session.LOGIN_COMPANY_CODE}">
+<input type="hidden" id="sessionCompanyCode"
+       th:value="${session.LOGIN_COMPANY_CODE}">
 
-	<div layout:fragment="content" class="page page-fluid">
+<div layout:fragment="content" class="page page-fluid">
 
-		<!-- ⭐ 검색 영역 — ROLE 선택 방식으로 전면 개편 -->
-		<section class="card-ui card-ui--search" style="margin-top: 10px;">
-			<div class="card-ui__body row g-3">
+    <!-- ============================= -->
+    <!-- 🔍  검색 영역 (사용자 기준)   -->
+    <!-- ============================= -->
+    <section class="card-ui card-ui--search" style="margin-top: 10px;">
+        <div class="card-ui__body row g-3">
 
-				<div class="col-md-3">
-					<label>역할(ROLE)</label> <select id="searchRole" class="form-select">
-						<option value="">전체</option>
-					</select>
-				</div>
+            <!-- 사원명 -->
+            <div class="col-md-3">
+                <label>사원명</label>
+                <input id="searchUserName" type="text" class="form-control"
+                       placeholder="사원명 입력">
+            </div>
 
-				<div class="col-md-3 text-end align-self-end">
-					<button type="button" id="btnReset" class="btn btn-white me-1">초기화</button>
-					<button type="button" id="btnSearch" class="btn btn-color">조회</button>
-				</div>
+            <!-- 부서 -->
+            <div class="col-md-3">
+                <label>부서</label>
+                <select id="searchDept" class="form-select">
+                    <option value="">전체</option>
+                    <!-- 공통코드 연동 가능 -->
+                </select>
+            </div>
 
-			</div>
-		</section>
+            <!-- 직급 -->
+            <div class="col-md-3">
+                <label>직급</label>
+                <select id="searchPosition" class="form-select">
+                    <option value="">전체</option>
+                </select>
+            </div>
 
-		<!-- ⭐ 메인 레이아웃 -->
-		<section class="menu-auth-container">
+            <!-- 버튼 -->
+            <div class="col-md-3 text-end align-self-end">
+                <button id="btnReset" class="btn btn-white me-1">초기화</button>
+                <button id="btnUserSearch" class="btn btn-color">조회</button>
+            </div>
 
-			<!-- ⭐ LEFT — ROLE 목록 GRID -->
-			<div class="card-ui">
-				<header class="card-ui__header">
-					<h6>ROLE 목록</h6>
-				</header>
-				<div class="card-ui__body p-0">
-					<div id="roleGrid" class="grid-root"></div>
-				</div>
-			</div>
+        </div>
+    </section>
 
-			<!-- ⭐ RIGHT — 선택된 ROLE의 메뉴권한 -->
-			<div class="card-ui">
+    <!-- ============================= -->
+    <!-- 3단 구성: USER / ROLE / MENU -->
+    <!-- ============================= -->
+    <section class="menu-auth-container">
 
-				<header
-					class="card-ui__header d-flex justify-content-between align-items-center">
+        <!-- ============= LEFT: 사용자 GRID ============= -->
+        <div class="card-ui">
+            <header class="card-ui__header d-flex justify-content-between align-items-center">
+                <h6>사용자 목록</h6>
 
-					<ul class="nav nav-tabs ui-tabs" id="menuTabs">
-						<li class="nav-item">
-							<button class="nav-link active menu-tab-btn" type="button"
-								data-system="SYSTEM">시스템</button>
-						</li>
-						<li class="nav-item">
-							<button class="nav-link menu-tab-btn" type="button"
-								data-system="HR">인사</button>
-						</li>
-						<li class="nav-item">
-							<button class="nav-link menu-tab-btn" type="button"
-								data-system="FI">회계</button>
-						</li>
-						<li class="nav-item">
-							<button class="nav-link menu-tab-btn" type="button"
-								data-system="SALES">영업</button>
-						</li>
-						<li class="nav-item">
-							<button class="nav-link menu-tab-btn" type="button"
-								data-system="SUB">구독</button>
-						</li>
-						<li class="nav-item">
-							<button class="nav-link menu-tab-btn" type="button"
-								data-system="CM">공통</button>
-						</li>
-					</ul>
+                <!-- 역할 일괄부여 버튼 (신규 기능) -->
+                <button id="btnSetRole" class="btn btn-sm btn-color">
+                    선택 사용자 역할 부여
+                </button>
+            </header>
 
-					<div class="toolbar">
-						<button type="button" id="btnAllCheck" class="btn btn-white">전체선택</button>
-						<button type="button" id="btnAllClear" class="btn btn-white">전체해제</button>
-						<button type="button" id="btnRevert" class="btn btn-white">되돌리기</button>
-						<button type="button" id="btnSaveAuth" class="btn btn-color">저장</button>
-					</div>
+            <div class="card-ui__body p-0">
+                <div id="userGrid" class="grid-root"></div>
+            </div>
+        </div>
 
+        <!-- ============= CENTER: ROLE GRID ============= -->
+        <div class="card-ui">
+            <header class="card-ui__header">
+                <h6>ROLE 목록</h6>
+            </header>
 
-				</header>
+            <div class="card-ui__body p-0">
+                <div id="roleGrid" class="grid-root"></div>
+            </div>
+        </div>
 
-				<div class="card-ui__body p-0">
-					<div id="authGrid" class="grid-root"></div>
-				</div>
-			</div>
+        <!-- ============= RIGHT: MENU 권한 GRID ============= -->
+        <div class="card-ui">
 
-		</section>
-	</div>
+            <!-- 상단 탭 + 버튼바 -->
+            <header class="card-ui__header d-flex justify-content-between align-items-center">
 
-	<div layout:fragment="script">
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-		<script th:src="@{/js/auth/menuAuth.js}"></script>
-	</div>
+                <!-- 시스템 구분 탭 -->
+                <ul class="nav nav-tabs ui-tabs" id="menuTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active menu-tab-btn"
+                                type="button" data-system="SYSTEM">SYSTEM</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn"
+                                type="button" data-system="HR">인사</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn"
+                                type="button" data-system="FI">회계</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn"
+                                type="button" data-system="SALES">영업</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn"
+                                type="button" data-system="SUB">구독</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link menu-tab-btn"
+                                type="button" data-system="CM">공통</button>
+                    </li>
+                </ul>
+
+                <!-- 버튼 영역 -->
+                <div class="toolbar">
+                    <button id="btnAllCheck" class="btn btn-white">전체선택</button>
+                    <button id="btnAllClear" class="btn btn-white">전체해제</button>
+                    <button id="btnRevert" class="btn btn-white">되돌리기</button>
+                    <button id="btnSaveAuth" class="btn btn-color">저장</button>
+                </div>
+
+            </header>
+
+            <!-- 메뉴 권한 GRID -->
+            <div class="card-ui__body p-0">
+                <div id="authGrid" class="grid-root"></div>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+<div layout:fragment="script">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+    <!-- 향후 통합된 JS 파일이 여기에 들어감 -->
+    <script th:src="@{/js/auth/menuAuth.js}"></script>
+</div>
 
 </body>
 </html>

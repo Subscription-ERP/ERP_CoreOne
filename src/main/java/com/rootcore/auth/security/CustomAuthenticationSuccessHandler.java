@@ -48,16 +48,19 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         }
 
         String companyCode = loginUser.getCompanyCode();
-        String roleCode = loginUser.getRoleCode();
+        String roleCode = loginUser.getRoleCode(); // 예: ROLE_ADMIN
         String finalRoleCode = (roleCode != null)
-                ? roleCode.replace("ROLE_", "").toUpperCase()
+                ? roleCode.replace("ROLE_", "").toUpperCase()   // 예: ADMIN
                 : null;
 
-        // 메뉴 리스트
+        // ============================
+        //  메뉴 권한 조회 (ROLE 기반)
+        // ============================
+        // 1) 사이드바 메뉴용 리스트
         List<RoleMenuAuthVO> sideMenuList =
                 menuPermissionService.getLoginMenuList(companyCode, finalRoleCode);
 
-        // URL 접근용 변환 리스트
+        // 2) URL 접근 체크용 리스트
         List<UserMenuAuthVO> userAuthList =
                 sideMenuList.stream().map(vo -> {
                     UserMenuAuthVO u = new UserMenuAuthVO();
@@ -75,25 +78,26 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 }).toList();
 
         // ============================
-        // ⭐⭐ 세션 저장 ⭐⭐ (로그아웃 메뉴 표시 핵심)
+        // ⭐⭐ 세션 저장 ⭐⭐
         // ============================
         session.setAttribute("LOGIN_USER_ID", userId);
-
-        // 이 값이 없으면 logout 메뉴 전체가 안 보임
         session.setAttribute("LOGIN_USER_NAME", loginUser.getUserName());
-
         session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
+
+        // 🔥 필터/사이드바에서 쓰는 ROLE_CODE (ADMIN / MANAGER / USER)
         session.setAttribute("LOGIN_ROLE_CODE", finalRoleCode);
 
+        // 사이드바 메뉴용
         session.setAttribute("LOGIN_MENU_AUTH", sideMenuList);
+
+        // URL 권한 체크용
         session.setAttribute("LOGIN_USER_AUTH_LIST", userAuthList);
-        session.setAttribute("LOGIN_ROLE_CODE", roleCode);
-        
+
+        // (필요하다면 원본 ROLE_ 값도 별도 키로 보관 가능)
+        session.setAttribute("LOGIN_ROLE_CODE_RAW", roleCode);
+
         // 출근 로직 호출(인사)
         attendanceService.checkinTodayIfNeeded(companyCode, userId);
-        
-        // ⭐⭐⭐ 이제 사이드 메뉴는 이것만 사용해야 한다
-//        session.setAttribute("LOGIN_MENU_AUTH", loginMenuList);
 
         // 실패횟수 초기화 & 계정 잠금 해제
         loginMapper.resetFailCountAndLastLogin(userId);
@@ -101,11 +105,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         System.out.println("===== LOGIN SUCCESS =====");
         System.out.println("USER   : " + userId);
-        System.out.println("ROLE   : " + finalRoleCode);
+        System.out.println("ROLE   : " + finalRoleCode + " (raw=" + roleCode + ")");
         System.out.println("SIDE   : " + sideMenuList.size());
         System.out.println("AUTH   : " + userAuthList.size());
         System.out.println("=========================");
 
+        // 메인으로 이동
         response.sendRedirect("/");
     }
 }

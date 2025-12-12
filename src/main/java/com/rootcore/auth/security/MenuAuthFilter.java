@@ -29,8 +29,6 @@ public class MenuAuthFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
 
-        System.out.println("🔎 Request URI = " + uri);
-
         // /erp/hr/userManage → /hr/userManage 형태로 정리
         if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
             uri = uri.substring(contextPath.length());
@@ -49,12 +47,11 @@ public class MenuAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 🔹 로그인한 ROLE_CODE 가져오기 (로그인 성공 시 세션에 넣어둔 값)
+        // 🔹 로그인한 ROLE_CODE 가져오기 (로그인 성공 시 세션에 넣어둔 값: ADMIN / MANAGER / USER)
         String roleCode = (String) session.getAttribute("LOGIN_ROLE_CODE");
 
         // 2) ⭐ ADMIN 은 모든 URL 허용 (권한 체크 생략)
         if ("ADMIN".equals(roleCode)) {
-            System.out.println("✅ ADMIN 계정, 권한 필터 BYPASS : " + uri);
             filterChain.doFilter(request, response);
             return;
         }
@@ -90,7 +87,6 @@ public class MenuAuthFilter extends OncePerRequestFilter {
                 );
 
         if (!allowed) {
-            System.out.println("⛔ 권한 없음 → " + reqUri);
             response.sendRedirect(contextPath + "/auth/noAuth");
             return;
         }
@@ -100,8 +96,6 @@ public class MenuAuthFilter extends OncePerRequestFilter {
 
     /** 제외 URL */
     private boolean isExcluded(String uri) {
-
-        System.out.println("🚫 EXCLUDED CHECK → " + uri);
 
         // 정적 리소스
         if (uri.startsWith("/css/")
