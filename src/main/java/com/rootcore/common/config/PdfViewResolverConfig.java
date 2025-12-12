@@ -8,6 +8,7 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.view.BeanNameViewResolver;
 
 import com.rootcore.common.service.CommonService;
+import com.rootcore.common.view.JasperPdfView;
 import com.rootcore.common.view.PdfView;
 
 @Configuration
@@ -32,6 +33,11 @@ public class PdfViewResolverConfig {
     @Bean(name = "pdfView")
     public View pdfView() {
         return new PdfView(commonService);
+    }
+    
+    @Bean(name = "jasperPdfView")
+    public View jasperpdfView() {
+    	return new JasperPdfView(commonService);
     }
 	
 }
