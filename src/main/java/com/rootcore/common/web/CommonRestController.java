@@ -23,7 +23,11 @@ public class CommonRestController {
     public List<CommonVO> custTypeList(String groupCode) {
         return commonService.selectType(groupCode);
     }
-    
+
+    @GetMapping("/typeattribute")
+    public List<CommonVO> custTypeAttributeList(String groupCode, String attribute) {
+        return commonService.selectAttributeCode(groupCode, attribute);
+    }
     @GetMapping("/commonCode")
     public List<CommonVO> commonCode(String code){
     	return commonService.selectCode(code);

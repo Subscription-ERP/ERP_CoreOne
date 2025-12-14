@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+<meta charset="UTF-8" />
+<title>전표등록</title>
+
+<!-- Toast UI Grid -->
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+
+<link th:href="@{/css/general.css}" rel="stylesheet" />
+
+<style>
+/* 상/하 각각 50% 영역 */
+.slip-section {
+  height: calc((100vh - 220px) / 2);  /* 상단 카드 제외 후 반반 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 그리드 영역 */
+.slip-grid {
+  flex: 1 1 auto;
+  padding: 0 6px 6px 6px;
+}
+
+</style>
+
+</head>
+<body>
+
+<div layout:fragment="content">
+
+<!-- ============================
+        상단 전표 기본정보
+============================ -->
+<section class="card-ui" style="margin-top:10px;">
+  <div class="card-ui__body">
+
+    <div class="row g-3">
+
+      <!-- 전표일자 -->
+      <div class="col-md-3">
+        <div class="field-inline">
+          <label class="field-inline__label">전표일자</label>
+          <input id="slipDate" type="date" class="form-control input-base" />
+        </div>
+      </div>
+
+      <!-- 거래처코드 -->
+      <div class="col-md-3">
+        <div class="field-inline">
+          <label class="field-inline__label">거래처코드</label>
+          <div class="input-group">
+            <input id="custCode" type="text" class="form-control input-base" />
+			 <div th:replace="modal/custModal :: custModal"></div>
+            <button class="btn btn-icon" id="btnOpenCustModal"><i class="bi bi-search"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 거래처명 -->
+      <div class="col-md-3">
+        <div class="field-inline">
+          <label class="field-inline__label">거래처명</label>
+          <input id="custName" class="form-control input-base" readonly />
+        </div>
+      </div>
+
+      <!-- 저장 버튼 -->
+      <div class="col-md-3 text-end">
+        <button id="btnSave" class="btn btn-color btn-outer">저장</button>
+      </div>
+
+      <!-- 적요 -->
+      <div class="col-md-12">
+        <div class="field-inline" style="width:100%;">
+          <label class="field-inline__label">적요</label>
+          <input id="remarkTop" type="text" class="form-control input-base" />
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- 차변 SECTION -->
+<section class="slip-section">
+  <div class="d-flex align-items-center gap-2 px-2 mt-2" style="margin-bottom:10px">
+    <label class="fw-semibold" >차변 계정</label>
+
+    <select id="debitAccount" class="form-select input-base" style="width:220px;">
+      <option value="">선택</option>
+    </select>
+
+    <button id="btnDebitAdd" class="btn btn-inner btn-white">추가</button>
+    <button id="btnDebitDelete" class="btn btn-inner btn-white">삭제</button>
+  </div>
+
+  <div class="slip-grid">
+    <div id="debitGrid"></div>
+  </div>
+</section>
+
+<!-- 대변 SECTION -->
+<section class="slip-section">
+  <div class="d-flex align-items-center gap-2 px-2 mt-2"style="margin-bottom:10px">
+    <label class="fw-semibold">대변 계정</label>
+
+    <select id="creditAccount" class="form-select input-base" style="width:220px;">
+      <option value="">선택</option>
+    </select>
+
+    <button id="btnCreditAdd" class="btn btn-inner btn-white">추가</button>
+    <button id="btnCreditDelete" class="btn btn-inner btn-white">삭제</button>
+  </div>
+
+  <div class="slip-grid">
+    <div id="creditGrid"></div>
+  </div>
+</section>
+
+
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/fi/slip.js}"></script>
+
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.ai.model.Model;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,11 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.fi.service.CreditService;
 import com.rootcore.fi.service.HarpService;
+import com.rootcore.fi.service.SlipService;
 import com.rootcore.fi.service.TaxInvoiceService;
 import com.rootcore.fi.service.UnitPriceService;
 import com.rootcore.fi.vo.CreditVO;
 import com.rootcore.fi.vo.HarpInvoiceVO;
 import com.rootcore.fi.vo.HarpMasterVO;
+import com.rootcore.fi.vo.MonthSlipVO;
+import com.rootcore.fi.vo.SlipMasterVO;
 import com.rootcore.fi.vo.TaxInvoiceSaveVO;
 import com.rootcore.fi.vo.TaxInvoiceVO;
 import com.rootcore.fi.vo.UnitPriceVO;
@@ -36,6 +40,7 @@ public class FiRestController {
     private final CreditService creditService;
     private final TaxInvoiceService taxInvoiceService;
     private final HarpService harpService;
+    private final SlipService slipService; 
 
     //
     // 단가관리
@@ -189,4 +194,57 @@ public class FiRestController {
     ) {
         return taxInvoiceService.getTaxInvoiceHistory(companyCode, fromDate, toDate, custCode);
     }
+    //
+    // 수동 전표등록
+    //
+    /**
+     * 수동 전표 등록
+     * - 요청: SlipMasterVO (헤더 + detailList<List<SlipDetailVO>> 포함 형태를 권장)
+     * - 처리: Service에서 전표번호 생성, 마스터/디테일 저장 트랜잭션 처리
+     * - 응답: { success, slipNo, message }
+     */
+    @PostMapping("/slip")
+    public Map<String, Object> saveSlip(@RequestBody SlipMasterVO param) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // slipService에서 전표번호 생성 + 마스터/디테일 저장까지 트랜잭션 처리
+            Map<String, Object> rtn = slipService.saveManualSlip(param);
+
+            result.put("success", true);
+            result.put("slipNo", rtn.get("slipNo"));   // 생성된 전표번호
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * 월별 분개장 조회
+     */
+    @GetMapping("/monthslip")
+    public List<MonthSlipVO> getMonthSlipList(
+            @RequestParam("yearMonth") String yearMonth,
+            @RequestParam(value = "accountCode", required = false) String accountCode
+    ) {
+        return slipService.getMonthSlipList(yearMonth, accountCode);
+    }
+	@GetMapping("/fi/taxinvoice/print")
+	public String printTaxInvoice(
+	        @RequestParam("invoiceNos") String invoiceNos,
+	        Model model) {
+
+	    // 서비스 호출하여 여러 건 출력 데이터 조회
+//	    List<TaxInvoiceVO> invoices = taxInvoiceService.getInvoicePrintData(invoiceNos);
+
+//	    model.addAttribute("invoices", invoices);
+
+	    // 출력 화면으로 이동
+	    return "fi/taxInvoicePrint";
+	}
 }

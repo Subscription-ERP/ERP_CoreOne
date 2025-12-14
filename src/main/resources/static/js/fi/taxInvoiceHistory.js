@@ -114,7 +114,23 @@ function loadTaxInvoiceHistory() {
       alert("세금계산서 발행현황 조회 중 오류가 발생했습니다.");
     });
 }
+function handlePrint() {
 
+  const checkedRows = grid.getCheckedRows();
+
+  if (!checkedRows || checkedRows.length === 0) {
+    alert("출력할 세금계산서를 선택해 주세요.");
+    return;
+  }
+
+  // 여러 건 선택 가능 → invoiceNo 기반으로 출력
+  const invoiceNos = checkedRows.map(r => r.invoiceNo);
+
+  // 새로운 창을 여는 방식 (기본적인 세금계산서 출력 방식)
+  const url = "/fi/taxinvoice/print?invoiceNos=" + encodeURIComponent(invoiceNos.join(","));
+
+  window.open(url, "_blank");
+}
 // ==========================
 // DOM 로드 후 초기화
 // ==========================
@@ -149,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
   btnOpenCustModal.addEventListener('click', openCustModalOnly);
   btnCustClose.addEventListener('click', closeCustModal);
   backdrop.addEventListener('click', closeCustModal);
-
+  document.getElementById("btnPrint").addEventListener("click", handlePrint);
   if (btnHistorySearch) {
     btnHistorySearch.addEventListener('click', loadTaxInvoiceHistory);
   }
