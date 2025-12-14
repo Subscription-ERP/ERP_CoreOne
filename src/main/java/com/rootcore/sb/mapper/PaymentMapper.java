@@ -24,4 +24,6 @@ public interface PaymentMapper {
     SubscribeVO selectSubDetail(@Param("companyCode") String companyCode);
     List<PaymentVO> selectPaymentHistory(@Param("companyCode") String companyCode);
     
+    
+    
 }

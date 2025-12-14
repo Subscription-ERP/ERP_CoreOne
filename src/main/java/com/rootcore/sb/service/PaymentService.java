@@ -22,24 +22,26 @@ public interface PaymentService {
 			ContractVO contract);
 
 	// 2) 정기결제 - 카드 등록 성공 후 구독 생성
-	TossConfirmResponseVO createSubscriptionWithBillingKey( String authKey, String customerKey, CompanyVO company, PlanVO plan,
-			ContractVO contract);
-	 // 3) 정기결제 - 특정 구독 1건에 대해 결제 1번 실행
+	TossConfirmResponseVO createSubscriptionWithBillingKey(String authKey, String customerKey, CompanyVO company,
+			PlanVO plan, ContractVO contract);
+
+	// 3) 정기결제 - 특정 구독 1건에 대해 결제 1번 실행
 	/* 서비스 로직은 매퍼인터페이스 선언 X */
-    TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req);
-    
-    Map<String, String> createCompanyManagerAccount(CompanyVO company);
-    
+	TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req);
+
+	Map<String, String> createCompanyManagerAccount(CompanyVO company);
+
 	// 회사별 비활성 구독 이력 조회
 	List<SubscribeVO> selectInactiveSubListByComCode(String companyCode);
 
 	SubscribeVO selectSubDetail(String companyCode);
 
 	List<PaymentVO> selectPaymentHistory(String companyCode);
-//결제가 완료된 후 승인하는 기능
-	// 신규 구독 + 결제 동시 처리
-//	    void handleNewSubscribeAndPayment(NewSubsPaymentRequest req);
-//
-//	    // 기존 구독 결제만 처리
-//	    void handleExistSubscribePayment(ExistSubsPaymentRequest req);
+
+	//결제 재시도,만료,결제수단 변경
+	void changeBillingMethod(String subCode, String authKey, String customerKey);
+
+	TossConfirmResponseVO retryBillingPayment(String subCode);
+
+	TossConfirmResponseVO resubscribeBilling(String subCode, String customerKey);
 }

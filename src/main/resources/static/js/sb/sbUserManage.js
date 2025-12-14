@@ -117,3 +117,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.error(err);
 		});
 });
+function retryBilling() {
+  const subCode = document.getElementById("subCode").value;
+  if (!confirm("결제를 다시 시도하시겠습니까?")) return;
+
+  fetch("/api/payments/retry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subCode })
+  })
+  .then(r => r.json())
+  .then(data => {
+    alert("결제 결과: " + data.status);
+    location.reload();
+  })
+  .catch(e => {
+    alert("재시도 중 오류가 발생했습니다.");
+    console.error(e);
+  });
+}

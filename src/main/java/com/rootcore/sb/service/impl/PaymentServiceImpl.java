@@ -414,9 +414,11 @@ public class PaymentServiceImpl implements PaymentService {
 		if (sub == null) {
 			throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + req.getSubCode());
 		}
-
-		// 🔐 DB에 저장된 암호문 빌링키
-		String encryptedBillingKey = sub.getBillingKey();
+		   // 2) billingKey 복호화해서 세팅 (스케줄러/재시도에서 billingKey 주입 금지)
+	    String encryptedBillingKey = sub.getBillingKey();
+	    if (encryptedBillingKey == null || encryptedBillingKey.isBlank()) {
+	        throw new IllegalStateException("결제수단(billingKey)이 없습니다. subCode=" + req.getSubCode());
+	    }
 
 		// 🔓 토스에 보낼 평문 빌링키
 		String plainBillingKey = billingKeyCrypto.decrypt(encryptedBillingKey);
@@ -426,6 +428,11 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 1) 토스에 정기결제 승인 요청
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
+		
+
+	    // 4) 성공/실패 판단
+	    String status = tossResponse.getStatus();
+	    boolean success = "DONE".equalsIgnoreCase(status) || "SUCCESS".equalsIgnoreCase(status);
 
 		// 2) (선택) 카드사 코드 → 카드사명 맵핑
 		String cardCode = tossResponse.getCard().getCardCompanyCode();
@@ -439,7 +446,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setSubCode(sub.getSubCode());
 		payment.setCompanyCode(sub.getCompanyCode());
 		payment.setTotalPrice(tossResponse.getTotalAmount());
-		payment.setPaymentStat(tossResponse.getStatus());
+		payment.setPaymentStat(status);
 		payment.setPaymentKey(tossResponse.getPaymentKey());
 		payment.setPaymentMethod(tossResponse.getMethod());
 		payment.setCardCompany(cardCode);
@@ -458,18 +465,146 @@ public class PaymentServiceImpl implements PaymentService {
 
 		paymentMapper.insertPayment(payment);
 
-		// 5) 구독의 최근 청구일 / 다음 청구일 갱신
-		LocalDate today = LocalDate.now();
-		LocalDate next = today.plusMonths(1); // or 요금제/계약 단위에 따라 계산
-
-		subscribeMapper.updateBillingDates(sub.getSubCode(), today, // recentBillingDate
-				next // nextBillingDate
-		);
-
-		// 필요하면 여기서 구독 상태, 회사 상태 갱신 같은 것도 추가 가능
-
+		   // 7) 주문 상태 업데이트 (기존 mapper 재사용)
+	    orderMapper.updateOrderStatus(req.getOrderId(), success ? "SUCCESS" : "FAILED");
+		
+	    // 8) 구독 상태/청구일 갱신 (⭐ 성공일 때만 nextBillingDate 갱신!)
+	    if (success) {
+	        LocalDate today = LocalDate.now();
+	        LocalDate next = today.plusMonths(1);
+	        subscribeMapper.updateBillingDates(sub.getSubCode(), today, next);
+	        subscribeMapper.updateSubsStatus(sub.getSubCode(), "ACTIVE", "SYSTEM");
+	    } else {
+	        subscribeMapper.updateSubsStatus(sub.getSubCode(), "PAST_DUE", "SYSTEM");
+	    }
+	    
 		return tossResponse; // 스케줄러 내부에서 결과 안 쓰면 반환 없어도 되긴 함
+		
 	}
+	
+	//결제수단 변경
+	@Transactional
+	public void changeBillingMethod(String subCode, String authKey, String customerKey) {
+
+	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
+	    if (sub == null) {
+	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
+	    }
+
+	    // 1) 토스에서 새 billingKey 발급
+	    String newBillingKeyPlain = tossPaymentClient.issueBillingKey(authKey, customerKey);
+	    String newBillingKeyEnc = billingKeyCrypto.encrypt(newBillingKeyPlain);
+
+	    // 2) 구독 테이블 billingKey 교체
+	    // ※ 아래 updateBillingKey 쿼리/매퍼 추가 필요
+	    subscribeMapper.updateBillingKey(subCode, newBillingKeyEnc, "SYSTEM");
+	}
+	
+	//결제 재시도
+	@Transactional
+	public TossConfirmResponseVO retryBillingPayment(String subCode) {
+
+	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
+	    if (sub == null) {
+	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
+	    }
+	    if (sub.getBillingKey() == null || sub.getBillingKey().isBlank()) {
+	        throw new IllegalStateException("결제수단이 등록되어 있지 않습니다. 결제수단 변경부터 하세요.");
+	    }
+
+	    // ✅ 주문금액 결정 (반올림)
+	    long orderAmount = Math.round(sub.getCurrentPrice());
+	    if (orderAmount <= 0) {
+	        throw new IllegalStateException("주문금액이 올바르지 않습니다. currentPrice=" + sub.getCurrentPrice());
+	    }
+
+	    // 1) 주문 생성(재시도용)
+	    OrderVO order = new OrderVO();
+	    order.setOrderName("정기결제 재시도");
+	    order.setOrderAmount(orderAmount);
+	    order.setOrderStatus("READY");
+	    order.setOrderType("BILLING");
+	    order.setCreateDate(LocalDateTime.now());
+	    order.setCreatedBy("SYSTEM");
+	    order.setCompanyCode(sub.getCompanyCode());
+	    orderMapper.insertOrder(order);
+
+	    // 2) 결제 요청 만들어서 공통함수 호출
+	    TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
+	    req.setSubCode(subCode);
+	    req.setOrderId(order.getOrderId());
+	    req.setAmount(order.getOrderAmount());
+	    req.setOrderName(order.getOrderName());
+
+	    return chargeSubscription(req);
+	    
+	  
+	}
+	
+	//만료 재구독
+	@Transactional
+	public TossConfirmResponseVO resubscribeBilling(String subCode, String customerKey) {
+
+	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
+	    if (sub == null) {
+	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
+	    }
+	    if (sub.getBillingKey() == null || sub.getBillingKey().isBlank()) {
+	        throw new IllegalStateException("결제수단이 등록되어 있지 않습니다. 결제수단 변경부터 하세요.");
+	    }
+
+	    LocalDate today = LocalDate.now();
+	    if (sub.getSubsEnd() != null && !sub.getSubsEnd().isBefore(today)) {
+	        // 정책: 만료가 아닌데 재구독 버튼 눌렀으면 막기(원하면 연장으로 바꿀 수도 있음)
+	        throw new IllegalStateException("재구독 대상이 아닙니다. 아직 만료되지 않았습니다.");
+	    }
+	    // ✅ 주문금액 결정: 현재 구독 청구 금액 사용
+	    long orderAmount = (long) Math.round(sub.getCurrentPrice()); // double -> long 안전하게 반올림
+
+	    if (orderAmount <= 0) {
+	        throw new IllegalStateException("주문금액이 올바르지 않습니다. currentPrice=" + sub.getCurrentPrice());
+	    }
+
+	    // 1) 주문 생성(재구독용)
+	    OrderVO order = new OrderVO();
+	    order.setOrderName("만료 재구독 결제");
+	    order.setOrderAmount(orderAmount);
+	    order.setOrderStatus("READY");
+	    order.setOrderType("BILLING");
+	    order.setCreateDate(LocalDateTime.now());
+	    order.setCreatedBy("SYSTEM");
+	    order.setCompanyCode(sub.getCompanyCode());
+	    orderMapper.insertOrder(order);
+
+	    // 2) 결제 실행 (공통함수 재사용)
+	    TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
+	    req.setSubCode(subCode);
+	    req.setOrderId(order.getOrderId());
+	    req.setAmount(order.getOrderAmount());
+	    req.setOrderName(order.getOrderName());
+	    req.setCustomerKey(customerKey);
+
+	    TossConfirmResponseVO payRes = chargeSubscription(req);
+
+	    // 3) ✅ 구독 상태/기간 갱신(재활성화)
+	    int periodMonths = (sub.getBillingPeriod() != null ? sub.getBillingPeriod() : 1);
+	    LocalDate newStart = today;
+	    LocalDate newEnd = today.plusMonths(periodMonths);
+
+	    // ※ 아래 updateResubscribe 쿼리/매퍼 추가 필요
+	    subscribeMapper.updateResubscribe(
+	        subCode,
+	        "ACTIVE",
+	        newStart,
+	        newEnd,
+	        today,
+	        today.plusMonths(1),
+	        "SYSTEM"
+	    );
+
+	    return payRes;
+	}
+
 
 	@Override
 	public Map<String, String> createCompanyManagerAccount(CompanyVO company) {

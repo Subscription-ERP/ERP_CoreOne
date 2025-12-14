@@ -102,6 +102,41 @@
             updated_by          = 'SYSTEM'
         WHERE sub_code = #{subCode}
     </update>
+    
+     <!-- 구독 상태 업데이트 -->
+      <update id="updateSubsStatus">
+        UPDATE TB_SUBSCRIBE
+        SET
+            SUBS_STATUS = #{subsStatus},
+            UPDATED_BY = #{updatedBy},
+            UPDATE_DATE = SYSDATE
+        WHERE SUB_CODE = #{subCode}
+    </update>
+    
+      <!-- 🔁 빌링키 변경 -->
+    <update id="updateBillingKey">
+        UPDATE TB_SUBSCRIBE
+        SET
+            BILLING_KEY = #{billingKey},
+            UPDATED_BY = #{updatedBy},
+            UPDATE_DATE = SYSDATE
+        WHERE SUB_CODE = #{subCode}
+    </update>
+    
+       <!-- 🔁 만료 재구독 -->
+    <update id="updateResubscribe">
+        UPDATE TB_SUBSCRIBE
+        SET
+            SUBS_STATUS = #{subsStatus},
+            SUBS_START = #{subsStart},
+            SUBS_END = #{subsEnd},
+            RECENT_BILLING_DATE = #{recentBillingDate},
+            NEXT_BILLING_DATE = #{nextBillingDate},
+            UPDATED_BY = #{updatedBy},
+            UPDATE_DATE = SYSDATE
+        WHERE SUB_CODE = #{subCode}
+    </update>
+    
 
 	
 

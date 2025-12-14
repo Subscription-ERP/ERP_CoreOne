@@ -23,4 +23,30 @@ public interface SubscribeMapper {
 	    void updateBillingDates(@Param("subCode") String subCode,
 	                            @Param("recentBillingDate") LocalDate recentBillingDate,
 	                            @Param("nextBillingDate") LocalDate nextBillingDate);
+	    
+	    // ⭐ 구독 상태 변경 (ACTIVE / PAST_DUE / EXPIRED 등)
+	    int updateSubsStatus(
+	        @Param("subCode") String subCode,
+	        @Param("subsStatus") String subsStatus,
+	        @Param("updatedBy") String updatedBy
+	    );
+	    
+	    /** 빌링키 변경 (결제수단 변경) */
+	    int updateBillingKey(
+	        @Param("subCode") String subCode,
+	        @Param("billingKey") String billingKey,
+	        @Param("updatedBy") String updatedBy
+	    );
+	    /** 만료 재구독 처리 */
+	    int updateResubscribe(
+	        @Param("subCode") String subCode,
+	        @Param("subsStatus") String subsStatus,
+	        @Param("subsStart") LocalDate subsStart,
+	        @Param("subsEnd") LocalDate subsEnd,
+	        @Param("recentBillingDate") LocalDate recentBillingDate,
+	        @Param("nextBillingDate") LocalDate nextBillingDate,
+	        @Param("updatedBy") String updatedBy
+	    );
+	    
+	    
 }
