@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>세금계산서 양식</title>
+
+<style>
+    body {
+        font-family: '돋움', sans-serif;
+        margin: 20px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 900px;
+        font-size: 12px;
+        table-layout: fixed;
+    }
+    th, td {
+        border: 1px solid #1b52d8;
+        padding: 3px;
+        text-align: center;
+    }
+    .title {
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: 4px;
+        border: none !important;
+    }
+    .no-border {
+        border: none !important;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- 제목 -->
+<table>
+    <tr>
+        <td colspan="20" class="title">세 금 계 산 서</td>
+        <td colspan="10" class="no-border" style="text-align:right; font-size:12px;">
+            (공급받는자 보관용)
+        </td>
+    </tr>
+
+    <!-- 상단 책번호/권/호 -->
+    <tr>
+        <td colspan="15"></td>
+        <th colspan="4">책번호</th>
+        <td colspan="2"></td>
+        <th colspan="2">권</th>
+        <td colspan="2"></td>
+        <th colspan="2">호</th>
+        <td colspan="3"></td>
+    </tr>
+
+    <!-- 공급자 / 공급받는자 등록번호 -->
+    <tr>
+        <th rowspan="6" colspan="2">공<br>급<br>자</th>
+        <th colspan="4">등록번호</th>
+        <td colspan="9"></td>
+
+        <th rowspan="6" colspan="2">공<br>급<br>받<br>는<br>자</th>
+        <th colspan="4">등록번호</th>
+        <td colspan="9"></td>
+    </tr>
+
+    <!-- 공급자/공급받는자 상호, 성명 -->
+    <tr>
+        <th colspan="4">상호<br>(법인명)</th>
+        <td colspan="9"></td>
+
+        <th colspan="4">상호<br>(법인명)</th>
+        <td colspan="9"></td>
+    </tr>
+
+    <tr>
+        <th colspan="4">성명<br>(대표자)</th>
+        <td colspan="9"></td>
+
+        <th colspan="4">성명<br>(대표자)</th>
+        <td colspan="9"></td>
+    </tr>
+
+    <!-- 주소 -->
+    <tr>
+        <th colspan="4">사업장 주소</th>
+        <td colspan="9"></td>
+
+        <th colspan="4">사업장 주소</th>
+        <td colspan="9"></td>
+    </tr>
+
+    <!-- 업태 / 종목 -->
+    <tr>
+        <th colspan="4">업태</th>
+        <td colspan="4"></td>
+        <th colspan="5">종목</th>
+        <td colspan="9"></td>
+
+        <th colspan="4">업태</th>
+        <td colspan="4"></td>
+        <th colspan="5">종목</th>
+        <td colspan="9"></td>
+    </tr>
+
+    <!-- 작성 / 공급가액 / 세액 / 비고 -->
+    <tr>
+        <th colspan="4">작성</th>
+        <th colspan="9">공 급 가 액</th>
+        <th colspan="9">세 액</th>
+        <th colspan="7">비 고</th>
+    </tr>
+
+    <!-- 작성일 숫자칸 -->
+    <tr>
+        <th>년</th><td></td><td></td><td></td>
+        <th>월</th><td></td><td></td>
+        <th>일</th><td></td><td></td>
+
+        <!-- 공급가액 숫자칸 -->
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+
+        <!-- 세액 숫자칸 -->
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+
+        <!-- 비고 -->
+        <td colspan="7"></td>
+    </tr>
+
+    <!-- 품목 헤더 -->
+    <tr>
+        <th colspan="3">월일</th>
+        <th colspan="7">품 목</th>
+        <th colspan="3">규격</th>
+        <th colspan="3">수량</th>
+        <th colspan="3">단가</th>
+        <th colspan="5">공급가액</th>
+        <th colspan="4">세액</th>
+        <th colspan="4">비고</th>
+    </tr>
+
+    <!-- 품목 행 5줄 (빈칸) -->
+    <tr><td colspan="36" style="height:28px"></td></tr>
+    <tr><td colspan="36" style="height:28px"></td></tr>
+    <tr><td colspan="36" style="height:28px"></td></tr>
+    <tr><td colspan="36" style="height:28px"></td></tr>
+    <tr><td colspan="36" style="height:28px"></td></tr>
+
+    <!-- 합계 영역 -->
+    <tr>
+        <th colspan="6">합계금액</th>
+        <td colspan="8"></td>
+        <th colspan="4">현 금</th>
+        <td colspan="5"></td>
+        <th colspan="4">수 표</th>
+        <td colspan="5"></td>
+        <th colspan="4">어 음</th>
+        <td colspan="4"></td>
+    </tr>
+
+    <tr>
+        <th colspan="6">외상미수금</th>
+        <td colspan="8"></td>
+        <td colspan="22" style="text-align:right;">
+            이 금액을 영수함
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

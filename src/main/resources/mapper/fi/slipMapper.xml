@@ -103,4 +103,27 @@
         )
     </insert>
 
+<select id="selectMonthSlipList" resultType="com.rootcore.fi.vo.MonthSlipVO">
+
+    SELECT TO_CHAR(slm.slip_date, 'YYYY-MM-DD') slip_date
+         , sld.slip_account
+         , cod.code_name account_name
+         , decode(sld.dr_cr_type, 'D', amount, 0) debit_amount
+         , decode(sld.dr_cr_type, 'C', amount, 0) credit_amount
+         , cst.cust_name AS cust_name
+         , slm.summary AS remark
+    FROM tb_slip_master slm
+    JOIN tb_slip_detail sld
+      ON slm.slip_no = sld.slip_no
+    JOIN tb_cm_code cod
+      ON sld.slip_account = cod.code
+     AND cod.group_code = 'FI_ACCOUNT'
+    JOIN tb_cust_master cst
+      ON slm.cust_code = cst.cust_code
+    WHERE TO_CHAR(slm.slip_date, 'YYYYMM') = #{yearMonth}
+    <if test="accountCode != null and accountCode != ''">
+        AND sld.slip_account = #{accountCode}
+    </if>
+    ORDER BY slm.SLIP_DATE ASC, slm.slip_no, sld.slip_account ASC
+</select>
 </mapper>

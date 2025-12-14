@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8" />
+    <title>월별분개장 조회</title>
+
+    <!-- Toast UI Grid -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+    <!-- 공통 CSS -->
+    <link th:href="@{/css/general.css}" rel="stylesheet" />
+</head>
+
+<body>
+<div layout:fragment="content" class="page page-fluid">
+
+    <!-- ===============================
+           조회조건 CARD
+    =============================== -->
+    <section class="card-ui card-ui--search">
+        <div class="card-ui__body" style="display:flex; align-items:center; height:100%;">
+
+            <div class="filter-bar row g-4 align-items-center flex-grow-1">
+
+                <!-- 조회년월 -->
+                <div class="col-md-3">
+                    <div class="field-inline">
+                        <label class="field-inline__label" style="width:90px;">조회년월</label>
+                        <input id="searchMonth" type="month" class="form-control input-base" />
+                    </div>
+                </div>
+
+                <!-- 회계계정 -->
+                <div class="col-md-3">
+                    <div class="field-inline">
+                        <label class="field-inline__label" style="width:90px;">회계계정</label>
+                        <select id="searchAccount" class="form-select input-base">
+                            <option value="">전체</option>
+                            <option value="1000">자산</option>
+                            <option value="2000">부채</option>
+                            <option value="3000">자본</option>
+                            <option value="4000">매출</option>
+                            <option value="5000">비용</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 버튼 영역 -->
+            <div class="d-flex align-items-center" style="gap:8px; min-width:200px;">
+                <button id="btnExcel" class="btn btn-white btn-outer">EXCEL</button>
+                <button id="btnSearch" class="btn btn-color btn-outer">조회</button>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ===============================
+           GRID
+    =============================== -->
+    <section class="card-ui card-ui--grid section-flex">
+        <div class="card-ui__body p-0 section-scroll">
+            <div id="journal-grid" class="grid-root" style="width:100%; height:100%;"></div>
+        </div>
+    </section>
+
+
+    <!-- ===============================
+           SCRIPT
+    =============================== -->
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/fi/monthSlip.js}"></script>
+
+</div>
+</body>
+</html>

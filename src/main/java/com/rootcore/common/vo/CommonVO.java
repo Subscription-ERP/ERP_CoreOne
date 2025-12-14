@@ -6,4 +6,5 @@ import lombok.Data;
 public class CommonVO {
     private String code;
     private String codeName;
+    private String attribute01;
 }

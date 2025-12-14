@@ -46,6 +46,10 @@ public class CommonServiceImpl implements CommonService {
 	}
 
 	@Override
+	public List<CommonVO> selectAttributeCode(String common, String attribute) {
+		return commonMapper.selectAttributeCode(common, attribute);
+	}
+	@Override
 	public Map<String, List<CommonVO>> selectCodes(String... common) {
 		Map<String, List<CommonVO>> map = new HashMap<String, List<CommonVO>>();
 		for(String gpCd : common) {

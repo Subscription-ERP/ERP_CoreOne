@@ -1,7 +1,11 @@
 package com.rootcore.fi.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
+import java.util.List;
 
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.rootcore.fi.vo.MonthSlipVO;
 import com.rootcore.fi.vo.SlipDetailVO;
 import com.rootcore.fi.vo.SlipMasterVO;
 
@@ -16,4 +20,9 @@ public interface SlipMapper {
 
     /** 전표 디테일 저장 */
     int insertSlipDetail(SlipDetailVO vo);
+    
+    List<MonthSlipVO> selectMonthSlipList(
+    	    @Param("yearMonth") String yearMonth,
+    	    @Param("accountCode") String accountCode
+    	);
 }
