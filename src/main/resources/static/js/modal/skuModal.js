@@ -5,9 +5,22 @@
  * 이력
  * 2025-12-08 최초 생성
  * 2025-12-12 단가 유형을 지정하여 필요한 품목을 지정할 수 있도록 변경
+ * 2025-12-14 단가를 지정한 품목을 불러오도록 변경
  * 
  * 최초 생성자: 고유한
  * 최종 수정자: 박봉근
+ *
+ * 비고
+ * 1. 단가 유형 지정 (buy: 발주, sell: 수주)
+ *     window.skuModalType = 'sell';
+ *     openSkuModalWindow();
+ *
+ * 2. 거래처 지정
+ *     1) 전역변수 선언
+ *     let selectedCustCode = null;
+ *
+ *     2) 모달에서 거래처 값 넘겨받을 때 selectedCustCode 저장
+ *     selectedCustCode = row.custCode;
  */
 
 let skuModalGrid;
@@ -75,9 +88,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 전체 품번 목록 조회 (초기/재조회)
 function getSkuList(type) {
-    const params = new URLSearchParams({
-        unitPriceType: type || ''
-    });
+    const params = new URLSearchParams();
+
+    // custCode가 있을 때만 추가
+    if (selectedCustCode) {
+        params.append('custCode', selectedCustCode);
+    }
+
+    if (type) {
+        params.append('unitPriceType', type);
+    }
 
     const url = `/api/cm/skuList?${params.toString()}`;
 
@@ -96,6 +116,7 @@ function searchSku() {
     const skuName = schSkuName.value.trim();
 
     const params = new URLSearchParams({
+        custCode: selectedCustCode || '',
         unitPriceType: unitPriceType || '',
         sku: sku || '',
         skuName: skuName || ''

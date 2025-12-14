@@ -6,13 +6,21 @@ const btnCustClose     = document.getElementById('btnCustClose');
 const backdrop = document.querySelector(".modal-layer__backdrop");
 const btnAddRow = document.getElementById('btnAddRow');
 const btnDeleteRow = document.getElementById('btnDeleteRow');
+
 let inOrdGrid;
 let unitPriceTypeItems = [];
 let skuDataList = [];
 let defaultType = '';
+let selectedCustCode = null;
+let remain = 0; // 잔여여신
 
 document.getElementById('btnSave').addEventListener('click', async (e) => {
     e.preventDefault();
+
+    // 유효성 검사 실행
+    if (!validateInordForm()) {
+        return;
+    }
 
     const saveInOrdData = getInOrdData();
 
@@ -255,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 총공급가액, 총부가세, 총액 화면에 표시
                 sumPrice();
             }
-            
+
             // 데이터 입력 후 다음 행 추가
             if (columnName === 'sku' || columnName === 'skuName') {
                 const data = inOrdGrid.getData();
@@ -304,12 +312,45 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    /* ------------------------------------------------------------------
+	 * 사원 모달
+	 * ------------------------------------------------------------------ */
+
+    const btnOpenHrModal = document.getElementById('btnOpenHrModal');
+    const UserName = document.getElementById('pic');
+    const UserDept = document.getElementById('dept');
+
+    // 사원명 input 클릭 시 모달 열기
+
+    btnOpenHrModal.addEventListener("click", (e) => {
+        if (typeof openUserSearchModal === 'function') {
+            openUserSearchModal(e);
+        } else {
+            console.error("에러가 발생했습니다.");
+        }
+    });
+
+
+    // 모달에서 row 선택 시 호출되는 콜백 (전역)
+    window.handleSelectedEmp = function(row) {
+        if (UserDept) {
+            UserDept.value = row.deptName;
+        }
+        if (UserName) {
+            UserName.value = row.userName;
+        }
+    };
+
 
 
 });
 
 // 모달에서 거래처 값 불러오기
 window.handleSelectedCust = function(row) {
+
+    // 품목 모달에 거래처 코드를 넘겨주기 위한 코드
+    // selectedCustCode = row.custCode;
+
     custCodeSearch.value = row.custCode;
     custNameSearch.value = row.custName;
 
@@ -363,16 +404,6 @@ window.handleSelectedSku = function (row) {
     inOrdGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
     inOrdGrid.setValue(rowKey, 'surTax',      surTax.toLocaleString());
     sumPrice();
-
-    // 5) 방금 채운 행이 마지막 행이면 다음 빈 행 자동 추가
-    const updatedRow = inOrdGrid.getRow(rowKey);
-    const hasSkuOrName =
-        (updatedRow.sku && String(updatedRow.sku).trim() !== '') ||
-        (updatedRow.skuName && String(updatedRow.skuName).trim() !== '');
-
-    if (hasSkuOrName) {
-        emptyRow();
-    }
 
     // 필요하면 모달 닫기
     // closeSkuModal();
@@ -498,7 +529,7 @@ function sumPrice() {
         totalSupply += sp;
         totalSurTax += st;
     });
-    
+
     // 총액
     const totalPrice = totalSupply + totalSurTax;
 
@@ -511,8 +542,17 @@ function sumPrice() {
 
     if (creditMaxEl && creditRemainEl) {
         const max = Number(String(creditMaxEl.value).replace(/,/g, '')) || 0;
-        const remain = max - totalPrice;
+        remain = max - totalPrice;
         creditRemainEl.value = remain.toLocaleString();
+
+        // 실시간 여신 경고 (빨강색)
+        if (remain < 0) {
+            creditRemainEl.style.color = 'red';
+            creditRemainEl.title = `여신 ${Math.abs(remain).toLocaleString()}원 초과`;
+        } else {
+            creditRemainEl.style.color = '';
+            creditRemainEl.title = '';
+        }
     }
 }
 
@@ -596,12 +636,14 @@ function skuList() {
         return;
     }
 
-    const url = `/api/cm/inOrdSkuList?custCode=${encodeURIComponent(custCode)}`;
+    const url = `/api/cm/skuList`;
 
     fetch(url)
         .then(res => res.json())
         .then(result => {
             skuDataList = result;
+
+            console.log(skuDataList);
 
             const map = new Map();
             skuDataList.forEach(item => {
@@ -639,3 +681,29 @@ function skuList() {
         .catch(err => console.error(err));
 }
 
+// 유효성 검사
+function validateInordForm() {
+    // 1. 거래처 필수
+    const custCode = document.getElementById('custCodeSearch').value.trim();
+    if (!custCode) {
+        showToast('거래처를 선택하세요.', 'warning');
+        return false;
+    }
+
+    // 2. 품목 최소 1개
+    const validRows = inOrdGrid.getData().filter(r =>
+        r.sku?.trim() || r.skuName?.trim()
+    );
+    if (validRows.length === 0) {
+        showToast('품목을 1개 이상 입력하세요.', 'warning');
+        return false;
+    }
+
+    // 3. 여신 초과
+    if (remain < 0) {
+        showToast(`여신을 ${Math.abs(remain).toLocaleString()}원 초과하였습니다.`, 'warning');
+        return false;
+    }
+
+    return true;
+}

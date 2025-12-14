@@ -17,68 +17,9 @@ let totalQty = 0;
 let totalSupplyPrice = 0;
 let totalSurtax = 0;
 let totalPrice = 0;
+let selectedCustCode = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-
-    /* ======================================================
-       기본 사항 입력
-    ====================================================== */
-
-    // 초기화 버튼
-    btnReset.addEventListener('click', resetData);
-    
-    // 저장 버튼
-    btnSave.addEventListener('click', async (e) => {
-        e.preventDefault();
-
-        const saveOutOrdData = getOutordData();
-
-        const res = await fetch('/api/outord/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(saveOutOrdData)
-        });
-
-        if (res.ok) {
-            showToast('등록 완료', 'success');
-        } else {
-            showToast('등록 실패', 'error');
-        }
-    });
-
-    // 행추가 버튼
-    btnAddRow.addEventListener('click', emptyRow);
-
-    // 행삭제 버튼
-    btnDeleteRow.addEventListener('click', deleteRow);
-
-    // 거래처 검색
-    custCodeSearch.addEventListener('keydown', handleEnter);
-    custNameSearch.addEventListener('keydown', handleEnter);
-    btnOpenCustModal.addEventListener('click', openCustModalOnly);
-
-    // 거래처 모달 닫기
-    btnCustClose.addEventListener('click', closeCustModal);
-    backdrop.addEventListener('click', closeCustModal);
-
-    // 품목 모달 열기
-    btnOpenSkuModal.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        outordGrid.finishEditing();
-
-        const custCode = document.getElementById('custCodeSearch').value.trim();
-        const custName = document.getElementById('custNameSearch').value.trim();
-
-        if (!custCode && !custName) {
-            showToast('거래처를 먼저 선택하세요.', 'warning'); // 기존 showToast 패턴 재사용[web:50]
-            return;
-        }
-
-        window.skuModalType = 'buy';
-        openSkuModalWindow();
-    });
-
 
     /* ======================================================
        품목 목록
@@ -208,11 +149,100 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
+
+    /* ======================================================
+       기본 사항 입력
+    ====================================================== */
+
+    // 초기화 버튼
+    btnReset.addEventListener('click', resetData);
+
+    // 저장 버튼
+    btnSave.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const saveOutOrdData = getOutordData();
+
+        const res = await fetch('/api/outord/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(saveOutOrdData)
+        });
+
+        if (res.ok) {
+            showToast('등록 완료', 'success');
+        } else {
+            showToast('등록 실패', 'error');
+        }
+    });
+
+    // 행추가 버튼
+    btnAddRow.addEventListener('click', emptyRow);
+
+    // 행삭제 버튼
+    btnDeleteRow.addEventListener('click', deleteRow);
+
+    // 거래처 검색
+    custCodeSearch.addEventListener('keydown', handleEnter);
+    custNameSearch.addEventListener('keydown', handleEnter);
+    btnOpenCustModal.addEventListener('click', openCustModalOnly);
+
+    // 거래처 모달 닫기
+    btnCustClose.addEventListener('click', closeCustModal);
+    backdrop.addEventListener('click', closeCustModal);
+
+    // 품목 모달 열기
+    btnOpenSkuModal.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        outordGrid.finishEditing();
+
+        const custCode = document.getElementById('custCodeSearch').value.trim();
+        const custName = document.getElementById('custNameSearch').value.trim();
+
+        if (!custCode && !custName) {
+            showToast('거래처를 먼저 선택하세요.', 'warning'); // 기존 showToast 패턴 재사용[web:50]
+            return;
+        }
+
+        window.skuModalType = 'buy';
+        openSkuModalWindow();
+    });
+
     emptyRow();             // 기본 빈 행
     rightEditorMode();      // 바로 편집모드 진입
     skuListAfterEnter();    // 품목 입력 후 데이터 불러오기
-    
-    
+
+    /* ------------------------------------------------------------------
+	 * 사원 모달
+	 * ------------------------------------------------------------------ */
+
+    const btnOpenHrModal = document.getElementById('btnOpenHrModal');
+    const UserName = document.getElementById('pic');
+    const UserDept = document.getElementById('dept');
+
+    // 사원명 input 클릭 시 모달 열기
+
+    btnOpenHrModal.addEventListener("click", (e) => {
+        if (typeof openUserSearchModal === 'function') {
+            openUserSearchModal(e);
+        } else {
+            console.error("에러가 발생했습니다.");
+        }
+    });
+
+
+    // 모달에서 row 선택 시 호출되는 콜백 (전역)
+    window.handleSelectedEmp = function(row) {
+        if (UserDept) {
+            UserDept.value = row.deptName;
+        }
+        if (UserName) {
+            UserName.value = row.userName;
+        }
+    };
+
+
 })
 
 /* ======================================================
@@ -221,6 +251,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // 모달에서 거래처 값 불러오기
 window.handleSelectedCust = function(row) {
+
+    // 품목 모달에 거래처 코드를 넘겨주기 위한 코드
+    // selectedCustCode = row.custCode;
+
     custCodeSearch.value = row.custCode;
     custNameSearch.value = row.custName;
 
@@ -240,11 +274,17 @@ window.afterCustSearch = function(result) {
 
 // 품목 모달에서 값 불러오기
 window.handleSelectedSku = function (row) {
+
+    console.log('selected row from modal:', row);
+
     const data = outordGrid.getData();
+    console.log('before setValue, grid data:', data);
 
-    console.log(data);
-
-    if (!data.length) return;
+    if (!data.length) {
+        console.warn('no rows in grid, append empty row first');
+        emptyRow();
+        return;
+    }
 
     // 1) 중복 품목 여부 체크 (sku 기준, 필요하면 skuName도 같이 체크)
     const isDup = data.some(r => String(r.sku).trim() === String(row.sku).trim());
@@ -256,6 +296,7 @@ window.handleSelectedSku = function (row) {
     // 2) 마지막 행 rowKey 구하기
     const lastRow = data[data.length - 1];
     const rowKey = lastRow.rowKey;
+    console.log('target rowKey:', rowKey, 'lastRow:', lastRow);
 
     // 3) 마지막 행에 값 세팅
     outordGrid.setValue(rowKey, 'sku',       row.sku || '');
@@ -263,6 +304,10 @@ window.handleSelectedSku = function (row) {
     outordGrid.setValue(rowKey, 'spec',      row.spec || '');
     outordGrid.setValue(rowKey, 'unit',      row.unit || '');
     outordGrid.setValue(rowKey, 'unitPrice', row.unitPrice || 0);
+
+
+    const after = outordGrid.getRow(rowKey);
+    console.log('after setValue row:', after);
 
     // 4) 공급가/부가세 재계산
     const qty        = Number(outordGrid.getValue(rowKey, 'qty')) || 0;
@@ -272,16 +317,6 @@ window.handleSelectedSku = function (row) {
 
     outordGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
     outordGrid.setValue(rowKey, 'surTax',      surTax.toLocaleString());
-
-    // 5) 방금 채운 행이 마지막 행이면 다음 빈 행 자동 추가
-    const updatedRow = outordGrid.getRow(rowKey);
-    const hasSkuOrName =
-        (updatedRow.sku && String(updatedRow.sku).trim() !== '') ||
-        (updatedRow.skuName && String(updatedRow.skuName).trim() !== '');
-
-    if (hasSkuOrName) {
-        emptyRow();
-    }
 
     // 필요하면 모달 닫기
     // closeSkuModal();
@@ -383,7 +418,7 @@ function skuList() {
         return;
     }
 
-    const url = `/api/cm/inOrdSkuList?custCode=${encodeURIComponent(custCode)}`;
+    const url = `/api/cm/skuList`;
 
     fetch(url)
         .then(res => res.json())
@@ -409,6 +444,8 @@ function skuList() {
 // 품목 직접 입력으로 값 불러오기
 function skuListAfterEnter() {
     outordGrid.on('afterChange', (e) => {
+        console.log('afterChange:', e.changes);
+
         e.changes.forEach(change => {
             let { rowKey, columnName, value } = change;
 
@@ -507,7 +544,6 @@ function getOutordData() {
         custCode: document.getElementById('custCodeSearch').value,
         custName: document.getElementById('custNameSearch').value,
 
-        // ⬇ 여기만 교체
         totalQty: totals.totalQty,
         totalSupplyPrice: totals.totalSupplyPrice,
         totalSurtax: totals.totalSurtax,
@@ -602,5 +638,3 @@ function handleEnter(e) {
         searchCustModal();
     }
 }
-
-

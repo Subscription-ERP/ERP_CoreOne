@@ -23,4 +23,6 @@ public class SkuVO {
     
     private String unitPriceType;   // 단가유형
     private String typeName;        // 단가유형이름
+    
+    private String custCode;        // 거래처코드
 }

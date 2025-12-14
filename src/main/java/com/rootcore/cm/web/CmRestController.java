@@ -21,11 +21,12 @@ public class CmRestController {
 
     @GetMapping("/skuList")
     public List<SkuVO> skuList(
+            @RequestParam(required = false) String custCode,
             @RequestParam(required = false) String unitPriceType,
             @RequestParam(required = false) String sku,
             @RequestParam(required = false) String skuName
     ) {
-        return skuService.getSku(unitPriceType, sku, skuName);
+        return skuService.getSku(custCode, unitPriceType, sku, skuName);
     }
 
     @GetMapping("/inOrdSkuList")
