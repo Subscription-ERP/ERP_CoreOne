@@ -381,7 +381,9 @@ CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
     long_time_care_insurance    NUMBER,
     total_deduction_amount      NUMBER,
     net_pay                     NUMBER,
-    absence NUMBER
+    absence NUMBER,
+    income_tax NUMBER,
+    local_income_tax NUMBER
 );
 /
 
@@ -409,8 +411,8 @@ CREATE OR REPLACE PROCEDURE sp_calculate_payroll(
  * 설명 : 급여 계산 프로시저
  * 작성자 : 장준현
  * 작성일 : 25.12.03
- * 수정이력 :
-    * 수정일 :
+ * 수정이력 : 상여금은 단순 보너스로해서 상여금만 지급하는걸로 그래서 공제 계산 하지 않는걸로 수정
+    * 수정일 : 25.12.05
  * ================================ */
 IS
     -- 1) 커서 정의
@@ -489,6 +491,8 @@ IS
     v_total_payment_amount NUMBER; -- 총 지급액(상여포함)
     v_total_deduction_amount NUMBER; -- 총 4대보험
     v_absence NUMBER; -- 결근, 병가 공제액
+    v_income_tax NUMBER; -- 소득세
+    v_local_income_tax NUMBER; -- 지방소득세
     
     -- 결과 컬렉션 변수 선언
     v_results T_PAYROLL_RESULTS_TAB;
@@ -514,10 +518,6 @@ BEGIN
         v_sal := user_info.salary; -- 기본급여
         v_br := user_info.bonus_rate; -- 상여 지급율
         v_ba := user_info.bonus_amount; -- 상여 지급액
-        -- 위에서 fetch into해서 실행한거 결과 출력
-        DBMS_OUTPUT.PUT_LINE('v_uid:'||v_uid); -- 사용자id
-        DBMS_OUTPUT.PUT_LINE(',v_sal:'||v_sal); -- 급여
-        
         
         -- =================================================================================================================
         -- 209시간
@@ -527,12 +527,13 @@ BEGIN
         -- =================================================================================================================
         -- 시간당 통상임금(통상시급) := 기본급 / 209
         v_ordinary_wage := ROUND(v_sal / 209);
-        DBMS_OUTPUT.PUT_LINE(',v_ordinary_wage:'||v_ordinary_wage);
         
         -- ===============================================================
         -- payroll_type가 j1(상여)일 경우 지급액중에서는 상여만 나타나며
         -- 공제에서는 소득세, 지방소득세, 건강보험, 고용보험, 장기요양 만 빠짐
         -- 상여는 한마디로 국민연금은 계산안함(국민연금은 정기적 급여만)
+        --
+        -- ***위에꺼 취소 교수님께서 상여는 상여만 제공하는걸로 바꾸라고하심***
         -- ===============================================================
         IF v_br > 0 OR v_ba > 0 THEN
             -- 상여금
@@ -545,13 +546,10 @@ BEGIN
             ELSE
                 v_bonus := 0;
             END IF;
-            DBMS_OUTPUT.PUT_LINE(',v_bonus:'||v_bonus);
             
-            v_sal := 0;
-            v_earnings := v_bonus;
-            v_total_payment_amount := v_bonus;
-            v_national_pension := 0;
-            v_total_allowance := v_bonus; -- 수당총액
+            v_sal := 0; -- 기본급여            
+            v_total_payment_amount := v_bonus; -- 총 지급액
+            v_net_pay := v_bonus; -- 실 수령액
         ELSE
             -- 연장근로수당
             IF user_info.total_over_work_time > 0 THEN   
@@ -560,7 +558,6 @@ BEGIN
             ELSE
                 v_overtime := 0;
             END IF;
-            DBMS_OUTPUT.PUT_LINE(',v_overtime:'||v_overtime);
                     
             -- 야간근로수당
             IF user_info.total_night_work_time > 0 THEN
@@ -569,7 +566,6 @@ BEGIN
             ELSE
                 v_night := 0;
             END IF;
-            DBMS_OUTPUT.PUT_LINE(',v_night:'||v_night);
             
             -- 휴일근로수당
             IF user_info.total_holiday_work_time > 0 THEN
@@ -578,7 +574,6 @@ BEGIN
             ELSE
                 v_holiday := 0;
             END IF;
-            DBMS_OUTPUT.PUT_LINE(',v_holiday:'||v_holiday);
                     
             -- 가족수당
             IF user_info.family_count > 0 THEN
@@ -591,11 +586,9 @@ BEGIN
             ELSE
                 v_family := 0;
             END IF;
-            DBMS_OUTPUT.PUT_LINE(',v_family:'||v_family);
             
             -- 식대(월)
             v_meal := 200000;
-            DBMS_OUTPUT.PUT_LINE(',v_meal:'||v_meal);
             
             -- 연차휴가수당
             -- 미사용연차일수 * 1일 통상임금(통상시급 * 8)
@@ -607,26 +600,21 @@ BEGIN
             ELSE
                 v_annual_leave := 0;
             END IF;
-            DBMS_OUTPUT.PUT_LINE('v_annual_leave:'||v_annual_leave);
             
             -- 총 수당총액(기본급 미포함)
             v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
-            DBMS_OUTPUT.PUT_LINE('v_total_allowance:'||v_total_allowance);
             
             -- 총 지급액(기본급)
             v_total_payment_amount := v_sal + v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
-            DBMS_OUTPUT.PUT_LINE('v_total_payment_amount:'||v_total_payment_amount);
             
-            -- 소득 := 근로소득 - 비과세근로소득
+            -- 소득 := 근로소득(총 지급액, 기본급) - 비과세근로소득
             v_earnings := v_total_payment_amount - v_meal;
-            DBMS_OUTPUT.PUT_LINE('v_earnings:'||v_earnings);
             
             -- 국민연금
             -- 계산법 : 소득 * 0.045(4.5%)
             -- 1000원 미만은 제외(절사)하고 계산
             -- 예시) 15,123원 -> 15,000원
             v_national_pension := TRUNC(v_earnings, -3) * 0.045;
-            DBMS_OUTPUT.PUT_LINE('v_national_pension:'||v_national_pension);
                         
             -- =================================================================
             -- 통상임금은 기본적으로 상여, 수당, 4대보험, 소득세, 지방소득에만 영향줌
@@ -653,42 +641,36 @@ BEGIN
             ELSE
                 v_absence := 0;
             END IF;
+            
+            -- 고용보험
+            -- 계산법 : 소득 * 0.009(0.9%)
+            -- 1의자리수, 소수점은 제외
+            v_employment_insurance := TRUNC((v_earnings * 0.009) , -1);
+            
+            -- 건강보험
+            -- 계산법 : 소득 * 0.03545(3.545%)
+            -- 1의자리수, 소수점은 제외
+            v_health_insurance := TRUNC((v_earnings * 0.03545) , -1);
+            
+            -- 장기요양보험
+            -- 계산법 : 소득 * 0.004591(0.4591%)
+            -- 1의자리수, 소수점은 제외
+            v_long_time_care_insurance := TRUNC((v_earnings * 0.004591) , -1);
+            
+            -- 소득세
+            v_income_tax := TRUNC((v_earnings * 0.020471) , -1);
+                    
+            -- 지방소득세
+            -- 계산법 : 소득세 * 0.1
+            v_local_income_tax := TRUNC((v_income_tax * 0.1) , -1);            
+            
+            -- 총 공제총액
+            -- 총 4대보험 := 국민연금 + 고용보험 + 건강보험 + 장기요양보험 + 결근병가공제 + 소득세 + 지방소득세
+            v_total_deduction_amount := v_national_pension + v_employment_insurance + v_health_insurance + v_long_time_care_insurance + v_absence + v_income_tax + v_local_income_tax;
+            
+            -- 실 수령액
+            v_net_pay := v_total_payment_amount - v_total_deduction_amount;
         END IF;
-        
-        -- 고용보험
-        -- 계산법 : 소득 * 0.009(0.9%)
-        -- 1의자리수, 소수점은 제외
-        v_employment_insurance := TRUNC((v_earnings * 0.009) , -1);
-        DBMS_OUTPUT.PUT_LINE('v_employment_insurance:'||v_employment_insurance);
-        
-        -- 건강보험
-        -- 계산법 : 소득 * 0.03545(3.545%)
-        -- 1의자리수, 소수점은 제외
-        v_health_insurance := TRUNC((v_earnings * 0.03545) , -1);
-        DBMS_OUTPUT.PUT_LINE('v_health_insurance:'||v_health_insurance);
-        
-        -- 장기요양보험
-        -- 계산법 : 소득 * 0.004591(0.4591%)
-        -- 1의자리수, 소수점은 제외
-        v_long_time_care_insurance := TRUNC((v_earnings * 0.004591) , -1);
-        DBMS_OUTPUT.PUT_LINE('v_long_time_care_insurance:'||v_long_time_care_insurance);
-        
-        --=======
-        -- 소득세
-        --=======
-        -- ???
-                
-        -- 지방소득세
-        -- 계산법 : 소득세 * 0.1
-        
-        -- 총 공제총액
-        -- 총 4대보험 := 국민연금 + 고용보험 + 건강보험 + 장기요양보험 + 결근병가공제
-        v_total_deduction_amount := v_national_pension + v_employment_insurance + v_health_insurance + v_long_time_care_insurance + v_absence;
-        DBMS_OUTPUT.PUT_LINE('v_total_deduction_amount:'||v_total_deduction_amount);
-        
-        -- 실 수령액
-        v_net_pay := v_total_payment_amount - v_total_deduction_amount;
-        DBMS_OUTPUT.PUT_LINE('v_net_pay:'||v_net_pay);
         
         -- 3) 계산 완료 후 결과를 컬렉션에 추가
         v_results.EXTEND; 
@@ -719,7 +701,9 @@ BEGIN
             v_long_time_care_insurance, 
             v_total_deduction_amount, 
             v_net_pay,
-            v_absence
+            v_absence,
+            v_income_tax,
+            v_local_income_tax
         );
         
     END LOOP;
@@ -750,7 +734,9 @@ BEGIN
                long_time_care_insurance,
                total_deduction_amount,
                net_pay,
-               absence
+               absence,
+               income_tax,
+               local_income_tax
         FROM TABLE(v_results);
         -- TABLE()함수는 타입 컬렉션(v_results)을 마치 데이터베이스의 일반적인 테이블처럼 SQL문에서 조회 할 수 있도록 변환해 주는 특수 함수
         -- 정확히는 컬렉션을 관계형 테이블로 변환하는 기능
@@ -1775,11 +1761,12 @@ WHERE  um.leave_date IS NULL;
  * 급여대장목록조회
  * 세션에서 가져온 회사코드를 이용해서 조회가 되도록 하기
  * ============================================== */
+SELECT * FROM tb_payroll;   
+SELECT * FROM tb_user_pay_management;
 SELECT   pr.payroll_period,
          cc.code_name AS payroll_type,
          pr.payroll_name,
          pr.payroll_date,
-         pr.create_date,
          pr.payroll_period_code,
          COUNT(*) AS peopleNumber,
          SUM(upm.total_payment) as totalPayment -- 지급총액
@@ -1792,9 +1779,9 @@ WHERE    pr.company_code = '0000'
 GROUP BY pr.payroll_period, 
          cc.code_name,
          pr.payroll_name, 
-         pr.payroll_date, 
-         pr.create_date,
-         pr.payroll_period_code;
+         pr.payroll_date,
+         pr.payroll_period_code
+ORDER BY payroll_period desc;
          
 /* ============================
  * 급여대장-상여등록-사원조회 쿼리문
@@ -1943,3 +1930,7 @@ SELECT al.annual_leave_code,
    AND um.leave_date IS NULL
     ORDER BY TO_NUMBER(grant_year) DESC;
        
+/*======
+ *251215
+ *======*/
+SELECT * FROM tb_payroll;

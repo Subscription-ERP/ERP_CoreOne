@@ -47,7 +47,6 @@
 		         cc.code_name AS payroll_type,
 		         pr.payroll_name,
 		         pr.payroll_date,
-		         pr.create_date,
 		         pr.payroll_period_code,
 		         COUNT(*) AS peopleNumber,
 		         SUM(upm.total_payment) AS totalPayment -- 지급총액
@@ -74,8 +73,8 @@
 		         cc.code_name,
 		         pr.payroll_name, 
 		         pr.payroll_date, 
-		         pr.create_date,
 		         pr.payroll_period_code
+		ORDER BY payroll_period desc
 	</select>
 
 	<!-- 급여대장-상여등록-사원조회 -->
@@ -121,6 +120,8 @@
 	    <result column="total_deduction_amount"     property="totalDeductionAmount"/>
 	    <result column="net_pay"                    property="netPay"/>
 	    <result column="absence"                    property="absence"/>
+	    <result column="income_tax"                 property="incomeTax"/>
+	    <result column="local_income_tax"           property="localIncomeTax"/>
 	</resultMap>
 	
 	<select id="selectUserPayManageList" statementType="CALLABLE">
@@ -149,12 +150,12 @@
 		    annual_leave_allowance,
 		    total_allowance,
 		    total_payment,
-		    <!-- income_tax, -->
+		    income_tax,
 		    national_pension,
 		    employment_insurance,
 		    health_insurance,
 		    long_time_care_insurance,
-		    <!-- local_income_tax, -->
+		    local_income_tax,
 		    total_deduction,
 		    net_pay,
 		    absence
@@ -179,12 +180,12 @@
 		    #{annualLeave},
 		    #{totalAllowance},
 		    #{totalPaymentAmount},
-		    <!-- #{income_tax}, -->
+		    #{incomeTax},
 		    #{nationalPension},
 		    #{employmentInsurance},
 		    #{healthInsurance},
 		    #{longTimeCareInsurance},
-		    <!-- #{local_income_tax}, -->
+		    #{localIncomeTax},
 		    #{totalDeductionAmount},
 		    #{netPay},
 		    #{absence}

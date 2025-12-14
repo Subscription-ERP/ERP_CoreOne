@@ -140,6 +140,56 @@ function getCmCodeRadio(divIdRadio) {
 		.catch((err) => console.error(err));
 }
 
+/* ======================================
+ * 급여관리 모달창
+ * 사원별 급여 상세 Grid
+ * ====================================== */
+const payrollDetailGrid = new tui.Grid({
+	el: document.getElementById("payrollDetailGrid"),
+	scrollX: true,
+	scrollY: true,
+	data: [], // 초기 데이터는 비어있음
+	bodyHeight: 200, // HTML에서 설정한 높이와 일치시킵니다.
+	rowkey: "payrollPeriodCode",
+	columns: [
+		// { header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
+		{ header: "사번", name: "userId", align: "center", width: 150 },
+		{ header: "성명", name: "userName", width: 10 },
+		{ header: "부서명", name: "deptName", width: 100 },
+		{ header: "지급일", name: "payrollDate", align: "center", width: 100 },
+		{
+			header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
+				return formatKoreanNumber(e.value);
+			}
+		},
+		{
+			header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
+				return formatKoreanNumber(e.value);
+			}
+		},
+		{
+			header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
+				return formatKoreanNumber(e.value);
+			}
+		},
+		{
+			header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
+				return formatKoreanNumber(e.value);
+			}
+		},
+		{
+			header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
+				return formatKoreanNumber(e.value);
+			}
+		},
+		{
+			header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
+				return formatKoreanNumber(e.value);
+			}
+		}
+	],
+}); // end of payrollDetailGrid
+
 /* 상세수당총액, 상세공제총액 값 변수 초기화 */
 function resetSummaryTables() {
 	// 수당 항목 초기화
@@ -152,12 +202,12 @@ function resetSummaryTables() {
 	document.getElementById('total_allowance').textContent = 0;
 
 	// 공제 항목 초기화
-	// document.getElementById('#').textContent = 0;
+	document.getElementById('income_tax').textContent = 0;
 	document.getElementById('national_pension').textContent = 0;
 	document.getElementById('employment_insurance').textContent = 0;
 	document.getElementById('health_insurance').textContent = 0;
 	document.getElementById('long_time_care_insurance').textContent = 0;
-	// document.getElementById('#').textContent = 0;
+	document.getElementById('local_income_tax').textContent = 0;
 	document.getElementById('absence').textContent = 0;
 	document.getElementById('total_deduction_amount').textContent = 0;
 }
@@ -165,7 +215,6 @@ function resetSummaryTables() {
 /* 상세수당총액, 상세공제총액 값 테이블에 업데이트 */
 function updateRowDetailSummary(rowData) {
 	// ------------------ 수당 테이블 업데이트 ------------------
-	// 서버 응답 VO 필드명: overtime, night, holiday, family, meal, annual_leave, total_allowance
 	document.getElementById('overtime').textContent = rowData.overtime === null || rowData.overtime === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.overtime);
 	document.getElementById('night').textContent = rowData.night === null || rowData.night === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.night);
 	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.holiday);
@@ -175,9 +224,8 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
 
 	// ------------------ 공제 테이블 업데이트 ------------------
-	// 서버 응답 VO 필드명: national_pension, employment_insurance, health_insurance, long_time_care_insurance, total_deduction_amount
-	// document.getElementById('sumIncomeTax').textContent = rawValue(rowData.income_tax || 0);  
-	// document.getElementById('sumLocalIncomeTax').textContent = rawValue(rowData.local_income_tax || 0);  
+	document.getElementById('income_tax').textContent = rowData.incomeTax === null || rowData.incomeTax === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.incomeTax);
+	document.getElementById('local_income_tax').textContent = rowData.localIncomeTax === null || rowData.localIncomeTax === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.localIncomeTax);
 	document.getElementById('national_pension').textContent = rowData.nationalPension === null || rowData.nationalPension === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.nationalPension);
 	document.getElementById('employment_insurance').textContent = rowData.employmentInsurance === null || rowData.employmentInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employmentInsurance);
 	document.getElementById('health_insurance').textContent = rowData.healthInsurance === null || rowData.healthInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.healthInsurance);
@@ -202,6 +250,21 @@ function resetBonusRegisterForm() {
 	document.querySelector("#payrollBonusDate").value = "";
 	targetUserGrid.clear(); // 대상 사원 목록 초기화
 	updatePeopleNumber(); // 인원수 초기화
+}
+
+/**====================================
+ * 제목 : 모달창 닫기
+ * @description 모달창 닫기위해 실행하는 함수
+ * @returns 모달닫기, 그리드 초기화
+ * @author 장준현
+ * ==================================== */
+function closePayrollManageModal() {
+	const payrollManageModal = document.querySelector('#payrollManageModal');
+	if (payrollManageModal) {
+		payrollManageModal.hidden = true;
+	}
+	payrollDetailGrid.resetData([]);
+	resetSummaryTables();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -258,8 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.querySelector("#dept").value = ""; // 부서 select 초기화
 	});
 
-
-
 	/* 1. 좌측 그리드: 전체 사원 목록 조회 (검색 적용) */
 	const allUserGrid = new tui.Grid({
 		el: document.getElementById("allUserGrid"),
@@ -278,8 +339,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		rowKey: "userId", // 사원번호를 rowKey로 사용
 		columns: commonColumns,
 	});
-
-
 
 	// =========================================================================
 	// 데이터 이동 로직
@@ -434,8 +493,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			.catch((error) => console.error("Error:", error));
 	});
 
-
-
 	// 대상 그리드에서 행이 추가/제거될 때마다 인원수 업데이트
 	targetUserGrid.on("afterRemoveRow", updatePeopleNumber);
 	targetUserGrid.on("afterAppendRow", updatePeopleNumber);
@@ -539,66 +596,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}); // end of payrollGrid 클릭 이벤트
 
-
 	/* 급여관리 모달창에서 x버튼 누르면 초기화 */
-	document.querySelector('#btnPayrollManageClose').addEventListener('click', function() {
-		const payrollManageModal = document.querySelector('#payrollManageModal');
-		if (payrollManageModal) {
-			payrollManageModal.hidden = true;
-		}
-		payrollDetailGrid.resetData([]);
-		resetSummaryTables();
-	});
-
-	/* ======================================
-	 * 급여관리 모달창
-	 * 사원별 급여 상세 Grid
-	 * ====================================== */
-	const payrollDetailGrid = new tui.Grid({
-		el: document.getElementById("payrollDetailGrid"),
-		scrollX: true,
-		scrollY: true,
-		data: [], // 초기 데이터는 비어있음
-		bodyHeight: 200, // HTML에서 설정한 높이와 일치시킵니다.
-		rowKey: "userId",
-		columns: [
-			// { header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
-			{ header: "사번", name: "userId", align: "center", width: 150 },
-			{ header: "성명", name: "userName", width: 10 },
-			{ header: "부서명", name: "deptName", width: 100 },
-			{ header: "지급일", name: "payrollDate", align: "center", width: 100 },
-			{
-				header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
-					return formatKoreanNumber(e.value);
-				}
-			},
-			{
-				header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
-					return formatKoreanNumber(e.value);
-				}
-			},
-			{
-				header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
-					return formatKoreanNumber(e.value);
-				}
-			},
-			{
-				header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
-					return formatKoreanNumber(e.value);
-				}
-			},
-			{
-				header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
-					return formatKoreanNumber(e.value);
-				}
-			},
-			{
-				header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
-					return formatKoreanNumber(e.value);
-				}
-			}
-		],
-	}); // end of payrollDetailGrid
+	document.querySelector('#btnPayrollManageClose').addEventListener('click', closePayrollManageModal);
 
 	/* ============================================
 	 * Tui Grid 행 클릭 이벤트: 선택된 행의 상세 정보를 표시
@@ -629,15 +628,18 @@ document.addEventListener("DOMContentLoaded", () => {
 	document.querySelector('#btnPayrollSave').addEventListener('click', function() {
 		// 급여관리 테이블 데이터 가져오기
 		const data = payrollDetailGrid.getData();
-		console.log("data[0].payroll_code:", data[0].payroll_code);
+		// console.log("data1:",data);
+		// console.log("data[0].payroll_code:", data[0].payrollCode);
 		// 지금 화면 데이터가 tb_user_pay_management에 있는 데이터인지 확인
-		fetch(`/api/hr/checkUserPay?payroll_code=${data[0].payroll_code}`)
+		fetch(`/api/hr/checkUserPay?payroll_code=${data[0].payrollCode}`)
 			.then(res => res.text())
 			.then(responsetext => {
-				if (parseInt(responsetext, 10) > 0) {
+				if (parseInt(responsetext, 10) > 0) { // parseInt해서 10진수로 교체하고나서 확인하는거임
 					showToast("이미 확정된 급여대장입니다.", 'warning');
+					// console.log("data2:",data);
 					return;
 				} else {
+					// console.log("data3:",data);
 					// ajax로 데이터 전송
 					fetch("/api/hr/registerUserPay", {
 						method: "POST",
@@ -656,6 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								showToast("건의 등록이 확정되었습니다.", 'success');
 								// 성공하고나서 급여대장 그리드 새로고침
 								payrollGrid.reloadData();
+								closePayrollManageModal();
 							} else {
 								showToast("등록 실패 : " + textresult.message, 'error');
 								console.log(textresult.message);
