@@ -13,6 +13,10 @@ const custCodeSearch = document.getElementById('custCodeSearch');
 const custNameSearch = document.getElementById('custNameSearch');
 
 let skuDataList = [];
+let totalQty = 0;
+let totalSupplyPrice = 0;
+let totalSurtax = 0;
+let totalPrice = 0;
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -27,12 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
     btnSave.addEventListener('click', async (e) => {
         e.preventDefault();
 
-        const saveInOrdData = getOutordData();
+        const saveOutOrdData = getOutordData();
 
         const res = await fetch('/api/outord/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(saveInOrdData)
+            body: JSON.stringify(saveOutOrdData)
         });
 
         if (res.ok) {
@@ -177,21 +181,25 @@ document.addEventListener('DOMContentLoaded', function () {
             columnContent: {
                 qty: {
                     template(summary) {
+                        totalQty = summary.sum;
                         return summary.sum ? summary.sum.toLocaleString() : 0;
                     }
                 },
                 supplyPrice: {
                     template(summary) {
+                        totalSupplyPrice = summary.sum;
                         return summary.sum ? summary.sum.toLocaleString() : 0;
                     }
                 },
                 surTax: {
                     template(summary) {
+                        totalSurtax = summary.sum;
                         return summary.sum ? summary.sum.toLocaleString() : 0;
                     }
                 },
                 price: {
                     template(summary) {
+                        totalPrice = summary.sum;
                         return summary.sum ? summary.sum.toLocaleString() : 0;
                     }
                 }
@@ -199,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
     });
-    
+
     emptyRow();             // 기본 빈 행
     rightEditorMode();      // 바로 편집모드 진입
     skuListAfterEnter();    // 품목 입력 후 데이터 불러오기
@@ -486,6 +494,10 @@ function skuListAfterEnter() {
 
 // 저장할 발주 데이터 불러오기
 function getOutordData() {
+    // 저장 직전에 항상 최신 합계 계산
+    const totals = calcTotalsFromGrid();
+
+    // 기본정보
     const info = {
         outordNo: document.getElementById('outordNo').value || null,
         outordDate: document.getElementById('outordDate').value,
@@ -494,14 +506,50 @@ function getOutordData() {
         pic: document.getElementById('pic')?.value || '',
         custCode: document.getElementById('custCodeSearch').value,
         custName: document.getElementById('custNameSearch').value,
-        totalQty: toNumber(document.getElementById('totalQty')?.value),
-        totalSupplyPrice: toNumber(document.getElementById('totalSupplyPrice')?.value),
-        totalSurtax: toNumber(document.getElementById('totalSurtax')?.value),
-        totalPrice: toNumber(document.getElementById('totalPrice')?.value)
+
+        // ⬇ 여기만 교체
+        totalQty: totals.totalQty,
+        totalSupplyPrice: totals.totalSupplyPrice,
+        totalSurtax: totals.totalSurtax,
+        totalPrice: totals.totalPrice
     };
 
-    return { info }
+    // 품목
+    const rows = outordGrid.getData();
+    const detail = rows
+        .filter(r => (r.sku && String(r.sku).trim() !== '')   // 빈 행 제거
+            || (r.skuName && String(r.skuName).trim() !== ''))
+        .map((row, idx) => ({
+            lineNo: idx + 1,
+            sku: row.sku,
+            qty: toNumber(row.qty),
+            unitPrice: toNumber(row.unitPrice),     // 단가
+            supplyPrice: toNumber(row.supplyPrice), // 공급가액 (수량*단가)
+            surtax: toNumber(row.surTax),           // 부가세
+            price: toNumber(row.supplyPrice) + toNumber(row.surTax),
+            remark: row.remark
+        }));
+
+    return { info, detail };
 }
+
+
+function calcTotalsFromGrid() {
+    const rows = outordGrid.getData();
+    const validRows = rows.filter(r =>
+        (r.sku && String(r.sku).trim() !== '') ||
+        (r.skuName && String(r.skuName).trim() !== '')
+    );
+
+    return validRows.reduce((acc, r) => {
+        acc.totalQty         += toNumber(r.qty);
+        acc.totalSupplyPrice += toNumber(r.supplyPrice);
+        acc.totalSurtax      += toNumber(r.surTax);
+        acc.totalPrice       += toNumber(r.price);
+        return acc;
+    }, { totalQty: 0, totalSupplyPrice: 0, totalSurtax: 0, totalPrice: 0 });
+}
+
 
 
 /* ======================================================

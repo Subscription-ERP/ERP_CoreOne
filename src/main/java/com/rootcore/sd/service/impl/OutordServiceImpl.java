@@ -25,5 +25,7 @@ public class OutordServiceImpl implements OutordService {
             detail.setOutordNo(info.getOutordNo());
             outordMapper.insertOutordDetail(detail);
         }
+
+        System.out.println("outordNo after insertOutordHeader = " + info.getOutordNo());
     }
 }
