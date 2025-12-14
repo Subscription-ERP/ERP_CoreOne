@@ -33,27 +33,29 @@
 		       dm.dept_name,
 		       ccj.code_name as job_title,
 		       ccp.code_name as position
-		FROM   tb_user_master um
+		  FROM tb_user_master um
 		       JOIN tb_dept_master dm
 		       ON dm.dept_code = um.dept
 		       JOIN tb_cm_code ccj
 		       ON ccj.code = um.job_title
 		       JOIN tb_cm_code ccp
 		       ON ccp.code = um.position
-		WHERE  1=1
-		  AND  um.leave_date IS NULL
-		<choose>
-        	<when test="companyCode == null or companyCode == ''">
-            	AND um.company_code = '0000'
-        	</when>
-        	<otherwise>
-        	    AND um.company_code = #{companyCode}
-      	  </otherwise>
-    	</choose> 
-		<if test="text != null and text != '' ">
-          AND  dm.dept_name = #{text}
-        </if>
-        
+		 WHERE 1=1
+		   AND um.leave_date IS NULL
+		   AND um.company_code = #{companyCode}
+		 <if test="text != null and text != '' ">
+		   AND dm.dept_name = #{text}
+		 </if>
+	</select>
+	
+	<!-- 회사코드, 사용자Id에 해당하는 부서조회(단건) -->
+	<select id="findDeptNameByUserId" resultType="String" parameterType="DeptMasterVO">
+		SELECT dm.dept_name
+		  FROM tb_user_master um
+		  	   JOIN tb_dept_master dm
+		  	   ON dm.dept_code = um.dept
+		 WHERE um.company_code = #{companyCode}
+		   AND um.user_id = #{userId}
 	</select>
 
 </mapper>

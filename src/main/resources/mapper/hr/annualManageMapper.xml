@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.hr.mapper.AnnualManageMapper">
+<!-- 연차 관리 페이지 매퍼 -->
 
 	<!-- 사원연차신청이력조회 -->
 	<select id="selectAnnualManageList" resultType="AnnualLeaveDetailVO" parameterType="AnnualLeaveDetailVO">
@@ -102,7 +103,7 @@
 		         #{leaveType},
 		         #{usedDays},
 		         <choose>
-		        	<when test="leaveType == 'b1'">
+		        	<when test="leaveType == 'b1'">	
 				        #{annualStartDate},
 				        #{annualEndDate},
 		            </when>
@@ -130,13 +131,13 @@
 	<!-- 연차신청에 따른 근태기록테이블 insert -->    
     <insert id="insertAttendance" parameterType="AnnualLeaveDetailVO">
 	    INSERT INTO tb_attendance (
-	        company_code,
-	        atten_code,
-	        user_id,
-	        work_date,
-	        attend_type,
-	        in_time,
-	        out_time
+	        company_code, -- 회사코드
+	        atten_code, -- 근태코드
+	        user_id, -- 사원번호
+	        work_date, -- 근무일자
+	        attend_type, -- 근태상태
+	        in_time, -- 출근시간
+	        out_time -- 퇴근시간
 	    ) VALUES (
 	        #{companyCode},
 	        fn_make_date_code('ATTEN'),

@@ -1,5 +1,7 @@
 /**
- * annualManage.js
+ * 연차 관리 페이지
+ * @file annualManage.js
+ * @description 사원 개인별로 연차이력을 조회 할 수 있으며 또한 연차신청도 할 수 있습니다.
  */
 
 /* =============
@@ -103,9 +105,11 @@ function annualDateChange() {
 	});
 }
 
-/* ================
+/**=====================================================================================================
  * 연차신청 저장 버튼
- * ================ */
+ * @description 연차신청부분에서 신청구분, 연차시작일, 연차종료일, 사유를 입력하고 저장버튼을 누르면 연차 등록을 할 수 있습니다.
+ * @author 장준현
+ * ===================================================================================================== */
 function submitAnnualForm() {
 	// 데이터 보내기
 	document.querySelector('#btnSave').addEventListener('click', () => {
@@ -127,17 +131,22 @@ function submitAnnualForm() {
 		const rm = document.getElementById("rm").value;
 		// 잔여연차
 		const remainingDays = Number(document.querySelector('#remainingDays').textContent);
-
-		// 연차시작일, 연차종료일이 비어있는경우 유효성검사알림창 뜨면서 빠져나가기
+	
+		// 연차 시작일 유효성 검사 알림창
 		if (annualStartDate === '' || !annualStartDate) {
 			showToast('시작일을 작성해주세요!', 'warning');
 			return;
 		}
+		// 연차 종료일 유효성 검사 알림창
 		if (leaveType === 'b1' && (annualEndDate === '' || !annualEndDate)) {
 			showToast('종료일을 작성해주세요!', 'warning');
 			return;
 		}
-		
+		// 사유 유효성 검사 알림창
+		if (rm === '') {
+			showToast('사유를 작성해주세요!', 'warning');
+			return;
+		}
 		
 		// 작성한 사용일수가 잔여연차보다 많을 경우 알림창뜨면서 막기
 		if (usedDays > remainingDays) {
@@ -219,13 +228,15 @@ function calculateUsedDays() {
 	}
 }
 
-/* ================
- * 연차신청 초기화 버튼 
- * ================ */
+/**============================================================================
+ * 연차신청 초기화 버튼
+ * @description 연차신청에서 초기화 버튼을 누르면 신청할때 작성한 내용들이 모두 초기화가 됩니다.
+ * ============================================================================ */
 function resetAnnualForm() {
 	document.querySelector('#leaveType').value = 'b1'; // 신청구분
 	document.querySelector('#annualStartDate').value = ''; // 연차시작일
 	document.querySelector('#annualEndDate').value = ''; // 연차종료일
+	document.querySelector('#usedDays').value = ''; // 사용일수
 	document.querySelector('#rm').value = ''; // 사유
 }
 
@@ -254,8 +265,6 @@ function getmyAnnualStatus() {
 		.catch((err) => console.error(err));
 }
 
-
-
 document.addEventListener("DOMContentLoaded", async () => {
 
 	/* ==================
@@ -269,7 +278,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * 신청구분 (공통코드)
 	 * ================== */
 	const divId = { "0B": "leaveType" };
-	await getCmCodeOptions(divId);
+	getCmCodeOptions(divId);
 
 	/* ==================
 	 * 내 연차 현황 함수 호출

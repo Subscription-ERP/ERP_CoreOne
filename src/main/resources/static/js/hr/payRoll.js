@@ -1,5 +1,9 @@
 /**
- * payRoll.js
+ * 급여대장 관리 페이지 자바스크립트
+ * @file payRoll.js
+ * @description 매월 주기적으로 지급되는 급여 및 보너스 상여금을 등록하여 조회하고 계산, 확정하여 월급 및 상여금을 지급 할 수 있습니다.
+ * @author 장준현
+ * @version 1.0.0
  */
 
 /* ====================
@@ -8,21 +12,51 @@
  * ==================== */
 let currentPayrollPeriodCode = null;
 
-/* ======================
- * 상여등록 후 초기화 하는 함수 
- * ====================== */
-function resetBonusRegisterForm() {
-	document.querySelector("#payrollPeriod").value = ""; // 귀속연월
-	document.querySelector('#bonusType_k1').checked = true; // 지급액(amount) 버튼 초기화 추가
-	document.querySelector('#bonusType_k2').checked = false; // 상여지급방법 라디오버튼 초기화
-	document.querySelector("#bonus").value = ""; // 지급률 및 지급액
-	document.querySelector("#payrollBonusName").value = "";
-	document.querySelector("#payrollStartDate").value = "";
-	document.querySelector("#payrollEndDate").value = "";
-	document.querySelector("#payrollBonusDate").value = "";
-	targetUserGrid.resetData([]); // 대상 사원 목록 초기화
-	updatePeopleNumber(); // 인원수 초기화
+/* 인원수 반영 (대상 그리드의 전체 사원 수) */
+const bonusPeopleNumberInput = document.querySelector("#bonusPeopleNumber");
+function updatePeopleNumber() {
+	const totalTargetRows = targetUserGrid.getData().length;
+	bonusPeopleNumberInput.value = totalTargetRows;
 }
+
+// =========================================================================
+// Grid 인스턴스: 2개로 분리 (userGrid -> allUserGrid, targetUserGrid)
+// =========================================================================
+const commonColumns = [
+	{
+		header: "사원번호",
+		name: "userId",
+		align: "center",
+		width: 150, // 너비 축소
+		sortable: true,
+	},
+	{
+		header: "성명",
+		name: "userName",
+		width: 50, // 너비 축소
+		sortable: true,
+	},
+	{
+		header: "부서명",
+		name: "dept",
+		width: 100, // 너비 축소
+		sortable: true,
+	},
+	// { header: '입사일', name: 'hireDate', align: 'center', sortable: true }, // 임시제거
+	// { header: '직위', name: 'jobTitle', sortable: true } // 임시제거
+];
+
+/* 우측 그리드: 상여 등록 대상 목록 (저장 대상) */
+const targetUserGrid = new tui.Grid({
+	el: document.getElementById("targetUserGrid"),
+	scrollX: false,
+	scrollY: true,
+	rowHeaders: ["checkbox"], // 제거를 위해 체크박스 유지
+	data: [], // 초기 데이터는 빈 배열
+	bodyHeight: 200,
+	rowKey: "userId",
+	columns: commonColumns,
+});
 
 // 숫자 한국형 포맷팅 함수
 function formatKoreanNumber(value) {
@@ -152,6 +186,24 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('total_deduction_amount').textContent = rowData.totalDeductionAmount === null || rowData.totalDeductionAmount === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalDeductionAmount);
 }
 
+/**========================================================================
+ * 상여등록 - 초기화 버튼 기능
+ * @description 상여등록 버튼을 누르면 해당 폼에 있는 input박스에 있는 text들이 지워진다.
+ * @returns input박스 초기화
+ * ======================================================================== */
+function resetBonusRegisterForm() {
+	document.querySelector("#payrollPeriod").value = ""; // 귀속연월
+	document.querySelector('#bonusType_k1').checked = true; // 지급액(amount) 버튼 초기화 추가
+	document.querySelector('#bonusType_k2').checked = false; // 상여지급방법 라디오버튼 초기화
+	document.querySelector("#bonus").value = ""; // 지급률 및 지급액
+	document.querySelector("#payrollBonusName").value = "";
+	document.querySelector("#payrollStartDate").value = "";
+	document.querySelector("#payrollEndDate").value = "";
+	document.querySelector("#payrollBonusDate").value = "";
+	targetUserGrid.clear(); // 대상 사원 목록 초기화
+	updatePeopleNumber(); // 인원수 초기화
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	// 급여구분 
 	const divId = { "0J": "payrollType" };
@@ -206,32 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.querySelector("#dept").value = ""; // 부서 select 초기화
 	});
 
-	// =========================================================================
-	// Grid 인스턴스: 2개로 분리 (userGrid -> allUserGrid, targetUserGrid)
-	// =========================================================================
-	const commonColumns = [
-		{
-			header: "사원번호",
-			name: "userId",
-			align: "center",
-			width: 150, // 너비 축소
-			sortable: true,
-		},
-		{
-			header: "성명",
-			name: "userName",
-			width: 50, // 너비 축소
-			sortable: true,
-		},
-		{
-			header: "부서명",
-			name: "dept",
-			width: 100, // 너비 축소
-			sortable: true,
-		},
-		// { header: '입사일', name: 'hireDate', align: 'center', sortable: true }, // 임시제거
-		// { header: '직위', name: 'jobTitle', sortable: true } // 임시제거
-	];
+
 
 	/* 1. 좌측 그리드: 전체 사원 목록 조회 (검색 적용) */
 	const allUserGrid = new tui.Grid({
@@ -252,17 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		columns: commonColumns,
 	});
 
-	/* 2. 우측 그리드: 상여 등록 대상 목록 (저장 대상) */
-	const targetUserGrid = new tui.Grid({
-		el: document.getElementById("targetUserGrid"),
-		scrollX: false,
-		scrollY: true,
-		rowHeaders: ["checkbox"], // 제거를 위해 체크박스 유지
-		data: [], // 초기 데이터는 빈 배열
-		bodyHeight: 200,
-		rowKey: "userId",
-		columns: commonColumns,
-	});
+
 
 	// =========================================================================
 	// 데이터 이동 로직
@@ -417,12 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			.catch((error) => console.error("Error:", error));
 	});
 
-	/* 인원수 반영 (대상 그리드의 전체 사원 수) */
-	const bonusPeopleNumberInput = document.querySelector("#bonusPeopleNumber");
-	function updatePeopleNumber() {
-		const totalTargetRows = targetUserGrid.getData().length;
-		bonusPeopleNumberInput.value = totalTargetRows;
-	}
+
 
 	// 대상 그리드에서 행이 추가/제거될 때마다 인원수 업데이트
 	targetUserGrid.on("afterRemoveRow", updatePeopleNumber);

@@ -1876,7 +1876,7 @@ VALUES (
  * ======== */
 SELECT * FROM tb_dept_master ORDER BY dept_name;
 SELECT * FROM tb_user_master;
-SELECT * FROM tb_annual_leave;
+SELECT * FROM tb_annual_leave_detail;
  
 /* ===============
  * 부서 수정 업데이트
