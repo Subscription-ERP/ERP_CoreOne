@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
  * 부서 구조 조회 및 부서별 사원 목록 조회와 같은 핵심 업무 로직을 처리합니다.
  * 
  * @author 장준현
- * @version 1.0.0
  */
 @Service
 @RequiredArgsConstructor
