@@ -58,9 +58,9 @@ public class SdController {
     }
 
     // 수주 완료 처리
-    @GetMapping("/sd/inordList")
-    public String inOrdSuccess() {
-        return "sd/inordList";
+    @GetMapping("/sd/inordComplete")
+    public String inOrdComplete() {
+        return "sd/inordComplete";
     }
 
     /* ======================================================
@@ -71,6 +71,12 @@ public class SdController {
     @GetMapping("/sd/outord")
     public String outordMain() {
         return "sd/outord";
+    }
+
+    // 발주 완료 처리
+    @GetMapping("/sd/outordComplete")
+    public String outordComplete() {
+        return "sd/outordComplete";
     }
     
 }

@@ -10,6 +10,5 @@ public interface SkuMapper {
                           @Param("unitPriceType") String unitPriceType,
                           @Param("sku") String sku,
                           @Param("skuName") String skuName);
-    List<SkuVO> selectInOrdSku(String custCode);
 
 } 

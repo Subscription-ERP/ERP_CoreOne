@@ -19,6 +19,9 @@ public class OutordServiceImpl implements OutordService {
     @Override
     @Transactional
     public void addOutord(OutordVO info, List<OutordDetailVO> details) {
+        System.out.println(info);
+        System.out.println(details);
+
         outordMapper.insertOutordHeader(info);
 
         for (OutordDetailVO detail : details) {

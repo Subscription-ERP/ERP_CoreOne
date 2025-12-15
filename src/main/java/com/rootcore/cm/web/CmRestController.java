@@ -29,10 +29,4 @@ public class CmRestController {
         return skuService.getSku(custCode, unitPriceType, sku, skuName);
     }
 
-    @GetMapping("/inOrdSkuList")
-    public List<SkuVO> inOrdSkuList(@RequestParam String custCode) {
-        return skuService.getInOrdSkuList(custCode);
-    }
-
-
 }
