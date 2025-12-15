@@ -107,6 +107,7 @@ public class PayrollRestController {
 
 		// 3. Service 호출: Map을 전달하여 SP 실행 및 결과를 Map에 받아옵니다.
 		List<UserPayManageVO> payList = payrollService.selectUserPayManageList(paramMap);
+		System.out.println("payList:" + payList);
 
 		// 4. API 응답 형식에 맞춰 결과를 반환합니다.
 		Map<String, Object> result = new HashMap<>();
