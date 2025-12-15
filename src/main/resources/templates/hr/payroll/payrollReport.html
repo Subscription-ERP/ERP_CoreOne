@@ -244,7 +244,7 @@
 		<div id="payrollManageModal" class="modal-layer" hidden>
 			<div class="modal-layer__backdrop"></div>
 
-			<div class="modal-layer__dialog">
+			<div class="modal-layer__dialog" style="width:1000px">
 				<!-- 상단 헤더 -->
 				<header class="modal-card__header">
 					<h5 class="modal-card__title">급여관리</h5>
@@ -258,7 +258,7 @@
 				</div>
 
 				<!-- 내용 -->
-				<div class="modal-card__body">
+				<div class="modal-card__body" style="width:1000px">
 
 					<!-- 급여대장 나오는 테이블 -->
 					<div id="payrollDetailGrid" class="grid-root" style="height: 240px; margin-bottom: 20px;"></div>
@@ -309,12 +309,12 @@
 						<tbody>
 							<tr>
 								<td style="text-align: center;">지급 금액(원)</td>
-								<td class="text-end" id=""></td>
+								<td class="text-end" id="income_tax"></td>
 								<td class="text-end" id="national_pension"></td>
 								<td class="text-end" id="employment_insurance"></td>
 								<td class="text-end" id="health_insurance"></td>
 								<td class="text-end" id="long_time_care_insurance"></td>
-								<td class="text-end" id=""></td>
+								<td class="text-end" id="local_income_tax"></td>
 								<td class="text-end" id="absence"></td>
 								<td class="text-end" id="total_deduction_amount"></td>
 							</tr>
