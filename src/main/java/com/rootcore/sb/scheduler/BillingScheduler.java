@@ -53,9 +53,10 @@ public class BillingScheduler {
             CompanyVO company = companyMapper.selectCompany(sub.getCompanyCode());
             PlanVO plan = planMapper.selectPlanByCode(sub.getPlanCode());
             try {
+            	long amount = Math.round(sub.getCurrentPrice());
             	OrderVO order = new OrderVO();
-        		order.setOrderName(order.getOrderName());
-        		order.setOrderAmount(order.getOrderAmount());
+        		order.setOrderName("정기결제 자동청구");
+        		order.setOrderAmount(amount);
         		order.setOrderStatus("READY"); // 주문 상태
         		order.setOrderType("BILLING"); // 필요시 상수/enum 처리
         		order.setCreateDate(LocalDateTime.now());
@@ -68,15 +69,13 @@ public class BillingScheduler {
         		orderMapper.insertOrder(order);
             	
         		
-        		// MyBatis 설정이 되어 있으면 insert 후에 PK(ORDER_ID)가 order 객체에 채워진다.
-        		String generatedOrderId = order.getOrderId();  // ex) 1001
                 // 2) 정기결제 요청 데이터 만들기
                 TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
-                req.setBillingKey(sub.getBillingKey());
-                req.setAmount(sub.getCurrentPrice().longValue());
+                req.setAmount(amount);
+                req.setOrderName(order.getOrderName());
 
                 // 주문번호 규칙 예시: BILL_{subCode}_{timestamp}
-                req.setOrderId(String.valueOf(generatedOrderId));
+                req.setOrderId(order.getOrderId());
 
                 // 필요하면 subCode도 넣어두기
                 req.setSubCode(sub.getSubCode());

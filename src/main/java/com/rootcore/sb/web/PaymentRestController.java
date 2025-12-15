@@ -2,6 +2,8 @@ package com.rootcore.sb.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,6 +12,8 @@ import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PlanVO;
+import com.rootcore.sb.vo.TossBillingConfirmRequestVO;
+import com.rootcore.sb.vo.TossConfirmResponseVO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +44,16 @@ public class PaymentRestController {
 		
 		PaymentReadyResponseVO responseDto = paymentService.insertOrder(ordervo, plan);
 		return ResponseEntity.ok(responseDto);
+	}
+	
+	@PostMapping("/retry")
+	public ResponseEntity<TossConfirmResponseVO> retryBilling(
+	        @RequestBody TossBillingConfirmRequestVO req) {
+
+	    TossConfirmResponseVO res =
+	        paymentService.retryBillingPayment(req.getSubCode());
+
+	    return ResponseEntity.ok(res);
 	}
 
 	

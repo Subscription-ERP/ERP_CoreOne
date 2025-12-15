@@ -168,61 +168,59 @@ h3 {
 }
 /* 가운데 서비스 영역 높이 */
 .card-section.middle {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 220px; /* ⭐ 오른쪽 섹션과 동일한 높이 확보 */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-height: 220px; /* ⭐ 오른쪽 섹션과 동일한 높이 확보 */
 }
 
 /* 제목 가운데 정렬 */
 .card-section.middle h3 {
-    text-align: center;
-    width: 100%;
+	text-align: center;
+	width: 100%;
 }
 
 /* 태그 중앙 정렬 */
 .card-section.middle .service-tags {
-    margin-top: 8px;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    width: 100%;
+	margin-top: 8px;
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	width: 100%;
 }
 
 /* 버튼을 아래쪽에 자연스럽게 배치 */
 .card-section.middle .btn-area {
-    margin-top: auto;
-    padding-bottom: 6px; /* ⭐ 버튼이 너무 위로 붙는 문제 해결 */
-    text-align: center;
-    width: 100%;
+	margin-top: auto;
+	padding-bottom: 6px; /* ⭐ 버튼이 너무 위로 붙는 문제 해결 */
+	text-align: center;
+	width: 100%;
 }
 
 /* 오른쪽 버튼 높이를 결제하기 버튼(약 38px) 에 맞춘다 */
 .card-section.right .btn {
-    height: 38px !important;
-    padding: 0 18px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+	height: 38px !important;
+	padding: 0 18px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
 }
 /* 모든 버튼 공통 높이 통일 */
-.btn,
-.btn-primary {
-    display: inline-flex !important;     /* 내부 텍스트 수직 가운데 */
-    align-items: center !important;
-    justify-content: center !important;
-
-    height: 38px !important;             /* ⭐ 모든 버튼 동일 높이 */
-    padding: 0 18px !important;          /* 좌우 여백 통일 */
-    font-size: 13px !important;          
-    box-sizing: border-box;              /* 높이 계산 안정화 */
+.btn, .btn-primary {
+	display: inline-flex !important; /* 내부 텍스트 수직 가운데 */
+	align-items: center !important;
+	justify-content: center !important;
+	height: 38px !important; /* ⭐ 모든 버튼 동일 높이 */
+	padding: 0 18px !important; /* 좌우 여백 통일 */
+	font-size: 13px !important;
+	box-sizing: border-box; /* 높이 계산 안정화 */
 }
 
 /* 파란 버튼 스타일 유지 */
 .btn-primary {
-    background: #2563eb !important;
-    border-color: #2563eb !important;
-    color: #ffffff !important;
+	background: #2563eb !important;
+	border-color: #2563eb !important;
+	color: #ffffff !important;
 }
 </style>
 
@@ -276,7 +274,28 @@ h3 {
 						<span class="service-tag">영업</span>
 					</div>
 					<div class="btn-area">
-						<button class="btn btn-primary">결제하기</button>
+
+						<!-- 0) 결제 실패(PAST_DUE): 재시도 버튼 -->
+						<button class="btn btn-primary"
+							th:if="${subDetail.subsStatus == 'PAST_DUE'}"
+							onclick="retryBilling()">결제 재시도</button>
+
+						<!-- 1) 만료(EXPIRED): 재구독 -->
+						<button class="btn btn-primary"
+							th:if="${subDetail.subsStatus == 'EXPIRED'}"
+							onclick="resubscribe()">재구독 결제하기</button>
+
+						<!-- 2) 정상(ACTIVE) + 정기결제(빌링키 있음): 결제수단 변경 -->
+						<button class="btn btn-primary"
+							th:if="${subDetail.subsStatus == 'ACTIVE' and subDetail.billingKey != null}"
+							onclick="changeBillingMethod()">결제수단 변경</button>
+
+						<!-- 3) 정상(ACTIVE) + 일반결제(빌링키 없음): 결제하기 -->
+						<button class="btn btn-primary"
+							th:if="${subDetail.subsStatus == 'ACTIVE' and subDetail.billingKey == null}"
+							onclick="openPayWidget()">결제하기</button>
+
+						<!-- 공통 -->
 						<button class="btn">플랜 변경</button>
 					</div>
 				</div>
