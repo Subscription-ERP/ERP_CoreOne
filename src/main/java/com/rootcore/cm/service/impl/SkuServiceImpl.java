@@ -15,8 +15,8 @@ public class SkuServiceImpl implements SkuService {
     final SkuMapper skuMapper;
 
     @Override
-    public List<SkuVO> getSku(String unitPriceType, String sku, String skuName) {
-        return skuMapper.selectSku(unitPriceType, sku, skuName);
+    public List<SkuVO> getSku(String custCode, String unitPriceType, String sku, String skuName) {
+        return skuMapper.selectSku(custCode, unitPriceType, sku, skuName);
     }
 
     @Override

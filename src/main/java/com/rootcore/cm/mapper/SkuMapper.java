@@ -6,7 +6,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SkuMapper {
-    List<SkuVO> selectSku(@Param("unitPriceType") String unitPriceType,
+    List<SkuVO> selectSku(@Param("custCode") String custCode,
+                          @Param("unitPriceType") String unitPriceType,
                           @Param("sku") String sku,
                           @Param("skuName") String skuName);
     List<SkuVO> selectInOrdSku(String custCode);
