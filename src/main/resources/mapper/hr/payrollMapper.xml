@@ -110,7 +110,6 @@
 	    <result column="holiday"                    property="holiday"/>
 	    <result column="family"                     property="family"/>
 	    <result column="meal"                       property="meal"/>
-	    <result column="annual_leave"               property="annualLeave"/>
 	    <result column="total_allowance"            property="totalAllowance"/>
 	    <result column="total_payment_amount"       property="totalPaymentAmount"/>
 	    <result column="national_pension"           property="nationalPension"/>

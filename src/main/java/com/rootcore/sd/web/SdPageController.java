@@ -24,7 +24,7 @@ public class SdPageController {
     public String purchaseReg() { return "sd/outord"; }
 
     @GetMapping("/sd/order/complete")
-    public String orderComplete() { return "sd/inordList"; }
+    public String orderComplete() { return "sd/inordComplete"; }
 
     @GetMapping("/sd/purchase/complete")
     public String purchaseComplete() { return "sd/purchase_complete"; }

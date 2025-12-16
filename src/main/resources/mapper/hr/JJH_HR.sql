@@ -372,7 +372,6 @@ CREATE OR REPLACE TYPE T_PAYROLL_RESULT_REC AS OBJECT (
     holiday                     NUMBER,
     family                      NUMBER,
     meal                        NUMBER,
-    annual_leave                NUMBER,
     total_allowance             NUMBER,
     total_payment_amount        NUMBER,
     national_pension            NUMBER,
@@ -412,7 +411,9 @@ CREATE OR REPLACE PROCEDURE sp_calculate_payroll(
  * 작성자 : 장준현
  * 작성일 : 25.12.03
  * 수정이력 : 상여금은 단순 보너스로해서 상여금만 지급하는걸로 그래서 공제 계산 하지 않는걸로 수정
-    * 수정일 : 25.12.05
+ * * 수정일 : 25.12.05
+ * 수정이력 : 연차휴가수당제거
+ * * 수정일 : 25.12.15
  * ================================ */
 IS
     -- 1) 커서 정의
@@ -431,8 +432,6 @@ IS
                ad.total_holiday_work_time, -- 총 휴일근무시간
                um.family_count, -- 가족수
                um.children_count, -- 자녀수
-               al.expiry_date, -- 소멸예정일
-               al.remaining_days, -- 잔여연차
                pr.payroll_start_date, -- 대장시작시간
                absence.absenceCount -- 결근, 병가 얼마나 썼는지
         FROM   tb_payroll pr
@@ -451,8 +450,6 @@ IS
                            GROUP BY ad_sub.user_id -- 이렇게 하면 몇월에 대한 급여인지 알게됨
                           ) ad 
                 ON ad.user_id = pr.user_id
-                LEFT JOIN tb_annual_leave al
-                ON al.user_id = pr.user_id
                 JOIN tb_dept_master dm
                 ON dm.dept_code = um.dept
                 LEFT JOIN ( SELECT att_sub.user_id,
@@ -480,7 +477,6 @@ IS
     v_holiday NUMBER; -- 휴일근로수당
     v_family NUMBER; -- 가족수당
     v_meal NUMBER; -- 식대
-    v_annual_leave NUMBER; -- 연차휴가수당
     v_total_allowance NUMBER; -- 총수당총액
     v_earnings NUMBER; -- 소득
     v_national_pension NUMBER; -- 국민연금
@@ -588,24 +584,13 @@ BEGIN
             END IF;
             
             -- 식대(월)
-            v_meal := 200000;
-            
-            -- 연차휴가수당
-            -- 미사용연차일수 * 1일 통상임금(통상시급 * 8)
-            -- 25년에서 26년으로 넘어갔어 그럼 연차도 26년1월1일에 생기겠지 그럼 비교를 해야하네
-            -- 지금 시스템날짜랑 소멸예정일이 같아지면 계산하고 그에 해당하는 사원의 연차의 잔여연차가 미사용연차일수네
-            -- 그럼 필요한 데이터가 소멸예정일, 잔여연차
-            IF user_info.expiry_date <= SYSDATE THEN
-                v_annual_leave := (user_info.remaining_days) * (v_ordinary_wage * 8);
-            ELSE
-                v_annual_leave := 0;
-            END IF;
+            v_meal := 200000;                        
             
             -- 총 수당총액(기본급 미포함)
-            v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
+            v_total_allowance := v_overtime + v_night + v_holiday + v_family + v_meal;
             
             -- 총 지급액(기본급)
-            v_total_payment_amount := v_sal + v_overtime + v_night + v_holiday + v_family + v_meal + v_annual_leave;
+            v_total_payment_amount := v_sal + v_overtime + v_night + v_holiday + v_family + v_meal;
             
             -- 소득 := 근로소득(총 지급액, 기본급) - 비과세근로소득
             v_earnings := v_total_payment_amount - v_meal;
@@ -691,8 +676,7 @@ BEGIN
             v_night, 
             v_holiday, 
             v_family, 
-            v_meal, 
-            v_annual_leave, 
+            v_meal,  
             v_total_allowance, 
             v_total_payment_amount, 
             v_national_pension, 
@@ -725,7 +709,6 @@ BEGIN
                holiday,
                family,
                meal,
-               annual_leave,
                total_allowance,
                total_payment_amount,
                national_pension,

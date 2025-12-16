@@ -26,7 +26,6 @@ public class UserPayManageVO {
 	private Long holiday; // 총휴일근무시간
 	private Long family; // 가족수
 	private Long meal; // 식대
-	private Long annualLeave; // 연차휴가수당
 	private Long totalAllowance; // 총 수당총액(상여 미포함)
 	private Long totalPaymentAmount; // 총 지급액(상여포함)
 	private Long nationalPension; // 국민연금

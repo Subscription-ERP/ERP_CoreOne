@@ -559,7 +559,7 @@ function sumPrice() {
 // 등록 전 데이터 불러오기
 function getInOrdData() {
     // 기본정보
-    const info = {
+    const inordInfo = {
         inordNo: document.getElementById('inordNo').value || null,
         inordDate: document.getElementById('inordDate').value,   // "yyyy-MM-dd"
         dueDate: document.getElementById('dueDate').value,       // "yyyy-MM-dd"
@@ -574,7 +574,7 @@ function getInOrdData() {
 
     // 품목
     const rows = inOrdGrid.getData();
-    const detail = rows
+    const inordDetail = rows
         .filter(r => (r.sku && String(r.sku).trim() !== '')   // 빈 행 제거
             || (r.skuName && String(r.skuName).trim() !== ''))
         .map((row, idx) => ({
@@ -588,7 +588,7 @@ function getInOrdData() {
             remark: row.remark
         }));
 
-    return { info, detail };
+    return { inordInfo, inordDetail };
 }
 
 // 콤마 → 숫자

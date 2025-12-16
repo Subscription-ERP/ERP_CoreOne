@@ -23,6 +23,7 @@ import com.rootcore.sb.mapper.PaymentMapper;
 import com.rootcore.sb.mapper.SubscribeMapper;
 import com.rootcore.sb.mapper.UserMapper;
 import com.rootcore.sb.service.PaymentService;
+import com.rootcore.sb.service.TossCardInfoEnricher;
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
@@ -53,6 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
 	// 🔐 빌링키 양방향 암복호화 컴포넌트
 	private final BillingKeyCrypto billingKeyCrypto;
 	private final PasswordEncoder passwordEncoder;
+	 private final TossCardInfoEnricher tossCardInfoEnricher;
 
 	@Value("${project.url}")
 	String url;
@@ -132,7 +134,6 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 구독생성
 		LocalDate today = LocalDate.now();
-		LocalDateTime now = LocalDateTime.now();
 		SubscribeVO subscribe = new SubscribeVO();
 //		subscribe.setCompanyCode(company.getCompanyCode());
 		subscribe.setCompanyCode("0000");
@@ -153,7 +154,6 @@ public class PaymentServiceImpl implements PaymentService {
 		subscribeMapper.insertSubscribe(subscribe);
 
 		
-		String method = tossResponse.getMethod(); // ex) "CARD", "VBANK", "BANK", ...
 		// 3. PAYMENT 테이블에 결제 이력 INSERT
 		// payment 객체생성
 		PaymentVO payment = new PaymentVO();
@@ -176,26 +176,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
 		
-		// ✅ 여기부터 “카드 결제인 경우에만” 실행
-		if ("CARD".equalsIgnoreCase(method)) {
-		    TossConfirmResponseVO.Card card = tossResponse.getCard();
-
-		    if (card != null) { // 혹시 모르니 한 번 더 방어
-		        String cardCode = card.getCardCompanyCode();
-		        String maskedNumber = card.getNumber();  // 마스킹된 번호
-
-		        String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
-
-		        // 응답 객체에 세팅
-		        tossResponse.setCardCompany(cardName);
-		        tossResponse.setCardCompanyCode(cardCode);
-		        tossResponse.setCardNumberMask(maskedNumber);
-
-		        // 결제 VO에도 세팅
-		        payment.setCardCompany(cardName);      // 또는 cardCode
-		        payment.setCardNumberMask(maskedNumber);
-		    }
-		}
+		tossCardInfoEnricher.applyCardInfo(tossResponse, payment);
 		// 고정데이터로 들어감
 		// payment객체안에 값들을 채워넣음
 //		paymentMapper.insertPayment(payment);
@@ -256,7 +237,7 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
 	@Override
-	/* @Transactional */
+    @Transactional 
 	public TossConfirmResponseVO createSubscriptionWithBillingKey(String authKey, String customerKey, CompanyVO company,
 			PlanVO plan, ContractVO contract) {
 		// ---------------- 1) 빌링키 발급 ----------------
@@ -351,16 +332,9 @@ public class PaymentServiceImpl implements PaymentService {
 
 		subscribeMapper.insertSubscribe(subscribe);
 
-		// 카드사 코드/이름 변환 (선택)
-		String cardCode = tossResponse.getCard().getCardCompanyCode();
-		String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
-		String maskedNumber = tossResponse.getCard().getNumber(); // 마스킹 번호
-		tossResponse.setCardCompany(cardName);
-		tossResponse.setCardCompanyCode(cardCode);
-		tossResponse.setCardNumberMask(maskedNumber);
+		
 
 		PaymentVO payment = new PaymentVO();
-
 		payment.setOrderId(order.getOrderId());
 		payment.setSubCode(subscribe.getSubCode());
 //		payment.setCompanyCode(company.getCompanyCode());
@@ -369,18 +343,18 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentMethod(tossResponse.getMethod());
-		payment.setCardCompany(cardCode);
 		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(1));
 		payment.setPaymentType("BILLING");
 		payment.setBillingKey(encryptedBillingKey);
-		payment.setCardNumberMask(maskedNumber);
 
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
 		payment.setUpdatedBy("SYSTEM");
 		payment.setUpdateDate(LocalDateTime.now());
+		
+		tossCardInfoEnricher.applyCardInfo(tossResponse, payment);
 
 		paymentMapper.insertPayment(payment);
 
@@ -405,7 +379,8 @@ public class PaymentServiceImpl implements PaymentService {
 		
 		return tossResponse;
 	}
-
+	
+	@Transactional
 	@Override
 	public TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req) {
 
@@ -432,13 +407,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	    // 4) 성공/실패 판단
 	    String status = tossResponse.getStatus();
-	    boolean success = "DONE".equalsIgnoreCase(status) || "SUCCESS".equalsIgnoreCase(status);
-
-		// 2) (선택) 카드사 코드 → 카드사명 맵핑
-		String cardCode = tossResponse.getCard().getCardCompanyCode();
-		String cardName = paymentMapper.findCardCompanyCode("OP", cardCode);
-		tossResponse.setCardCompany(cardName);
-		tossResponse.setCardCompanyCode(cardCode);
+	    boolean success = "DONE".equalsIgnoreCase(status); 
 
 		// 4) 결제 이력 INSERT
 		PaymentVO payment = new PaymentVO();
@@ -449,11 +418,15 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(status);
 		payment.setPaymentKey(tossResponse.getPaymentKey());
 		payment.setPaymentMethod(tossResponse.getMethod());
-		payment.setCardCompany(cardCode);
-		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
-		payment.setBillingStart(LocalDate.now());
-		payment.setBillingEnd(LocalDate.now().plusMonths(1)); // 매달 결제 가정
-
+		if (tossResponse.getApprovedAt() != null) {
+		    payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
+		} else {
+		    payment.setPaymentDate(LocalDateTime.now()); // 또는 null 허용
+		}
+		if (success) {
+		    payment.setBillingStart(LocalDate.now());
+		    payment.setBillingEnd(LocalDate.now().plusMonths(1));
+		}
 		payment.setPaymentType("BILLING"); // 정기결제 구분값
 		// ✅ 어떤 빌링키로 결제했는지 "암호문"으로 저장
 		payment.setBillingKey(encryptedBillingKey);
@@ -463,6 +436,8 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setUpdatedBy("SYSTEM");
 		payment.setUpdateDate(LocalDateTime.now());
 
+		tossCardInfoEnricher.applyCardInfo(tossResponse, payment);
+		
 		paymentMapper.insertPayment(payment);
 
 		   // 7) 주문 상태 업데이트 (기존 mapper 재사용)
@@ -483,7 +458,7 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 	
 	//결제수단 변경
-	@Transactional
+	@Override
 	public void changeBillingMethod(String subCode, String authKey, String customerKey) {
 
 	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
@@ -502,21 +477,27 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	//결제 재시도
 	@Transactional
+	@Override
 	public TossConfirmResponseVO retryBillingPayment(String subCode) {
 
 	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
 	    if (sub == null) {
 	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
+	        
+	    }
+	    if (!"PAST_DUE".equals(sub.getSubsStatus())) {
+	        throw new IllegalStateException("재시도 불가 상태");
 	    }
 	    if (sub.getBillingKey() == null || sub.getBillingKey().isBlank()) {
 	        throw new IllegalStateException("결제수단이 등록되어 있지 않습니다. 결제수단 변경부터 하세요.");
 	    }
-
+	    
 	    // ✅ 주문금액 결정 (반올림)
 	    long orderAmount = Math.round(sub.getCurrentPrice());
 	    if (orderAmount <= 0) {
 	        throw new IllegalStateException("주문금액이 올바르지 않습니다. currentPrice=" + sub.getCurrentPrice());
 	    }
+	
 
 	    // 1) 주문 생성(재시도용)
 	    OrderVO order = new OrderVO();
@@ -543,6 +524,7 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	//만료 재구독
 	@Transactional
+	@Override
 	public TossConfirmResponseVO resubscribeBilling(String subCode, String customerKey) {
 
 	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
@@ -605,7 +587,8 @@ public class PaymentServiceImpl implements PaymentService {
 	    return payRes;
 	}
 
-
+	
+	@Transactional
 	@Override
 	public Map<String, String> createCompanyManagerAccount(CompanyVO company) {
 

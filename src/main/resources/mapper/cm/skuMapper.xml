@@ -3,46 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.cm.mapper.SkuMapper">
 
-    <!-- 품목 조회 -->
-    <select id="selectAllSku" resultType="SkuVO">
-        SELECT  sku,
-                sku_name,
-                sku_type,
-                spec,
-                unit,
-                remark,
-                use_yn,
-                tax_yn
-        FROM tb_sku_master
-    </select>
-
-    <!-- 수주 품목 조회 -->
-    <select id="selectInOrdSku" resultType="SkuVO" parameterType="string">
-        SELECT  sku.sku,        -- 품목코드
-        sku.sku_name,   -- 품목명
-        sku.spec,       -- 규격
-        sku.unit,       -- 단위
-        unit.unit_price_type,           -- 단가유형
-        cmCode.code_name "type_name",   -- 단가유형이름
-        unit.unit_price,                -- 단가
-        sku.tax_yn
-        FROM tb_sku_master sku
-        JOIN tb_unit_price_master unit
-        ON sku.company_code = unit.company_code
-        AND sku.sku = unit.sku
-        JOIN tb_cm_code cmCode
-        ON unit.unit_price_type = cmCode.code
-        AND unit.cust_code = #{custCode}
-        <where>
-            <if test="unitPriceType == 'SELL_UNIT' ">
-                AND unit_price_type = 'SELL_UNIT'
-            </if>
-            <if test="unitPriceType == 'SELL_DISC_UNIT' ">
-                AND unit_price_type = 'SELL_DISC_UNIT'
-            </if>
-        </where>
-    </select>
-
     <!-- 품목 모달 -->
     <select id="selectSku" resultType="SkuVO" parameterType="string">
         SELECT sku.sku

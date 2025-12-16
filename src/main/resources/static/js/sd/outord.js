@@ -535,7 +535,7 @@ function getOutordData() {
     const totals = calcTotalsFromGrid();
 
     // 기본정보
-    const info = {
+    const outordInfo = {
         outordNo: document.getElementById('outordNo').value || null,
         outordDate: document.getElementById('outordDate').value,
         dueDate: document.getElementById('dueDate').value,
@@ -552,12 +552,13 @@ function getOutordData() {
 
     // 품목
     const rows = outordGrid.getData();
-    const detail = rows
+    const outordDetail = rows
         .filter(r => (r.sku && String(r.sku).trim() !== '')   // 빈 행 제거
             || (r.skuName && String(r.skuName).trim() !== ''))
         .map((row, idx) => ({
             lineNo: idx + 1,
             sku: row.sku,
+            skuName: row.skuName,
             qty: toNumber(row.qty),
             unitPrice: toNumber(row.unitPrice),     // 단가
             supplyPrice: toNumber(row.supplyPrice), // 공급가액 (수량*단가)
@@ -566,7 +567,7 @@ function getOutordData() {
             remark: row.remark
         }));
 
-    return { info, detail };
+    return { outordInfo, outordDetail };
 }
 
 

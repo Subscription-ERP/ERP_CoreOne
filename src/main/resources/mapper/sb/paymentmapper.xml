@@ -80,7 +80,8 @@
 	<select id="selectInactiveSubListByComCode"
 		parameterType="string" resultType="com.rootcore.sb.vo.SubscribeVO">
 
-		SELECT c.COMPANY_CODE,
+		SELECT
+		c.COMPANY_CODE,
 		s.CURRENT_PRICE,
 		s.CURRENT_USER_COUNT,
 		s.PLAN_CODE,
@@ -88,93 +89,69 @@
 		s.SUBS_END,
 		s.SUB_CODE,
 		s.SUBS_STATUS,
-		st.CODE_NAME AS inactiveReasonName
-		FROM TB_COMPANY_MASTER c
-		JOIN TB_SUBSCRIBE s
-		ON c.COMPANY_CODE =
-		s.COMPANY_CODE
-		JOIN TB_CM_CODE st
-		ON st.CODE = s.INACTIVE_REASON
-		WHERE
-		SUBS_STATUS = 'INACTIVE'
-		ORDER BY c.COMPANY_CODE
+		s.BILLING_PERIOD,
+		s.NEXT_BILLING_DATE,
+		s.RECENT_BILLING_DATE
+		FROM TB_SUBSCRIBE s
+		JOIN
+		TB_COMPANY_MASTER c
+		ON s.COMPANY_CODE = c.COMPANY_CODE
+		WHERE SUBS_STATUS
+		= 'EXPIRED'
+		ORDER BY RECENT_BILLING_DATE
 
 	</select>
 	<select id="selectSubDetail" parameterType="string"
 		resultType="SubscribeVO">
-    <![CDATA[
-    SELECT *
-    FROM (
-        SELECT
-            s.sub_code,
-            s.company_code,
-            s.plan_code,
-            s.subs_start,
-            s.subs_end,
-            s.subs_status,
-            s.current_price,
-            s.current_user_count,
-            s.billing_period,
-            s.recent_billing_date,
-            s.next_billing_date,
-            p.price,
-            pay.payment_method,                        
-            pay.payment_stat,   
-            s.created_by,
-            s.create_date,
-            s.updated_by,
-            s.update_date
-        FROM TB_SUBSCRIBE s
-        JOIN TB_SUBSCRIBE_PLAN p
-          ON p.plan_code = s.plan_code
-        LEFT JOIN (
-            SELECT sub_code,
-                   payment_method,
-                   payment_stat
-            FROM (
-                SELECT 
-                    t.*,
-                    ROW_NUMBER() OVER (PARTITION BY t.sub_code ORDER BY  t.payment_date DESC) rn
-                FROM TB_PAYMENT t
-            )
-            WHERE rn = 1
-        ) pay
-          ON pay.sub_code = s.sub_code
-        WHERE s.company_code = #{companyCode}
-          AND s.subs_status = 'ACTIVE'
-          AND s.subs_start <= SYSDATE
-          AND s.subs_end >= SYSDATE
-        ORDER BY s.subs_start DESC
-    )
-    WHERE ROWNUM = 1
-    ]]>
+		SELECT 
+			SUB_CODE,
+			COMPANY_CODE,
+			SUBS_STATUS,
+			SUBS_START,
+			SUBS_END,
+			CREATED_BY,
+			CREATE_DATE,
+			UPDATED_BY,
+			UPDATE_DATE,
+			PLAN_CODE,
+			CONTRACT_CODE,
+			BILLING_PERIOD,
+			CURRENT_USER_COUNT,
+			CURRENT_PRICE,
+			NEXT_BILLING_DATE,
+			RECENT_BILLING_DATE
+		FROM TB_SUBSCRIBE
+		WHERE company_code = #{companyCode}
+		ORDER BY subs_start DESC
+		FETCH FIRST 1 ROWS ONLY
 	</select>
-	
+
 
 	<select id="selectPaymentHistory" parameterType="string"
 		resultType="com.rootcore.sb.vo.PaymentVO">
 
 		SELECT
-		PAYMENT_CODE,
-		SUB_CODE,
-		COMPANY_CODE,
-		ORDER_ID,
-		TOTAL_PRICE,
-		PAYMENT_STAT,
-		PAYMENT_METHOD,
-		PAYMENT_DATE,
-		CARD_COMPANY,
-		PAYMENT_KEY,
-		BILLING_START,
-		BILLING_END,
-		PAYMENT_TYPE,
-		CARD_NUMBER_MASK,
-		CREATED_BY,
-		CREATE_DATE,
-		UPDATED_BY,
-		UPDATE_DATE
+			PAYMENT_CODE,
+			SUB_CODE,
+			COMPANY_CODE,
+			ORDER_ID,
+			TOTAL_PRICE,
+			PAYMENT_STAT,
+			PAYMENT_METHOD,
+			PAYMENT_DATE,
+			CARD_COMPANY,
+			PAYMENT_KEY,
+			BILLING_START,
+			BILLING_END,
+			PAYMENT_TYPE,
+			CARD_NUMBER_MASK,
+			CREATED_BY,
+			CREATE_DATE,
+			UPDATED_BY,
+			UPDATE_DATE
 		FROM
-		TB_PAYMENT   <!-- 🔴 여기를 네 실제 테이블명으로 바꿔줘 -->
+		TB_PAYMENT   <!-- 🔴 여기를 네 실제 테이블명으로 
+			바꿔줘 -->
 		WHERE COMPANY_CODE = #{companyCode}
 		ORDER BY PAYMENT_DATE DESC
 	</select>
