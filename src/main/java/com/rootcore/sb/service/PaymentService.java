@@ -14,12 +14,14 @@ import com.rootcore.sb.vo.TossBillingConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
 
+import jakarta.servlet.http.HttpSession;
+
 public interface PaymentService {
 	PaymentReadyResponseVO insertOrder(OrderVO ordervo, PlanVO plan);
 
 	// 1) 일반결제 (일회성 / 구독 첫 결제)
 	TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO, CompanyVO company, PlanVO plan,
-			ContractVO contract);
+			ContractVO contract,  HttpSession session);
 
 	// 2) 정기결제 - 카드 등록 성공 후 구독 생성
 	TossConfirmResponseVO createSubscriptionWithBillingKey(String authKey, String customerKey, CompanyVO company,
@@ -38,10 +40,5 @@ public interface PaymentService {
 
 	List<PaymentVO> selectPaymentHistory(String companyCode);
 
-	//결제 재시도,만료,결제수단 변경
-	void changeBillingMethod(String subCode, String authKey, String customerKey);
-
-	TossConfirmResponseVO retryBillingPayment(String subCode);
-
-	TossConfirmResponseVO resubscribeBilling(String subCode, String customerKey);
+	
 }

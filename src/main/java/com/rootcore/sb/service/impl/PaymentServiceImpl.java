@@ -2,11 +2,13 @@ package com.rootcore.sb.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,6 +39,7 @@ import com.rootcore.sb.vo.TossBillingConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -54,7 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
 	// 🔐 빌링키 양방향 암복호화 컴포넌트
 	private final BillingKeyCrypto billingKeyCrypto;
 	private final PasswordEncoder passwordEncoder;
-	 private final TossCardInfoEnricher tossCardInfoEnricher;
+	private final TossCardInfoEnricher tossCardInfoEnricher;
 
 	@Value("${project.url}")
 	String url;
@@ -65,16 +68,13 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public PaymentReadyResponseVO insertOrder(OrderVO ordervo, PlanVO plan) {
 
-		// 주문번호 생성 (예: UUID 사용, 실제로는 규칙 정해서 사용)
 
 		// ✅ 주문 정보 ORDER 테이블에 저장
-
 		ordervo.setOrderStatus("READY"); // 주문 상태
 		ordervo.setOrderType("NORMAL"); // 필요시 상수/enum 처리
 		ordervo.setCreateDate(LocalDateTime.now());
 		ordervo.setPlanCode(plan.getPlanCode());
 		ordervo.setCreatedBy("SYSTEM"); // 나중에 로그인 사용자로 교체
-		ordervo.setCompanyCode("0000");
 		orderMapper.insertOrder(ordervo);
 
 		// 프론트에서 Toss 위젯 호출할 때 필요한 값들 내려줌
@@ -92,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	@Transactional
 	public TossConfirmResponseVO confirmPayment(TossConfirmRequestVO requestVO, CompanyVO company, PlanVO plan,
-			ContractVO contract) {
+			ContractVO contract, HttpSession session) {
 
 		// 1. ORDER 테이블에서 주문 조회 및 금액 검증
 		OrderVO order = orderMapper.selectByOrderId(requestVO.getOrderId());
@@ -106,23 +106,36 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 2. 토스 결제 승인 API 호출
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmPayment(requestVO);
-	
 
-		// 회사등록
-		CompanyVO existCompany = companyMapper.selectCompany(company.getCompanyCode());
-		if (existCompany == null) {
-			company.setCreatedBy("SYSTEM");
-			company.setCreateDate(LocalDateTime.now());
-			company.setCompanyCode("0000");
-			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
-		} else {
-			company = existCompany; // 기존 회사 정보 사용
-		}
+		// ✅ 3) 재구독이면 주문에 companyCode가 들어있음
+	    String orderCompanyCode = order.getCompanyCode();
+		
 
+	    // ✅ 회사 확정
+	    CompanyVO existCompany = null;
+	    if (orderCompanyCode != null) {
+	        existCompany = companyMapper.selectCompany(orderCompanyCode);
+	        if (existCompany == null) {
+	            throw new IllegalStateException("주문에 저장된 회사코드의 회사가 존재하지 않습니다.");
+	        }
+	        company = existCompany; // 재구독은 기존회사 사용
+	    } else {
+	        // ✅ 최초결제(비로그인): 세션 company로 회사 등록
+	        if (company == null) throw new IllegalStateException("회사 등록 정보가 없습니다.");
+	        existCompany = companyMapper.selectCompany(company.getCompanyCode());
+	        if (existCompany == null) {
+	            company.setCreatedBy("SYSTEM");
+	            company.setCreateDate(LocalDateTime.now());
+	            companyMapper.insertCompany(company);
+	        } else {
+	            company = existCompany;
+	        }
+	        // 주문에도 회사코드 업데이트 해두면 좋음(선택)
+	         orderMapper.updateOrderCompanyCode(order.getOrderId(), company.getCompanyCode(), "SYSTEM");
+	    }
 		// 계약서 등록
 
-//		contract.setCompanyCode(company.getCompanyCode());
-		contract.setCompanyCode("0000");
+		contract.setCompanyCode(company.getCompanyCode());
 		contract.setPlanCode(plan.getPlanCode());
 		contract.setCompanyName(company.getCompanyName());
 		contract.setCeoName(company.getCeoName());
@@ -132,11 +145,12 @@ public class PaymentServiceImpl implements PaymentService {
 		contract.setContractEnd(contract.getContractStart().plusMonths(contract.getSubsPeriod()));
 		contractMapper.insertContract(contract);
 
+		 subscribeMapper.expireActiveSubscribe(company.getCompanyCode(), LocalDate.now(), "SYSTEM", LocalDateTime.now());
+		
 		// 구독생성
 		LocalDate today = LocalDate.now();
 		SubscribeVO subscribe = new SubscribeVO();
-//		subscribe.setCompanyCode(company.getCompanyCode());
-		subscribe.setCompanyCode("0000");
+		subscribe.setCompanyCode(company.getCompanyCode());
 		subscribe.setSubsStatus("ACTIVE");
 		subscribe.setSubsStart(LocalDate.now());
 		subscribe.setSubsEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
@@ -144,7 +158,7 @@ public class PaymentServiceImpl implements PaymentService {
 		subscribe.setCreateDate(LocalDateTime.now());
 		subscribe.setPlanCode(plan.getPlanCode());
 		subscribe.setContractCode(contract.getContractCode());
-		// subscribe.setBillingPeriod();
+		subscribe.setBillingPeriod(contract.getBillingPeriod());
 		subscribe.setCurrentUserCount(contract.getUserCount());
 		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
 		subscribe.setRecentBillingDate(today);
@@ -153,15 +167,13 @@ public class PaymentServiceImpl implements PaymentService {
 
 		subscribeMapper.insertSubscribe(subscribe);
 
-		
 		// 3. PAYMENT 테이블에 결제 이력 INSERT
 		// payment 객체생성
 		PaymentVO payment = new PaymentVO();
 
 		payment.setOrderId(order.getOrderId());
 		payment.setSubCode(subscribe.getSubCode());
-//		payment.setCompanyCode(company.getCompanyCode());
-		payment.setCompanyCode("0000");
+		payment.setCompanyCode(company.getCompanyCode());
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
@@ -175,7 +187,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		payment.setCreatedBy("SYSTEM");
 		payment.setCreateDate(LocalDateTime.now());
-		
+
 		tossCardInfoEnricher.applyCardInfo(tossResponse, payment);
 		// 고정데이터로 들어감
 		// payment객체안에 값들을 채워넣음
@@ -185,18 +197,19 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// ORDER 업데이트
 		orderMapper.updateOrderSubCode(payment.getOrderId(), payment.getSubCode(), "SYSTEM");
-//		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
 		orderMapper.updateOrderBilling(order.getOrderId(), contract.getContractStart(), contract.getContractEnd());
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
 
 		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
-		
-		// 회사 관리자 계정 생성
-		Map<String, String> accountInfo = createCompanyManagerAccount(company);
 
-		tossResponse.setUserId(accountInfo.get("userId"));
-		tossResponse.setPassword(accountInfo.get("Password"));
-		// 5. 그대로 Toss 응답 반환 (프론트가 필요로 하는 경우)
+		// 회사 관리자 계정 생성
+		// ✅ 8) 관리자 계정 생성은 “최초 회사 등록”일 때만 하는 게 안전
+	    // 재구독이면 기존 계정이 있을 테니 생성하면 중복됨
+	    if (orderCompanyCode == null) {
+	        Map<String, String> accountInfo = createCompanyManagerAccount(company);
+	        tossResponse.setUserId(accountInfo.get("userId"));
+	        tossResponse.setPassword(accountInfo.get("Password"));
+	    }
 		return tossResponse;
 
 	}
@@ -237,7 +250,7 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
 	@Override
-    @Transactional 
+	@Transactional
 	public TossConfirmResponseVO createSubscriptionWithBillingKey(String authKey, String customerKey, CompanyVO company,
 			PlanVO plan, ContractVO contract) {
 		// ---------------- 1) 빌링키 발급 ----------------
@@ -246,26 +259,29 @@ public class PaymentServiceImpl implements PaymentService {
 		String encryptedBillingKey = billingKeyCrypto.encrypt(billingKey);
 
 		// ---------------- 2) 주문 생성 ----------------
-		OrderVO order = new OrderVO();
-		order.setOrderName(plan.getPlanName());
-		order.setOrderAmount(contract.getTotalPrice().longValue());
-		order.setOrderStatus("READY"); // 주문 상태
-		order.setOrderType("BILLING"); // 필요시 상수/enum 처리
-		order.setCreateDate(LocalDateTime.now());
-		order.setUpdateDate(LocalDateTime.now());
-		order.setCreatedBy("SYSTEM");
-		order.setUpdatedBy("SYSTEM");
-		order.setCompanyCode("0000");
-		order.setPlanCode(plan.getPlanCode());
-		System.out.println(order);
+		OrderVO billingorder = new OrderVO();
+		billingorder.setOrderName(plan.getPlanName());
+		billingorder.setOrderAmount(contract.getTotalPrice().longValue());
+		billingorder.setOrderStatus("READY"); // 주문 상태
+		billingorder.setOrderType("BILLING"); // 필요시 상수/enum 처리
+		billingorder.setCreateDate(LocalDateTime.now());
+		billingorder.setUpdateDate(LocalDateTime.now());
+		billingorder.setCreatedBy("SYSTEM");
+		billingorder.setUpdatedBy("SYSTEM");
+		billingorder.setCompanyCode("0000");
+		billingorder.setPlanCode(plan.getPlanCode());
 
-		orderMapper.insertOrder(order);
+		orderMapper.insertOrder(billingorder);
 
+		String cardRegOrderId = "CARDREG" +
+		        LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) + "_" +
+		        UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+		
 		// ---------------- 6) 빌링키로 첫 결제 승인 (정기결제) ----------------
 		TossBillingConfirmRequestVO billingReq = new TossBillingConfirmRequestVO();
 		billingReq.setBillingKey(billingKey);
-		billingReq.setAmount(order.getOrderAmount()); // 주문 금액 기준
-		billingReq.setOrderId(order.getOrderId());
+		billingReq.setAmount(billingorder.getOrderAmount()); // 주문 금액 기준
+		billingReq.setOrderId(cardRegOrderId);
 		billingReq.setOrderName(plan.getPlanName()); // 예: "스탠다드 구독"
 		billingReq.setCustomerKey(customerKey);
 
@@ -284,7 +300,7 @@ public class PaymentServiceImpl implements PaymentService {
 			company.setCreateDate(LocalDateTime.now());
 			company.setUpdatedBy("SYSTEM");
 			company.setUpdateDate(LocalDateTime.now());
-			company.setCompanyCode("0000");
+			company.setCompanyCode(company.getCompanyCode());
 			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
 			company = existCompany; // 기존 회사 정보 사용
@@ -294,8 +310,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		contract.setCompanyCode(company.getCompanyCode());
 		contract.setPlanCode(plan.getPlanCode());
-//		contract.setCompanyName(company.getCompanyName());
-		contract.setCompanyName("0000");
+		contract.setCompanyName(company.getCompanyName());
 		contract.setCeoName(company.getCeoName());
 		contract.setCreatedBy("SYSTEM");
 		contract.setCreateDate(LocalDateTime.now());
@@ -308,11 +323,9 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 구독생성
 		LocalDate today = LocalDate.now();
-		LocalDateTime now = LocalDateTime.now();
-		int period = contract.getSubsPeriod();
+		LocalDate next = today.plusMonths(1);
 		SubscribeVO subscribe = new SubscribeVO();
-//		subscribe.setCompanyCode(company.getCompanyCode());
-		subscribe.setCompanyCode("0000");
+		subscribe.setCompanyCode(company.getCompanyCode());
 		subscribe.setSubsStatus("ACTIVE");
 		subscribe.setSubsStart(LocalDate.now());
 		subscribe.setSubsEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
@@ -326,19 +339,17 @@ public class PaymentServiceImpl implements PaymentService {
 		subscribe.setCurrentUserCount(contract.getUserCount());
 		subscribe.setCurrentPrice(contract.getTotalPrice().doubleValue());
 		subscribe.setRecentBillingDate(today);
-		subscribe.setNextBillingDate(today.plusMonths(period));
+		subscribe.setNextBillingDate(next);
+		subscribe.setBillingPeriod(contract.getBillingPeriod());
 		// ✅ 구독 테이블에는 "암호문" 저장
 		subscribe.setBillingKey(encryptedBillingKey);
 
 		subscribeMapper.insertSubscribe(subscribe);
 
-		
-
 		PaymentVO payment = new PaymentVO();
-		payment.setOrderId(order.getOrderId());
+		payment.setOrderId(billingorder.getOrderId());
 		payment.setSubCode(subscribe.getSubCode());
-//		payment.setCompanyCode(company.getCompanyCode());
-		payment.setCompanyCode("0000");
+		payment.setCompanyCode(company.getCompanyCode());
 		payment.setTotalPrice(tossResponse.getTotalAmount()); // TOTAL_PRICE
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
@@ -353,33 +364,32 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setCreateDate(LocalDateTime.now());
 		payment.setUpdatedBy("SYSTEM");
 		payment.setUpdateDate(LocalDateTime.now());
-		
+
 		tossCardInfoEnricher.applyCardInfo(tossResponse, payment);
 
 		paymentMapper.insertPayment(payment);
 
 		// ORDER 업데이트
 		orderMapper.updateOrderSubCode(payment.getOrderId(), payment.getSubCode(), "SYSTEM");
-//		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
-		orderMapper.updateOrderBilling(order.getOrderId(), contract.getContractStart(), contract.getContractEnd());
+		orderMapper.updateOrderCompanyCode(payment.getOrderId(), company.getCompanyCode(), "SYSTEM");
+		orderMapper.updateOrderBilling(billingorder.getOrderId(), contract.getContractStart(), contract.getContractEnd());
 		// 4. ORDER 테이블의 주문 상태 업데이트 (예: PAID / SUCCESS)
 
-		orderMapper.updateOrderStatus(order.getOrderId(), "SUCCESS");
+		orderMapper.updateOrderStatus(billingorder.getOrderId(), "SUCCESS");
 		tossResponse.setBillingKey(null);
 
 		int adminCount = userMapper.countCompanyManager(company.getCompanyCode());
 
 		if (adminCount == 0) {
-		    Map<String, String> accountInfo = 
-		        createCompanyManagerAccount(company);
+			Map<String, String> accountInfo = createCompanyManagerAccount(company);
 
-		    tossResponse.setUserId(accountInfo.get("userId"));
-		    tossResponse.setPassword(accountInfo.get("password"));
+			tossResponse.setUserId(accountInfo.get("userId"));
+			tossResponse.setPassword(accountInfo.get("password"));
 		}
-		
+
 		return tossResponse;
 	}
-	
+
 	@Transactional
 	@Override
 	public TossConfirmResponseVO chargeSubscription(TossBillingConfirmRequestVO req) {
@@ -389,11 +399,11 @@ public class PaymentServiceImpl implements PaymentService {
 		if (sub == null) {
 			throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + req.getSubCode());
 		}
-		   // 2) billingKey 복호화해서 세팅 (스케줄러/재시도에서 billingKey 주입 금지)
-	    String encryptedBillingKey = sub.getBillingKey();
-	    if (encryptedBillingKey == null || encryptedBillingKey.isBlank()) {
-	        throw new IllegalStateException("결제수단(billingKey)이 없습니다. subCode=" + req.getSubCode());
-	    }
+		// 2) billingKey 복호화해서 세팅 (스케줄러/재시도에서 billingKey 주입 금지)
+		String encryptedBillingKey = sub.getBillingKey();
+		if (encryptedBillingKey == null || encryptedBillingKey.isBlank()) {
+			throw new IllegalStateException("결제수단(billingKey)이 없습니다. subCode=" + req.getSubCode());
+		}
 
 		// 🔓 토스에 보낼 평문 빌링키
 		String plainBillingKey = billingKeyCrypto.decrypt(encryptedBillingKey);
@@ -403,11 +413,10 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 1) 토스에 정기결제 승인 요청
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
-		
 
-	    // 4) 성공/실패 판단
-	    String status = tossResponse.getStatus();
-	    boolean success = "DONE".equalsIgnoreCase(status); 
+		// 4) 성공/실패 판단
+		String status = tossResponse.getStatus();
+		boolean success = "DONE".equalsIgnoreCase(status);
 
 		// 4) 결제 이력 INSERT
 		PaymentVO payment = new PaymentVO();
@@ -419,13 +428,13 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentKey(tossResponse.getPaymentKey());
 		payment.setPaymentMethod(tossResponse.getMethod());
 		if (tossResponse.getApprovedAt() != null) {
-		    payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
+			payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
 		} else {
-		    payment.setPaymentDate(LocalDateTime.now()); // 또는 null 허용
+			payment.setPaymentDate(LocalDateTime.now()); // 또는 null 허용
 		}
 		if (success) {
-		    payment.setBillingStart(LocalDate.now());
-		    payment.setBillingEnd(LocalDate.now().plusMonths(1));
+			payment.setBillingStart(LocalDate.now());
+			payment.setBillingEnd(LocalDate.now().plusMonths(1));
 		}
 		payment.setPaymentType("BILLING"); // 정기결제 구분값
 		// ✅ 어떤 빌링키로 결제했는지 "암호문"으로 저장
@@ -437,156 +446,25 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setUpdateDate(LocalDateTime.now());
 
 		tossCardInfoEnricher.applyCardInfo(tossResponse, payment);
-		
+
 		paymentMapper.insertPayment(payment);
 
-		   // 7) 주문 상태 업데이트 (기존 mapper 재사용)
-	    orderMapper.updateOrderStatus(req.getOrderId(), success ? "SUCCESS" : "FAILED");
-		
-	    // 8) 구독 상태/청구일 갱신 (⭐ 성공일 때만 nextBillingDate 갱신!)
-	    if (success) {
-	        LocalDate today = LocalDate.now();
-	        LocalDate next = today.plusMonths(1);
-	        subscribeMapper.updateBillingDates(sub.getSubCode(), today, next);
-	        subscribeMapper.updateSubsStatus(sub.getSubCode(), "ACTIVE", "SYSTEM");
-	    } else {
-	        subscribeMapper.updateSubsStatus(sub.getSubCode(), "PAST_DUE", "SYSTEM");
-	    }
-	    
+		// 7) 주문 상태 업데이트 (기존 mapper 재사용)
+		orderMapper.updateOrderStatus(req.getOrderId(), success ? "SUCCESS" : "FAILED");
+
+		// 8) 구독 상태/청구일 갱신 (⭐ 성공일 때만 nextBillingDate 갱신!)
+		if (success) {
+			LocalDate today = LocalDate.now();
+			LocalDate next = today.plusMonths(1);
+			subscribeMapper.updateBillingDates(sub.getSubCode(), today, next);
+			subscribeMapper.updateSubsStatus(sub.getSubCode(), "ACTIVE", "SYSTEM");
+		} else {
+			subscribeMapper.updateSubsStatus(sub.getSubCode(), "PAST_DUE", "SYSTEM");
+		}
+
 		return tossResponse; // 스케줄러 내부에서 결과 안 쓰면 반환 없어도 되긴 함
-		
+
 	}
-	
-	//결제수단 변경
-	@Override
-	public void changeBillingMethod(String subCode, String authKey, String customerKey) {
-
-	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
-	    if (sub == null) {
-	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
-	    }
-
-	    // 1) 토스에서 새 billingKey 발급
-	    String newBillingKeyPlain = tossPaymentClient.issueBillingKey(authKey, customerKey);
-	    String newBillingKeyEnc = billingKeyCrypto.encrypt(newBillingKeyPlain);
-
-	    // 2) 구독 테이블 billingKey 교체
-	    // ※ 아래 updateBillingKey 쿼리/매퍼 추가 필요
-	    subscribeMapper.updateBillingKey(subCode, newBillingKeyEnc, "SYSTEM");
-	}
-	
-	//결제 재시도
-	@Transactional
-	@Override
-	public TossConfirmResponseVO retryBillingPayment(String subCode) {
-
-	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
-	    if (sub == null) {
-	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
-	        
-	    }
-	    if (!"PAST_DUE".equals(sub.getSubsStatus())) {
-	        throw new IllegalStateException("재시도 불가 상태");
-	    }
-	    if (sub.getBillingKey() == null || sub.getBillingKey().isBlank()) {
-	        throw new IllegalStateException("결제수단이 등록되어 있지 않습니다. 결제수단 변경부터 하세요.");
-	    }
-	    
-	    // ✅ 주문금액 결정 (반올림)
-	    long orderAmount = Math.round(sub.getCurrentPrice());
-	    if (orderAmount <= 0) {
-	        throw new IllegalStateException("주문금액이 올바르지 않습니다. currentPrice=" + sub.getCurrentPrice());
-	    }
-	
-
-	    // 1) 주문 생성(재시도용)
-	    OrderVO order = new OrderVO();
-	    order.setOrderName("정기결제 재시도");
-	    order.setOrderAmount(orderAmount);
-	    order.setOrderStatus("READY");
-	    order.setOrderType("BILLING");
-	    order.setCreateDate(LocalDateTime.now());
-	    order.setCreatedBy("SYSTEM");
-	    order.setCompanyCode(sub.getCompanyCode());
-	    orderMapper.insertOrder(order);
-
-	    // 2) 결제 요청 만들어서 공통함수 호출
-	    TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
-	    req.setSubCode(subCode);
-	    req.setOrderId(order.getOrderId());
-	    req.setAmount(order.getOrderAmount());
-	    req.setOrderName(order.getOrderName());
-
-	    return chargeSubscription(req);
-	    
-	  
-	}
-	
-	//만료 재구독
-	@Transactional
-	@Override
-	public TossConfirmResponseVO resubscribeBilling(String subCode, String customerKey) {
-
-	    SubscribeVO sub = subscribeMapper.selectSubscribeBySubCode(subCode);
-	    if (sub == null) {
-	        throw new IllegalArgumentException("존재하지 않는 구독입니다. subCode=" + subCode);
-	    }
-	    if (sub.getBillingKey() == null || sub.getBillingKey().isBlank()) {
-	        throw new IllegalStateException("결제수단이 등록되어 있지 않습니다. 결제수단 변경부터 하세요.");
-	    }
-
-	    LocalDate today = LocalDate.now();
-	    if (sub.getSubsEnd() != null && !sub.getSubsEnd().isBefore(today)) {
-	        // 정책: 만료가 아닌데 재구독 버튼 눌렀으면 막기(원하면 연장으로 바꿀 수도 있음)
-	        throw new IllegalStateException("재구독 대상이 아닙니다. 아직 만료되지 않았습니다.");
-	    }
-	    // ✅ 주문금액 결정: 현재 구독 청구 금액 사용
-	    long orderAmount = (long) Math.round(sub.getCurrentPrice()); // double -> long 안전하게 반올림
-
-	    if (orderAmount <= 0) {
-	        throw new IllegalStateException("주문금액이 올바르지 않습니다. currentPrice=" + sub.getCurrentPrice());
-	    }
-
-	    // 1) 주문 생성(재구독용)
-	    OrderVO order = new OrderVO();
-	    order.setOrderName("만료 재구독 결제");
-	    order.setOrderAmount(orderAmount);
-	    order.setOrderStatus("READY");
-	    order.setOrderType("BILLING");
-	    order.setCreateDate(LocalDateTime.now());
-	    order.setCreatedBy("SYSTEM");
-	    order.setCompanyCode(sub.getCompanyCode());
-	    orderMapper.insertOrder(order);
-
-	    // 2) 결제 실행 (공통함수 재사용)
-	    TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
-	    req.setSubCode(subCode);
-	    req.setOrderId(order.getOrderId());
-	    req.setAmount(order.getOrderAmount());
-	    req.setOrderName(order.getOrderName());
-	    req.setCustomerKey(customerKey);
-
-	    TossConfirmResponseVO payRes = chargeSubscription(req);
-
-	    // 3) ✅ 구독 상태/기간 갱신(재활성화)
-	    int periodMonths = (sub.getBillingPeriod() != null ? sub.getBillingPeriod() : 1);
-	    LocalDate newStart = today;
-	    LocalDate newEnd = today.plusMonths(periodMonths);
-
-	    // ※ 아래 updateResubscribe 쿼리/매퍼 추가 필요
-	    subscribeMapper.updateResubscribe(
-	        subCode,
-	        "ACTIVE",
-	        newStart,
-	        newEnd,
-	        today,
-	        today.plusMonths(1),
-	        "SYSTEM"
-	    );
-
-	    return payRes;
-	}
-
 	
 	@Transactional
 	@Override
@@ -632,9 +510,8 @@ public class PaymentServiceImpl implements PaymentService {
 		user.setRoleCode("ADMIN");
 
 		userMapper.insertUser(user);
-		
+
 		userMapper.insertRoleMenu(company.getCompanyCode());
-		
 
 		// 6) 화면에 보여줄 정보만 반환
 		result.put("userId", userId);
@@ -642,4 +519,6 @@ public class PaymentServiceImpl implements PaymentService {
 
 		return result;
 	}
+
+	
 }
