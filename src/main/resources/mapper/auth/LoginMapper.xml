@@ -4,121 +4,117 @@
 
 <mapper namespace="com.rootcore.auth.mapper.LoginMapper">
 
-	<!-- 1. 사용자 조회 -->
-	<!--  TB_USER_MASTER에서 ROLE_CODE 조인 -->
-	<select id="findByUserId"
- resultType="com.rootcore.auth.vo.LoginVO">
+    <!-- 1. 사용자 조회 -->
+    <!--  TB_USER_MASTER에서 ROLE_CODE 조인 -->
+    <select id="findByUserId" resultType="com.rootcore.auth.vo.LoginVO">
+        SELECT
+            L.COMPANY_CODE,
+            L.USER_ID,
+            U.USER_NAME,
+            L.PASSWORD AS dbPassword,
+            L.FAIL_COUNT,
+            L.STATUS,
+            L.LOCKED_DATE,
+            L.LAST_LOGIN,
+            U.ROLE_CODE
+        FROM TB_LOGIN_MASTER L
+        JOIN TB_USER_MASTER U
+          ON L.USER_ID = U.USER_ID
+        WHERE L.USER_ID = #{userId}
+    </select>
 
- SELECT
-   L.COMPANY_CODE,
-   L.USER_ID,
-   U.USER_NAME,
-   L.PASSWORD AS dbPassword,
-   L.FAIL_COUNT,
-   L.STATUS,
-   L.LOCKED_DATE,
-   L.LAST_LOGIN,
-   U.ROLE_CODE
- FROM TB_LOGIN_MASTER L
- JOIN TB_USER_MASTER U
-   ON L.USER_ID = U.USER_ID
- WHERE L.USER_ID = #{userId}
+    <!-- 2. 현재 실패 횟수 조회 -->
+    <select id="getFailCount" resultType="int">
+        SELECT FAIL_COUNT
+        FROM TB_LOGIN_MASTER
+        WHERE USER_ID = #{userId}
+    </select>
 
-</select>
+    <!-- 3. 실패 횟수 증가 -->
+    <update id="increaseFailCount">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            FAIL_COUNT = FAIL_COUNT + 1,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
+    <!-- 4. 실패 횟수 직접 업데이트 -->
+    <update id="updateFailCount">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            FAIL_COUNT = #{failCount},
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
-	<!-- 2. 현재 실패 횟수 조회 -->
-	<select id="getFailCount" resultType="int">
-		SELECT FAIL_COUNT
-		FROM TB_LOGIN_MASTER
-		WHERE USER_ID = #{userId}
-	</select>
+    <!-- 5. 계정 잠금 -->
+    <update id="lockUserAccount">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            STATUS = 'LOCKED',
+            LOCKED_DATE = SYSDATE,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
-	<!-- 3. 실패 횟수 증가 -->
-	<update id="increaseFailCount">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		FAIL_COUNT = FAIL_COUNT + 1,
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
+    <!-- 6. 실패 횟수 초기화 -->
+    <update id="resetFailCount">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            FAIL_COUNT = 0,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
-	<!-- 4. 실패 횟수 직접 업데이트 -->
-	<update id="updateFailCount">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		FAIL_COUNT = #{failCount},
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
+    <!-- 7. 마지막 로그인 업데이트 -->
+    <update id="updateLastLogin">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            LAST_LOGIN = SYSDATE,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
-	<!-- 5. 계정 잠금 -->
-	<update id="lockUserAccount">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		STATUS = 'LOCKED',
-		LOCKED_DATE = SYSDATE,
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
+    <!-- 8. 실패 횟수 0 + 마지막 로그인 동시에 -->
+    <update id="resetFailCountAndLastLogin">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            FAIL_COUNT = 0,
+            LAST_LOGIN = SYSDATE,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
-	<!-- 6. 실패 횟수 초기화 -->
-	<update id="resetFailCount">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		FAIL_COUNT = 0,
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
+    <!-- 9. 계정 잠금 해제 -->
+    <update id="unlockUserAccount">
+        UPDATE TB_LOGIN_MASTER
+        SET
+            STATUS = 'ACTIVE',
+            FAIL_COUNT = 0,
+            LOCKED_DATE = NULL,
+            UPDATED_BY = 'SYSTEM',
+            UPDATE_DATE = SYSDATE
+        WHERE USER_ID = #{userId}
+    </update>
 
-	<!-- 7. 마지막 로그인 업데이트 -->
-	<update id="updateLastLogin">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		LAST_LOGIN = SYSDATE,
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
-
-	<!-- 8. 실패 횟수 0 + 마지막 로그인 동시에 -->
-	<update id="resetFailCountAndLastLogin">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		FAIL_COUNT = 0,
-		LAST_LOGIN = SYSDATE,
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
-
-	<!-- 9. ★ 계정 잠금 해제 (자동 unlock + 관리자 unlock 공통 사용) -->
-	<update id="unlockUserAccount">
-		UPDATE TB_LOGIN_MASTER
-		SET
-		STATUS = 'ACTIVE',
-		FAIL_COUNT = 0,
-		LOCKED_DATE = NULL,
-		UPDATED_BY = 'SYSTEM',
-		UPDATE_DATE = SYSDATE
-		WHERE USER_ID = #{userId}
-	</update>
-
-	<select id="selectLoginUser"
-    resultType="com.rootcore.auth.vo.LoginUserVO">
-
-    SELECT
-        COMPANY_CODE,
-        USER_ID,
-        USER_NAME,
-        ROLE_CODE
-    FROM TB_USER_MASTER
-    WHERE USER_ID = #{userId}
-
-</select>
+    <!-- ✅ 로그인 후 세션용 사용자 정보 조회 -->
+    <select id="selectLoginUser" resultType="com.rootcore.auth.vo.LoginUserVO">
+        SELECT
+            COMPANY_CODE,
+            USER_ID,
+            USER_NAME,
+            DEPT,
+            POSITION,
+            ROLE_CODE
+        FROM TB_USER_MASTER
+        WHERE USER_ID = #{userId}
+    </select>
 
 </mapper>

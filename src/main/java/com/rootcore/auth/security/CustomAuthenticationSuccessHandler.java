@@ -56,11 +56,9 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         // ============================
         //  메뉴 권한 조회 (ROLE 기반)
         // ============================
-        // 1) 사이드바 메뉴용 리스트
         List<RoleMenuAuthVO> sideMenuList =
                 menuPermissionService.getLoginMenuList(companyCode, finalRoleCode);
 
-        // 2) URL 접근 체크용 리스트
         List<UserMenuAuthVO> userAuthList =
                 sideMenuList.stream().map(vo -> {
                     UserMenuAuthVO u = new UserMenuAuthVO();
@@ -84,7 +82,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         session.setAttribute("LOGIN_USER_NAME", loginUser.getUserName());
         session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
 
-        // 🔥 필터/사이드바에서 쓰는 ROLE_CODE (ADMIN / MANAGER / USER)
+        // ✅ 부서/직급 세션 저장 추가
+        session.setAttribute("LOGIN_DEPT", loginUser.getDept());
+        session.setAttribute("LOGIN_POSITION", loginUser.getPosition());
+
+        // 필터/사이드바에서 쓰는 ROLE_CODE (ADMIN / MANAGER / USER)
         session.setAttribute("LOGIN_ROLE_CODE", finalRoleCode);
 
         // 사이드바 메뉴용
@@ -106,6 +108,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         System.out.println("===== LOGIN SUCCESS =====");
         System.out.println("USER   : " + userId);
         System.out.println("ROLE   : " + finalRoleCode + " (raw=" + roleCode + ")");
+        System.out.println("DEPT   : " + loginUser.getDept());
+        System.out.println("POS    : " + loginUser.getPosition());
         System.out.println("SIDE   : " + sideMenuList.size());
         System.out.println("AUTH   : " + userAuthList.size());
         System.out.println("=========================");

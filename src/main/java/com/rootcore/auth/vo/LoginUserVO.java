@@ -9,5 +9,9 @@ public class LoginUserVO {
     private String userId;
     private String userName;
 
-    private String roleCode;   // ✅ DB 컬럼 ROLE_CODE 와 100% 일치
+    // ✅ 부서/직급 추가
+    private String dept;
+    private String position;
+
+    private String roleCode;   // DB 컬럼 ROLE_CODE
 }

@@ -60,7 +60,7 @@
             resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
 
         SELECT
-            A.COMPANY_CODE,
+            M.COMPANY_CODE,
             #{roleCode} AS ROLE_CODE,
             M.MENU_CODE,
             M.MENU_NAME,
@@ -73,7 +73,8 @@
 
         FROM TB_MENU_MASTER M
         LEFT JOIN TB_ROLE_MENU_AUTH A
-          ON M.MENU_CODE    = A.MENU_CODE
+          ON M.COMPANY_CODE = A.COMPANY_CODE
+         AND M.MENU_CODE    = A.MENU_CODE
          AND A.ROLE_CODE    = #{roleCode}
         WHERE M.COMPANY_CODE = #{companyCode}
           AND M.USE_YN = 'Y'
@@ -141,6 +142,27 @@
           AND A.ROLE_CODE    = #{roleCode}
           AND A.READ_YN      = 'Y'
           AND M.USE_YN       = 'Y'
+        ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 4-1) ADMIN 전용 전체 메뉴 조회 (회사 코드 무시)        -->
+    <!-- ===================================================== -->
+    <select id="selectAllMenuForAdmin"
+            resultType="com.rootcore.auth.vo.RoleMenuAuthVO">
+        SELECT
+            M.COMPANY_CODE,
+            'ADMIN' AS ROLE_CODE,
+            M.MENU_CODE,
+            M.MENU_NAME,
+            M.MENU_URL,
+            M.SYSTEM_TYPE,
+            'Y' AS READ_YN,
+            'Y' AS CREATE_YN,
+            'Y' AS UPDATE_YN,
+            'Y' AS DELETE_YN
+        FROM TB_MENU_MASTER M
+        WHERE M.USE_YN = 'Y'
         ORDER BY M.SYSTEM_TYPE, M.SORT_ORDER
     </select>
 
