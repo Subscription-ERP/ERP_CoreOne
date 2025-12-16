@@ -24,7 +24,7 @@
 		VALUES (
 		#{companyCode}
 		, #{userId}
-		, #{passWord}   <!-- 주의: VO필드명이 passWord -->
+		, #{password}   <!-- 주의: VO필드명이 passWord -->
 		, #{userName}
 		, #{status}
 		, #{failCount}

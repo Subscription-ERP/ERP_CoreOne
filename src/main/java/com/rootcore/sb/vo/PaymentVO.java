@@ -20,7 +20,7 @@ public class PaymentVO {
 	private BigDecimal discountAmount;
 	private String paymentStat;
 	private String paymentMethod;
-	private LocalDateTime paymentDate;
+	private LocalDate paymentDate;
 	private String cardCompany;
 	private String paymentKey;
 	private LocalDate billingStart;
