@@ -276,6 +276,16 @@
 	pointer-events: none;
 }
 
+/* 퇴사자 행 색상 */
+td.tui-grid-cell.row-leaved,
+td.tui-grid-cell.tui-grid-cell-has-input.row-leaved {
+  background-color: #ffecec !important;
+  color: #a00 !important;
+}
+
+
+
+
 /* 사원이력 화면 인쇄 ------------------------------------------ */
 @media print {
 	/* 1) 페이지 여백 제거 */
