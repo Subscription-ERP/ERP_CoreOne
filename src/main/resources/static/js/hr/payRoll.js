@@ -260,6 +260,8 @@ function closePayrollManageModal() {
 	if (payrollManageModal) {
 		payrollManageModal.hidden = true;
 	}
+	const totalBreakdown = document.querySelector('#totalBreakdownWrapper'); // element가져오기
+	totalBreakdown.removeAttribute('hidden');
 	payrollDetailGrid.resetData([]);
 	resetSummaryTables();
 }
@@ -536,75 +538,62 @@ document.addEventListener("DOMContentLoaded", () => {
 	 * 계산하기 클릭했을때 모달창이 나타나게
 	 * ============================= */
 	payrollGrid.on('click', (ev) => {
-		document.querySelector('#payrollGrid').addEventListener('click', function(event) {
-			const targetElement = event.target; // 클릭된 요소
-			const rowKey = ev.rowKey; // 선택한 요소의 rowkey
-			const targetRowkey = payrollGrid.getRow(rowKey); // rowkey에 해당하는 해당행의 데이터들
-			
-			// 상여일경우 공제, 수당테이블 사라지게 하기
-			if (targetRowkey.payrollType === "상여") { // 해당행의 데이터들중 payrollType이 상여인경우
-				const totalBreakdown = document.querySelector('#totalBreakdownWrapper'); // element가져오기
-				totalBreakdown.setAttribute('hidden',''); // 가져온 element에 hidden추가해서 숨기기
+		// ev 객체에서 필요한 정보를 바로 추출합니다.
+		const { rowKey, nativeEvent } = ev;
+		const targetElement = nativeEvent.target; // 실제 클릭된 HTML 요소
+
+		// 행 데이터 가져오기
+		const targetRowkey = payrollGrid.getRow(rowKey);
+		if (!targetRowkey) return; // 클릭한 곳에 데이터가 없으면 종료
+
+		// 상여일 경우 레이아웃 처리
+		if (targetRowkey.payrollType === "상여") {
+			const totalBreakdown = document.querySelector('#totalBreakdownWrapper');
+			if (totalBreakdown) totalBreakdown.setAttribute('hidden', '');
+		} else {
+			const totalBreakdown = document.querySelector('#totalBreakdownWrapper');
+			if (totalBreakdown) totalBreakdown.removeAttribute('hidden');
+		}
+
+		// 클릭된 요소가 계산 버튼('btn-calculate')인지 확인
+		if (targetElement.classList.contains('btn-calculate')) {
+			nativeEvent.preventDefault();
+
+			const payrollPeriodCode = targetElement.dataset.payrollPeriodCode;
+			currentPayrollPeriodCode = payrollPeriodCode;
+
+			// 모달 열기 및 그리드 새로고침
+			const payrollManageModal = document.querySelector('#payrollManageModal');
+			if (payrollManageModal) {
+				payrollManageModal.hidden = false;
 			}
+			payrollDetailGrid.refreshLayout();
 
-			// 클릭된 요소가 'btn-calculate' 클래스를 가졌는지 확인
-			if (targetElement.classList.contains('btn-calculate')) {
-				event.preventDefault(); // href="#"의 기본 동작(페이지 상단 이동)을 막습니다.
-				// 데이터(payrollPeriodCode)를 가져옵니다.
-				const payrollPeriodCode = targetElement.dataset.payrollPeriodCode; // data-payroll-period-code 속성에서 값 추출
-				currentPayrollPeriodCode = payrollPeriodCode; // 전역 변수에 저장
-
-				// 모달 열기
-				const payrollManageModal = document.querySelector('#payrollManageModal');
-				if (payrollManageModal) {
-					payrollManageModal.hidden = false;
-				} else {
-					console.error("모달창 태그 없음");
-				}
-
-				// 모달창의 Grid 초기화
-				payrollDetailGrid.refreshLayout();
-
-
-				// 급여 계산 API 호출 및 Grid 데이터 로드 로직 추가
-				// 백엔드 컨트롤러(/api/hr/UserPayList)에 정의한 API 경로와 파라미터를 사용합니다.
-				fetch(`/api/hr/UserPayList?payroll_period_code=${payrollPeriodCode}`)
-					.then(res => {
-						// HTTP 응답이 200 OK가 아니면 에러 처리
-						if (!res.ok) {
-							throw new Error(`HTTP error! status: ${res.status}`);
-						}
-						return res.json();
-					})
-					.then(responseMap => { // 응답 전체(Map)를 받습니다.
-						console.log("[급여계산 전체 응답]", responseMap);
-
-						if (responseMap.result && responseMap.data && responseMap.data.contents) {
-							// 성공 시, 실제 데이터 리스트는 responseMap.data.contents에 담겨 있습니다.
-							const payList = responseMap.data.contents;
-							console.log("[추출된 급여 목록]", payList);
-
-							// Tui Grid에 계산된 사원별 급여 결과 데이터 설정
-							payrollDetailGrid.resetData(payList); // 실제 데이터 리스트(payList)를 Grid에 설정
-
-							if (payList.length === 0) {
-								showToast("계산된 급여 데이터가 없습니다.", 'info');
-							}
-						} else {
-							// 실패 시 처리 (result: false 인 경우)
-							showToast("급여 계산 결과를 불러오는 데 실패했습니다: " + (responseMap.message || "알 수 없는 오류"), 'error');
-							payrollDetailGrid.resetData([]); // Grid 초기화
-						}
-					})
-					.catch(error => {
-						console.error("Error loading payroll calculation result:", error);
-						showToast("급여 계산 결과를 불러오는 중 오류가 발생했습니다.", 'error');
-					});
-			}
-		})
+			// API 호출
+			fetch(`/api/hr/UserPayList?payroll_period_code=${payrollPeriodCode}`)
+				.then(res => res.ok ? res.json() : Promise.reject(res))
+				.then(responseMap => {
+					console.log("[급여계산 전체 응답]", responseMap);
+					if (responseMap.result && responseMap.data?.contents) {
+						const payList = responseMap.data.contents;
+						console.log("[추출된 급여 목록]", payList);
+						payrollDetailGrid.resetData(payList);
+						if (payList.length === 0) showToast("데이터가 없습니다.", 'info');
+					} else {
+						showToast("실패: " + (responseMap.message || "오류"), 'error');
+						payrollDetailGrid.resetData([]);
+					}
+				})
+				.catch(error => {
+					console.error("Error:", error);
+					showToast("오류가 발생했습니다.", 'error');
+				});
+		}
 	}); // end of payrollGrid 클릭 이벤트
 
-	/* 급여관리 모달창에서 x버튼 누르면 초기화 */
+	/**===============================
+	 * 급여관리 모달창에서 x버튼 누르면 초기화
+	 * =============================== */
 	document.querySelector('#btnPayrollManageClose').addEventListener('click', closePayrollManageModal);
 
 	/* ============================================
