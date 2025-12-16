@@ -19,9 +19,4 @@ public class SkuServiceImpl implements SkuService {
         return skuMapper.selectSku(custCode, unitPriceType, sku, skuName);
     }
 
-    @Override
-    public List<SkuVO> getInOrdSkuList(String custCode) {
-        return skuMapper.selectInOrdSku(custCode);
-    }
-
 }

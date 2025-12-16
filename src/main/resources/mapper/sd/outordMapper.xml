@@ -54,7 +54,6 @@
                                       surtax,
                                       price,
                                       remark,
-                                      input_status,
                                       created_by,
                                       create_date)
         VALUES ('0000',
@@ -67,7 +66,6 @@
                 #{surtax},
                 #{price},
                 #{remark},
-                #{inputStatus},
                 '박봉근',
                 SYSDATE)
     </insert>
