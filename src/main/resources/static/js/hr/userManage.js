@@ -51,14 +51,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 			bodyHeight: 300,
 			rowHeaders: ['checkbox'],
 			columns: [
-				{ header: "사원번호", name: "userId", align: 'center', sortable: true },
-				{ header: "성명", name: "userName" },
-				{ header: "부서", name: "deptName" },
-				{ header: "입사일", name: "hireDate", align: 'center' },
-				{ header: "직위/직급", name: "jobTitleName" },
-				{ header: "직책", name: "positionName" },
-				{ header: "연락처", name: "tel" },
-				{ header: "Email", name: "email" }
+				{ header: "사원번호", name: "userId", align: 'center', sortable: true, formatter: redTextIfLeaved },
+				{ header: "성명", name: "userName", formatter: redTextIfLeaved },
+				{ header: "부서", name: "deptName", formatter: redTextIfLeaved },
+				{ header: "입사일", name: "hireDate", align: 'center', formatter: redTextIfLeaved },
+				{ header: "직위/직급", name: "jobTitleName", formatter: redTextIfLeaved },
+				{ header: "직책", name: "positionName", formatter: redTextIfLeaved },
+				{ header: "연락처", name: "tel" , formatter: redTextIfLeaved},
+				{ header: "Email", name: "email", formatter: redTextIfLeaved }
 
 			]
 		});
@@ -70,15 +70,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ------------------------------------------------------------------ */
 	async function loadUserList() {
 		globalLoader.style.display = "flex";
-		const response = await fetch('/api/hr/userAllList');
-		const data = await response.json();
-		grid.resetData(data);
-		grid.refreshLayout();
-		globalLoader.style.display = "none";
+
+		try {
+			const response = await fetch('/api/hr/user');
+			const data = await response.json();
+			grid.resetData(data);
+			grid.refreshLayout();
+
+		} catch (err) {
+			console.error(err);
+			showToast("사원목록 조회 중 오류가 발생했습니다.", "error");
+		} finally {
+			globalLoader.style.display = "none";
+		}
+
 	}
 
 	initGrid();
 	loadUserList();
+	
+	// 퇴사자 붉은행 표시
+	function redTextIfLeaved({ row, value }) {
+	  // 퇴사자면 (userStatus가 '2' 또는 2인 경우)
+	  if (row.userStatus == '2' || row.userStatus === 2) {
+	    return `<span style="color: #a00; font-weight: bold;">${value ?? ''}</span>`;
+	  }
+	  return value ?? '';
+	}
 
 
 	/* ------------------------------------------------------------------
@@ -86,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ------------------------------------------------------------------ */
 	const btnSearch = document.querySelector("#btnSearch");
 
-	btnSearch.addEventListener('click', () => {
+	btnSearch.addEventListener('click', async () => {
 		const keyName = document.querySelector("#keyName").value.trim();
 		const deptSearch = document.querySelector("#dept-search").value;
 		const leavedYN = document.querySelector("#leavedYN").checked ? 'Y' : '';
@@ -96,14 +114,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if (deptSearch) params.append('deptSearch', deptSearch);
 		if (leavedYN) params.append('leavedYN', leavedYN);
 
-		fetch(`/api/hr/userSearch?${params.toString()}`)
-			.then(res => res.json())
-			.then(data => {
-				grid.resetData(data);
-				grid.refreshLayout();
-			})
-			.catch(err => console.error(err));
+		try {
+			const response = await fetch(`/api/hr/user?${params.toString()}`)
+			const data = await response.json();
+			grid.resetData(data);
+			grid.refreshLayout();
+		} catch (err) {
+			console.error(err);
+			showToast("검색 중 오류가 발생했습니다.", "error");
+		}
 	});
+
+	// 검색 초기화
+	const btnResetSearch = document.querySelector("#btnResetSearch");
+
+	if (btnResetSearch) {
+		btnResetSearch.addEventListener("click", () => {
+			const keyName = document.querySelector("#keyName").value = "";
+			const deptSearch = document.querySelector("#dept-search").value = "";
+			const leavedYN = document.querySelector("#leavedYN").checked = false;
+
+			// 다시 전체조회
+			loadUserList();
+
+			// 사원기본정보 초기화
+			btnReset?.click();
+		})
+	}
+
+
 
 
 	/* ------------------------------------------------------------------
