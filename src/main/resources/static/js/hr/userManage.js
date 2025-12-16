@@ -775,6 +775,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	const btnSave = $("#btnSave");
 	if (btnSave) {
 		btnSave.addEventListener("click", async () => {
+			if (!validateEmployeeForm()) {
+			    return; // 유효성 검사 실패 시 stop
+			}			
+			
 			const fr = document.querySelector(".form-allwrapper");
 
 			// 1) 기본정보 수집
@@ -983,8 +987,89 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 
+	/* ------------------------------------------------------------------
+	 * 사원 등록 유효성검사
+	 * ------------------------------------------------------------------ */
+	function validateEmployeeForm() {
+	  const fr = document.querySelector(".form-allwrapper");
 
+	  const userName  = fr.querySelector("#userName").value.trim();
+	  const hireDate  = fr.querySelector("#hireDate").value;
+	  const dept      = fr.querySelector("#dept").value;
+	  const jobTitle  = fr.querySelector("#jobTitle").value;
+	  const position  = fr.querySelector("#position").value;
+	  const salary    = fr.querySelector("#salary").value.trim();
+	  const tel       = fr.querySelector("#tel").value.trim();
+	  const email     = fr.querySelector("#email").value.trim();
 
+	  // — 필수 값 체크 —
+
+	  if (!userName) {
+	    showToast("이름을 입력해주세요.", "warning");
+	    fr.querySelector("#userName").focus();
+	    return false;
+	  }
+
+	  if (!hireDate) {
+	    showToast("입사일을 입력해주세요.", "warning");
+	    fr.querySelector("#hireDate").focus();
+	    return false;
+	  }
+
+	  if (!dept) {
+	    showToast("부서를 선택해주세요.", "warning");
+	    fr.querySelector("#dept").focus();
+	    return false;
+	  }
+
+	  if (!jobTitle) {
+	    showToast("직위/직급을 선택해주세요.", "warning");
+	    fr.querySelector("#jobTitle").focus();
+	    return false;
+	  }
+
+	  if (!position) {
+	    showToast("직책을 선택해주세요.", "warning");
+	    fr.querySelector("#position").focus();
+	    return false;
+	  }
+
+	  if (!salary) {
+	    showToast("급여를 입력해주세요.", "warning");
+	    fr.querySelector("#salary").focus();
+	    return false;
+	  }
+
+	  if (isNaN(salary) || Number(salary) < 0) {
+	    showToast("급여는 0 이상의 숫자로 입력해주세요.", "warning");
+	    fr.querySelector("#salary").focus();
+	    return false;
+	  }
+
+	  // — 연락처 체크 —
+
+	  if (tel) {
+	    const telPattern = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/;
+	    if (!telPattern.test(tel)) {
+	      showToast("연락처 형식이 올바르지 않습니다. 예: 010-0000-0000", "warning");
+	      fr.querySelector("#tel").focus();
+	      return false;
+	    }
+	  }
+
+	  // — 이메일 체크 —
+
+	  if (email) {
+	    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	    if (!emailPattern.test(email)) {
+	      showToast("이메일 형식이 올바르지 않습니다.", "warning");
+	      fr.querySelector("#email").focus();
+	      return false;
+	    }
+	  }
+
+	  return true;
+	}
 
 
 
