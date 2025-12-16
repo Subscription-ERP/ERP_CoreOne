@@ -103,27 +103,30 @@
 	</select>
 	<select id="selectSubDetail" parameterType="string"
 		resultType="SubscribeVO">
-		SELECT 
-			SUB_CODE,
-			COMPANY_CODE,
-			SUBS_STATUS,
-			SUBS_START,
-			SUBS_END,
-			CREATED_BY,
-			CREATE_DATE,
-			UPDATED_BY,
-			UPDATE_DATE,
-			PLAN_CODE,
-			CONTRACT_CODE,
-			BILLING_PERIOD,
-			CURRENT_USER_COUNT,
-			CURRENT_PRICE,
-			NEXT_BILLING_DATE,
-			RECENT_BILLING_DATE
-		FROM TB_SUBSCRIBE
-		WHERE company_code = #{companyCode}
-		ORDER BY subs_start DESC
-		FETCH FIRST 1 ROWS ONLY
+		SELECT *
+FROM (
+    SELECT
+        SUB_CODE,
+        COMPANY_CODE,
+        SUBS_STATUS,
+        SUBS_START,
+        SUBS_END,
+        CREATED_BY,
+        CREATE_DATE,
+        UPDATED_BY,
+        UPDATE_DATE,
+        PLAN_CODE,
+        CONTRACT_CODE,
+        BILLING_PERIOD,
+        CURRENT_USER_COUNT,
+        CURRENT_PRICE,
+        NEXT_BILLING_DATE,
+        RECENT_BILLING_DATE
+    FROM TB_SUBSCRIBE
+    WHERE company_code = #{companyCode}
+    ORDER BY subs_start DESC
+)
+WHERE ROWNUM = 1
 	</select>
 
 

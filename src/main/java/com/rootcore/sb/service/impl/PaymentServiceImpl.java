@@ -75,6 +75,7 @@ public class PaymentServiceImpl implements PaymentService {
 		ordervo.setCreateDate(LocalDateTime.now());
 		ordervo.setPlanCode(plan.getPlanCode());
 		ordervo.setCreatedBy("SYSTEM"); // 나중에 로그인 사용자로 교체
+		ordervo.setCompanyCode("0000"); // 나중에 로그인 사용자로 교체
 		orderMapper.insertOrder(ordervo);
 
 		// 프론트에서 Toss 위젯 호출할 때 필요한 값들 내려줌
@@ -178,7 +179,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentMethod(tossResponse.getMethod());
-		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
+		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDate()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(contract.getSubsPeriod()));
 		payment.setPaymentType("NORMAL");
@@ -208,7 +209,7 @@ public class PaymentServiceImpl implements PaymentService {
 	    if (orderCompanyCode == null) {
 	        Map<String, String> accountInfo = createCompanyManagerAccount(company);
 	        tossResponse.setUserId(accountInfo.get("userId"));
-	        tossResponse.setPassword(accountInfo.get("Password"));
+	        tossResponse.setPassword(accountInfo.get("password"));
 	    }
 		return tossResponse;
 
@@ -354,7 +355,7 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentStat(tossResponse.getStatus()); // PAYMENT_STAT (SUCCESS 등)
 		payment.setPaymentKey(tossResponse.getPaymentKey()); // PAYMENT_KEY
 		payment.setPaymentMethod(tossResponse.getMethod());
-		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime()); // PAYMENT_DATE
+		payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDate()); // PAYMENT_DATE
 		payment.setBillingStart(LocalDate.now());
 		payment.setBillingEnd(LocalDate.now().plusMonths(1));
 		payment.setPaymentType("BILLING");
@@ -428,9 +429,9 @@ public class PaymentServiceImpl implements PaymentService {
 		payment.setPaymentKey(tossResponse.getPaymentKey());
 		payment.setPaymentMethod(tossResponse.getMethod());
 		if (tossResponse.getApprovedAt() != null) {
-			payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDateTime());
+			payment.setPaymentDate(tossResponse.getApprovedAt().toLocalDate());
 		} else {
-			payment.setPaymentDate(LocalDateTime.now()); // 또는 null 허용
+			payment.setPaymentDate(LocalDate.now()); // 또는 null 허용
 		}
 		if (success) {
 			payment.setBillingStart(LocalDate.now());
@@ -480,7 +481,7 @@ public class PaymentServiceImpl implements PaymentService {
 		// 4) LOGIN_MST INSERT
 		SbLoginVO login = new SbLoginVO();
 		login.setCompanyCode(company.getCompanyCode());
-		login.setPassWord(encodedPassword); // 암호문만 DB 저장
+		login.setPassword(encodedPassword); // 암호문만 DB 저장
 		login.setUserName("-");
 		login.setStatus("ACTIVE");
 		login.setFailCount(0);
