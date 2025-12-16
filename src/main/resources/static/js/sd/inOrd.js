@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
     inOrdGrid = new tui.Grid({
         el: document.getElementById('inOrdGrid'),
         rowHeaders: ['checkbox'],
-        bodyHeight: 385,
+        bodyHeight: 'fitToParent', // 385
         scrollX: false,
         scrollY: true,
         useOptions: {
