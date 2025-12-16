@@ -176,7 +176,6 @@
 		    #{holiday},
 		    #{family},
 		    #{meal},
-		    #{annualLeave},
 		    #{totalAllowance},
 		    #{totalPaymentAmount},
 		    #{incomeTax},

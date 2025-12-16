@@ -1,6 +1,9 @@
-/**
- * payrollManage.js
- */
+/**==================================================================================
+ *제목 : 급여관리 페이지
+ *@file payrollManage.js
+ *@description 로그인한 사원의 급여를 조회할 수 있고 출력하고싶은 급여를 선택해 명세서를 출력할 수 있다.
+ *@author 장준현
+ *===================================================================================*/
 
 // 숫자 한국형 포맷팅 함수
 function formatKoreanNumber(value) {
@@ -8,7 +11,11 @@ function formatKoreanNumber(value) {
 	return new Intl.NumberFormat('ko-KR').format(Number(value));
 }
 
-// 상세수당총액, 상세공제총액 값 변수 초기화
+/**==============================================================================================
+ *제목 : 상세수당총액, 상세공제총액 값 변수 초기화
+ *@description 사원급여조회에서 사원행을 클릭하기 전, 후에 나타나는 수당 및 공제에 값이 없거나 초기값으로 0을 부여한다.
+ *@author 장준현
+ *===============================================================================================*/
 function resetSummaryTables() {
 	// 수당 항목 초기화
 	document.getElementById('overtime').textContent = 0;
@@ -20,20 +27,19 @@ function resetSummaryTables() {
 	document.getElementById('total_allowance').textContent = 0;
 
 	// 공제 항목 초기화
-	// document.getElementById('#').textContent = 0;
+	document.getElementById('income_tax').textContent = 0;
 	document.getElementById('national_pension').textContent = 0;
 	document.getElementById('employment_insurance').textContent = 0;
 	document.getElementById('health_insurance').textContent = 0;
 	document.getElementById('long_time_care_insurance').textContent = 0;
-	// document.getElementById('#').textContent = 0;
+	document.getElementById('local_income_tax').textContent = 0;
 	document.getElementById('absence').textContent = 0;
 	document.getElementById('total_deduction_amount').textContent = 0;
 }
 
 // 상세수당총액, 상세공제총액 값 테이블에 업데이트
 function updateRowDetailSummary(rowData) {
-	// ------------------ 수당 테이블 업데이트 ------------------
-	// 서버 응답 VO 필드명: overtime, night, holiday, family, meal, annual_leave, total_allowance
+	// 수당 테이블 업데이트
 	document.getElementById('overtime').textContent = rowData.overtime === null || rowData.overtime === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.overtime);
 	document.getElementById('night').textContent = rowData.night === null || rowData.night === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.night);
 	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.holiday);
@@ -42,10 +48,9 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('annual_leave').textContent = rowData.annual_leave === null || rowData.annual_leave === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.annualLeave);
 	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
 
-	// ------------------ 공제 테이블 업데이트 ------------------
-	// 서버 응답 VO 필드명: national_pension, employment_insurance, health_insurance, long_time_care_insurance, total_deduction_amount
-	// document.getElementById('sumIncomeTax').textContent = rawValue(rowData.income_tax || 0);  
-	// document.getElementById('sumLocalIncomeTax').textContent = rawValue(rowData.local_income_tax || 0);  
+	// 공제 테이블 업데이트
+	document.getElementById('income_tax').textContent = rowData.incomeTax === null || rowData.incomeTax === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.incomeTax); // 소득세
+	document.getElementById('local_income_tax').textContent = rowData.localIncomeTax === null || rowData.localIncomeTax === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.localIncomeTax); // 지방소득세  
 	document.getElementById('national_pension').textContent = rowData.nationalPension === null || rowData.nationalPension === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.nationalPension);
 	document.getElementById('employment_insurance').textContent = rowData.employmentInsurance === null || rowData.employmentInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.employmentInsurance);
 	document.getElementById('health_insurance').textContent = rowData.healthInsurance === null || rowData.healthInsurance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.healthInsurance);
@@ -55,13 +60,6 @@ function updateRowDetailSummary(rowData) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-	// 부서랑 사원조회
-	const deptSelect = document.querySelector("#dept");
-	const userNameInput = document.querySelector("#userName");
-
-	// 부서 조회(공통코드)
-	getDeptOptions2(["#dept"]);
 
 	/* =========
 	 * 사원급여조회
@@ -120,12 +118,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 		],
 	}); // end of payrollDetailGrid
 
-
-
 	/* =============================================
 	 * Tui Grid 행 클릭 이벤트: 선택된 행의 상세 정보를 표시
 	 * ============================================= */
-
 	payrollDetailGrid.on('click', (ev) => {
 		// 클릭된 행의 rowKey를 가져옵니다.
 		const rowKey = ev.rowKey;
@@ -147,15 +142,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * 급여관리-조건조회-사원급여관리
 	 * ======================== */
 	document.querySelector("#btnPayrollManageSearch").addEventListener("click", function() {
-		const dept = document.querySelector("#dept").value; // 부서명
-		const userName = document.querySelector("#userName").value; // 성명
 		const payPeriodStart = document.querySelector("#payPeriodStart").value; // 귀속연월 시작
 		const payPeriodEnd = document.querySelector("#payPeriodEnd").value; // 귀속연월 종료
 
 		// 조건 조회 할때 필요한 데이터들
 		const data = {
-			dept: dept,
-			userName: userName,
 			payPeriodStart: payPeriodStart,
 			payPeriodEnd: payPeriodEnd,
 		};
@@ -167,7 +158,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 	/*==========
 	 * 초기화 버튼
 	 * ========= */
-
 	document.querySelector('#btnPayrollManageReset').addEventListener('click', function() {
 		document.querySelector("#dept").value = '';
 		document.querySelector("#userName").value = '';
@@ -178,7 +168,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 	/*==================
 	 * 급여명세서(인쇄) 모달
 	 * ================= */
-
 	const printPreviewModal = document.getElementById('printPreviewModal'); // 인쇄 모달 가장 큰 틀
 	const btnPrint = document.getElementById('btnPrint'); // 인쇄 버튼 태그
 	const btnPrintPreviewClose = document.getElementById('btnPrintPreviewClose'); // 모달창에서 창 닫는 버튼 태그
@@ -289,37 +278,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 	// input 상자만 눌러도 달력 나오게 설정
 	setupNativeDatePicker('payPeriodStartWrapper', 'payPeriodStart'); // 급여조회-사원급여조회-귀속연월 범위시작
 	setupNativeDatePicker('payPeriodEndWrapper', 'payPeriodEnd'); // 급여조회-사원급여조회-귀속연월 범위종료
-
-	/* ======================================================================
-	 * Grid 데이터 로드 후 필터링 및 잠금 처리 (getData() 사용)
-	 * ====================================================================== */
-	/*payrollDetailGrid.on('response', (ev) => {
-		setTimeout(() => {
-			// ev.data에 의존하지 않고, Grid 인스턴스에서 직접 데이터를 가져옵니다.
-			const data = payrollDetailGrid.getData();
-			console.log(data);
-			// 1. 데이터가 존재하고 첫 번째 행에 필요한 정보가 있는지 확인
-			if (Array.isArray(data) && data.length > 0) {
-				const firstRow = data[0];
-
-				// Grid 데이터의 첫 번째 행에서 필요한 정보를 가져옵니다.
-				const userId = firstRow.userId;
-				const userName = firstRow.userName;
-
-				if (userId && userName) {
-
-					// 3. 검색 필드에 값 반영
-					userNameInput.value = userName;
-
-					// 4. 필드 잠금 (disabled 처리)
-					userNameInput.disabled = true;
-					deptSelect.disabled = true;
-				} else {
-					userNameInput.disabled = false;
-					deptSelect.disabled = false;
-				}
-			}
-		}, 100);
-	});*/
 
 });
