@@ -85,6 +85,34 @@ document.addEventListener('DOMContentLoaded', () => {
     form.submit(); // 통과하면 submit
   });
 
+  /* ------------------------------------------------------------------
+	 * 사원 모달
+	 * ------------------------------------------------------------------ */
+
+  const btnOpenHrModal = document.getElementById('btnOpenHrModal');
+  const UserName = document.getElementById('userName');
+  const UserDept = document.getElementById('dept');
+
+  // 사원명 input 클릭 시 모달 열기
+
+  btnOpenHrModal.addEventListener("click", (e) => {
+    if (typeof openUserSearchModal === 'function') {
+      openUserSearchModal(e);
+    } else {
+      console.error("에러가 발생했습니다.");
+    }
+  });
+
+  // 모달에서 row 선택 시 호출되는 콜백 (전역)
+  window.handleSelectedEmp = function(row) {
+    if (UserDept) {
+      UserDept.value = row.deptName;
+    }
+    if (UserName) {
+      UserName.value = row.userName;
+    }
+  };
+
   // 함수 영역 ==================================================================
 
   // 거래처 정보 불러오기

@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
         rowHeaders: ['checkbox'],
         scrollX: false,
         scrollY: true,
-        bodyHeight: 400,
+        bodyHeight: 'fitToParent',
         useOptions: {
             editable: true
         },
