@@ -21,6 +21,8 @@
 <link th:href="@{/css/hr/hrUser.css}" rel="stylesheet" />
 
 <style>
+
+
 /* Tui Grid 데이터 없는 배경색과 유사한 밝은 회색 */
 .table-summary tbody td {
 	background-color: #f7f7f7 !important;
@@ -145,9 +147,8 @@ th {
 
 		<!-- ================= 급여명세서 인쇄 미리보기 모달 ==================================== -->
 		<div id="printPreviewModal" class="modal-layer" hidden>
-			<div class="modal-layer__backdrop"></div>
 
-			<div class="modal-layer__dialog modal-layer__dialog--print">
+			<div class="modal-layer__dialog modal-layer__dialog--print"style="width:1000px; height:1000px; !important">
 				<!-- 상단 헤더 -->
 				<header class="modal-card__header">
 					<h5 class="modal-card__title">급여명세서출력</h5>
@@ -157,12 +158,12 @@ th {
 				</header>
 
 				<!-- 내용 -->
-				<div class="modal-card__body">
+				<div class="modal-card__body"style="width:1000px; height:1000px">
 					<!-- A4 미리보기 영역 -->
-					<div class="print-preview">
-						<div class="print-preview__page-wrap">
+					<div class="" style="width:1000px; height:1000px">
+						<div class="print-preview__page-wrap"style="width:1000px; height:1000px">
 							<!-- 실제 A4 HTML / Canvas가 들어갈 영역 -->
-							<div class="print-preview__page" id="printPreviewPage">
+							<div class="" id="printPreviewPage" style="width:100%;">
 								<div class="print-preview__placeholder">사원 카드 미리보기 영역 (A4 축소)</div>
 							</div>
 						</div>
