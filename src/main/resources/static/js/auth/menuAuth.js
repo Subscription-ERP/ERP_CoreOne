@@ -119,7 +119,7 @@ function initRoleGrid() {
     rowHeight: 34,
     columns: [
       { header: "ROLE",   name: "roleCode", width: 90, align: "center" },
-      { header: "ROLE명", name: "roleName", minWidth: 140 }
+      { header: "권한(ROLE)명", name: "roleName", minWidth: 140 }
     ]
   });
 
@@ -179,7 +179,7 @@ function initAuthGrid() {
     bodyHeight: "fitToParent",
     rowHeight: 34,
     columns: [
-      { header: "시스템",   name: "systemType", width: 90,  align: "center" },
+      { header: "관리영역",   name: "systemType", width: 90,  align: "center" },
       { header: "메뉴코드", name: "menuCode",   width: 120, align: "center" },
       { header: "메뉴명",   name: "menuName",   minWidth: 260 },
 

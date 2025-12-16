@@ -61,4 +61,7 @@ public interface MenuPermissionMapper {
             @Param("roleCode") String roleCode,
             @Param("userIds") List<String> userIds
     );
+    
+    List<RoleMenuAuthVO> selectAllMenuForAdmin();
+
 }
