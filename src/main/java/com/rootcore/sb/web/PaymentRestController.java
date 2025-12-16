@@ -2,18 +2,15 @@ package com.rootcore.sb.web;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.sb.service.PaymentService;
+import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
 import com.rootcore.sb.vo.PlanVO;
-import com.rootcore.sb.vo.TossBillingConfirmRequestVO;
-import com.rootcore.sb.vo.TossConfirmResponseVO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -36,25 +33,28 @@ public class PaymentRestController {
 		
 		ContractVO contract = (ContractVO) session.getAttribute("contract");
 		PlanVO plan = (PlanVO) session.getAttribute("plan");
+		CompanyVO company = (CompanyVO) session.getAttribute("company");
+		
+		 String logincompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		 
+		  String companyCode = logincompanyCode != null ? logincompanyCode
+                  : (company != null ? company.getCompanyCode() : null);
 		
 		OrderVO ordervo = new OrderVO();
 		ordervo.setOrderAmount(contract.getTotalPrice().longValue());
 		ordervo.setOrderName(plan.getPlanName());
 
+		 // ✅ 재구독이면 회사코드를 주문에 저장
+	    if (companyCode != null) {
+	        ordervo.setCompanyCode(companyCode);
+	    }
+		
 		
 		PaymentReadyResponseVO responseDto = paymentService.insertOrder(ordervo, plan);
 		return ResponseEntity.ok(responseDto);
 	}
 	
-	@PostMapping("/retry")
-	public ResponseEntity<TossConfirmResponseVO> retryBilling(
-	        @RequestBody TossBillingConfirmRequestVO req) {
 
-	    TossConfirmResponseVO res =
-	        paymentService.retryBillingPayment(req.getSubCode());
-
-	    return ResponseEntity.ok(res);
-	}
 
 	
 
