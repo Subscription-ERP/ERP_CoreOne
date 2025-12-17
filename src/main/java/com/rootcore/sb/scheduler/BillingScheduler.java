@@ -35,7 +35,7 @@ public class BillingScheduler {
      * cron = 초 분 시 일 월 요일
      * 0 0 3 * * *  → 매일 03:00:00
      */
-    @Scheduled(cron = "0 31 16 * * *")
+    @Scheduled(cron = "0 02 13 * * *")
     public void runMonthlyBillingScheduler() {
 
         LocalDate today = LocalDate.now();
@@ -76,7 +76,6 @@ public class BillingScheduler {
 
                 // 주문번호 규칙 예시: BILL_{subCode}_{timestamp}
                 req.setOrderId(order.getOrderId());
-
                 // 필요하면 subCode도 넣어두기
                 req.setSubCode(sub.getSubCode());
 
