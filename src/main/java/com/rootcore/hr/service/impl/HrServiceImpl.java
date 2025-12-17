@@ -2,10 +2,14 @@ package com.rootcore.hr.service.impl;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rootcore.auth.service.PasswordResetService;
+import com.rootcore.auth.util.PasswordUtil;
+import com.rootcore.auth.vo.LoginVO;
 import com.rootcore.common.util.FileStorageUtil;
 import com.rootcore.hr.mapper.HrMapper;
 import com.rootcore.hr.service.HrService;
@@ -24,25 +28,15 @@ public class HrServiceImpl implements HrService {
 
 	private final HrMapper hrMapper;
 	private final FileStorageUtil fileStorageUtil;
+	private final PasswordEncoder passwordEncoder;
+	private final PasswordResetService passwordResetService;
 
-	// 사원 	
-	// 전체조회
-	/*
-	 * @Override public List<UserVO> selectAllUserList() { return
-	 * hrMapper.selectAllUserList(); }
-	 */
-	// 검색
-	/*
-	 * @Override public List<UserVO> selectUserSearch(UserSearchVO userSearchVO) {
-	 * return hrMapper.selectUserSearch(userSearchVO); }
-	 */
-	
+	// 사원 		
 	// 전체조회 + 검색
 	@Override
 	public List<UserVO> selectUserList(UserSearchVO userSearchVO) {
 		return hrMapper.selectUserSearch(userSearchVO);
 	}
-		
 	
 	// 상세조회 - 기본사항/자격증/경력사항/이력
 	@Override
@@ -76,12 +70,17 @@ public class HrServiceImpl implements HrService {
 	
 
 	// 등록
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int insertUser(UserVO userVO,
 			              MultipartFile userPhoto,
 		                  MultipartFile userFile,
 		                  List<MultipartFile> certiFiles) throws Exception {
+		
+		// 이메일 여부확인
+		if (userVO.getEmail() == null || userVO.getEmail().isBlank()) {
+		    throw new IllegalArgumentException("이메일은 필수입니다.");
+		}
 		
 		// 파일 -------------------------------------------------------------------
 		// 기본정보 - 사진
@@ -103,6 +102,31 @@ public class HrServiceImpl implements HrService {
 		
 		String userId = userVO.getUserId();
 		String companyCode = userVO.getCompanyCode();
+		
+		// 로그인 마스터 --------------------------------------------------------------
+		// 임시 비밀번호 생성
+		String tempPw = PasswordUtil.generateRandomPassword();
+		// 암호화
+		String encodePw = passwordEncoder.encode(tempPw);
+
+		LoginVO loginVO = new LoginVO();
+		loginVO.setCompanyCode(companyCode);
+		loginVO.setUserId(userId);
+		loginVO.setUserName(userVO.getUserName());
+		loginVO.setDbPassword(encodePw);
+		loginVO.setCreatedBy(userVO.getCreatedBy());
+		
+		int rLogin = hrMapper.insertLoginMaster(loginVO);
+		if(rLogin == 0) return 0; 
+		
+		// 비밀번호 재설정 링크 이메일 발송 (사용자가 직접 비번 설정)
+		boolean mailOk = passwordResetService.sendResetLink(userId, userVO.getEmail());
+		if (userVO.getEmail() == null || userVO.getEmail().isBlank()) {
+		    throw new RuntimeException("이메일이 없어 비밀번호 재설정 링크를 발송할 수 없습니다.");
+		}
+		if(!mailOk) {
+		    throw new RuntimeException("비밀번호 재설정 이메일 발송 실패");
+		}
 		
 		
 		// 자격증 -------------------------------------------------------------------
@@ -161,6 +185,7 @@ public class HrServiceImpl implements HrService {
 		
 	    String userId = userVO.getUserId();
 	    String companyCode = userVO.getCompanyCode();
+	    String actor = userVO.getUpdatedBy();
 	    
 	    
 	    // 기본정보 ---------------------------------------------------------
@@ -182,8 +207,6 @@ public class HrServiceImpl implements HrService {
 	        userVO.setUserFile(origin.getUserFile());
 	    }
 		
-	    // 사용자
-	    userVO.setUpdatedBy("SYSTEM");  // -> 교체(사용자아이디)
 
 	    // 기본정보
 	    int r1 = hrMapper.updateUser(userVO);
@@ -208,7 +231,7 @@ public class HrServiceImpl implements HrService {
 
 	            cert.setUserId(userId);
 	            cert.setCompanyCode(companyCode);
-	            cert.setCreatedBy("SYSTEM");
+	            cert.setCreatedBy(actor);
 
 	            // 파일 처리
 	            if (certiFiles != null && i < certiFiles.size()) {
@@ -230,7 +253,7 @@ public class HrServiceImpl implements HrService {
 
 	            wex.setUserId(userId);
 	            wex.setCompanyCode(companyCode);
-	            wex.setCreatedBy("SYSTEM");
+	            wex.setCreatedBy(actor);
 
 	            hrMapper.insertWorkExprience(wex);
 	        }
@@ -254,7 +277,7 @@ public class HrServiceImpl implements HrService {
 	            hist.setNewDept(userVO.getDept());
 	            hist.setNewJobTitle(userVO.getJobTitle());
 	            hist.setDeptChangeReason("수정 화면에서 변경");
-	            hist.setCreatedBy("SYSTEM");
+	            hist.setCreatedBy(actor);
 
 	            hrMapper.insertUserHistory(hist);
 	    }
@@ -272,7 +295,7 @@ public class HrServiceImpl implements HrService {
 	            hist.setApplyDate(userVO.getHireDate());
 	            hist.setBaseSalary(userVO.getSalary());
 	            hist.setSalaryChangeReason("수정 화면에서 변경");
-	            hist.setCreatedBy("SYSTEM");
+	            hist.setUpdatedBy(actor);
 
 	            hrMapper.insertUserHistory(hist);
 	    }
@@ -317,6 +340,37 @@ public class HrServiceImpl implements HrService {
 	    if (a == null && b == null) return true;
 	    if (a == null || b == null) return false;
 	    return a.equals(b);
+	}
+
+	
+	// 비밀번호 초기화 이메일 전송
+	@Override
+	public boolean resendResetLink(String companyCode, String userId, String requestedBy) {
+		// 1) 대상 사원 조회
+	    UserVO user = hrMapper.selectUserDetail(userId);
+	    if (user == null) {
+	        throw new IllegalArgumentException("사원을 찾을 수 없습니다: " + userId);
+	    }
+
+	    // 2) 회사코드 안전장치 (원하시면)
+	    if (companyCode != null && user.getCompanyCode() != null) {
+	        if (!companyCode.equals(user.getCompanyCode())) {
+	            throw new IllegalArgumentException("회사 정보가 일치하지 않습니다.");
+	        }
+	    }
+
+	    // 3) 이메일 체크
+	    if (user.getEmail() == null || user.getEmail().isBlank()) {
+	        throw new IllegalArgumentException("이메일이 없어 비밀번호 재설정 링크를 발송할 수 없습니다.");
+	    }
+
+	    // 4) 재설정 링크 발송
+	    boolean ok = passwordResetService.sendResetLink(userId, user.getEmail());
+	    if (!ok) {
+	        throw new RuntimeException("비밀번호 재설정 이메일 발송 실패");
+	    }
+
+	    return true;
 	}
 
 

@@ -13,6 +13,7 @@ public interface AttendanceMapper {
 
 	// 근태관리
 	List<AttendanceVO> seletMonthAttendance(String month);                 // 월별 전체조회
+	int countAnnualLeaveToday(String userId);                              // 연차(h5)로그인막기 조회
 	
 	// 내근태관리 -----------------------------------------------------------------------------
 	List<AttendanceVO> selectMyAttendanceAllList(String userId);           // 내근태관리 전체조회

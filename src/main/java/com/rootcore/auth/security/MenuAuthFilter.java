@@ -55,6 +55,10 @@ public class MenuAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if ("MANAGER".equals(roleCode)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 3) 그 외 ROLE 은 메뉴 권한 체크
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

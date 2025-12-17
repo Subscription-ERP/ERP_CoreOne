@@ -230,7 +230,7 @@
 		    created_by,
 		    create_date)
 		VALUES(
-	        '0000',
+	        #{companyCode},
 	        #{userId},
 	        #{userName},
 	        #{tel},
@@ -333,6 +333,29 @@
 		    SYSDATE
 		)
 	</insert>
+	
+	<!-- tb_login_master 등록(사원등록시 id,비번 함께 생성)  -->
+	<insert id="insertLoginMaster" parameterType="LoginVO">
+	INSERT INTO tb_login_master (
+	    company_code,
+	    user_id,
+	    password,
+	    user_name,
+	    fail_count,
+	    status,
+	    created_by,
+	    create_date )
+	VALUES (
+		#{companyCode},
+		#{userId},
+		#{dbPassword},
+		#{userName},
+		0,
+		'ACTIVE',
+		#{createdBy},
+		SYSDATE )		
+	</insert>
+	
 	
 	<!-- 사원 기본정보 수정 -->
 	<update id="updateUser" parameterType="UserVO">
