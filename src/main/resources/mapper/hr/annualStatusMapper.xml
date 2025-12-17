@@ -32,7 +32,7 @@
 		 <if test="remainingDaysEnd != null and remainingDaysEnd != '' ">
 			AND al.remaining_days &lt;= #{remainingDaysEnd}		 
 		 </if>
-		 ORDER BY TO_NUMBER(grant_year) DESC
+		 ORDER BY TO_NUMBER(grant_year) DESC, al.user_id 
 		 
 	</select>
 </mapper>

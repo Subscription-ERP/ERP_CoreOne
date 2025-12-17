@@ -1,5 +1,8 @@
 package com.rootcore.hr.web;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -7,12 +10,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +46,10 @@ public class HrRestController {
 		POST /api/hr/user             등록
 		PUT  /api/hr/user/{userId}    수정
 		DELETE /api/hr/user/{userId}  삭제
+		
+		GET /api/hr/user/{userId}/card/preview      사원카드 미리보기
+		GET /api/hr/user/{userId}/card/download     사원카드 다운로드
+		GET /api/hr/user/{userId}/history/preview   이력 미리보기
 	 */
 	
 	// 사원 전체조회 + 검색
@@ -61,17 +70,10 @@ public class HrRestController {
 		return hrService.selectUserList(userSearchVO);
 	}
 	
-	// 사원 검색
-	/*
-	 * @GetMapping("/userSearch") public List<UserVO> searchUserList(UserSearchVO
-	 * userSearchVO){ return hrService.selectUserSearch(userSearchVO); }
-	 */
-	
-	// 사원 상세조회
-	@GetMapping("/userDetail")
-	public UserVO getUserDetail(String userId) {
+	// 사원 상세조회(단건조회)
+	@GetMapping("/user/{userId}")
+	public UserVO getUserDetail(@PathVariable String userId) {
 		return hrService.selectUserDetail(userId);
-		// 요청: /api/hr/empDetail?userId=EMP23030100003
 	}
 	
 	// 부서조회
@@ -80,10 +82,13 @@ public class HrRestController {
 		return hrService.selectDeptMaster();
 	}
 	
+	// application.properties 설정값 변수에 주입해주는 어노테이션
+	@Value("${app.upload-dir}")
+	private String uploadDir;
 	
 	// 사원카드PDF 미리보기
-	@GetMapping("/userCard/preview")
-	public ModelAndView userCardPreview(@RequestParam String userId) {
+	@GetMapping("/user/{userId}/card/preview")
+	public ModelAndView userCardPreview(@PathVariable String userId) {
 		
 		// 데이터조회
 		UserVO user = hrService.selectUserDetail(userId);
@@ -92,29 +97,37 @@ public class HrRestController {
 					userId + "사원을 찾을 수 없습니다.");
 		}
 		
+		// pdf 전용 사진 uri
+		String photoUri = null;
+		if(user.getUserPhoto() != null && !user.getUserPhoto().isBlank()) {
+			
+			// 실제 파일 절대경로
+			Path uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
+			// user.getUserPhoto() 값이 예: "user/photo/xxx.jpg" 라고 가정
+			Path photoPath = uploadRoot.resolve(user.getUserPhoto()).normalize();
+			
+			if (Files.exists(photoPath)) {
+	            photoUri = photoPath.toUri().toString(); // file:/D:/git/.../upload/user/photo/xxx.jpg
+	        }
+		}
+		
 		// 템플릿에 넘길 data 맵 생성
 		Map<String, Object> data = new HashMap<>();
 		data.put("user", user);
-		
-		// pdfView로 ModelAndView 생성
-		ModelAndView mav = new ModelAndView("pdfView");
-		
-		// pdfView에서 사용할 템플릿 이름(template/pdf/userCard.html)
-		mav.addObject("templateName", "pdf/userCard");
-		
-		// 템플릿에 전달할 실제 데이터
-		mav.addObject("data", data);
-		
-		// 미리보기
-		mav.addObject("disposition", "inline");
+		data.put("photoUri", photoUri);
+	
+		ModelAndView mav = new ModelAndView("pdfView"); // pdfView로 ModelAndView 생성
+		mav.addObject("templateName", "pdf/userCard");  // pdfView에서 사용할 템플릿 이름(template/pdf/userCard.html)
+		mav.addObject("data", data);		            // 템플릿에 전달할 실제 데이터
+		mav.addObject("disposition", "inline"); 		// 미리보기
 				
 		return mav;
 		
 	}	
 	
 	// 사원카드PDF 다운로드
-	@GetMapping("/userCard/download")
-	public ModelAndView userCardPDF(@RequestParam String userId) {
+	@GetMapping("/user/{userId}/card/download")
+	public ModelAndView userCardPDF(@PathVariable String userId) {
 		
 		// 데이터조회
 		UserVO user = hrService.selectUserDetail(userId);
@@ -127,24 +140,17 @@ public class HrRestController {
 		Map<String, Object> data = new HashMap<>();
 		data.put("user", user);
 		
-		// pdfView로 ModelAndView 생성
-		ModelAndView mav = new ModelAndView("pdfView");
-		
-		// pdfView에서 사용할 템플릿 이름(template/pdf/userCard.html)
-		mav.addObject("templateName", "pdf/userCard");
-		
-		// 템플릿에 전달할 실제 데이터
-		mav.addObject("data", data);
-		
-		// 파일명(옵션)
-		mav.addObject("fileName", "userCard-" + user.getUserId() + ".pdf");
+		ModelAndView mav = new ModelAndView("pdfView"); // pdfView로 ModelAndView 생성
+		mav.addObject("templateName", "pdf/userCard");  // pdfView에서 사용할 템플릿 이름(template/pdf/userCard.html)
+		mav.addObject("data", data); 		            // 템플릿에 전달할 실제 데이터
+		mav.addObject("fileName", "userCard-" + user.getUserId() + ".pdf"); // 파일명(옵션)
 				
 		return mav;
 	}
 	
 	// 사원 이력 인쇄
-	@GetMapping("/userHistory/preview")
-	public ModelAndView userHistoryPreview(@RequestParam String userId) {
+	@GetMapping("/user/{userId}/history/preview")
+	public ModelAndView userHistoryPreview(@PathVariable String userId) {
 		
 		// 데이터조회
 		UserVO user = hrService.selectUserDetail(userId);
@@ -187,50 +193,105 @@ public class HrRestController {
 	
 	
 	// 사원등록
-	@PostMapping("/userRegister")
+	@PostMapping("/user")
 	public ResponseEntity<?> registerUser(@RequestPart("user") UserVO userVO,
+			HttpSession session,
 			@RequestPart(value = "userPhoto", required = false) MultipartFile userPhoto,
 			@RequestPart(value = "userFile", required = false) MultipartFile userFile,
 			@RequestPart(value = "certiFiles", required = false) List<MultipartFile> certiFiles
 			) throws Exception {
-		// ResponseEntity<?> : Spring에서 HTTP응답(Response)전체를 표현하고 다루는데 사용되는 클래스
-		// HTTP 응답본문(데이터), 응답상태코드, 헤더를 제어하고 클라이언트에게 보내줄 수 있도록 해줌
-		//   상태코드 : 200, 400, 500... 
-		//   헤더 : Content-Type, Location 등
-		//   바디 : JSON, 텍스트, HTML 등 실제 내용
 		
-		int result = hrService.insertUser(userVO, userPhoto, userFile, certiFiles);
-		
-		if(result == 1) {
-			return ResponseEntity.ok("success");
-		}else {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("fail");
-			// 200 -> 정상 / 400 BAD_REQUEST -> 클라이언트가 잘못 요청 / 404 NOT_FOUND -> 리소스 없음
-			// 500 INTERNAL... -> 서버쪽에서 예기치 못한 에러가 난 경우
+		// session에서 회사코드 및 User 가져오기
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		if(companyCode == null || companyCode.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+	                "회사 정보가 없습니다. 로그인 상태를 확인하세요.");
+		}
+		if(userId == null || userId.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+	                "로그인된 유저 정보가 없습니다. 로그인 상태를 확인하세요.");
 		}
 		
+		// userVO에 세팅
+		userVO.setCompanyCode(companyCode);
+		userVO.setCreatedBy(userId);		
+		
+		try {
+			int result = hrService.insertUser(userVO, userPhoto, userFile, certiFiles);
+			if(result == 1) {
+				Map<String, Object> body = new HashMap<>();
+				
+				body.put("result", "success");
+				body.put("message", "사원이 등록되었습니다. \n초기비밀번호 설정 이메일이 발송되었으니 확인해주세요.");
+				
+				return ResponseEntity.ok(body);
+			}else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						             .body(Map.of("result", "fail", "message", "등록처리에 실패했습니다."));
+			}				
+		}catch(RuntimeException e) {
+			// 비밀번호 재설정 이메일 발송 실패
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					             .body(Map.of("result", "fail", "message", e.getMessage()));
+		}catch(Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					             .body(Map.of("result", "fail", "message", "서버오류가 발생했습니다."));
+		}
 	}
 	
 	// 사원수정
-	@PostMapping("/userModify")
-	public ResponseEntity<?> modifyUser(@RequestPart("user") UserVO userVO,
+	@PutMapping("/user/{userId}")
+	public ResponseEntity<?> modifyUser(@PathVariable String userId,
+			@RequestPart("user") UserVO userVO,
 			@RequestPart(value = "userPhoto", required = false) MultipartFile userPhoto,
 			@RequestPart(value = "userFile", required = false) MultipartFile userFile,
-			@RequestPart(value = "certiFiles", required = false) List<MultipartFile> certiFiles
+			@RequestPart(value = "certiFiles", required = false) List<MultipartFile> certiFiles,
+			HttpSession session
 			) throws Exception {
+		
+		// url의 userId와 body userId 일치시키기
+		userVO.setUserId(userId);
+		
+		// session 정보 세팅
+		userVO.setCompanyCode((String) session.getAttribute("LOGIN_COMPANY_CODE"));
+		userVO.setUpdatedBy((String) session.getAttribute("LOGIN_USER_ID"));
 		
 		int result = hrService.updateUser(userVO, userPhoto, userFile, certiFiles);
 		
 		if(result == 1) {
-			return ResponseEntity.ok("success");
+			return ResponseEntity.ok(Map.of("result","success","message","수정되었습니다."));
 		}else {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("fail");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+		             .body(Map.of("result", "fail", "message", "서버오류가 발생했습니다."));
 		}
 		
 	}
 
 	
-	
+	// 비밀번호 초기화 이메일 재전송
+	@PostMapping("/user/{userId}/password/reset")
+	public ResponseEntity<?> resendResetPasswordMail(@PathVariable String userId, HttpSession session) {
+
+	    String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+	    String loginUserId = (String) session.getAttribute("LOGIN_USER_ID");
+
+	    if (companyCode == null || companyCode.isBlank()) {
+	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "회사 정보가 없습니다.");
+	    }
+	    if (loginUserId == null || loginUserId.isBlank()) {
+	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
+	    }
+
+	    hrService.resendResetLink(companyCode, userId, loginUserId);
+
+	    return ResponseEntity.ok(Map.of(
+	        "result", "success",
+	        "message", "초기 비밀번호 설정 이메일을 재전송했습니다."
+	    ));
+	}
+
+
 	
 	
 }

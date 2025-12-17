@@ -86,6 +86,7 @@
 
           <form id="creditForm">
             <table class="form-grid table-bordered align-middle" style="border:1px gray;">
+				  <div th:replace="modal/custModal :: custModal"></div>
 
               <tbody>
                 <!-- 거래처 -->
@@ -93,8 +94,8 @@
                   <th class="bg-light text-center" style="width:130px;">거래처</th>
                   <td style="width:75%;">
                     <div class="input-group">
-                      <input type="text" name="custCode" class="form-control input-base-icon">
-                      <button class="btn btn-icon"><i class="bi bi-search"></i></button>
+                      <input type="text" name="custCode" id="custCode" class="form-control input-base-icon">
+                      <button class="btn btn-icon" id="btnOpenCustModal"><i class="bi bi-search"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -102,7 +103,7 @@
                 <!-- 거래처명 -->
                 <tr>
                   <th class="bg-light text-center">거래처명</th>
-                  <td class="disabled"><input type="text" name="custName" class="form-control input-base" readonly></td>
+                  <td class="disabled"><input type="text" name="custName" id="custName" class="form-control input-base" readonly></td>
                 </tr>
 
                 <!-- 여신구분 -->

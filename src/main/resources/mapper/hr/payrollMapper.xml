@@ -94,6 +94,7 @@
 		<if test="dept != null and dept != '' ">
 			AND um.dept like '%' || #{dept} || '%'
 		</if>
+		ORDER BY um.user_id
 	</select>
 		
 	<!-- 계산하기누르면 모달창이 나타나면서 실행 -->

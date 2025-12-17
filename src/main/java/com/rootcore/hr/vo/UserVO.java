@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.rootcore.auth.vo.LoginVO;
 
 import lombok.Data;
 
@@ -52,5 +53,5 @@ public class UserVO {
 	private List<CertificationVO> certificationList;          // 자격증
 	private List<WorkExperienceVO> workExperienceList;        // 경력사항
 	private List<UserHistoryVO> historyList;                  // 이력
-	
+
 }
