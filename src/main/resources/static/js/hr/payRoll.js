@@ -152,37 +152,37 @@ const payrollDetailGrid = new tui.Grid({
 	rowkey: "payrollPeriodCode",
 	columns: [
 		// { header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
-		{ header: "사번", name: "userId", align: "center", width: 150 },
-		{ header: "성명", name: "userName", width: 10 },
-		{ header: "부서명", name: "deptName", width: 100 },
-		{ header: "지급일", name: "payrollDate", align: "center", width: 100 },
+		{ header: "사번", name: "userId", align: "center", width: 150, sortable: true, },
+		{ header: "성명", name: "userName", width: 10, sortable: true, },
+		{ header: "부서명", name: "deptName", width: 100, sortable: true, },
+		{ header: "지급일", name: "payrollDate", align: "center", width: 100, sortable: true, },
 		{
-			header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
+			header: "기본급", name: "salary", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
+			header: "상여금", name: "bonus", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
+			header: "수당총액", name: "totalAllowance", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
+			header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
+			header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
+			header: "실 수령액", name: "netPay", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		}

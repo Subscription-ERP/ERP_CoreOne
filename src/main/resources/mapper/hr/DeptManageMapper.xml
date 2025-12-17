@@ -46,6 +46,7 @@
 		 <if test="text != null and text != '' ">
 		   AND dm.dept_name = #{text}
 		 </if>
+		 ORDER BY um.user_id
 	</select>
 	
 	<!-- 회사코드, 사용자Id에 해당하는 부서조회(단건) -->
