@@ -32,20 +32,13 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
         String userId = request.getParameter("userId");
 
-        // 연차 로그인 막기 ANNUAL_LEAVE_TODAY (cause까지 확인)
-        Throwable cause = exception.getCause();
-        if (exception instanceof LockedException && "ANNUAL_LEAVE_TODAY".equals(exception.getMessage())) {
-            response.sendRedirect("/auth/login?error=annualLeave");
-            return;
-        }
-        if (cause instanceof LockedException && "ANNUAL_LEAVE_TODAY".equals(cause.getMessage())) {
-            response.sendRedirect("/auth/login?error=annualLeave");
-            return;
-        }        
-        
-        // 1) 존재하지 않는 사용자
-        if (exception instanceof AuthenticationServiceException) {
-            response.sendRedirect("/auth/login?error=noUser");
+        log.warn("로그인 실패 원인: {}", exception.getMessage());
+
+        // ✅ 1) 회사코드 불일치
+        if (exception instanceof AuthenticationServiceException
+                && "NO_COMPANY".equals(exception.getMessage())) {
+
+            response.sendRedirect("/auth/login?error=noCompany");
             return;
         }
 
@@ -55,19 +48,16 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
             return;
         }
 
-        
-        // 3) 아이디/비밀번호 틀림
+        // 3) 아이디 / 비밀번호 오류
         if (exception instanceof BadCredentialsException && userId != null) {
 
             Integer failCount = loginMapper.getFailCount(userId);
 
-            // DB에 없는 사용자 → 위에서 잡히지만 혹시 null이 온 경우 대비
             if (failCount == null) {
                 response.sendRedirect("/auth/login?error=noUser");
                 return;
             }
 
-            // 이미 잠긴 상태면 lock 메시지
             if (failCount >= 5) {
                 response.sendRedirect("/auth/login?error=locked");
                 return;
@@ -79,21 +69,18 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
             log.warn("[{}] 로그인 실패 {}회", userId, updatedFail);
 
-            // 5회 → 계정 잠금
             if (updatedFail >= 5) {
                 loginMapper.lockUserAccount(userId);
                 response.sendRedirect("/auth/login?error=locked");
                 return;
             }
 
-            // 남은 횟수 전달
             int remain = 5 - updatedFail;
             response.sendRedirect("/auth/login?error=wrong&remain=" + remain);
             return;
         }
 
-        
-        // 4) 그 외 모든 로그인 에러
+        // 4) 기타 오류
         response.sendRedirect("/auth/login?error=fail");
     }
 }
