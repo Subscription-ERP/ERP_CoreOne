@@ -24,6 +24,7 @@ public class CompanyVO {
     private String companyPhone;     // 회사 전화번호
     private String managerPhone;     // 담당자 연락처
     private String managerEmail;	 // 담당자 이메일
+    private String customerKey;		 // 회사 결제키
     
     private String subCode;
     private String subsStatus;

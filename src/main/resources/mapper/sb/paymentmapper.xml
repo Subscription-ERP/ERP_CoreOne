@@ -7,13 +7,10 @@
 	<!-- 결제 이력 INSERT -->
 	<insert id="insertPayment"
 		parameterType="com.rootcore.sb.vo.PaymentVO">
-
-		<!-- PAYMENT_CODE 생성 -->
-		<selectKey resultType="String" order="BEFORE"
-			keyProperty="paymentCode">
-			SELECT FN_MAKE_PAYMENT_CODE() FROM DUAL
+		
+		<selectKey keyProperty="paymentCode" order="BEFORE" resultType="String">
+		SELECT FN_MAKE_CODE('PAY') FROM DUAL
 		</selectKey>
-
 		INSERT INTO TB_PAYMENT
 		(
 		PAYMENT_CODE,
@@ -104,29 +101,30 @@
 	<select id="selectSubDetail" parameterType="string"
 		resultType="SubscribeVO">
 		SELECT *
-FROM (
-    SELECT
-        SUB_CODE,
-        COMPANY_CODE,
-        SUBS_STATUS,
-        SUBS_START,
-        SUBS_END,
-        CREATED_BY,
-        CREATE_DATE,
-        UPDATED_BY,
-        UPDATE_DATE,
-        PLAN_CODE,
-        CONTRACT_CODE,
-        BILLING_PERIOD,
-        CURRENT_USER_COUNT,
-        CURRENT_PRICE,
-        NEXT_BILLING_DATE,
-        RECENT_BILLING_DATE
-    FROM TB_SUBSCRIBE
-    WHERE company_code = #{companyCode}
-    ORDER BY subs_start DESC
-)
-WHERE ROWNUM = 1
+		FROM (
+		SELECT
+		SUB_CODE,
+		COMPANY_CODE,
+		SUBS_STATUS,
+		SUBS_START,
+		SUBS_END,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE,
+		PLAN_CODE,
+		CONTRACT_CODE,
+		BILLING_PERIOD,
+		CURRENT_USER_COUNT,
+		CURRENT_PRICE,
+		NEXT_BILLING_DATE,
+		RECENT_BILLING_DATE
+		FROM TB_SUBSCRIBE
+		WHERE company_code = #{companyCode}
+		ORDER BY subs_start DESC
+		)
+		WHERE
+		ROWNUM = 1
 	</select>
 
 
@@ -134,24 +132,24 @@ WHERE ROWNUM = 1
 		resultType="com.rootcore.sb.vo.PaymentVO">
 
 		SELECT
-			PAYMENT_CODE,
-			SUB_CODE,
-			COMPANY_CODE,
-			ORDER_ID,
-			TOTAL_PRICE,
-			PAYMENT_STAT,
-			PAYMENT_METHOD,
-			PAYMENT_DATE,
-			CARD_COMPANY,
-			PAYMENT_KEY,
-			BILLING_START,
-			BILLING_END,
-			PAYMENT_TYPE,
-			CARD_NUMBER_MASK,
-			CREATED_BY,
-			CREATE_DATE,
-			UPDATED_BY,
-			UPDATE_DATE
+		PAYMENT_CODE,
+		SUB_CODE,
+		COMPANY_CODE,
+		ORDER_ID,
+		TOTAL_PRICE,
+		PAYMENT_STAT,
+		PAYMENT_METHOD,
+		PAYMENT_DATE,
+		CARD_COMPANY,
+		PAYMENT_KEY,
+		BILLING_START,
+		BILLING_END,
+		PAYMENT_TYPE,
+		CARD_NUMBER_MASK,
+		CREATED_BY,
+		CREATE_DATE,
+		UPDATED_BY,
+		UPDATE_DATE
 		FROM
 		TB_PAYMENT   <!-- 🔴 여기를 네 실제 테이블명으로 
 			바꿔줘 -->

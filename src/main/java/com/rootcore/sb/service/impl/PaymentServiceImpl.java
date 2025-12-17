@@ -302,6 +302,8 @@ public class PaymentServiceImpl implements PaymentService {
 			company.setUpdatedBy("SYSTEM");
 			company.setUpdateDate(LocalDateTime.now());
 			company.setCompanyCode(company.getCompanyCode());
+//			company.setCustomerKey(customerKey);
+			
 			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
 			company = existCompany; // 기존 회사 정보 사용
@@ -411,6 +413,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 2) 토스에 정기결제 승인 요청 (평문 사용)
 		req.setBillingKey(plainBillingKey);
+//		req.setCustomerKey(customerKey);
 
 		// 1) 토스에 정기결제 승인 요청
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
