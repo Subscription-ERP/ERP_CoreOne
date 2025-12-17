@@ -8,6 +8,19 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface LoginMapper {
 
+	
+	// ✅ 회사코드 + 사용자 ID
+    LoginUserVO selectLoginUser(
+            @Param("companyCode") String companyCode,
+            @Param("userId") String userId
+    );
+    
+	// 로그인 사용자 조회 (회사코드 포함) 
+    LoginVO findByUserIdAndCompany(
+            @Param("companyCode") String companyCode,
+            @Param("userId") String userId
+    );
+	
     //	1) 로그인 사용자 조회 
     LoginVO findByUserId(@Param("userId") String userId);
 

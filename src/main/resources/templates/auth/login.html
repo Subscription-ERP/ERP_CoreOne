@@ -15,7 +15,7 @@ body {
     height: 100vh;
     background: #343B43;
     display: flex;
-    flex-direction: column; /* 🔥 추가: 아래 안내 박스도 세로로 배치 */
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-family: 'Pretendard', sans-serif;
@@ -123,9 +123,7 @@ body {
     margin-top: 18px;
 }
 
-/* -------------------------------------------------
-   🔥 테스트 계정 안내 박스 스타일
-------------------------------------------------- */
+/* 테스트 계정 안내 */
 .test-account-box {
     width: 420px;
     margin-top: 25px;
@@ -154,30 +152,33 @@ body {
 </head>
 <body>
 
-<!-- ===========================================
-     🔹 기존 로그인 카드 그대로 유지
-=========================================== -->
 <div class="login-card">
-    
-    <!-- 🔥 로그아웃 후 메시지 -->
+
     <div th:if="${param.logout}" class="alert alert-success mb-3">
         안전하게 로그아웃 되었습니다. 다시 로그인 해주세요.
     </div>
 
-    <!-- 여기 밑에 기존 로그인 폼 내용들이 이어짐 -->
-	
     <div class="login-title">RootCore 로그인</div>
-	
+
     <form method="post" action="/auth/doLogin">
 
+        <!-- ⭐ 회사 코드 -->
+        <div class="form-group">
+            <input type="text" class="form-input" id="companyCode" name="companyCode"
+                   placeholder=" " required>
+            <label for="companyCode">회사 코드</label>
+            <i class="bi bi-buildings-fill"></i>
+        </div>
+
+        <!-- 아이디 -->
         <div class="form-group">
             <input type="text" class="form-input" id="userId" name="userId"
-                   th:value="${'EMP25112700001'}"
                    placeholder=" " required>
             <label for="userId">아이디</label>
             <i class="bi bi-person-fill"></i>
         </div>
 
+        <!-- 비밀번호 -->
         <div class="form-group">
             <input type="password" class="form-input" id="password" name="password"
                    placeholder=" " required>
@@ -186,13 +187,11 @@ body {
         </div>
 
         <div style="margin-bottom: 18px; font-size: 14px;">
-            <input type="checkbox" id="rememberId" name="rememberId"
-                   th:checked="${savedId != null}">
+            <input type="checkbox" id="rememberId" name="rememberId">
             <label for="rememberId" style="margin-left: 5px;">아이디 기억하기</label>
         </div>
 
         <button type="submit" class="login-btn">로그인</button>
-
     </form>
 
     <div class="etc-menu">
@@ -201,40 +200,23 @@ body {
     </div>
 
     <div class="error-text">
-        <span th:if="${param.error == 'noUser'}">존재하지 않는 사용자입니다.</span>
-        <span th:if="${param.error == 'locked'}">잠긴 계정입니다. 관리자에게 문의하세요.</span>
-        <span th:if="${param.error != null and #strings.startsWith(param.error, 'wrong')}">
-            아이디 또는 비밀번호가 틀립니다.
-            (<span th:text="${param.remain}"></span>회 남음)
-        </span>
-        <span th:if="${param.error != null and param.error[0] == 'annualLeave'}">오늘은 연차 처리되어 로그인할 수 없습니다.</span>
-        <span th:if="${param.error == 'fail'}">로그인 중 오류가 발생했습니다.</span>
-    </div>
-    
-    
+    <span th:if="${param.error != null and param.error[0] == 'noCompany'}">
+        회사 코드가 올바르지 않습니다.
+    </span>
 
+    <span th:if="${param.error != null and param.error[0] == 'noUser'}">
+        존재하지 않는 사용자입니다.
+    </span>
+
+    <span th:if="${param.error != null and param.error[0] == 'locked'}">
+        잠긴 계정입니다.
+    </span>
+
+    <span th:if="${param.error != null and param.error[0] == 'wrong'}">
+        아이디 또는 비밀번호가 틀립니다.
+        (<span th:text="${param.remain}"></span>회 남음)
+    </span>
 </div>
-
-<!-- ===========================================
-     🔥 테스트 계정 안내 박스 (추가된 영역)
-=========================================== -->
-<div class="test-account-box">
-
-    <div class="test-account-box-title">※ Login 시 ROLE_CODE(권한)</div>
-
-    <div class="test-account-item">
-        <strong>ADMIN (전체관리자)</strong><br>
-        ID : <span class="test-id">EMP25112700001</span><br>
-        PW : <span class="test-id">hee011479!</span><br>
-        사용자 : 우상준
-    </div>
-
-    <div class="test-account-item">
-        <strong>MANAGER (중간관리자)</strong><br>
-        ID : <span class="test-id">EMP23030100003</span><br>
-        PW : <span class="test-id">1234</span><br>
-        사용자 : 박과장
-    </div>
 
 </div>
 

@@ -40,24 +40,38 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         // 로그인한 사용자 ID
         String userId = authentication.getName();
 
-        // DB에서 사용자 정보 조회
-        LoginUserVO loginUser = loginMapper.selectLoginUser(userId);
-        if (loginUser == null) {
-            response.sendRedirect("/auth/login?error");
+        // ✅ 로그인 폼에서 넘어온 회사코드
+        String companyCode = request.getParameter("companyCode");
+
+        // (방어) 회사코드가 비어있으면 로그인페이지로
+        if (companyCode == null || companyCode.trim().isEmpty()) {
+            response.sendRedirect("/auth/login?error=noCompany");
             return;
         }
 
-        String companyCode = loginUser.getCompanyCode();
-        String roleCode = loginUser.getRoleCode(); // 예: ROLE_ADMIN
+        // ✅ 회사코드 + userId로 사용자 정보 조회
+        LoginUserVO loginUser = loginMapper.selectLoginUser(companyCode, userId);
+
+        // 회사코드 불일치 or 사용자 없음
+        if (loginUser == null) {
+            response.sendRedirect("/auth/login?error=noCompany");
+            return;
+        }
+
+        // DB 기준 회사코드 (정상)
+        String dbCompanyCode = loginUser.getCompanyCode();
+
+        // ROLE 처리
+        String roleCode = loginUser.getRoleCode(); // 예: ROLE_ADMIN 또는 ADMIN
         String finalRoleCode = (roleCode != null)
-                ? roleCode.replace("ROLE_", "").toUpperCase()   // 예: ADMIN
+                ? roleCode.replace("ROLE_", "").toUpperCase()
                 : null;
 
         // ============================
-        //  메뉴 권한 조회 (ROLE 기반)
+        // 메뉴 권한 조회 (ROLE 기반)
         // ============================
         List<RoleMenuAuthVO> sideMenuList =
-                menuPermissionService.getLoginMenuList(companyCode, finalRoleCode);
+                menuPermissionService.getLoginMenuList(dbCompanyCode, finalRoleCode);
 
         List<UserMenuAuthVO> userAuthList =
                 sideMenuList.stream().map(vo -> {
@@ -76,45 +90,25 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 }).toList();
 
         // ============================
-        // ⭐⭐ 세션 저장 ⭐⭐
+        // 세션 저장
         // ============================
         session.setAttribute("LOGIN_USER_ID", userId);
         session.setAttribute("LOGIN_USER_NAME", loginUser.getUserName());
-        session.setAttribute("LOGIN_COMPANY_CODE", companyCode);
-
-        // ✅ 부서/직급 세션 저장 추가
+        session.setAttribute("LOGIN_COMPANY_CODE", dbCompanyCode);
         session.setAttribute("LOGIN_DEPT", loginUser.getDept());
         session.setAttribute("LOGIN_POSITION", loginUser.getPosition());
-
-        // 필터/사이드바에서 쓰는 ROLE_CODE (ADMIN / MANAGER / USER)
         session.setAttribute("LOGIN_ROLE_CODE", finalRoleCode);
-
-        // 사이드바 메뉴용
         session.setAttribute("LOGIN_MENU_AUTH", sideMenuList);
-
-        // URL 권한 체크용
         session.setAttribute("LOGIN_USER_AUTH_LIST", userAuthList);
-
-        // (필요하다면 원본 ROLE_ 값도 별도 키로 보관 가능)
         session.setAttribute("LOGIN_ROLE_CODE_RAW", roleCode);
 
-        // 출근 로직 호출(인사)
-        attendanceService.checkinTodayIfNeeded(companyCode, userId);
+        // 출근 로직
+        attendanceService.checkinTodayIfNeeded(dbCompanyCode, userId);
 
-        // 실패횟수 초기화 & 계정 잠금 해제
+        // 실패횟수 초기화 & 잠금해제
         loginMapper.resetFailCountAndLastLogin(userId);
         loginMapper.unlockUserAccount(userId);
 
-        System.out.println("===== LOGIN SUCCESS =====");
-        System.out.println("USER   : " + userId);
-        System.out.println("ROLE   : " + finalRoleCode + " (raw=" + roleCode + ")");
-        System.out.println("DEPT   : " + loginUser.getDept());
-        System.out.println("POS    : " + loginUser.getPosition());
-        System.out.println("SIDE   : " + sideMenuList.size());
-        System.out.println("AUTH   : " + userAuthList.size());
-        System.out.println("=========================");
-
-        // 메인으로 이동
         response.sendRedirect("/");
     }
 }
