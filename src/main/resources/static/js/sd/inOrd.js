@@ -199,9 +199,17 @@ document.addEventListener("DOMContentLoaded", function () {
         e.changes.forEach(change => {
             let { rowKey, columnName, value } = change;
 
+            // 거래처 미선택 시 막기
+            if (columnName === 'sku' || columnName === 'skuName') {
+                if (!validateInordForm()) {
+                    inOrdGrid.setValue(rowKey, columnName, '');
+                    return;
+                }
+            }
+
             // 품목코드 입력시 자동 완성
             if (columnName === 'sku') {
-                const skuCode = value;
+                const skuCode = String(value || '').trim();
 
                 if (!skuCode || !skuDataList || skuDataList.length === 0) return;
 
@@ -211,20 +219,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     inOrdGrid.setValue(rowKey, 'skuName', sku.skuName || '');
                     inOrdGrid.setValue(rowKey, 'spec',    sku.spec || '');
                     inOrdGrid.setValue(rowKey, 'unit',    sku.unit || '');
-                    inOrdGrid.setValue(rowKey, 'unitPrice', sku.unitPrice || 0);
                     inOrdGrid.setValue(rowKey, 'taxYn', sku.taxYn);
                 } else {
                     inOrdGrid.setValue(rowKey, 'skuName', '');
                     inOrdGrid.setValue(rowKey, 'spec',    '');
                     inOrdGrid.setValue(rowKey, 'unit',    '');
-                    inOrdGrid.setValue(rowKey, 'unitPrice', 0);
                     inOrdGrid.setValue(rowKey, 'taxYn', '');
+                    inOrdGrid.setValue(rowKey, 'unitPrice', 0);
                 }
             }
 
             // 품목명 입력시 자동 완성
             else if (columnName === 'skuName') {
-                const skuName = value;
+                const skuName = String(value || '').trim();
 
                 if (!skuName || !skuDataList || skuDataList.length === 0) return;
 
@@ -234,15 +241,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     inOrdGrid.setValue(rowKey, 'sku', sku.sku || '');
                     inOrdGrid.setValue(rowKey, 'spec',    sku.spec || '');
                     inOrdGrid.setValue(rowKey, 'unit',    sku.unit || '');
-                    inOrdGrid.setValue(rowKey, 'unitPrice', sku.unitPrice || 0);
                     inOrdGrid.setValue(rowKey, 'taxYn', sku.taxYn);
                 } else {
                     inOrdGrid.setValue(rowKey, 'sku', '');
                     inOrdGrid.setValue(rowKey, 'spec',    '');
                     inOrdGrid.setValue(rowKey, 'unit',    '');
-                    inOrdGrid.setValue(rowKey, 'unitPrice', 0);
                     inOrdGrid.setValue(rowKey, 'taxYn', '');
+                    inOrdGrid.setValue(rowKey, 'unitPrice', 0);
                 }
+            }
+
+            // 단가유형 선택 시 단가 변경 (이미 있는 로직 유지)
+            if (columnName === 'unitPriceType') {
+                handleUnitPriceTypeChange(rowKey, value);
             }
 
             // 공급가액, 부가세 계산
@@ -252,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const unitPrice = Number(row.unitPrice) || 0;
 
                 const supplyPrice = qty * unitPrice;
-                const taxYn = row.taxYn
+                const taxYn = row.taxYn;
 
                 const surTax = (taxYn === 'N') ? 0 : Math.floor(supplyPrice * 0.1);
 
@@ -376,7 +387,16 @@ window.handleSelectedSku = function (row) {
     if (!data.length) return;
 
     // 1) 중복 품목 여부 체크 (sku 기준, 필요하면 skuName도 같이 체크)
-    const isDup = data.some(r => String(r.sku).trim() === String(row.sku).trim());
+    const isDup = data.some(r => {
+        const sku1 = String(r.sku || '').trim();
+        const sku2 = String(row.sku || '').trim();
+
+        const type1 = String(r.unitPriceType || '').trim();          // 그리드: 코드
+        const type2 = String(row.unitPriceTypeCode || '').trim();    // 모달: 코드
+
+        return sku1 !== '' && sku1 === sku2 && type1 !== '' && type1 === type2;
+    });
+
     if (isDup) {
         showToast('이미 선택된 품목입니다.', 'warning');
         return;
@@ -392,6 +412,7 @@ window.handleSelectedSku = function (row) {
     inOrdGrid.setValue(rowKey, 'skuName',   row.skuName || '');
     inOrdGrid.setValue(rowKey, 'spec',      row.spec || '');
     inOrdGrid.setValue(rowKey, 'unit',      row.unit || '');
+    inOrdGrid.setValue(rowKey, 'unitPriceType',  row.unitPriceTypeCode || defaultType);
     inOrdGrid.setValue(rowKey, 'unitPrice', row.unitPrice || 0);
     inOrdGrid.setValue(rowKey, 'taxYn',     row.taxYn || '');
 
@@ -433,7 +454,9 @@ function openCustModalOnly(e) {
     // if (schCustCode) schCustCode.value = custCodeKeyword;
     // if (schCustName) schCustName.value = custNameKeyword;
 
-    openCustModal();  // 모달 열기
+    window.custModalType = 'sales';
+    openCustModal();
+
     getCustList();    // 전체 목록 or 필요한 대로
 }
 
@@ -608,7 +631,7 @@ function handleUnitPriceTypeChange(rowKey, value) {
 
     if (skuCode && typeCode) {
         const skuInfo = skuDataList.find(item =>
-            item.sku === skuCode && item.unitPriceType === typeCode
+            item.sku === skuCode && item.unitPriceTypeCode === typeCode
         );
 
         if (skuInfo && skuInfo.unitPrice != null) {
@@ -643,12 +666,14 @@ function skuList() {
         .then(result => {
             skuDataList = result;
 
-            console.log(skuDataList);
-
             const map = new Map();
             skuDataList.forEach(item => {
-                if (item.unitPriceType && item.typeName) {
-                    map.set(item.unitPriceType, item.typeName);
+                if (
+                    item.unitPriceTypeCode &&
+                    item.unitPriceType &&
+                    (item.unitPriceTypeCode === 'SELL_UNIT' || item.unitPriceTypeCode === 'SELL_DISC_UNIT')
+                ) {
+                    map.set(item.unitPriceTypeCode, item.unitPriceType);
                 }
             });
 
@@ -665,7 +690,7 @@ function skuList() {
             }));
 
             // 단가 유형 세팅
-            const defaultType =
+            defaultType =
                 unitPriceTypeItems.find(it => it.value === 'SELL_UNIT')?.value
                 || (unitPriceTypeItems[0] && unitPriceTypeItems[0].value)
                 || '';

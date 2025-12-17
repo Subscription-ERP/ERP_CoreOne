@@ -117,7 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 거래처 정보 불러오기
   function custListData() {
-    fetch('/api/sd/custList')
+    const params = new URLSearchParams({
+      includeStopped: 'false'  // 기본은 사용중만
+      // 필요하면 custType: 'sales' 또는 'purchase'
+    });
+
+    const url = `/api/sd/custList?${params.toString()}`;
+
+    fetch(url)
       .then(res => res.json())
       .then(result => {
         grid.resetData(result);
@@ -169,13 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const custTypeCode = document.getElementById('searchCustType').value;
     const includeStopped = document.getElementById('includeStopped').checked;
 
-    const params = { custCode, custName, custTypeCode, includeStopped };
+    const params = new URLSearchParams({
+      custCode: custCode || '',
+      custName: custName || '',
+      custTypeCode: custTypeCode || '',
+      includeStopped: String(includeStopped)
+    });
 
-    fetch('/api/sd/searchCust', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    })
+    const url = `/api/sd/custList?${params.toString()}`;
+
+    fetch(url)
         .then(res => res.json())
         .then(result => {
           grid.resetData(result);
