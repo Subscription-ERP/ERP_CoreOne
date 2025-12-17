@@ -35,7 +35,7 @@ public class BillingScheduler {
      * cron = 초 분 시 일 월 요일
      * 0 0 3 * * *  → 매일 03:00:00
      */
-    @Scheduled(cron = "0 02 13 * * *")
+    @Scheduled(cron = "0 56 23 * * *")
     public void runMonthlyBillingScheduler() {
 
         LocalDate today = LocalDate.now();
@@ -68,16 +68,22 @@ public class BillingScheduler {
 
         		orderMapper.insertOrder(order);
             	
+        		 // ✅ customerKey를 회사 테이블에서 꺼냄
+        	    String customerKey = company.getCustomerKey();
+        	    if (customerKey == null || customerKey.isBlank()) {
+        	        throw new IllegalStateException("customerKey is null. companyCode=" + company.getCompanyCode());
+        	    }
         		
                 // 2) 정기결제 요청 데이터 만들기
                 TossBillingConfirmRequestVO req = new TossBillingConfirmRequestVO();
                 req.setAmount(amount);
                 req.setOrderName(order.getOrderName());
-
                 // 주문번호 규칙 예시: BILL_{subCode}_{timestamp}
                 req.setOrderId(order.getOrderId());
                 // 필요하면 subCode도 넣어두기
                 req.setSubCode(sub.getSubCode());
+                req.setCustomerKey(customerKey);
+                
 
                 // 3) 한 건의 결제 처리 (핵심 로직은 서비스에서)
                 paymentService.chargeSubscription(req);

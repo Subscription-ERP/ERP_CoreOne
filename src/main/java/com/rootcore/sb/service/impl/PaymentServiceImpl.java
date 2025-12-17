@@ -274,15 +274,13 @@ public class PaymentServiceImpl implements PaymentService {
 
 		orderMapper.insertOrder(billingorder);
 
-		String cardRegOrderId = "CARDREG" +
-		        LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) + "_" +
-		        UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+		
 		
 		// ---------------- 6) 빌링키로 첫 결제 승인 (정기결제) ----------------
 		TossBillingConfirmRequestVO billingReq = new TossBillingConfirmRequestVO();
 		billingReq.setBillingKey(billingKey);
 		billingReq.setAmount(billingorder.getOrderAmount()); // 주문 금액 기준
-		billingReq.setOrderId(cardRegOrderId);
+		billingReq.setOrderId(billingorder.getOrderId());
 		billingReq.setOrderName(plan.getPlanName()); // 예: "스탠다드 구독"
 		billingReq.setCustomerKey(customerKey);
 
@@ -302,7 +300,7 @@ public class PaymentServiceImpl implements PaymentService {
 			company.setUpdatedBy("SYSTEM");
 			company.setUpdateDate(LocalDateTime.now());
 			company.setCompanyCode(company.getCompanyCode());
-//			company.setCustomerKey(customerKey);
+			company.setCustomerKey(customerKey);
 			
 			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
@@ -413,7 +411,6 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 2) 토스에 정기결제 승인 요청 (평문 사용)
 		req.setBillingKey(plainBillingKey);
-//		req.setCustomerKey(customerKey);
 
 		// 1) 토스에 정기결제 승인 요청
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
@@ -460,7 +457,7 @@ public class PaymentServiceImpl implements PaymentService {
 		if (success) {
 			LocalDate today = LocalDate.now();
 			LocalDate next = today.plusMonths(1);
-			subscribeMapper.updateBillingDates(sub.getSubCode(), today, next);
+			subscribeMapper.updateBillingDates(today, next, sub.getSubCode());
 			subscribeMapper.updateSubsStatus(sub.getSubCode(), "ACTIVE", "SYSTEM");
 		} else {
 			subscribeMapper.updateSubsStatus(sub.getSubCode(), "PAST_DUE", "SYSTEM");
