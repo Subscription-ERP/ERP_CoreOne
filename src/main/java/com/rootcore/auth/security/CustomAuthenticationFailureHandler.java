@@ -32,6 +32,16 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
         String userId = request.getParameter("userId");
 
+        // 연차 로그인 막기 ANNUAL_LEAVE_TODAY (cause까지 확인)
+        Throwable cause = exception.getCause();
+        if (exception instanceof LockedException && "ANNUAL_LEAVE_TODAY".equals(exception.getMessage())) {
+            response.sendRedirect("/auth/login?error=annualLeave");
+            return;
+        }
+        if (cause instanceof LockedException && "ANNUAL_LEAVE_TODAY".equals(cause.getMessage())) {
+            response.sendRedirect("/auth/login?error=annualLeave");
+            return;
+        }        
         
         // 1) 존재하지 않는 사용자
         if (exception instanceof AuthenticationServiceException) {
@@ -40,7 +50,6 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         }
 
         // 2) 잠긴 계정
-
         if (exception instanceof LockedException) {
             response.sendRedirect("/auth/login?error=locked");
             return;

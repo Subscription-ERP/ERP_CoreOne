@@ -26,6 +26,15 @@
 		ORDER  BY work_date
 	</select>
 	
+	<!-- attend_type=h5(연차)일시 로그인막기를 위한 조회 -->
+	<select id="countAnnualLeaveToday" resultType="int">
+		SELECT count(1)
+		FROM tb_attendance
+		WHERE user_id = #{userId}
+		AND TRUNC(work_date) = TRUNC(SYSDATE)
+		AND attend_type = 'h5'
+	</select>
+	
 	<!-- 내 근태관리 ========================================================== -->
 	<!-- 내 근태 전체조회 -->
 	<select id="selectMyAttendanceAllList" resultType="AttendanceVO" parameterType="String">

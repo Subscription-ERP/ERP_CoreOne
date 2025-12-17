@@ -207,6 +207,7 @@ body {
             아이디 또는 비밀번호가 틀립니다.
             (<span th:text="${param.remain}"></span>회 남음)
         </span>
+        <span th:if="${param.error != null and param.error[0] == 'annualLeave'}">오늘은 연차 처리되어 로그인할 수 없습니다.</span>
         <span th:if="${param.error == 'fail'}">로그인 중 오류가 발생했습니다.</span>
     </div>
     
