@@ -218,7 +218,7 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.holiday);
 	document.getElementById('family').textContent = rowData.family === null || rowData.family === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.family);
 	document.getElementById('meal').textContent = rowData.meal === null || rowData.meal === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.meal);
-	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
+	document.getElementById('total_allowance').textContent = rowData.totalAllowance === null || rowData.totalAllowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
 
 	// ------------------ 공제 테이블 업데이트 ------------------
 	document.getElementById('income_tax').textContent = rowData.incomeTax === null || rowData.incomeTax === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.incomeTax);
