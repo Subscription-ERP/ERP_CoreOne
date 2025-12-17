@@ -30,7 +30,6 @@ public class CompanyController {
 	@Value("${toss.api.client-key}")
 	String clientKey ;
 	
-	//private final CompanyService companyService; // 생성자 주입 service 준비상태 실제로 호출하는건 메소드
 	private final PlanService planService;
 
 	// 1단계 회사 등록화면
@@ -43,7 +42,6 @@ public class CompanyController {
 	// 1단계 회사등록 + 플랜선택화면이동
 	@PostMapping("/companies")
 	public String registerCompany(@ModelAttribute CompanyVO requestVO, HttpSession session) {
-//		String StringCode = companyService.registerCompany(requestVO);
 		session.setAttribute("company", requestVO);
 		// GET /{companyCode}/plans 으로 redirect
 		return "redirect:/plans";

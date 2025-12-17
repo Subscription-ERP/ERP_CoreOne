@@ -22,7 +22,7 @@
 		COMPANY_PHONE,
 		MANAGER_PHONE,
 		MANAGER_EMAIL,
-		<!-- CUSTOMER_KEY, -->
+		CUSTOMER_KEY,
 		CREATED_BY,
 		CREATE_DATE,
 		UPDATED_BY,
@@ -43,7 +43,7 @@
 		#{companyPhone},
 		#{managerPhone},
 		#{managerEmail},
-		<!-- #{customerKey}, -->
+	    #{customerKey}, 
 		#{createdBy},
 		#{createDate},
 		#{updatedBy},
@@ -57,6 +57,7 @@
 		COMPANY_NAME,
 		CEO_NAME,
 		COMPANY_ADDRESS,
+		CUSTOMER_KEY,
 		CEO_PHONE
 		FROM TB_COMPANY_MASTER
 		WHERE COMPANY_CODE =

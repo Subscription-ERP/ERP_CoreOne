@@ -100,7 +100,7 @@
 		recent_billing_date =
 		#{recentBillingDate},
 		next_billing_date = #{nextBillingDate},
-		update_date = NOW(),
+		update_date = SYSDATE,
 		updated_by = 'SYSTEM'
 		WHERE sub_code = #{subCode}
 	</update>
