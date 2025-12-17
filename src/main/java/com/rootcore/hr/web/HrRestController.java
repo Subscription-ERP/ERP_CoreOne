@@ -25,6 +25,7 @@ import com.rootcore.hr.vo.UserHistoryVO;
 import com.rootcore.hr.vo.UserSearchVO;
 import com.rootcore.hr.vo.UserVO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,17 +35,37 @@ public class HrRestController {
 	
 	private final HrService hrService;
 	
-	// 사원 전체조회
-	@GetMapping("/userAllList")
-	public List<UserVO> getUserAllList(){
-		return hrService.selectAllUserList();
+	/*
+		GET  /api/hr/user             전체조회,검색
+		GET  /api/hr/user/{userId}    상세조회
+		POST /api/hr/user             등록
+		PUT  /api/hr/user/{userId}    수정
+		DELETE /api/hr/user/{userId}  삭제
+	 */
+	
+	// 사원 전체조회 + 검색
+	@GetMapping("/user")
+	public List<UserVO> getUserAllList(UserSearchVO userSearchVO, HttpSession session){
+		
+		// 세션 회사코드
+		String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		
+		if(companyCode == null || companyCode.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+	                "회사 정보가 없습니다. 로그인 상태를 확인하세요.");
+		}
+		
+		// companyCode를 searchVO에 세팅
+		userSearchVO.setCompanyCode(companyCode);
+				
+		return hrService.selectUserList(userSearchVO);
 	}
 	
 	// 사원 검색
-	@GetMapping("/userSearch")
-	public List<UserVO> searchUserList(UserSearchVO userSearchVO){
-		return hrService.selectUserSearch(userSearchVO);
-	}	
+	/*
+	 * @GetMapping("/userSearch") public List<UserVO> searchUserList(UserSearchVO
+	 * userSearchVO){ return hrService.selectUserSearch(userSearchVO); }
+	 */
 	
 	// 사원 상세조회
 	@GetMapping("/userDetail")

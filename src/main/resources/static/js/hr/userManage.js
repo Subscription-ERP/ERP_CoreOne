@@ -51,14 +51,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 			bodyHeight: 300,
 			rowHeaders: ['checkbox'],
 			columns: [
-				{ header: "사원번호", name: "userId", align: 'center', sortable: true },
-				{ header: "성명", name: "userName" },
-				{ header: "부서", name: "deptName" },
-				{ header: "입사일", name: "hireDate", align: 'center' },
-				{ header: "직위/직급", name: "jobTitleName" },
-				{ header: "직책", name: "positionName" },
-				{ header: "연락처", name: "tel" },
-				{ header: "Email", name: "email" }
+				{ header: "사원번호", name: "userId", align: 'center', sortable: true, formatter: redTextIfLeaved },
+				{ header: "성명", name: "userName", formatter: redTextIfLeaved },
+				{ header: "부서", name: "deptName", formatter: redTextIfLeaved },
+				{ header: "입사일", name: "hireDate", align: 'center', formatter: redTextIfLeaved },
+				{ header: "직위/직급", name: "jobTitleName", formatter: redTextIfLeaved },
+				{ header: "직책", name: "positionName", formatter: redTextIfLeaved },
+				{ header: "연락처", name: "tel" , formatter: redTextIfLeaved},
+				{ header: "Email", name: "email", formatter: redTextIfLeaved }
 
 			]
 		});
@@ -70,15 +70,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ------------------------------------------------------------------ */
 	async function loadUserList() {
 		globalLoader.style.display = "flex";
-		const response = await fetch('/api/hr/userAllList');
-		const data = await response.json();
-		grid.resetData(data);
-		grid.refreshLayout();
-		globalLoader.style.display = "none";
+
+		try {
+			const response = await fetch('/api/hr/user');
+			const data = await response.json();
+			grid.resetData(data);
+			grid.refreshLayout();
+
+		} catch (err) {
+			console.error(err);
+			showToast("사원목록 조회 중 오류가 발생했습니다.", "error");
+		} finally {
+			globalLoader.style.display = "none";
+		}
+
 	}
 
 	initGrid();
 	loadUserList();
+	
+	// 퇴사자 붉은행 표시
+	function redTextIfLeaved({ row, value }) {
+	  // 퇴사자면 (userStatus가 '2' 또는 2인 경우)
+	  if (row.userStatus == '2' || row.userStatus === 2) {
+	    return `<span style="color: #a00; font-weight: bold;">${value ?? ''}</span>`;
+	  }
+	  return value ?? '';
+	}
 
 
 	/* ------------------------------------------------------------------
@@ -86,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ------------------------------------------------------------------ */
 	const btnSearch = document.querySelector("#btnSearch");
 
-	btnSearch.addEventListener('click', () => {
+	btnSearch.addEventListener('click', async () => {
 		const keyName = document.querySelector("#keyName").value.trim();
 		const deptSearch = document.querySelector("#dept-search").value;
 		const leavedYN = document.querySelector("#leavedYN").checked ? 'Y' : '';
@@ -96,14 +114,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if (deptSearch) params.append('deptSearch', deptSearch);
 		if (leavedYN) params.append('leavedYN', leavedYN);
 
-		fetch(`/api/hr/userSearch?${params.toString()}`)
-			.then(res => res.json())
-			.then(data => {
-				grid.resetData(data);
-				grid.refreshLayout();
-			})
-			.catch(err => console.error(err));
+		try {
+			const response = await fetch(`/api/hr/user?${params.toString()}`)
+			const data = await response.json();
+			grid.resetData(data);
+			grid.refreshLayout();
+		} catch (err) {
+			console.error(err);
+			showToast("검색 중 오류가 발생했습니다.", "error");
+		}
 	});
+
+	// 검색 초기화
+	const btnResetSearch = document.querySelector("#btnResetSearch");
+
+	if (btnResetSearch) {
+		btnResetSearch.addEventListener("click", () => {
+			const keyName = document.querySelector("#keyName").value = "";
+			const deptSearch = document.querySelector("#dept-search").value = "";
+			const leavedYN = document.querySelector("#leavedYN").checked = false;
+
+			// 다시 전체조회
+			loadUserList();
+
+			// 사원기본정보 초기화
+			btnReset?.click();
+		})
+	}
+
+
 
 
 	/* ------------------------------------------------------------------
@@ -736,6 +775,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 	const btnSave = $("#btnSave");
 	if (btnSave) {
 		btnSave.addEventListener("click", async () => {
+			if (!validateEmployeeForm()) {
+			    return; // 유효성 검사 실패 시 stop
+			}			
+			
 			const fr = document.querySelector(".form-allwrapper");
 
 			// 1) 기본정보 수집
@@ -944,8 +987,89 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 
+	/* ------------------------------------------------------------------
+	 * 사원 등록 유효성검사
+	 * ------------------------------------------------------------------ */
+	function validateEmployeeForm() {
+	  const fr = document.querySelector(".form-allwrapper");
 
+	  const userName  = fr.querySelector("#userName").value.trim();
+	  const hireDate  = fr.querySelector("#hireDate").value;
+	  const dept      = fr.querySelector("#dept").value;
+	  const jobTitle  = fr.querySelector("#jobTitle").value;
+	  const position  = fr.querySelector("#position").value;
+	  const salary    = fr.querySelector("#salary").value.trim();
+	  const tel       = fr.querySelector("#tel").value.trim();
+	  const email     = fr.querySelector("#email").value.trim();
 
+	  // — 필수 값 체크 —
+
+	  if (!userName) {
+	    showToast("이름을 입력해주세요.", "warning");
+	    fr.querySelector("#userName").focus();
+	    return false;
+	  }
+
+	  if (!hireDate) {
+	    showToast("입사일을 입력해주세요.", "warning");
+	    fr.querySelector("#hireDate").focus();
+	    return false;
+	  }
+
+	  if (!dept) {
+	    showToast("부서를 선택해주세요.", "warning");
+	    fr.querySelector("#dept").focus();
+	    return false;
+	  }
+
+	  if (!jobTitle) {
+	    showToast("직위/직급을 선택해주세요.", "warning");
+	    fr.querySelector("#jobTitle").focus();
+	    return false;
+	  }
+
+	  if (!position) {
+	    showToast("직책을 선택해주세요.", "warning");
+	    fr.querySelector("#position").focus();
+	    return false;
+	  }
+
+	  if (!salary) {
+	    showToast("급여를 입력해주세요.", "warning");
+	    fr.querySelector("#salary").focus();
+	    return false;
+	  }
+
+	  if (isNaN(salary) || Number(salary) < 0) {
+	    showToast("급여는 0 이상의 숫자로 입력해주세요.", "warning");
+	    fr.querySelector("#salary").focus();
+	    return false;
+	  }
+
+	  // — 연락처 체크 —
+
+	  if (tel) {
+	    const telPattern = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/;
+	    if (!telPattern.test(tel)) {
+	      showToast("연락처 형식이 올바르지 않습니다. 예: 010-0000-0000", "warning");
+	      fr.querySelector("#tel").focus();
+	      return false;
+	    }
+	  }
+
+	  // — 이메일 체크 —
+
+	  if (email) {
+	    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	    if (!emailPattern.test(email)) {
+	      showToast("이메일 형식이 올바르지 않습니다.", "warning");
+	      fr.querySelector("#email").focus();
+	      return false;
+	    }
+	  }
+
+	  return true;
+	}
 
 
 

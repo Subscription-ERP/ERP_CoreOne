@@ -11,10 +11,13 @@ import com.rootcore.hr.vo.UserVO;
 public interface HrService {
 
 	// 사원
-	List<UserVO> selectAllUserList();                                // 전체조회
+	//List<UserVO> selectAllUserList();                                // 전체조회
+	// List<UserVO> selectUserSearch(UserSearchVO userSearchVO);        // 검색
+	List<UserVO> selectUserList(UserSearchVO userSearchVO);          // 전체조회 + 검색
+	
 	UserVO selectUserDetail(String userId);                          // 상세조회(기본사항,자격증,경력사항,이력)
 	List<DeptVO> selectDeptMaster();                                 // 부서조회
-	List<UserVO> selectUserSearch(UserSearchVO userSearchVO);        // 검색
+	
 	int insertUser(UserVO userVO, 
 			       MultipartFile userPhoto,
 			       MultipartFile userFile,

@@ -81,6 +81,152 @@
 	background: #222;
 	border-color: #222;
 }
+
+/* ===== 결제 방식 토글 ===== */
+.method-toggle {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.method-btn {
+	flex: 1 1 240px; /* ✅ 두 개가 한 줄에 놓이되, 좁으면 아래로 내려감 */
+	text-align: left;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	background: #fff;
+	padding: 12px 14px;
+	font-weight: 800;
+	font-size: 14px;
+	cursor: pointer;
+	line-height: 1.2;
+	outline: none;
+	/* ✅ 부트스트랩 버튼 기본값 덮어쓰기 */
+	box-shadow: none !important;
+}
+
+.method-btn:focus, .method-btn:active {
+	outline: none;
+	box-shadow: none !important; /* ✅ 파란 포커스 제거 */
+}
+
+.method-sub {
+	display: block;
+	margin-top: 6px;
+	font-size: 12px;
+	font-weight: 700;
+	color: #6b7280;
+}
+
+.method-btn.is-active {
+	border-color: rgba(37, 99, 235, .55);
+	background: rgba(37, 99, 235, .08);
+	color: #1d4ed8;
+}
+
+.method-desc {
+	margin-top: 10px;
+	font-size: 12px;
+	color: #6b7280;
+	line-height: 1.4;
+}
+
+.is-hidden {
+	display: none !important;
+}
+/* ===== 간편결제 모달 ===== */
+.pay-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 1050;
+}
+
+.pay-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .45);
+}
+
+.pay-modal-content {
+	position: relative;
+	background: #fff;
+	width: 480px;
+	max-width: 90%;
+	margin: 10vh auto;
+	border-radius: 14px;
+	padding: 16px;
+	z-index: 1;
+}
+
+.pay-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid #e5e7eb;
+	padding-bottom: 8px;
+}
+
+.pay-modal-close {
+	background: none;
+	border: none;
+	font-size: 18px;
+	cursor: pointer;
+}
+
+.pay-modal-body {
+	padding: 14px 0;
+	max-height: 60vh;
+	overflow-y: auto;
+}
+
+.pay-modal-footer {
+	border-top: 1px solid #e5e7eb;
+	padding-top: 10px;
+}
+
+.is-hidden {
+	display: none !important;
+}
+
+.subscription-container {
+	padding-bottom: 120px;
+}
+
+.subscription-container {
+	min-height: calc(100vh - 120px);
+}
+
+.billing-box {
+	border: 1px solid rgba(37, 99, 235, .20);
+	background: rgba(37, 99, 235, .06);
+	border-radius: 12px;
+	padding: 14px;
+}
+
+.billing-title {
+	font-weight: 800;
+	color: #1d4ed8;
+	margin-bottom: 6px;
+}
+
+.billing-text {
+	font-size: 13px;
+	color: #374151;
+	line-height: 1.45;
+}
+
+.is-hidden {
+	display: none !important;
+}
+
+.payment-panel {
+	display: flex;
+	flex-direction: column;
+}
+
+.payment-panel .panel-footer {
+	margin-top: auto; /* ✅ 아래로 밀어줌 */
+}
 </style>
 </head>
 
@@ -177,28 +323,69 @@
 							<span>부가세(10%)</span> <span
 								th:text="${session.contract.vat + '원'}">6,000원</span>
 						</div>
-
-						<div class="summary-divider"></div>
-
 						<div class="summary-row summary-total">
 							<span> 총 금액( <span
 								th:text="${session.contract.subsPeriod + '개월'}">3개월</span> )
 							</span> <span th:text="${session.contract.totalPrice + '원'}">66,000원</span>
 						</div>
 
+						<div class="summary-divider"></div>
+
+						<!-- ✅ 결제 방식 선택(카드 안) -->
+						<div class="pay-method-in-card">
+							<div class="mb-2 fw-bold">결제 방식 선택</div>
+
+							<div class="method-toggle">
+								<button type="button" class="method-btn is-active"
+									data-paytype="SUBSCRIPTION">
+									정기결제 <span class="method-sub">카드 등록 후 다음 결제부터 자동결제</span>
+								</button>
+
+								<button type="button" class="method-btn" data-paytype="ONE_TIME">
+									간편결제(1회) <span class="method-sub">이번 결제만 진행</span>
+								</button>
+							</div>
+
+							<div class="method-desc" id="methodDesc">정기결제를 선택하면 카드
+								등록(빌링키)이 진행되며, 다음 결제부터 자동 결제됩니다.</div>
+
+							<input type="hidden" id="payType" value="SUBSCRIPTION" />
+						</div>
+
+
+
 					</div>
 				</div>
 
 				<!-- 오른쪽: 결제 수단 + 약관 -->
 				<div class="col-12 col-lg-6">
-					<div class="payment-panel">
-						<div class="mb-2 fw-bold">결제 방법</div>
-						<div id="payment-method"></div>
+					<div class="payment-panel w-100 h-100">
+						<div class="fw-bold mb-2">안내</div>
 
-						<div class="mt-4">
-							<div class="fw-bold mb-2">이용 약관</div>
-							<div id="agreement"></div>
+
+						<!-- ✅ 정기결제 안내 (기본 보임) -->
+						<div id="billingGuideArea" class="billing-guide-area">
+							<div class="billing-box">
+								<div class="billing-title">정기결제 안내</div>
+								<div class="billing-text">
+									결제하기를 누르면 카드 등록(빌링키)이 진행됩니다.<br /> 첫 결제 이후 다음 결제부터 자동으로 결제됩니다.
+								</div>
+							</div>
 						</div>
+
+						<!-- ✅ 간편결제 안내 (ONE_TIME 선택 시 보임) -->
+						<div id="oneTimeGuideArea" class="billing-guide-area is-hidden">
+							<div class="billing-box">
+								<div class="billing-title">간편결제(1회) 안내</div>
+								<div class="billing-text">
+									이번 결제만 진행되며 자동결제는 등록되지 않습니다.<br /> 결제하기를 누르면 간편결제 모달이 열립니다.
+								</div>
+							</div>
+						</div>
+
+						<div class="panel-footer mt-3"
+							style="font-size: 12px; color: #6b7280; line-height: 1.5;">
+							결제 완료 후 관리자 계정이 자동으로 생성됩니다.</div>
 					</div>
 				</div>
 			</div>
@@ -207,13 +394,38 @@
 			<div class="row mt-4">
 				<div class="col-12 d-flex justify-content-center gap-3">
 					<a th:href="@{/contract/new}"
-						class="btn btn-outline-secondary px-5"> 이전으로 </a> <input
-						type="checkbox" id="autoBilling"> 자동결제 사용
-					<button type="button" id="payBtn" class="btn btn-dark px-5">
-						결제하기</button>
+						class="btn btn-outline-secondary px-5">이전으로</a>
+					<button type="button" id="payBtn" class="btn btn-dark px-5">결제하기</button>
 				</div>
 			</div>
 
+		</div>
+
+		<!-- ✅ 간편결제 모달 -->
+		<div id="oneTimePayModal" class="pay-modal is-hidden">
+			<div class="pay-modal-backdrop"></div>
+
+			<div class="pay-modal-content">
+				<div class="pay-modal-header">
+					<h6 class="fw-bold mb-0">간편결제</h6>
+					<button type="button" class="pay-modal-close" id="closePayModal">✕</button>
+				</div>
+
+				<div class="pay-modal-body">
+					<div class="mb-2 fw-bold">결제 방법</div>
+					<div id="payment-method"></div>
+
+					<div class="mt-4">
+						<div class="fw-bold mb-2">이용 약관</div>
+						<div id="agreement"></div>
+					</div>
+				</div>
+
+				<div class="pay-modal-footer">
+					<button type="button" id="modalPayBtn" class="btn btn-dark w-100">
+						결제 진행</button>
+				</div>
+			</div>
 		</div>
 
 		<!-- Toss Payments 스크립트 -->

@@ -42,11 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		    }
 		  }
 		  
-		  
-	
-
-		  
-		  
 	});
 
 	
@@ -57,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	  const d = String(date.getDate()).padStart(2, '0');
 	  const dateStr = `${y}-${m}-${d}`;
 
-	  currentSelectedDate = dateStr;  // ⭐ 선택 날짜 갱신
+	  currentSelectedDate = dateStr;  // 선택 날짜 갱신
 	  updateTodaySummary(currentMonthAttendance, dateStr);
 	});
 
@@ -81,27 +76,27 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('btnCalToday').addEventListener('click', function() {
 		calendar.today();
 		renderCurrentMonth();
-		// ⭐ Today로 이동 후 다시 로드
+		// Today로 이동 후 다시 로드
 		loadAttendanceByMonth(calendar, getCurrentMonthString(calendar));
 	});
 
 	document.getElementById('btnCalPrev').addEventListener('click', function() {
 		calendar.prev();
 		renderCurrentMonth();
-		// ⭐ 이전 달로 이동 후 다시 로드
+		// 이전 달로 이동 후 다시 로드
 		loadAttendanceByMonth(calendar, getCurrentMonthString(calendar));
 	});
 
 	document.getElementById('btnCalNext').addEventListener('click', function() {
 		calendar.next();
 		renderCurrentMonth();
-		// ⭐ 다음 달로 이동 후 다시 로드
+		// 다음 달로 이동 후 다시 로드
 		loadAttendanceByMonth(calendar, getCurrentMonthString(calendar));
 	});
 	
 	
 	
-	// ⭐ 금일 근태 상황 행 hover → 툴팁
+	// 금일 근태 상황 행 hover → 툴팁
 	  const rows = document.querySelectorAll('.attendance-summary__table tbody tr');
 
 	  rows.forEach(row => {
@@ -158,7 +153,7 @@ async function loadAttendanceByMonth(calendar, month) {
 		const res = await fetch(`/api/att/attMonthList?month=${month}`);
 		const list = await res.json();  // AttendanceVO 리스트
 
-		// ⭐ 월 데이터 저장
+		// 월 데이터 저장
 		currentMonthAttendance = list;
 		// 날짜별 + 근태유형별로 집계
 		const grouped = {};

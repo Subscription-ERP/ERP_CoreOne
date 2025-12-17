@@ -27,10 +27,22 @@ public class HrServiceImpl implements HrService {
 
 	// 사원 	
 	// 전체조회
+	/*
+	 * @Override public List<UserVO> selectAllUserList() { return
+	 * hrMapper.selectAllUserList(); }
+	 */
+	// 검색
+	/*
+	 * @Override public List<UserVO> selectUserSearch(UserSearchVO userSearchVO) {
+	 * return hrMapper.selectUserSearch(userSearchVO); }
+	 */
+	
+	// 전체조회 + 검색
 	@Override
-	public List<UserVO> selectAllUserList() {
-		return hrMapper.selectAllUserList();
+	public List<UserVO> selectUserList(UserSearchVO userSearchVO) {
+		return hrMapper.selectUserSearch(userSearchVO);
 	}
+		
 	
 	// 상세조회 - 기본사항/자격증/경력사항/이력
 	@Override
@@ -62,11 +74,6 @@ public class HrServiceImpl implements HrService {
 		return hrMapper.selectDeptMaster();
 	}
 	
-	// 검색
-	@Override
-	public List<UserVO> selectUserSearch(UserSearchVO userSearchVO) {
-		return hrMapper.selectUserSearch(userSearchVO);
-	}
 
 	// 등록
 	@Transactional
@@ -311,6 +318,7 @@ public class HrServiceImpl implements HrService {
 	    if (a == null || b == null) return false;
 	    return a.equals(b);
 	}
+
 
 
 }

@@ -1,11 +1,14 @@
 package com.rootcore.hr.vo;
 
 import java.sql.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 
+/**===============================
+ *제목:급여조회VO
+ *설명:급여조회하는데 필요한 데이터 VO정의
+ *@author 장준현
+ *================================*/
 @Data
 public class UserPayManageVO {
 	private String userPayManagementCode; // 사원급여관리코드

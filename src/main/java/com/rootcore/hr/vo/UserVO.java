@@ -46,6 +46,7 @@ public class UserVO {
 	private Date createDate;
 	private String updatedBy;
 	private Date updateDate;
+	private String roleCode;              // 권한
 	
 	
 	private List<CertificationVO> certificationList;          // 자격증

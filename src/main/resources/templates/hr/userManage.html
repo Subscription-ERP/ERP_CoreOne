@@ -98,6 +98,7 @@
 
 				<!-- 우측 액션 -->
 				<div class="toolbar">
+					<button type="button" class="btn btn-white btn-inner" id="btnResetPassword">비번</button>
 					<button type="button" class="btn btn-white btn-inner" id="btnHistory">이력</button>
 					<button id="btnPrint" type="button" class="btn btn-white btn-inner">인쇄</button>
 					<button id="btnReset" type="button" class="btn btn-white btn-inner">초기화</button>
@@ -330,6 +331,8 @@
 					<!-- 자격증 입력 행 템플릿 -->
 					<template id="certRowTemplate">
 						<tr>
+							<!-- rowKey -->
+							<td style="display: none;"><input type="hidden" name="certRowKey"></td>
 							<td><input type="text" name="certiName" class="form-control form-control-sm input-base" /></td>
 							<td><input type="text" name="issueOrgName" class="form-control form-control-sm input-base" /></td>
 							<td><input type="date" name="getDate" class="form-control form-control-sm input-base" /></td>

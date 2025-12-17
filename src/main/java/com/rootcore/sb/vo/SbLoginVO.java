@@ -8,7 +8,7 @@ import lombok.Data;
 public class SbLoginVO {
 	private String companyCode;
 	private String userId;
-	private String passWord;
+	private String password;
 	private String userName;
 	private int failCount;
 	private String status;

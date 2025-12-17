@@ -1,6 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ko">
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -76,9 +77,7 @@
 
 	<div class="app-wrapper">
 
-		<!-- ===============================
-         HEADER
-    ================================== -->
+		<!-- =============================== HEADER =============================== -->
 		<nav class="app-header navbar navbar-expand bg-body">
 			<div class="container-fluid">
 
@@ -145,26 +144,45 @@
 							<li class="dropdown-header text-center"><img
 								th:src="@{/assets/img/user2-160x160.jpg}"
 								class="rounded-circle shadow mb-2" alt="User Image" width="80">
-								<p class="mb-0"
+
+								<p class="mb-0 fw-bold"
 									th:text="${session.LOGIN_USER_NAME != null ? session.LOGIN_USER_NAME : '사용자명'}">
-									사용자명</p> <small
-								th:text="${session.LOGIN_USER_ID != null ? session.LOGIN_USER_ID : 'ID'}">ID</small>
-							</li>
+									사용자명</p> <small class="text-muted"
+								th:text="${session.LOGIN_USER_ID != null ? 'ID : ' + session.LOGIN_USER_ID : 'ID : -'}">
+									ID : - </small> <!-- ✅ 로그인 시에만 부서/직급 표시 -->
+								<div sec:authorize="isAuthenticated()"
+									class="mt-1 text-muted small">
+									<span
+										th:text="${session.LOGIN_DEPT != null ? session.LOGIN_DEPT : '-'}">-</span>
+									/ <span
+										th:text="${session.LOGIN_POSITION != null ? session.LOGIN_POSITION : '-'}">-</span>
+								</div></li>
 
 							<li><hr class="dropdown-divider"></li>
 
-							<!-- 프로필 -->
+							<!-- (원하면 유지) 프로필 -->
 							<li><a href="#" class="dropdown-item text-center py-2">
 									<i class="bi bi-person-circle me-2"></i> 프로필
 							</a></li>
 
 							<li><hr class="dropdown-divider"></li>
 
-							<!-- 🔥 로그아웃 버튼 -->
-							<li class="text-center py-2">
+							<!-- ✅ 하단 버튼: 비로그인(Login) / 로그인(Logout) -->
+							<!-- ================= 하단 버튼 영역 ================= -->
+
+							<!-- 🔐 비로그인 상태 -->
+							<li th:if="${session.LOGIN_USER_ID == null}"
+								class="text-center py-2"><a class="btn btn-primary w-75"
+								href="/auth/login"> <i class="bi bi-box-arrow-in-right"></i>
+									Login
+							</a></li>
+
+							<!-- 🔓 로그인 상태 -->
+							<li th:if="${session.LOGIN_USER_ID != null}"
+								class="text-center py-2">
 								<button type="button" class="btn btn-primary w-75"
 									onclick="document.getElementById('logoutForm').submit();">
-									<i class="bi bi-box-arrow-right"></i> 로그아웃
+									<i class="bi bi-box-arrow-right"></i> Logout
 								</button>
 							</li>
 
@@ -175,9 +193,7 @@
 			</div>
 		</nav>
 
-		<!-- ===============================
-         SIDEBAR
-    ================================== -->
+		<!-- =============================== SIDEBAR =============================== -->
 		<aside class="app-sidebar bg-body-secondary shadow"
 			data-bs-theme="dark">
 
@@ -197,17 +213,12 @@
 			</div>
 		</aside>
 
-
-		<!-- ===============================
-         MAIN
-    ================================== -->
+		<!-- =============================== MAIN =============================== -->
 		<main class="app-main">
 			<div layout:fragment="content"></div>
 		</main>
 
-		<!-- ===============================
-         FOOTER
-    ================================== -->
+		<!-- =============================== FOOTER =============================== -->
 		<footer class="app-footer">
 			<div class="float-end d-sm-inline">
 				2025 RootCore - <a
@@ -226,43 +237,30 @@
 			th:value="${_csrf?.token}" />
 	</form>
 
-	<!-- ===============================
-     SCRIPT 영역
-================================== -->
-	<!-- overlay scrollbar JS (정상버전) -->
+	<!-- =============================== SCRIPT 영역 =============================== -->
 	<script
 		src="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/2.11.0/browser/overlayscrollbars.browser.es6.min.js"></script>
-
-	<!-- AdminLTE -->
 	<script th:src="@{/js/adminlte.js}"></script>
 
-	<!-- Sidebar Scroll Initialization -->
-  <script>
-    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
-    const Default = {
-        scrollbarTheme: 'os-theme-light',
-        scrollbarAutoHide: 'leave',
-        scrollbarClickScroll: true,
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const sidebarWrapper = document.querySelector(".sidebar-wrapper");
-        if (sidebarWrapper) {
-            OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-                scrollbars: {
-                    theme: 'os-theme-light',
-                    autoHide: 'leave',
-                    clickScroll: true
-                }
-            });
+	<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const sidebarWrapper = document.querySelector(".sidebar-wrapper");
+    if (sidebarWrapper && window.OverlayScrollbarsGlobal) {
+      OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+        scrollbars: {
+          theme: 'os-theme-light',
+          autoHide: 'leave',
+          clickScroll: true
         }
-    });
-  </script>
+      });
+    }
+  });
+</script>
 
 	<!-- 메뉴 권한 세션 -> JS 로 내려주기 -->
 	<script th:inline="javascript">
-    window.LOGIN_MENU_AUTH = /*[[${session.LOGIN_MENU_AUTH}]]*/ [];
-  </script>
+  window.LOGIN_MENU_AUTH = /*[[${session.LOGIN_MENU_AUTH}]]*/ [];
+</script>
 	<script src="/js/auth/sidebarMenu.js"></script>
 
 	<!-- 페이지별 스크립트 -->

@@ -89,7 +89,6 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
 
         int result = 0;
         for (RoleMenuAuthVO vo : list) {
-
             applyRolePolicy(vo, roleCode);
             result += mapper.insertRoleMenuAuth(vo);
         }
@@ -108,10 +107,17 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
     }
 
     // ==========================
-    // 로그인 사용자용 메뉴 조회
+    // 로그인 사용자용 메뉴 조회 (⭐핵심 수정)
     // ==========================
     @Override
     public List<RoleMenuAuthVO> getLoginMenuList(String companyCode, String roleCode) {
+
+        // ✅ ADMIN은 회사 코드 무시하고, 전체 메뉴 + 전체 권한
+        if ("ADMIN".equals(roleCode)) {
+            return mapper.selectAllMenuForAdmin();
+        }
+
+        // ✅ MANAGER / USER는 회사별 ROLE 권한
         return mapper.selectLoginMenuList(companyCode, roleCode);
     }
 

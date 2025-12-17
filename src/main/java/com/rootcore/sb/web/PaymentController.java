@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.rootcore.sb.service.PaymentService;
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
-import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PlanVO;
 import com.rootcore.sb.vo.TossConfirmRequestVO;
 import com.rootcore.sb.vo.TossConfirmResponseVO;
@@ -48,7 +47,7 @@ public class PaymentController {
 	
 
 		// 2) 결제 승인 API 호출
-		TossConfirmResponseVO res = paymentService.confirmPayment(req, company, plan, contract);
+		TossConfirmResponseVO res = paymentService.confirmPayment(req, company, plan, contract,session);
 
 		// 3) 사용자에게 보여줄 데이터 모델에 담기
 		model.addAttribute("payment", res);

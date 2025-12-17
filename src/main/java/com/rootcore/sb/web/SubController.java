@@ -1,15 +1,11 @@
 package com.rootcore.sb.web;
 
-import java.util.List;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.rootcore.sb.service.PaymentService;
-import com.rootcore.sb.vo.PaymentVO;
-import com.rootcore.sb.vo.PlanVO;
 import com.rootcore.sb.vo.SubscribeVO;
 
 import jakarta.servlet.http.HttpSession;

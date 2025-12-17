@@ -1,6 +1,7 @@
 package com.rootcore.sb.mapper;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -31,22 +32,14 @@ public interface SubscribeMapper {
 	        @Param("updatedBy") String updatedBy
 	    );
 	    
-	    /** 빌링키 변경 (결제수단 변경) */
-	    int updateBillingKey(
-	        @Param("subCode") String subCode,
-	        @Param("billingKey") String billingKey,
-	        @Param("updatedBy") String updatedBy
+	    /** 회사의 ACTIVE 구독을 EXPIRED로 종료 */
+	    int expireActiveSubscribe(
+	            @Param("companyCode") String companyCode,
+	            @Param("endDate") LocalDate endDate,
+	            @Param("updatedBy") String updatedBy,
+	            @Param("updateDate") LocalDateTime updateDate
 	    );
-	    /** 만료 재구독 처리 */
-	    int updateResubscribe(
-	        @Param("subCode") String subCode,
-	        @Param("subsStatus") String subsStatus,
-	        @Param("subsStart") LocalDate subsStart,
-	        @Param("subsEnd") LocalDate subsEnd,
-	        @Param("recentBillingDate") LocalDate recentBillingDate,
-	        @Param("nextBillingDate") LocalDate nextBillingDate,
-	        @Param("updatedBy") String updatedBy
-	    );
+	  
 	    
 	    
 }
