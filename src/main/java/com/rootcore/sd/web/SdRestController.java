@@ -18,15 +18,22 @@ public class SdRestController {
     @Autowired
     CustService custService;
 
-    @GetMapping("/custList")
-    public List<CustVO> custList(CustVO param) {
-        return custService.getCustList(param);
-    }
-
     // 거래처 조회조건
-    @PostMapping("/searchCust")
-    public List<CustVO> searchCust(@RequestBody CustVO param) {
-        return custService.getCustList(param);
+    @GetMapping("/custList")
+    public List<CustVO> custList(
+            @RequestParam(required = false) String custCode,
+            @RequestParam(required = false) String custName,
+            @RequestParam(required = false) String custType,
+            @RequestParam(required = false) String custTypeCode,
+            @RequestParam(required = false) Boolean includeStopped
+    ) {
+        return custService.getCustList(
+                custCode,
+                custName,
+                custType,
+                custTypeCode,
+                includeStopped
+        );
     }
 
 }
