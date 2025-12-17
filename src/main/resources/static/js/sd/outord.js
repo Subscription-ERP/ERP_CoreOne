@@ -70,19 +70,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 align: 'right',
                 editor: 'text'
             },
-            /*{
+            {
                 header: '단가유형',
                 name: 'unitPriceType',
                 width: 120,
                 minWidth: 120,
-                formatter: 'listItemText',
-                editor: {
-                    type: 'select',
-                    options: {
-                        listItems: unitPriceTypeItems
-                    }
-                }
-            },*/
+                hidden: true
+            },
             {
                 header: '단가',
                 name: 'unitPrice',
@@ -268,59 +262,61 @@ window.afterCustSearch = function(result) {
     if (byEnter) {
         returnOnlyOne(result);
     } else {
+        window.custModalType = 'purchase';
         openCustModal();
     }
 };
 
 // 품목 모달에서 값 불러오기
 window.handleSelectedSku = function (row) {
-
-    console.log('selected row from modal:', row);
+    outordGrid.finishEditing();
 
     const data = outordGrid.getData();
-    console.log('before setValue, grid data:', data);
-
     if (!data.length) {
-        console.warn('no rows in grid, append empty row first');
         emptyRow();
         return;
     }
 
-    // 1) 중복 품목 여부 체크 (sku 기준, 필요하면 skuName도 같이 체크)
-    const isDup = data.some(r => String(r.sku).trim() === String(row.sku).trim());
+    // sku + unitPriceType 중복 체크
+    const isDup = data.some(r => {
+        const sameSku = String(r.sku).trim() === String(row.sku).trim();
+        const sameUnitPriceType = String(r.unitPriceType).trim() === String(row.unitPriceType).trim();
+        return sameSku && sameUnitPriceType;
+    });
+
     if (isDup) {
         showToast('이미 선택된 품목입니다.', 'warning');
         return;
     }
 
-    // 2) 마지막 행 rowKey 구하기
+    // 마지막 행에 값 세팅
     const lastRow = data[data.length - 1];
     const rowKey = lastRow.rowKey;
-    console.log('target rowKey:', rowKey, 'lastRow:', lastRow);
 
-    // 3) 마지막 행에 값 세팅
-    outordGrid.setValue(rowKey, 'sku',       row.sku || '');
-    outordGrid.setValue(rowKey, 'skuName',   row.skuName || '');
-    outordGrid.setValue(rowKey, 'spec',      row.spec || '');
-    outordGrid.setValue(rowKey, 'unit',      row.unit || '');
-    outordGrid.setValue(rowKey, 'unitPrice', row.unitPrice || 0);
+    outordGrid.setValue(rowKey, 'sku',           row.sku || '');
+    outordGrid.setValue(rowKey, 'skuName',       row.skuName || '');
+    outordGrid.setValue(rowKey, 'spec',          row.spec || '');
+    outordGrid.setValue(rowKey, 'unit',          row.unit || '');
+    outordGrid.setValue(rowKey, 'unitPrice',     row.unitPrice || 0);
+    outordGrid.setValue(rowKey, 'unitPriceType', row.unitPriceType || '');
 
-
-    const after = outordGrid.getRow(rowKey);
-    console.log('after setValue row:', after);
-
-    // 4) 공급가/부가세 재계산
+    // 공급가/부가세 재계산
     const qty        = Number(outordGrid.getValue(rowKey, 'qty')) || 0;
     const unitPrice  = Number(row.unitPrice) || 0;
     const supplyPrice = qty * unitPrice;
-    const surTax = Math.floor(supplyPrice * 0.1);
+    const surTax      = Math.floor(supplyPrice * 0.1);
 
     outordGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
     outordGrid.setValue(rowKey, 'surTax',      surTax.toLocaleString());
 
-    // 필요하면 모달 닫기
-    // closeSkuModal();
+    // 필요하면 다음 행 추가
+    const hasSkuOrName = (lastRow.sku && String(lastRow.sku).trim() !== '') ||
+        (lastRow.skuName && String(lastRow.skuName).trim() !== '');
+    if (hasSkuOrName) {
+        emptyRow();
+    }
 };
+
 
 
 
@@ -427,8 +423,8 @@ function skuList() {
 
             const map = new Map();
             skuDataList.forEach(item => {
-                if (item.unitPriceType && item.typeName) {
-                    map.set(item.unitPriceType, item.typeName);
+                if (item.unitPriceType) {
+                    map.set(item.unitPriceType);
                 }
             });
 
@@ -449,47 +445,10 @@ function skuListAfterEnter() {
         e.changes.forEach(change => {
             let { rowKey, columnName, value } = change;
 
-            // 품목코드 입력시 자동 완성
-            if (columnName === 'sku') {
-                const skuCode = value;
-
-                if (!skuCode || !skuDataList || skuDataList.length === 0) return;
-
-                const sku = skuDataList.find(item => item.sku === skuCode);
-
-                console.log(sku);
-
-                if (sku) {
-                    outordGrid.setValue(rowKey, 'skuName', sku.skuName || '');
-                    outordGrid.setValue(rowKey, 'spec',    sku.spec || '');
-                    outordGrid.setValue(rowKey, 'unit',    sku.unit || '');
-                    outordGrid.setValue(rowKey, 'unitPrice', sku.unitPrice || 0);
-                } else {
-                    outordGrid.setValue(rowKey, 'skuName', '');
-                    outordGrid.setValue(rowKey, 'spec',    '');
-                    outordGrid.setValue(rowKey, 'unit',    '');
-                    outordGrid.setValue(rowKey, 'unitPrice', 0);
-                }
-            }
-
-            // 품목명 입력시 자동 완성
-            else if (columnName === 'skuName') {
-                const skuName = value;
-
-                if (!skuName || !skuDataList || skuDataList.length === 0) return;
-
-                const sku = skuDataList.find(item => item.skuName === skuName);
-
-                if (sku) {
-                    outordGrid.setValue(rowKey, 'sku', sku.sku || '');
-                    outordGrid.setValue(rowKey, 'spec',    sku.spec || '');
-                    outordGrid.setValue(rowKey, 'unit',    sku.unit || '');
-                    outordGrid.setValue(rowKey, 'unitPrice', sku.unitPrice || 0);
-                } else {
-                    outordGrid.setValue(rowKey, 'sku', '');
-                    outordGrid.setValue(rowKey, 'spec',    '');
-                    outordGrid.setValue(rowKey, 'unit',    '');
-                    outordGrid.setValue(rowKey, 'unitPrice', 0);
+            if (columnName === 'sku' || columnName === 'skuName') {
+                if (!validateInordForm()) {
+                    inOrdGrid.setValue(rowKey, columnName, '');
+                    return;
                 }
             }
 
@@ -609,7 +568,10 @@ function openCustModalOnly(e) {
     // if (schCustCode) schCustCode.value = custCodeKeyword;
     // if (schCustName) schCustName.value = custNameKeyword;
 
-    openCustModal();  // 모달 열기
+    // 모달 열기
+    window.custModalType = 'purchase';
+    openCustModal();
+
     getCustList();    // 전체 목록 or 필요한 대로
 }
 

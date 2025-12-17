@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.sd.mapper.CustMapper">
     <!-- 거래처 전체 조회 -->
-    <select id="selectCust"  resultType="CustVO">
+    <select id="selectCust"  resultType="CustVO" parameterType="string">
         SELECT cust.company_code,
                cust.cust_code,
                cust.cust_name,
@@ -34,17 +34,28 @@
         AND cust.cust_code = credit.cust_code
         AND credit.credit_type = 'SELL_CREDIT'
         <where>
+            1=1
+
+            /* 목록조건 */
+            <if test="custType == 'sales' ">
+                cust.cust_type IN ('SALES_CUST', 'OUTSOURCING_CUST', 'INTERNAL_CUST')
+            </if>
+            <if test="custType == 'purchase' ">
+                cust.cust_type IN ('PURCHASE_CUST', 'OUTSOURCING_CUST', 'INTERNAL_CUST')
+            </if>
+
+            /* 검색조건 */
             <if test="custCode != null and custCode != ''">
-                AND cust.cust_code LIKE '%' || #{custCode} || '%'
+                cust.cust_code LIKE '%' || #{custCode} || '%'
             </if>
             <if test="custName != null and custName != ''">
-                AND cust.cust_name LIKE '%' || #{custName} || '%'
+                cust.cust_name LIKE '%' || #{custName} || '%'
             </if>
             <if test="custTypeCode != null and custTypeCode != ''">
-                AND cmCode.code = #{custTypeCode}
+                cmCode.code = #{custTypeCode}
             </if>
             <if test="includeStopped == null or includeStopped == false">
-                AND cust.use_status = 'Y'
+                cust.use_status = 'Y'
             </if>
         </where>
         ORDER BY cust.use_status DESC, cust.cust_code DESC
@@ -91,33 +102,6 @@
                 '박봉근',
                 SYSDATE)
     </insert>
-
-    <!-- 거래처 단건 조회 -->
-    <select id="selectOneCust" resultType="CustVO">
-        SELECT  company_code,
-                cust_code,
-                cust_name,
-                ceo_name,
-                bno,
-                btype,
-                bitem,
-                phone,
-                fax_no,
-                cust_email,
-                zonecode,
-                address,
-                address_detail,
-                cust_type,
-                dept,
-                user_name,
-                use_status,
-                created_by,
-                create_date,
-                updated_by,
-                update_date
-        FROM tb_cust_master
-        WHERE cust_code = #{custCode}
-    </select>
 
     <!-- 거래처 수정 -->
     <update id="updateCustInfo">
