@@ -20,20 +20,8 @@ public class SdRestController {
 
     // 거래처 조회조건
     @GetMapping("/custList")
-    public List<CustVO> custList(
-            @RequestParam(required = false) String custCode,
-            @RequestParam(required = false) String custName,
-            @RequestParam(required = false) String custType,
-            @RequestParam(required = false) String custTypeCode,
-            @RequestParam(required = false) Boolean includeStopped
-    ) {
-        return custService.getCustList(
-                custCode,
-                custName,
-                custType,
-                custTypeCode,
-                includeStopped
-        );
+    public List<CustVO> custList(CustVO cust) {
+        return custService.getCustList(cust);
     }
 
 }
