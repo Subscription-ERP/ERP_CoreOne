@@ -21,7 +21,7 @@ public class FiController {
 
 	@GetMapping("/unitprice")
 	public String unitPrice() {
-	    return "fi/unitprice";
+	    return "fi/unitPrice";
 	}
 	
 	@GetMapping("/credit")

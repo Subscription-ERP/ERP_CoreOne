@@ -276,11 +276,14 @@
 	pointer-events: none;
 }
 
+/* 휴직자 행 색상 */
+td.tui-grid-cell.tui-grid-cell-has-input.row-warning {
+	background-color: #fffcec;
+}
+
 /* 퇴사자 행 색상 */
-td.tui-grid-cell.row-leaved,
-td.tui-grid-cell.tui-grid-cell-has-input.row-leaved {
-  background-color: #ffecec !important;
-  color: #a00 !important;
+td.tui-grid-cell.tui-grid-cell-has-input.row-inactive {
+	background-color: #ffecec;
 }
 
 
@@ -355,3 +358,5 @@ td.tui-grid-cell.tui-grid-cell-has-input.row-leaved {
 		margin-bottom: 24px;
 	}
 }
+
+

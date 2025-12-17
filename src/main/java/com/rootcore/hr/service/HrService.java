@@ -11,8 +11,6 @@ import com.rootcore.hr.vo.UserVO;
 public interface HrService {
 
 	// 사원
-	//List<UserVO> selectAllUserList();                                // 전체조회
-	// List<UserVO> selectUserSearch(UserSearchVO userSearchVO);        // 검색
 	List<UserVO> selectUserList(UserSearchVO userSearchVO);          // 전체조회 + 검색
 	
 	UserVO selectUserDetail(String userId);                          // 상세조회(기본사항,자격증,경력사항,이력)
@@ -26,5 +24,8 @@ public interface HrService {
 			       MultipartFile userPhoto,
 			       MultipartFile userFile,
 			       List<MultipartFile> certiFiles) throws Exception; // 수정
+	
+	// 비밀번호 초기화 링크 재발송
+    boolean resendResetLink(String companyCode, String userId, String requestedBy);
 	
 }

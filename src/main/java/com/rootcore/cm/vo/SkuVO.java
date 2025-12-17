@@ -21,8 +21,8 @@ public class SkuVO {
     private String updatedBy;       // 수정자
     private Date updateDate;        // 수정일자
     
-    private String unitPriceType;   // 단가유형
-    private String typeName;        // 단가유형이름
+    private String unitPriceTypeCode;   // 단가유형코드
+    private String unitPriceType;       // 단가유형이름
     
     private String custCode;        // 거래처코드
 }

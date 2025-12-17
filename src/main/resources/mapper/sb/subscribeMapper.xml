@@ -5,13 +5,9 @@
 	<!-- 구독 INSERT -->
 	<insert id="insertSubscribe"
 		parameterType="com.rootcore.sb.vo.SubscribeVO">
-
-		<!-- SUB_CODE 생성 (구독코드 생성용 함수/시퀀스는 프로젝트에 맞게 수정) -->
-		<selectKey resultType="String" order="BEFORE"
-			keyProperty="subCode">
-			SELECT FN_MAKE_SUB_CODE() FROM DUAL
+		<selectKey keyProperty="subCode" order="BEFORE" resultType="String">
+		SELECT FN_MAKE_CODE('SUB') FROM DUAL
 		</selectKey>
-
 		INSERT INTO TB_SUBSCRIBE
 		(
 		SUB_CODE,
@@ -68,9 +64,10 @@
 		billing_key,
 		current_price,
 		recent_billing_date,
-		next_billing_date,
+		next_billing_date
 		FROM TB_SUBSCRIBE
-		WHERE sub_code = #{subCode}
+		WHERE sub_code =
+		#{subCode}
 	</select>
 
 	<!-- ✅ 오늘 정기결제를 해야 하는 구독 목록 -->
@@ -91,7 +88,8 @@
 		next_billing_date
 		FROM TB_SUBSCRIBE
 		WHERE subs_status = 'ACTIVE'
-		AND billing_key IS NOT NULL          <!-- 빌링키 있는 애들만 -->
+		AND
+		billing_key IS NOT NULL          <!-- 빌링키 있는 애들만 -->
 		AND next_billing_date = #{today}     <!-- 오늘이 청구일인 애들만 -->
 	</select>
 
@@ -99,7 +97,8 @@
 	<update id="updateBillingDates">
 		UPDATE TB_SUBSCRIBE
 		SET
-		recent_billing_date = #{recentBillingDate},
+		recent_billing_date =
+		#{recentBillingDate},
 		next_billing_date = #{nextBillingDate},
 		update_date = NOW(),
 		updated_by = 'SYSTEM'
@@ -113,17 +112,20 @@
 		SUBS_STATUS = #{subsStatus},
 		UPDATED_BY = #{updatedBy},
 		UPDATE_DATE = SYSDATE
-		WHERE SUB_CODE = #{subCode}
+		WHERE SUB_CODE =
+		#{subCode}
 	</update>
 
 
 	<update id="expireActiveSubscribe" parameterType="map">
-		UPDATE TB_SUBSCRIBE
+		UPDATE
+		TB_SUBSCRIBE
 		SET SUBS_STATUS = 'EXPIRED',
 		SUBS_END = #{endDate},
 		UPDATED_BY = #{updatedBy},
 		UPDATE_DATE = #{updateDate}
-		WHERE COMPANY_CODE = #{companyCode}
+		WHERE
+		COMPANY_CODE = #{companyCode}
 		AND SUBS_STATUS = 'ACTIVE'
 	</update>
 

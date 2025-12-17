@@ -1,9 +1,11 @@
 package com.rootcore.auth.vo;
 
-import lombok.Data;
-
 import java.sql.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import lombok.Data;
 
 @Data
 public class LoginVO {
@@ -37,5 +39,13 @@ public class LoginVO {
     
     // LoginVO 맨 아래에 추가
     private String roleCode;
+    
+    // 생성자, 수정자
+    private String createdBy;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+    private Date createDate;
+    private String updatedBy;
+	@JsonFormat(pattern = "yyyy-MM-dd")
+    private Date updateDate;
 
 }

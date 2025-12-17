@@ -7,10 +7,8 @@
 	<!-- 주문 INSERT -->
 	<insert id="insertOrder"
 		parameterType="com.rootcore.sb.vo.OrderVO">
-		<selectKey resultType="String" order="BEFORE"
-			keyProperty="orderId">
-			SELECT FN_MAKE_ORDER_ID() FROM DUAL
-
+		<selectKey keyProperty="orderId" order="BEFORE" resultType="String">
+		SELECT FN_MAKE_CODE('ORD') FROM DUAL
 		</selectKey>
 		INSERT INTO TB_PAYMENT_ORDER
 		(

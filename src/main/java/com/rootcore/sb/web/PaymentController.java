@@ -69,9 +69,9 @@ public class PaymentController {
 	    // authKey로 billingKey 발급하고, 구독/결제/계약/회사까지 한 번에 처리
 	    TossConfirmResponseVO res = paymentService.createSubscriptionWithBillingKey(
 	            authKey, customerKey, company, plan, contract);
-
+	    model.addAttribute("billing",res);
 	    model.addAttribute("billingKey", res.getBillingKey()); // 응답 VO에 넣어두면 화면에서 볼 수 있음(선택)
-	    return "sb/billing";
+	    return "sb/billingsuccess";
 	}
 
 

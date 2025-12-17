@@ -51,14 +51,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 			bodyHeight: 300,
 			rowHeaders: ['checkbox'],
 			columns: [
-				{ header: "사원번호", name: "userId", align: 'center', sortable: true, formatter: redTextIfLeaved },
-				{ header: "성명", name: "userName", formatter: redTextIfLeaved },
-				{ header: "부서", name: "deptName", formatter: redTextIfLeaved },
-				{ header: "입사일", name: "hireDate", align: 'center', formatter: redTextIfLeaved },
-				{ header: "직위/직급", name: "jobTitleName", formatter: redTextIfLeaved },
-				{ header: "직책", name: "positionName", formatter: redTextIfLeaved },
-				{ header: "연락처", name: "tel" , formatter: redTextIfLeaved},
-				{ header: "Email", name: "email", formatter: redTextIfLeaved }
+				{ header: "사원번호", name: "userId", align: 'center', sortable: true },
+				{ header: "성명", name: "userName" },
+				{ header: "부서", name: "deptName" },
+				{ header: "입사일", name: "hireDate", align: 'center' },
+				{ header: "직위/직급", name: "jobTitleName" },
+				{ header: "직책", name: "positionName" },
+				{ header: "연락처", name: "tel" },
+				{ header: "Email", name: "email" }
 
 			]
 		});
@@ -88,16 +88,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	initGrid();
 	loadUserList();
-	
-	// 퇴사자 붉은행 표시
-	function redTextIfLeaved({ row, value }) {
-	  // 퇴사자면 (userStatus가 '2' 또는 2인 경우)
-	  if (row.userStatus == '2' || row.userStatus === 2) {
-	    return `<span style="color: #a00; font-weight: bold;">${value ?? ''}</span>`;
-	  }
-	  return value ?? '';
-	}
-
 
 	/* ------------------------------------------------------------------
 	 * 사원 검색 (조회버튼 클릭)
@@ -119,6 +109,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 			const data = await response.json();
 			grid.resetData(data);
 			grid.refreshLayout();
+
+			// 휴직자, 퇴사자 붉은행 표시
+			grid.getData().forEach(row => {
+				if (String(row.userStatus) === '1') {
+					grid.addRowClassName(row.rowKey, 'row-warning');
+				} else if (String(row.userStatus) === '2') {
+					grid.addRowClassName(row.rowKey, 'row-inactive');
+				}
+			});
+
 		} catch (err) {
 			console.error(err);
 			showToast("검색 중 오류가 발생했습니다.", "error");
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		const row = grid.getRow(rowKey);
 		const userId = row.userId;
 
-		fetch(`/api/hr/userDetail?userId=${userId}`)
+		fetch(`/api/hr/user/${encodeURIComponent(userId)}`)
 			.then(response => response.json())
 			.then(data => {
 				currentUserDetail = data;
@@ -680,7 +680,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		// 2) 각 사원의 userId 로 PDF URL 만들기 → iframe HTML 생성
 		printPages = checkedRows.map(row => {
 			const userId = row.userId;
-			const url = `/api/hr/userCard/preview?userId=${encodeURIComponent(userId)}`;
+			const url = `/api/hr/user/${encodeURIComponent(userId)}/card/preview`;
 
 			return `
 	      <iframe
@@ -724,7 +724,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		// 각 사원에 대해 a 태그를 만들어 클릭 -> 브라우저가 다운로드 처리
 		checkedRows.forEach(row => {
 			const userId = row.userId;
-			const url = `/api/hr/userCard/download?userId=${encodeURIComponent(userId)}`;
+			const url = `/api/hr/user/${encodeURIComponent(userId)}/card/download`;
 
 			const a = document.createElement('a');
 			a.href = url;
@@ -759,13 +759,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 	/* ------------------------------------------------------------------
 	 * 이력 모달 - 인쇄 
 	 * ------------------------------------------------------------------ */
-
 	const btnHistoryPrint = document.querySelector("#btnHistoryPrint");
 
 	if (btnHistoryPrint) {
 		btnHistoryPrint.addEventListener("click", () => {
 			const userId = currentUserDetail.userId;
-			window.open(`/api/hr/userHistory/preview?userId=${encodeURIComponent(userId)}`, "_blank");
+			window.open(`/api/hr/user/${encodeURIComponent(userId)}/history/preview`, "_blank");
 		});
 	}
 
@@ -776,16 +775,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 	if (btnSave) {
 		btnSave.addEventListener("click", async () => {
 			if (!validateEmployeeForm()) {
-			    return; // 유효성 검사 실패 시 stop
-			}			
-			
+				return; // 유효성 검사 실패 시 stop
+			}
+
+			// 스피너 
+			globalLoader.style.display = "flex";
+
 			const fr = document.querySelector(".form-allwrapper");
 
 			// 1) 기본정보 수집
 			const householderChecked = fr.querySelector("#householder").checked ? "Y" : "N";
 
 			const userPayload = {
-				companyCode: "0000",  // TODO: 나중에 로그인 회사코드로 대체
 				userId: fr.querySelector("#userId")?.value ?? "",
 				userName: fr.querySelector("#userName")?.value ?? "",
 				tel: fr.querySelector("#tel")?.value ?? "",
@@ -808,7 +809,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 				salary: fr.querySelector("#salary")?.value || null,
 				userStatus: fr.querySelector("#userStatus")?.value ?? "",
 				remark: fr.querySelector("#remark")?.value ?? "",
-				// userPhoto / userFile 컬럼은 파일 업로드 후 서버에서 path 세팅
 			};
 
 			// 2) 자격증 리스트
@@ -907,29 +907,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 			// userId 유무로 신규/수정 구분
-			const isNew = !payload.userId || payload.userId.trim() === "";
-			const url = isNew ? "/api/hr/userRegister" : "/api/hr/userModify";
+			const userId = payload.userId?.trim();
+			const isNew = !userId;
+
+			const url = isNew
+				? "/api/hr/user"
+				: `/api/hr/user/${encodeURIComponent(userId)}`;
+
+			const method = isNew ? "POST" : "PUT";
 
 			try {
 				const res = await fetch(url, {
-					method: "POST",
-					body: formData,   // ⚠ 여기서 절대 headers에 Content-Type 넣지 말기!
+					method,
+					body: formData,
 				});
 
 				if (res.ok) {
-					const text = await res.text();
-					if (text === "success") {
-						showToast(
-							isNew ? "사원 정보가 등록되었습니다." : "사원 정보가 수정되었습니다.",
-							"success"
-						);
+
+					//const text = await res.text();
+					const json = await res.json();
+
+					if (res.ok && json.result === "success") {
+						showToast(json.message, "success");
 						loadUserList();
 						btnReset?.click();
 					} else {
-						showToast(
-							isNew ? "등록 처리에 실패했습니다." : "수정 처리에 실패했습니다.",
-							"error"
-						);
+						showToast(json.message || "등록 처리에 실패했습니다.", "error");
 					}
 				} else {
 					showToast("서버 오류가 발생했습니다.", "error");
@@ -937,6 +940,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 			} catch (err) {
 				console.error(err);
 				showToast("등록 중 오류가 발생했습니다.", "error");
+			} finally {
+				globalLoader.style.display = "none";
 			}
 
 
@@ -991,89 +996,142 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * 사원 등록 유효성검사
 	 * ------------------------------------------------------------------ */
 	function validateEmployeeForm() {
-	  const fr = document.querySelector(".form-allwrapper");
+		const fr = document.querySelector(".form-allwrapper");
 
-	  const userName  = fr.querySelector("#userName").value.trim();
-	  const hireDate  = fr.querySelector("#hireDate").value;
-	  const dept      = fr.querySelector("#dept").value;
-	  const jobTitle  = fr.querySelector("#jobTitle").value;
-	  const position  = fr.querySelector("#position").value;
-	  const salary    = fr.querySelector("#salary").value.trim();
-	  const tel       = fr.querySelector("#tel").value.trim();
-	  const email     = fr.querySelector("#email").value.trim();
+		const userName = fr.querySelector("#userName").value.trim();
+		const hireDate = fr.querySelector("#hireDate").value;
+		const dept = fr.querySelector("#dept").value;
+		const jobTitle = fr.querySelector("#jobTitle").value;
+		const position = fr.querySelector("#position").value;
+		const salary = fr.querySelector("#salary").value.trim();
+		const tel = fr.querySelector("#tel").value.trim();
+		const email = fr.querySelector("#email").value.trim();
 
-	  // — 필수 값 체크 —
+		// 필수 값 체크
+		if (!userName) {
+			showToast("이름을 입력해주세요.", "warning");
+			fr.querySelector("#userName").focus();
+			return false;
+		}
 
-	  if (!userName) {
-	    showToast("이름을 입력해주세요.", "warning");
-	    fr.querySelector("#userName").focus();
-	    return false;
-	  }
+		if (!hireDate) {
+			showToast("입사일을 입력해주세요.", "warning");
+			fr.querySelector("#hireDate").focus();
+			return false;
+		}
 
-	  if (!hireDate) {
-	    showToast("입사일을 입력해주세요.", "warning");
-	    fr.querySelector("#hireDate").focus();
-	    return false;
-	  }
+		if (!dept) {
+			showToast("부서를 선택해주세요.", "warning");
+			fr.querySelector("#dept").focus();
+			return false;
+		}
 
-	  if (!dept) {
-	    showToast("부서를 선택해주세요.", "warning");
-	    fr.querySelector("#dept").focus();
-	    return false;
-	  }
+		if (!jobTitle) {
+			showToast("직위/직급을 선택해주세요.", "warning");
+			fr.querySelector("#jobTitle").focus();
+			return false;
+		}
 
-	  if (!jobTitle) {
-	    showToast("직위/직급을 선택해주세요.", "warning");
-	    fr.querySelector("#jobTitle").focus();
-	    return false;
-	  }
+		if (!position) {
+			showToast("직책을 선택해주세요.", "warning");
+			fr.querySelector("#position").focus();
+			return false;
+		}
 
-	  if (!position) {
-	    showToast("직책을 선택해주세요.", "warning");
-	    fr.querySelector("#position").focus();
-	    return false;
-	  }
+		if (!salary) {
+			showToast("급여를 입력해주세요.", "warning");
+			fr.querySelector("#salary").focus();
+			return false;
+		}
 
-	  if (!salary) {
-	    showToast("급여를 입력해주세요.", "warning");
-	    fr.querySelector("#salary").focus();
-	    return false;
-	  }
+		if (isNaN(salary) || Number(salary) < 0) {
+			showToast("급여는 0 이상의 숫자로 입력해주세요.", "warning");
+			fr.querySelector("#salary").focus();
+			return false;
+		}
 
-	  if (isNaN(salary) || Number(salary) < 0) {
-	    showToast("급여는 0 이상의 숫자로 입력해주세요.", "warning");
-	    fr.querySelector("#salary").focus();
-	    return false;
-	  }
+		if (!email) {
+			showToast("초기비밀번호 세팅을 위한 이메일을 입력해주세요.", "warning");
+			fr.querySelector("#email").focus();
+			return false;
+		}
 
-	  // — 연락처 체크 —
+		// 연락처 형식
+		if (tel) {
+			const telPattern = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/;
+			if (!telPattern.test(tel)) {
+				showToast("연락처 형식이 올바르지 않습니다. 예: 010-0000-0000", "warning");
+				fr.querySelector("#tel").focus();
+				return false;
+			}
+		}
 
-	  if (tel) {
-	    const telPattern = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/;
-	    if (!telPattern.test(tel)) {
-	      showToast("연락처 형식이 올바르지 않습니다. 예: 010-0000-0000", "warning");
-	      fr.querySelector("#tel").focus();
-	      return false;
-	    }
-	  }
+		// 이메일 형식
+		if (email) {
+			const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			if (!emailPattern.test(email)) {
+				showToast("이메일 형식이 올바르지 않습니다.", "warning");
+				fr.querySelector("#email").focus();
+				return false;
+			}
+		}
 
-	  // — 이메일 체크 —
-
-	  if (email) {
-	    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	    if (!emailPattern.test(email)) {
-	      showToast("이메일 형식이 올바르지 않습니다.", "warning");
-	      fr.querySelector("#email").focus();
-	      return false;
-	    }
-	  }
-
-	  return true;
+		return true;
 	}
 
 
+	/* ------------------------------------------------------------------
+	 * 비밀번호 초기화 버튼
+	 * ------------------------------------------------------------------ */
+	const btnResetPassword = document.querySelector("#btnResetPassword");
+
+	if (btnResetPassword) {
+		btnResetPassword.addEventListener("click", async () => {
+
+			// 1) 사원 선택 여부 체크
+			if (!currentUserDetail?.userId) {
+				showToast("사원을 먼저 선택해 주세요.", "warning");
+				return;
+			}
+
+			const userId = currentUserDetail.userId;
+
+			// 2) (선택) 이메일 없는 사원 방지
+			if (!currentUserDetail.email) {
+				showToast("해당 사원 이메일이 없습니다. 이메일을 등록해 주세요.", "warning");
+				return;
+			}
+
+			// 3) 호출
+			globalLoader.style.display = "flex";
+			try {
+				const res = await fetch(`/api/hr/user/${encodeURIComponent(userId)}/password/reset`, {
+					method: "POST",
+					headers: { "Accept": "application/json" }
+				});
+
+				const json = await res.json().catch(() => ({}));
+
+				if (!res.ok) {
+					showToast(json.message || "비밀번호 초기화 메일 발송에 실패했습니다.", "error");
+					return;
+				}
+
+				showToast(json.message || "비밀번호 초기화 이메일을 전송했습니다.", "success");
+			} catch (e) {
+				console.error(e);
+				showToast("요청 중 오류가 발생했습니다.", "error");
+			} finally {
+				globalLoader.style.display = "none";
+			}
 
 
+
+
+
+
+		})
+	}
 
 
 

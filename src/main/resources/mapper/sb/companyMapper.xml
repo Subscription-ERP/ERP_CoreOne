@@ -3,10 +3,8 @@
 <mapper namespace="com.rootcore.sb.mapper.CompanyMapper">
 	<insert id="insertCompany"
 		parameterType="com.rootcore.sb.vo.CompanyVO">
-		<selectKey resultType="String" order="BEFORE"
-			keyProperty="companyCode">
-			SELECT FN_MAKE_CODE('COMPANY') FROM DUAL
-
+		<selectKey keyProperty="companyCode" order="BEFORE" resultType="String">
+		SELECT FN_MAKE_CODE('COMPANY') FROM DUAL
 		</selectKey>
 		INSERT INTO TB_COMPANY_MASTER (
 		COMPANY_CODE,
@@ -24,6 +22,7 @@
 		COMPANY_PHONE,
 		MANAGER_PHONE,
 		MANAGER_EMAIL,
+		<!-- CUSTOMER_KEY, -->
 		CREATED_BY,
 		CREATE_DATE,
 		UPDATED_BY,
@@ -44,6 +43,7 @@
 		#{companyPhone},
 		#{managerPhone},
 		#{managerEmail},
+		<!-- #{customerKey}, -->
 		#{createdBy},
 		#{createDate},
 		#{updatedBy},
@@ -54,84 +54,86 @@
 	<select id="selectCompany" parameterType="String"
 		resultType="com.rootcore.sb.vo.CompanyVO">
 		SELECT COMPANY_CODE,
-		       COMPANY_NAME,
-		       CEO_NAME,
+		COMPANY_NAME,
+		CEO_NAME,
 		COMPANY_ADDRESS,
 		CEO_PHONE
 		FROM TB_COMPANY_MASTER
-		WHERE COMPANY_CODE = #{companyCode}
+		WHERE COMPANY_CODE =
+		#{companyCode}
 	</select>
 
 	<!-- 회사 목록 + 현재 구독상태 조회 -->
 	<!-- 회사 목록 + 현재 구독상태 조회 (전체 + 검색 둘 다) -->
-<select id="selectCompanyList"
-        resultType="com.rootcore.sb.vo.CompanyVO">
+	<select id="selectCompanyList"
+		resultType="com.rootcore.sb.vo.CompanyVO">
 
-    SELECT
-        c.COMPANY_CODE,
-        c.COMPANY_NAME,
-        c.CEO_NAME,
-        c.CEO_PHONE,
-        c.COMPANY_EMAIL,
-        c.MANAGER_NAME,
-        c.MANAGER_PHONE,
-        s.SUB_CODE,
-        s.SUBS_STATUS,
-        st.CODE_NAME AS subsStatusName
-    FROM TB_COMPANY_MASTER c
-    JOIN TB_SUBSCRIBE s
-        ON c.COMPANY_CODE = s.COMPANY_CODE
-    JOIN TB_CM_CODE st
-        ON st.CODE = s.SUBS_STATUS
-    <where>
-        s.SUBS_STATUS = 'ACTIVE'
+		SELECT
+		c.COMPANY_CODE,
+		c.COMPANY_NAME,
+		c.CEO_NAME,
+		c.CEO_PHONE,
+		c.COMPANY_EMAIL,
+		c.MANAGER_NAME,
+		c.MANAGER_PHONE,
+		s.SUB_CODE,
+		s.SUBS_STATUS,
+		st.CODE_NAME AS subsStatusName
+		FROM TB_COMPANY_MASTER c
+		JOIN TB_SUBSCRIBE s
+		ON c.COMPANY_CODE = s.COMPANY_CODE
+		JOIN TB_CM_CODE st
+		ON st.CODE = s.SUBS_STATUS
+		<where>
+			s.SUBS_STATUS = 'ACTIVE'
 
-        <if test="companyName != null and companyName != ''">
-            AND c.COMPANY_NAME LIKE '%' || #{companyName} || '%'
-        </if>
+			<if test="companyName != null and companyName != ''">
+				AND c.COMPANY_NAME LIKE '%' || #{companyName} || '%'
+			</if>
 
-        <if test="ceoName != null and ceoName != ''">
-            AND c.CEO_NAME LIKE '%' || #{ceoName} || '%'
-        </if>
-    </where>
-    ORDER BY c.COMPANY_CODE
-</select>
+			<if test="ceoName != null and ceoName != ''">
+				AND c.CEO_NAME LIKE '%' || #{ceoName} || '%'
+			</if>
+		</where>
+		ORDER BY c.COMPANY_CODE
+	</select>
 
-  <!-- 회사 상세 조회 -->
-    <select id="selectCompanyDetail" parameterType="string" resultType="CompanyVO">
-        SELECT 
-            company_code,
-            company_name,
-            ceo_name,
-            ceo_phone,
-            company_email,
-            company_address,
-            bno,
-            manager_name,
-            manager_phone,
-            business_type,
-            industry_type,
-            employee_count,
-            created_by,
-            create_date,
-            updated_by,
-            update_date
-        FROM TB_COMPANY_MASTER
-        WHERE company_code = #{companyCode}
-    </select>
-   <!-- 회사 정보 수정 -->
-    <update id="updateCompany" parameterType="CompanyVO">
-        UPDATE TB_COMPANY_MASTER
-        SET 
-            company_name = #{companyName},
-            ceo_name = #{ceoName},
-            ceo_phone = #{ceoPhone},
-            bno = #{bno},
-            manager_name = #{managerName},
-            manager_phone = #{managerPhone},
-            company_email = #{companyEmail},
-            company_address = #{companyAddress},
-            update_date = SYSDATE
-        WHERE company_code = #{companyCode}
-    </update>
+	<!-- 회사 상세 조회 -->
+	<select id="selectCompanyDetail" parameterType="string"
+		resultType="CompanyVO">
+		SELECT
+		company_code,
+		company_name,
+		ceo_name,
+		ceo_phone,
+		company_email,
+		company_address,
+		bno,
+		manager_name,
+		manager_phone,
+		business_type,
+		industry_type,
+		employee_count,
+		created_by,
+		create_date,
+		updated_by,
+		update_date
+		FROM TB_COMPANY_MASTER
+		WHERE company_code = #{companyCode}
+	</select>
+	<!-- 회사 정보 수정 -->
+	<update id="updateCompany" parameterType="CompanyVO">
+		UPDATE TB_COMPANY_MASTER
+		SET
+		company_name = #{companyName},
+		ceo_name = #{ceoName},
+		ceo_phone = #{ceoPhone},
+		bno = #{bno},
+		manager_name = #{managerName},
+		manager_phone = #{managerPhone},
+		company_email = #{companyEmail},
+		company_address = #{companyAddress},
+		update_date = SYSDATE
+		WHERE company_code = #{companyCode}
+	</update>
 </mapper>

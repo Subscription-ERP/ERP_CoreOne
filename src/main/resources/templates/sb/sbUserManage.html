@@ -275,27 +275,9 @@ h3 {
 					</div>
 					<div class="btn-area">
 
-						<!-- 0) 결제 실패(PAST_DUE): 재시도 버튼 -->
-						<button class="btn btn-primary"
-							th:if="${subDetail.subsStatus == 'PAST_DUE'}"
-							onclick="retryBilling()">결제 재시도</button>
-
 						<button class="btn btn-primary"
 							th:if="${subDetail == null || subDetail.subsStatus != 'ACTIVE'}"
 							onclick="goSubscribePage()">재구독 결제하기</button>
-							
-						<!-- 2) 정상(ACTIVE) + 정기결제(빌링키 있음): 결제수단 변경 -->
-						<button class="btn btn-primary"
-							th:if="${subDetail.subsStatus == 'ACTIVE' and subDetail.billingKey != null}"
-							onclick="changeBillingMethod()">결제수단 변경</button>
-
-						<!-- 3) 정상(ACTIVE) + 일반결제(빌링키 없음): 결제하기 -->
-						<button class="btn btn-primary"
-							th:if="${subDetail.subsStatus == 'ACTIVE' and subDetail.billingKey == null}"
-							onclick="openPayWidget()">결제하기</button>
-
-						<!-- 공통 -->
-						<button class="btn">플랜 변경</button>
 					</div>
 				</div>
 
@@ -343,9 +325,9 @@ h3 {
 		<!-- 결제이력용 JS -->
 		<script th:src="@{/js/sb/sbUserManage.js}"></script>
 		<script>
-		function goSubscribePage() {
-    location.href = '/plans';   // 최초 구독 페이지와 동일
-}
+			function goSubscribePage() {
+				location.href = '/plans'; // 최초 구독 페이지와 동일
+			}
 		</script>
 	</div>
 </body>
