@@ -52,6 +52,7 @@
 		<if test="leaveApplyEndDateSearch != null and leaveApplyEndDateSearch != '' " >
           AND  ald.leave_apply_date &lt;= #{leaveApplyEndDateSearch}
 		</if>
+		ORDER BY ald.leave_start_date DESC
 	</select>
 	
 	<!-- 내연차현황 -->

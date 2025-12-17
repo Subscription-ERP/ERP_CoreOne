@@ -60,6 +60,7 @@
         <if test="payPeriodEnd != null and payPeriodEnd != '' ">
             AND upm.pay_period &lt;= #{payPeriodEnd}
         </if>
+        ORDER BY upm.pay_date DESC, TO_DATE(upm.pay_period, 'YYYY-MM') DESC
 	</select>
 	
 	<!-- 단건조회 -->

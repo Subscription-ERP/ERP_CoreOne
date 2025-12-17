@@ -1,9 +1,9 @@
-/**
+/**------------------------------------------------------------------------------------------------------------
  * 급여대장 관리 페이지 자바스크립트
  * @file payRoll.js
  * @description 매월 주기적으로 지급되는 급여 및 보너스 상여금을 등록하여 조회하고 계산, 확정하여 월급 및 상여금을 지급 할 수 있습니다.
  * @author 장준현
- */
+ *-------------------------------------------------------------------------------------------------------------*/
 
 /* ====================
  * 전역 변수
@@ -152,37 +152,37 @@ const payrollDetailGrid = new tui.Grid({
 	rowkey: "payrollPeriodCode",
 	columns: [
 		// { header: "귀속연월", name: "payrollPeriod", align: "center", width: 80 },
-		{ header: "사번", name: "userId", align: "center", width: 150 },
-		{ header: "성명", name: "userName", width: 10 },
-		{ header: "부서명", name: "deptName", width: 100 },
-		{ header: "지급일", name: "payrollDate", align: "center", width: 100 },
+		{ header: "사번", name: "userId", align: "center", width: 150, sortable: true, },
+		{ header: "성명", name: "userName", width: 10, sortable: true, },
+		{ header: "부서명", name: "deptName", width: 100, sortable: true, },
+		{ header: "지급일", name: "payrollDate", align: "center", width: 100, sortable: true, },
 		{
-			header: "기본급", name: "salary", align: "right", width: 100, formatter: function(e) {
+			header: "기본급", name: "salary", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "상여금", name: "bonus", align: "right", width: 100, formatter: function(e) {
+			header: "상여금", name: "bonus", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "수당총액", name: "totalAllowance", align: "right", width: 100, formatter: function(e) {
+			header: "수당총액", name: "totalAllowance", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, formatter: function(e) {
+			header: "총 지급액", name: "totalPaymentAmount", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, formatter: function(e) {
+			header: "공제 총액", name: "totalDeductionAmount", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		},
 		{
-			header: "실 수령액", name: "netPay", align: "right", width: 100, formatter: function(e) {
+			header: "실 수령액", name: "netPay", align: "right", width: 100, sortable: true, formatter: function(e) {
 				return formatKoreanNumber(e.value);
 			}
 		}
@@ -218,7 +218,7 @@ function updateRowDetailSummary(rowData) {
 	document.getElementById('holiday').textContent = rowData.holiday === null || rowData.holiday === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.holiday);
 	document.getElementById('family').textContent = rowData.family === null || rowData.family === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.family);
 	document.getElementById('meal').textContent = rowData.meal === null || rowData.meal === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.meal);
-	document.getElementById('total_allowance').textContent = rowData.total_allowance === null || rowData.total_allowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
+	document.getElementById('total_allowance').textContent = rowData.totalAllowance === null || rowData.totalAllowance === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.totalAllowance);
 
 	// ------------------ 공제 테이블 업데이트 ------------------
 	document.getElementById('income_tax').textContent = rowData.incomeTax === null || rowData.incomeTax === undefined ? 0 : new Intl.NumberFormat('ko-KR').format(rowData.incomeTax);
@@ -421,38 +421,65 @@ document.addEventListener("DOMContentLoaded", () => {
 			allUserGrid.readData(1, data, true);
 		});
 
-	/* ======================================
-	 * 급여대장-상여등록
-	 * 설명 : 저장버튼을 누르면 상여등록이 이루어진다.
-	 * ====================================== */
+	/**-------------------------------------------------
+	 * 제목 : 급여대장-상여등록-저장
+	 * @description 저장버튼을 누르면 상여등록이 이루어진다.
+	 * @author 장준현
+	 *-------------------------------------------------- */
 	document.getElementById("btnSave").addEventListener("click", () => {
-		// 대상 그리드(targetUserGrid)의 모든 사원을 가져옴
-		const checkedEmployees = targetUserGrid.getData();
-		const employeeIds = checkedEmployees.map((row) => row.userId);
+		
+		/**---------
+		 * 변수설정
+		 *----------*/
+		const checkedEmployees = targetUserGrid.getData(); // 대상 그리드(targetUserGrid)의 모든 사원을 가져옴
+		const employeeIds = checkedEmployees.map((row) => row.userId); // 대상 사원 목록
+		const payrollPeriod = document.getElementById("payrollPeriod").value; // 귀속연월
+		const bonusType = document.querySelector('input[name="bonusType"]:checked').value; // 상여지급방법, 주의: 라디오 버튼의 name은 'bonusType'으로 고정
+		const bonusValue = document.querySelector("#bonus").value; // 지급률 및 지급액
+		const payrollBonusName = document.querySelector("#payrollBonusName").value; // 대장명칭
+		const payrollStartDate = document.querySelector("#payrollStartDate").value; // 대장기간시작일
+		const payrollEndDate = document.querySelector("#payrollEndDate").value; // 대장기간종료일
+		const payrollBonusDate = document.querySelector("#payrollBonusDate").value; // 지급일
 
-		if (employeeIds.length === 0) {
-			showToast("상여 등록 대상 사원을 한 명 이상 추가해야 합니다.", 'info');
+		/**--------
+		 * 유효성검사
+		 *---------*/
+		// 상여등록시 귀속연월이 없는 경우
+		if (payrollPeriod === '') {
+			showToast("귀속연월을 입력해주세요", 'warning');
 			return;
 		}
-
-		// 귀속연월
-		const payrollPeriod = document.getElementById("payrollPeriod").value;
-		// 상여지급방법
-		// 주의: 라디오 버튼의 name은 'bonusType'으로 고정
-		const bonusType = document.querySelector(
-			'input[name="bonusType"]:checked'
-		).value;
-		// 지급률 및 지급액
-		const bonusValue = document.querySelector("#bonus").value;
-		// 대장명칭
-		const payrollBonusName = document.querySelector("#payrollBonusName").value;
-		// 대장기간시작일
-		const payrollStartDate = document.querySelector("#payrollStartDate").value;
-		// 대장기간종료일
-		const payrollEndDate = document.querySelector("#payrollEndDate").value;
-		// 지급일
-		const payrollBonusDate = document.querySelector("#payrollBonusDate").value;
-
+		// 상여등록시 지급률 및 지급액을 안적은 경우
+		if(bonusValue === '') {
+			showToast("지급률 및 지급액을 입력해주세요", 'warning');
+			return;
+		}
+		// 대장명칭을 안적은 경우
+		if(payrollBonusName === '') {
+			showToast("대장명칭을 입력해주세요", 'warning');
+			return;
+		}
+		// 대장기간시작일을 안적은 경우
+		if(payrollStartDate === '') {
+			showToast("대장기간시작일을 입력해주세요", 'warning');
+			return;
+		}
+		// 대장기간종료일을 안적은 경우
+		if(payrollEndDate === '') {
+			showToast("대장기간종료일을 입력해주세요", 'warning');
+			return;
+		}
+		// 지급일을 안적은 경우
+		if(payrollBonusDate === '') {
+			showToast("지급일을 입력해주세요", 'warning');
+			return;
+		}
+		// 상여등록시 대상사원목록에 사원이 없는 경우
+		if (employeeIds.length === 0) {
+			showToast("상여 등록 대상 사원을 한 명 이상 추가해야 합니다.", 'warning');
+			return;
+		}
+		
 		// 서버전송할때 보낼 데이터 객체 생성
 		const data = {
 			payrollPeriod: payrollPeriod,
@@ -467,9 +494,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			employeeIds: employeeIds,
 		};
 
-		/* ======
+		console.log(data);
+
+		/* -------
 		 * 상여등록
-		 * ====== */
+		 * ------- */
 		fetch("/api/hr/bonusRegister", {
 			method: "POST",
 			headers: {
