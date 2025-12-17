@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const menuData = window.LOGIN_MENU_AUTH || [];
-    console.log("✅ 로그인 사용자 메뉴 권한:", menuData);
+    // console.log("✅ 로그인 사용자 메뉴 권한:", menuData);
 
     const sideMenu = document.getElementById("sideMenu");
     if (!sideMenu) {

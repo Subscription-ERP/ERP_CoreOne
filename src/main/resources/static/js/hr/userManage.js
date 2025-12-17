@@ -51,14 +51,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 			bodyHeight: 300,
 			rowHeaders: ['checkbox'],
 			columns: [
-				{ header: "사원번호", name: "userId", align: 'center', sortable: true, formatter: redTextIfLeaved },
-				{ header: "성명", name: "userName", formatter: redTextIfLeaved },
-				{ header: "부서", name: "deptName", formatter: redTextIfLeaved },
-				{ header: "입사일", name: "hireDate", align: 'center', formatter: redTextIfLeaved },
-				{ header: "직위/직급", name: "jobTitleName", formatter: redTextIfLeaved },
-				{ header: "직책", name: "positionName", formatter: redTextIfLeaved },
-				{ header: "연락처", name: "tel", formatter: redTextIfLeaved },
-				{ header: "Email", name: "email", formatter: redTextIfLeaved }
+				{ header: "사원번호", name: "userId", align: 'center', sortable: true },
+				{ header: "성명", name: "userName" },
+				{ header: "부서", name: "deptName" },
+				{ header: "입사일", name: "hireDate", align: 'center' },
+				{ header: "직위/직급", name: "jobTitleName" },
+				{ header: "직책", name: "positionName" },
+				{ header: "연락처", name: "tel" },
+				{ header: "Email", name: "email" }
 
 			]
 		});
@@ -89,16 +89,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 	initGrid();
 	loadUserList();
 
-	// 퇴사자 붉은행 표시
-	function redTextIfLeaved({ row, value }) {
-		// 퇴사자면 (userStatus가 '2' 또는 2인 경우)
-		if (row.userStatus == '2' || row.userStatus === 2) {
-			return `<span style="color: #a00; font-weight: bold;">${value ?? ''}</span>`;
-		}
-		return value ?? '';
-	}
-
-
 	/* ------------------------------------------------------------------
 	 * 사원 검색 (조회버튼 클릭)
 	 * ------------------------------------------------------------------ */
@@ -119,6 +109,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 			const data = await response.json();
 			grid.resetData(data);
 			grid.refreshLayout();
+
+			// 휴직자, 퇴사자 붉은행 표시
+			grid.getData().forEach(row => {
+				if (String(row.userStatus) === '1') {
+					grid.addRowClassName(row.rowKey, 'row-warning');
+				} else if (String(row.userStatus) === '2') {
+					grid.addRowClassName(row.rowKey, 'row-inactive');
+				}
+			});
+
 		} catch (err) {
 			console.error(err);
 			showToast("검색 중 오류가 발생했습니다.", "error");
