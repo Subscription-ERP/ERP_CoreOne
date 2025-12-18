@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rootcore.cm.mapper.ItemMasterMapper">
+
+    <!-- ===============================
+         품번 조회
+    =============================== -->
+    <select id="selectItemList"
+            parameterType="com.rootcore.cm.vo.SkuVO"
+            resultType="com.rootcore.cm.vo.SkuVO">
+
+        SELECT
+            COMPANY_CODE   AS companyCode,
+            SKU            AS sku,
+            SKU_NAME       AS skuName,
+            SKU_TYPE       AS skuType,
+            UNIT           AS unit,
+            SPEC           AS spec,
+            REMARK         AS remark,
+            USE_YN         AS useYn,
+            TAX_YN         AS taxYn,
+            CREATED_BY     AS createdBy,
+            CREATE_DATE    AS createDate,
+            UPDATED_BY     AS updatedBy,
+            UPDATE_DATE    AS updateDate
+        FROM TB_SKU_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+
+        <if test="sku != null and sku != ''">
+            AND SKU LIKE '%' || #{sku} || '%'
+        </if>
+
+        <if test="skuName != null and skuName != ''">
+            AND SKU_NAME LIKE '%' || #{skuName} || '%'
+        </if>
+
+        <if test="skuType != null and skuType != ''">
+            AND SKU_TYPE = #{skuType}
+        </if>
+
+        ORDER BY SKU
+    </select>
+
+    <!-- ===============================
+         신규 품번 등록
+    =============================== -->
+    <insert id="insertSku"
+            parameterType="com.rootcore.cm.vo.SkuVO">
+
+        INSERT INTO TB_SKU_MASTER (
+            COMPANY_CODE,
+            SKU,
+            SKU_NAME,
+            SKU_TYPE,
+            UNIT,
+            SPEC,
+            REMARK,
+            USE_YN,
+            TAX_YN,
+            CREATED_BY,
+            CREATE_DATE
+        ) VALUES (
+            #{companyCode},
+            #{sku},
+            #{skuName},
+            #{skuType},
+            #{unit},
+            #{spec},
+            #{remark},
+            NVL(#{useYn}, 'Y'),
+            NVL(#{taxYn}, 'Y'),
+            NVL(#{createdBy}, 'ADMIN'),
+            SYSDATE
+        )
+    </insert>
+
+    <!-- ===============================
+         SKU 자동생성용 MAX 조회
+         (Mapper @Param 기준)
+    =============================== -->
+    <select id="selectMaxSku"
+            resultType="string">
+
+        SELECT MAX(SKU)
+        FROM TB_SKU_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+          AND SKU_TYPE = #{skuType}
+
+    </select>
+
+</mapper>
