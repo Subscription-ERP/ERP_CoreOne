@@ -184,6 +184,23 @@
 	    AND   out_time IS NULL
 	</update>
 	
+	<update id="autoCheckoutMissingPastAll">
+	    UPDATE tb_attendance
+	    SET
+	      out_time = TRUNC(work_date) + (18/24),
+	      over_work_time = 0,
+	      night_work_time = 0,
+	      total_work_time =
+	        ROUND(
+	          GREATEST(0, ((TRUNC(work_date) + (18/24)) - in_time) * 24),
+	        2),
+	      updated_by = #{updatedBy},
+	      update_date = SYSDATE
+	    WHERE in_time IS NOT NULL
+	      AND out_time IS NULL
+	      AND work_date <![CDATA[ < ]]> TRUNC(SYSDATE)
+	</update>
+	
 	
 
 </mapper>
