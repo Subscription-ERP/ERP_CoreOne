@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function initGrid() {
 		grid = new tui.Grid({
 			el: document.getElementById('userList'),
-			bodyHeight: 300,
+			bodyHeight: 'fitToParent',
 			rowHeaders: ['checkbox'],
 			columns: [
 				{ header: "사원번호", name: "userId", align: 'center', sortable: true },

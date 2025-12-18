@@ -99,7 +99,7 @@
 		     , ior.inord_no
 		     , ior.inord_date
 		     , ior.cust_code
-		     , ior.cust_name
+		     , cst.cust_name
 		     , iod.inord_detail_no
 		     , iod.sku
 		     , sku.sku_name
@@ -125,6 +125,8 @@
           JOIN tb_cm_code cm_invoice
 		    ON iod.invoice_status = cm_invoice.code
            AND cm_invoice.group_code = 'INVOICE_STATUS'
+          JOIN tb_cust_master cst
+            ON ior.cust_code = cst.cust_code
 		 WHERE 1=1
          <if test="inordNo != null and inordNo != ''">
            AND iod.inord_no = #{inordNo}
@@ -192,7 +194,7 @@
 	<!-- 수주 세금계산서 처리 -->
 	<update id="updateInordInvoice" parameterType="InOrdDetailVO">
 		UPDATE tb_inord_detail
-		   SET invoice_status = '2'
+		   SET invoice_status = '1'
 		 WHERE inord_no = #{inordNo}
 		   AND inord_detail_no = #{inordDetailNo}
 	</update>

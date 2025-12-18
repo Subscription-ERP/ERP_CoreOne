@@ -47,19 +47,27 @@ const annualDetailGrid = new tui.Grid({
 			},
 		},
 	},
-	bodyHeight: 240,
+	bodyHeight: 200,
 	rowKey: "user_id",
 	columns: [
-		{ header: "사번", name: "userId", align: "center", sortable: true },
-		{ header: "성명", name: "userName", sortable: true },
-		{ header: "부서명", name: "deptName", sortable: true },
-		{ header: "직급", name: "jobTitle", sortable: true },
-		{ header: "신청구분", name: "leaveType", sortable: true },
-		{ header: "사용일수", name: "usedDays", align: "right", sortable: true },
-		{ header: "연차시작일", name: "annualStartDate", align: "center", sortable: true },
-		{ header: "연차종료일", name: "annualEndDate", align: "center", sortable: true },
-		{ header: "연차신청일", name: "leaveApplyDate", align: "center", sortable: true },
-		{ header: "사유", name: "rm" },
+		{ header: "사번", name: "userId", align: "center", sortable: true, width: 150 },
+		{ header: "성명", name: "userName", align: "center", sortable: true, width: 120 },
+		{ header: "부서명", name: "deptName", align: "center", sortable: true, width: 150 },
+		{ header: "직급", name: "jobTitle", align: "center", sortable: true, width: 120 },
+		{ header: "신청구분", name: "leaveType", align: "center", sortable: true, width: 120 },
+		{ header: "사용일수", name: "usedDays", align: "center", sortable: true, width: 100 },
+		{
+			header: "연차시작일", name: "annualStartDate", align: "center", sortable: true, width: 150,
+			formatter: ({ value }) => value ? value.substring(0, 10) : ''
+		},
+		{
+			header: "연차종료일", name: "annualEndDate", align: "center", sortable: true, width: 150,
+			formatter: ({ value }) => value ? value.substring(0, 10) : ''
+		},
+		{ header: "연차신청일", name: "leaveApplyDate", align: "center", sortable: true, width: 150 },
+		{
+			header: "사유", name: "rm", minWidth: 500,whiteSpace: 'pre-wrap'
+		},
 	],
 }); // end of payrollDetailGrid
 
@@ -131,7 +139,7 @@ function submitAnnualForm() {
 		const rm = document.getElementById("rm").value;
 		// 잔여연차
 		const remainingDays = Number(document.querySelector('#remainingDays').textContent);
-	
+
 		// 연차 시작일 유효성 검사 알림창
 		if (annualStartDate === '' || !annualStartDate) {
 			showToast('시작일을 작성해주세요!', 'warning');
@@ -147,10 +155,10 @@ function submitAnnualForm() {
 			showToast('사유를 작성해주세요!', 'warning');
 			return;
 		}
-		
+
 		// 작성한 사용일수가 잔여연차보다 많을 경우 알림창뜨면서 막기
 		if (usedDays > remainingDays) {
-			showToast('사용일수가 잔여연차보다 많습니다!','warning');
+			showToast('사용일수가 잔여연차보다 많습니다!', 'warning');
 			return;
 		}
 		// 잔여연차가 0일경우 연차를 사용할 수 없다고 알림창 띄우기
@@ -321,12 +329,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 		console.log('클릭');
 		annualSearch();
 	})
-	
+
 	/* ====================
 	 * 조회에 초기화 버튼 활성화
 	 * ==================== */
 	document.querySelector('#btnAnnualManageReset').addEventListener('click', () => {
-		resetAnnualSearchForm();	
+		resetAnnualSearchForm();
 	})
-	
+
 });

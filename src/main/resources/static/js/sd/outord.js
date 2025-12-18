@@ -260,8 +260,18 @@ window.afterCustSearch = function(result) {
     custSearchByEnter = false;
 
     if (byEnter) {
-        returnOnlyOne(result);
+        if (result.length === 1) {
+            // 1건이면 바로 선택
+            returnOnlyOne(result);  // 모달 JS의 전역 함수 호출
+        } else if (result.length > 1) {
+            // 여러 건이면 모달 열어서 선택하게
+            window.custModalType = 'purchase';
+            openCustModal();
+        } else {
+            showToast('검색 결과가 없습니다.', 'warning');
+        }
     } else {
+        // 버튼으로 모달 연 경우: 그냥 목록만 보여주면 됨
         window.custModalType = 'purchase';
         openCustModal();
     }
@@ -272,16 +282,17 @@ window.handleSelectedSku = function (row) {
     outordGrid.finishEditing();
 
     const data = outordGrid.getData();
-    if (!data.length) {
-        emptyRow();
-        return;
-    }
+    if (!data.length) return;
 
     // sku + unitPriceType 중복 체크
     const isDup = data.some(r => {
-        const sameSku = String(r.sku).trim() === String(row.sku).trim();
-        const sameUnitPriceType = String(r.unitPriceType).trim() === String(row.unitPriceType).trim();
-        return sameSku && sameUnitPriceType;
+        const sku1 = String(r.sku || '').trim();
+        const sku2 = String(row.sku || '').trim();
+
+        const type1 = String(r.unitPriceType || '').trim();          // 그리드: 코드
+        const type2 = String(row.unitPriceTypeCode || '').trim();    // 모달: 코드
+
+        return sku1 !== '' && sku1 === sku2 && type1 !== '' && type1 === type2;
     });
 
     if (isDup) {
@@ -309,12 +320,6 @@ window.handleSelectedSku = function (row) {
     outordGrid.setValue(rowKey, 'supplyPrice', supplyPrice.toLocaleString());
     outordGrid.setValue(rowKey, 'surTax',      surTax.toLocaleString());
 
-    // 필요하면 다음 행 추가
-    const hasSkuOrName = (lastRow.sku && String(lastRow.sku).trim() !== '') ||
-        (lastRow.skuName && String(lastRow.skuName).trim() !== '');
-    if (hasSkuOrName) {
-        emptyRow();
-    }
 };
 
 
@@ -446,8 +451,8 @@ function skuListAfterEnter() {
             let { rowKey, columnName, value } = change;
 
             if (columnName === 'sku' || columnName === 'skuName') {
-                if (!validateInordForm()) {
-                    inOrdGrid.setValue(rowKey, columnName, '');
+                if (!validateOutordForm()) {
+                    outordGrid.setValue(rowKey, columnName, '');
                     return;
                 }
             }
@@ -590,7 +595,7 @@ function searchCustModal() {
     // 2) 모달 JS의 검색 함수 호출
     if (typeof searchCust === 'function') {
         custSearchByEnter = true;
-        searchCust();
+        searchCust(true);
     }
 }
 
@@ -601,3 +606,25 @@ function handleEnter(e) {
         searchCustModal();
     }
 }
+
+// 유효성 검사
+function validateOutordForm() {
+    // 1. 거래처 필수
+    const custCode = document.getElementById('custCodeSearch').value.trim();
+    if (!custCode) {
+        showToast('거래처를 선택하세요.', 'warning');
+        return false;
+    }
+
+    // 2. 품목 최소 1개
+    const validRows = inOrdGrid.getData().filter(r =>
+        r.sku?.trim() || r.skuName?.trim()
+    );
+    if (validRows.length === 0) {
+        showToast('품목을 1개 이상 입력하세요.', 'warning');
+        return false;
+    }
+
+    return true;
+}
+

@@ -141,8 +141,17 @@ public class MenuAuthFilter extends OncePerRequestFilter {
         ) {
             return true;
         }
-
+  
         return false;
     }
+    
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        // 🔥 개발 중 품번관리 화면은 필터 자체를 태우지 않음
+        return uri.startsWith("/cm/item-master");
+    }
+
 
 }

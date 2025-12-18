@@ -259,7 +259,7 @@ h3 {
 								th:text="${subDetail.currentUserCount}">35명</span>
 
 						</div>
-						<div>
+						<div th:if="${subDetail.nextBillingDate != null}">
 							<span class="info-label">다음 결제일 : </span> <span
 								th:text="${subDetail.nextBillingDate}">2026-01-02</span>
 						</div>
@@ -297,7 +297,7 @@ h3 {
 						</div>
 						<div>
 							<span class="info-label">결제 상태 : </span> <span
-								th:text="${subDetail.paymentStat}">2025-11-24</span>
+								th:text="${subDetail.paymentStatLabel}">2025-11-24</span>
 						</div>
 						<div>
 							<span class="info-label">최근 결제일 : </span> <span
@@ -306,11 +306,7 @@ h3 {
 						</div>
 					</div>
 
-					<div class="btn-area">
-						<button class="btn">영수증 보기</button>
-						<button class="btn">세금계산서</button>
-					</div>
-
+					
 				</div>
 			</div>
 

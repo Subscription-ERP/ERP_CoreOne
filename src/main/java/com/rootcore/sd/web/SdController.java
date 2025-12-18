@@ -2,6 +2,7 @@ package com.rootcore.sd.web;
 
 import com.rootcore.sd.service.CustService;
 import com.rootcore.sd.vo.CustVO;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,14 @@ public class SdController {
     }
 
     @PostMapping("/sd/cust/save")
-    public String addCust(CustVO cust) {
+    public String addCust(CustVO cust, HttpSession session) {
+
+        String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+        String userId      = (String) session.getAttribute("LOGIN_USER_ID");
+
+        cust.setCompanyCode(companyCode);
+        cust.setCreatedBy(userId);
+
         custService.addCust(cust);
         return "redirect:/sd/cust";
     }
@@ -42,7 +50,14 @@ public class SdController {
     }
 
     @PostMapping("/sd/cust/modify")
-    public String modifyCust(CustVO cust) {
+    public String modifyCust(CustVO cust, HttpSession session) {
+
+        String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+        String userId = (String) session.getAttribute("LOGIN_USER_ID");
+
+        cust.setCompanyCode(companyCode);
+        cust.setUpdatedBy(userId);
+
         custService.modifyCust(cust);
         return "redirect:/sd/cust";
     }

@@ -266,6 +266,11 @@ function closePayrollManageModal() {
 	resetSummaryTables();
 }
 
+/**-------------------------------------
+ * 제목 : 확정된 급여에 대해서는 계산하기 지우기
+ *--------------------------------------*/
+
+
 document.addEventListener("DOMContentLoaded", () => {
 	// 급여구분 
 	const divId = { "0J": "payrollType" };
@@ -552,7 +557,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				align: "center",
 				formatter: function(data) {
 					const payrollPeriodCode = data.row.payrollPeriodCode;
-					return `<a class="btn-calculate" href=# data-payroll-period-code="${payrollPeriodCode}">계산하기</a>`;
+					if(data.row.totalPayment > 0){
+						return `<div>계산완료</div>`	
+					} else {
+						return `<a class="btn-calculate" data-payroll-period-code="${payrollPeriodCode}">계산하기</a>`;
+					}
 				},
 			},
 			{

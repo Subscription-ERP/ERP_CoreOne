@@ -34,5 +34,6 @@ public class SubscribeVO {
 		private String billingKey;
 		private String paymentStat;
 	    private String subsStatusLabel;  // 구독중 / 만료 등 사용자-friendly label
+	    private String paymentStatLabel;
 	    private int remainDays;          // 남은 일자(D-30 용)
 }

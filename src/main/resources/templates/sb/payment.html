@@ -15,6 +15,11 @@
 	padding-top: 20px;
 }
 
+.content-wrapper {
+	background-color: #ffffff;
+	min-height: 100vh; /* 회색 잔여 영역 방지 */
+}
+
 .step-header {
 	max-width: 800px;
 	margin: 0 auto 40px auto;
@@ -231,7 +236,7 @@
 </head>
 
 <body>
-	<div layout:fragment="content">
+	<div layout:fragment="content" class="content-wrapper">
 		<div class="subscription-container">
 			<!-- 상단 단계 표시 -->
 			<div class="row step-header">
@@ -350,6 +355,14 @@
 
 							<input type="hidden" id="payType" value="SUBSCRIPTION" />
 						</div>
+						<!-- 하단 버튼 -->
+						<div class="row mt-4">
+							<div class="d-flex justify-content-between align-items-center w-100 mt-4">
+								<a th:href="@{/sub/contract}"
+									class="btn btn-outline-secondary px-5">이전으로</a>
+								<button type="button" id="payBtn" class="btn btn-dark px-5">결제하기</button>
+							</div>
+						</div>
 
 
 
@@ -389,14 +402,7 @@
 				</div>
 			</div>
 
-			<!-- 하단 버튼 -->
-			<div class="row mt-4">
-				<div class="col-12 d-flex justify-content-center gap-3">
-					<a th:href="@{/contract/new}"
-						class="btn btn-outline-secondary px-5">이전으로</a>
-					<button type="button" id="payBtn" class="btn btn-dark px-5">결제하기</button>
-				</div>
-			</div>
+
 
 		</div>
 

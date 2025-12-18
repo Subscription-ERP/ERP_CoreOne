@@ -79,7 +79,7 @@
                                     use_status,
                                     created_by,
                                     create_date)
-        VALUES ('0000',
+        VALUES (#{companyCode},
                 FN_MAKE_CODE('CUST'),
                 #{custName},
                 #{ceoName},
@@ -96,7 +96,7 @@
                 #{dept},
                 #{userName},
                 #{useStatus},
-                '박봉근',
+                #{createdBy},
                 SYSDATE)
     </insert>
 
@@ -118,7 +118,7 @@
             dept = #{dept},
             user_name = #{userName},
             use_status = #{useStatus},
-            updated_by = '박수수',
+            updated_by = #{updatedBy},
             update_date = SYSDATE
         WHERE cust_code = #{custCode}
     </update>

@@ -48,7 +48,12 @@ public class PaymentController {
 
 		// 2) 결제 승인 API 호출
 		TossConfirmResponseVO res = paymentService.confirmPayment(req, company, plan, contract,session);
-
+		
+		// 3) 결제후 DB에 등록되었을때 세션삭제
+		session.removeAttribute("company");
+		session.removeAttribute("plan");
+		session.removeAttribute("contract");
+		
 		// 3) 사용자에게 보여줄 데이터 모델에 담기
 		model.addAttribute("payment", res);
 
@@ -69,6 +74,10 @@ public class PaymentController {
 	    // authKey로 billingKey 발급하고, 구독/결제/계약/회사까지 한 번에 처리
 	    TossConfirmResponseVO res = paymentService.createSubscriptionWithBillingKey(
 	            authKey, customerKey, company, plan, contract);
+	    // 3) 결제후 DB에 등록되었을때 세션삭제
+	    session.removeAttribute("company");
+		session.removeAttribute("plan");
+		session.removeAttribute("contract");
 	    model.addAttribute("billing",res);
 	    model.addAttribute("billingKey", res.getBillingKey()); // 응답 VO에 넣어두면 화면에서 볼 수 있음(선택)
 	    return "sb/billingsuccess";
