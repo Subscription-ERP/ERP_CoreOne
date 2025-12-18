@@ -30,6 +30,7 @@ const schCustCode = document.getElementById('schCustCode');
 const schCustName = document.getElementById('schCustName');
 const btnSearch = document.getElementById("btnCustSearch");
 let custModalGrid;
+let custType = null;
 
 // 모달 실행
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,8 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
     data: [],
   });
-
-  getCustList();
 
   btnSearch.addEventListener("click", function (e) {
     e.preventDefault();
@@ -83,10 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // 함수 영역 (전역함수)
 
 // 거래처 정보 불러오기
-function getCustList() {
+function getCustList(type) {
   if (!custModalGrid) return;
 
-  fetch('/api/sd/custList')
+  const params = new URLSearchParams();
+
+  if (type) {
+    params.append('custType', type);
+  }
+
+  const url = `/api/sd/custList?${params.toString()}`;
+
+  fetch(url)
     .then(res => res.json())
     .then(result => {
       custModalGrid.resetData(result);
@@ -99,24 +106,29 @@ function searchCust() {
   const custCode = document.getElementById('schCustCode').value.trim();
   const custName = document.getElementById('schCustName').value.trim();
 
-  const params = { custCode, custName };
+  const type = window.custModalType || '';
+
+  const params = new URLSearchParams({
+    custType: type,
+    custCode: custCode || '',
+    custName: custName || ''
+  });
 
   if (!custModalGrid) return;
 
-  fetch('/api/sd/searchCust', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params)
-  })
+  const url = `/api/sd/custList?${params.toString()}`;
+
+  fetch(url)
       .then(res => res.json())
-      .then(result => {
-        custModalGrid.resetData(result);
+      .then(data => {
+        const list = Array.isArray(data) ? data : [];
+        custModalGrid.resetData(list);
         custModalGrid.refreshLayout();
 
-        // 부모에 값 넘기는 함수
         if (typeof window.afterCustSearch === 'function') {
-          window.afterCustSearch(result);
+          window.afterCustSearch(list);
         }
+
       })
       .catch(err => console.error(err));
 }
@@ -145,10 +157,17 @@ function returnOnlyOne(result) {
 
 // 거래처 모달 열기
 function openCustModal(e) {
+
+  console.log('openCustModal called, window.custModalType =', window.custModalType);
+
   if (e) {
     e.stopPropagation();
     e.preventDefault();
   }
+
+  custType = window.custModalType || '';
+  getCustList(custType);
+
   custModal.hidden = false;
   custModal.classList.remove('hidden');
 

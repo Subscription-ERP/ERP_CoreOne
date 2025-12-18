@@ -2,13 +2,11 @@ package com.rootcore.sb.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,7 +39,9 @@ import com.rootcore.sb.vo.TossConfirmResponseVO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @RequiredArgsConstructor
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -274,18 +274,19 @@ public class PaymentServiceImpl implements PaymentService {
 
 		orderMapper.insertOrder(billingorder);
 
-		String cardRegOrderId = "CARDREG" +
-		        LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) + "_" +
-		        UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+		
 		
 		// ---------------- 6) 빌링키로 첫 결제 승인 (정기결제) ----------------
 		TossBillingConfirmRequestVO billingReq = new TossBillingConfirmRequestVO();
 		billingReq.setBillingKey(billingKey);
 		billingReq.setAmount(billingorder.getOrderAmount()); // 주문 금액 기준
-		billingReq.setOrderId(cardRegOrderId);
+		billingReq.setOrderId(billingorder.getOrderId());
 		billingReq.setOrderName(plan.getPlanName()); // 예: "스탠다드 구독"
 		billingReq.setCustomerKey(customerKey);
 
+		log.info("[BILLING-FIRST] orderId={}, customerKey={}, amount={}",
+		        billingorder.getOrderId(), customerKey, billingorder.getOrderAmount());
+		
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(billingReq);
 
 		// ★ 결제 실패 시 롤백을 위해 상태 체크
@@ -302,7 +303,7 @@ public class PaymentServiceImpl implements PaymentService {
 			company.setUpdatedBy("SYSTEM");
 			company.setUpdateDate(LocalDateTime.now());
 			company.setCompanyCode(company.getCompanyCode());
-//			company.setCustomerKey(customerKey);
+			company.setCustomerKey(customerKey);
 			
 			companyMapper.insertCompany(company); // 세션정보를 불러와 insert 매퍼실행
 		} else {
@@ -413,7 +414,6 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// 2) 토스에 정기결제 승인 요청 (평문 사용)
 		req.setBillingKey(plainBillingKey);
-//		req.setCustomerKey(customerKey);
 
 		// 1) 토스에 정기결제 승인 요청
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(req);
@@ -460,7 +460,7 @@ public class PaymentServiceImpl implements PaymentService {
 		if (success) {
 			LocalDate today = LocalDate.now();
 			LocalDate next = today.plusMonths(1);
-			subscribeMapper.updateBillingDates(sub.getSubCode(), today, next);
+			subscribeMapper.updateBillingDates(today, next, sub.getSubCode());
 			subscribeMapper.updateSubsStatus(sub.getSubCode(), "ACTIVE", "SYSTEM");
 		} else {
 			subscribeMapper.updateSubsStatus(sub.getSubCode(), "PAST_DUE", "SYSTEM");

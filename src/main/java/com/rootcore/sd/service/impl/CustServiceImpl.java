@@ -15,8 +15,23 @@ public class CustServiceImpl implements CustService {
     final CustMapper custMapper;
 
     @Override
-    public List<CustVO> getCustList(CustVO cust) {
-        return custMapper.selectCust(cust);
+    public List<CustVO> getCustList(String custCode,
+                                    String custName,
+                                    String custType,
+                                    String custTypeCode,
+                                    Boolean includeStopped) {
+
+        System.out.println(custCode);
+        System.out.println(custName);
+        System.out.println(custType);
+        System.out.println(custTypeCode);
+        System.out.println(includeStopped);
+
+        return custMapper.selectCust(custCode,
+                                     custName,
+                                     custType,
+                                     custTypeCode,
+                                     includeStopped);
     }
 
     @Override
