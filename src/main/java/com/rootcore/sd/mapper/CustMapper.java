@@ -2,7 +2,8 @@ package com.rootcore.sd.mapper;
 
 import com.rootcore.sd.vo.CustVO;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
+
 
 import java.util.List;
 

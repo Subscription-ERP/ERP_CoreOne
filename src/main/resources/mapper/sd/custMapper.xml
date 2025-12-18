@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rootcore.sd.mapper.CustMapper">
     <!-- 거래처 전체 조회 -->
-    <select id="selectCust"  resultType="CustVO" parameterType="string">
+    <select id="selectCust"  resultType="CustVO">
         SELECT cust.company_code,
                cust.cust_code,
                cust.cust_name,
@@ -33,31 +33,28 @@
         ON cust.company_code = credit.company_code
         AND cust.cust_code = credit.cust_code
         AND credit.credit_type = 'SELL_CREDIT'
-        <where>
-            1=1
+        WHERE 1=1
+        /* 목록조건 */
+        <if test="custType == 'sales' ">
+            AND cust.cust_type IN ('SALES_CUST', 'OUTSOURCING_CUST', 'INTERNAL_CUST')
+        </if>
+        <if test="custType == 'purchase' ">
+            AND cust.cust_type IN ('PURCHASE_CUST', 'OUTSOURCING_CUST', 'INTERNAL_CUST')
+        </if>
 
-            /* 목록조건 */
-            <if test="custType == 'sales' ">
-                cust.cust_type IN ('SALES_CUST', 'OUTSOURCING_CUST', 'INTERNAL_CUST')
-            </if>
-            <if test="custType == 'purchase' ">
-                cust.cust_type IN ('PURCHASE_CUST', 'OUTSOURCING_CUST', 'INTERNAL_CUST')
-            </if>
-
-            /* 검색조건 */
-            <if test="custCode != null and custCode != ''">
-                cust.cust_code LIKE '%' || #{custCode} || '%'
-            </if>
-            <if test="custName != null and custName != ''">
-                cust.cust_name LIKE '%' || #{custName} || '%'
-            </if>
-            <if test="custTypeCode != null and custTypeCode != ''">
-                cmCode.code = #{custTypeCode}
-            </if>
-            <if test="includeStopped == null or includeStopped == false">
-                cust.use_status = 'Y'
-            </if>
-        </where>
+        /* 검색조건 */
+        <if test="custCode != null and custCode != ''">
+            AND cust.cust_code LIKE '%' || #{custCode} || '%'
+        </if>
+        <if test="custName != null and custName != ''">
+            AND cust.cust_name LIKE '%' || #{custName} || '%'
+        </if>
+        <if test="custTypeCode != null and custTypeCode != ''">
+            AND cmCode.code = #{custTypeCode}
+        </if>
+        <if test="includeStopped == null or includeStopped == false">
+            AND cust.use_status = 'Y'
+        </if>
         ORDER BY cust.use_status DESC, cust.cust_code DESC
     </select>
 

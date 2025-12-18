@@ -55,8 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     data: [],
   });
 
-  getCustList();
-
   btnSearch.addEventListener("click", function (e) {
     e.preventDefault();
     searchCust();
@@ -108,25 +106,29 @@ function searchCust() {
   const custCode = document.getElementById('schCustCode').value.trim();
   const custName = document.getElementById('schCustName').value.trim();
 
+  const type = window.custModalType || '';
+
   const params = new URLSearchParams({
-    custType: custType || '',
+    custType: type,
     custCode: custCode || '',
     custName: custName || ''
   });
 
   if (!custModalGrid) return;
 
-  fetch(`/api/sd/custList?${params.toString()}`)
+  const url = `/api/sd/custList?${params.toString()}`;
+
+  fetch(url)
       .then(res => res.json())
       .then(data => {
         const list = Array.isArray(data) ? data : [];
         custModalGrid.resetData(list);
         custModalGrid.refreshLayout();
 
-        // 부모에 값 넘기는 함수
         if (typeof window.afterCustSearch === 'function') {
           window.afterCustSearch(list);
         }
+
       })
       .catch(err => console.error(err));
 }
@@ -155,19 +157,19 @@ function returnOnlyOne(result) {
 
 // 거래처 모달 열기
 function openCustModal(e) {
+
+  console.log('openCustModal called, window.custModalType =', window.custModalType);
+
   if (e) {
     e.stopPropagation();
     e.preventDefault();
   }
 
   custType = window.custModalType || '';
+  getCustList(custType);
 
   custModal.hidden = false;
   custModal.classList.remove('hidden');
-
-  if (custType) {
-    getCustList(custType);
-  }
 
   if (custModalGrid) {
     custModalGrid.refreshLayout();

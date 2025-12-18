@@ -12,6 +12,7 @@ let unitPriceTypeItems = [];
 let skuDataList = [];
 let defaultType = '';
 let selectedCustCode = null;
+let custSearchByEnter = false;
 let remain = 0; // 잔여여신
 
 document.getElementById('btnSave').addEventListener('click', async (e) => {
@@ -356,6 +357,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+// 거래처 검색
+window.afterCustSearch = function(result) {
+    const byEnter = custSearchByEnter === true;
+    custSearchByEnter = false;
+
+    if (byEnter) {
+        if (result.length === 1) {
+            // 1건이면 바로 선택
+            returnOnlyOne(result);  // 모달 JS의 전역 함수 호출
+        } else if (result.length > 1) {
+            // 여러 건이면 모달 열어서 선택하게
+            window.custModalType = 'sales';
+            openCustModal();
+        } else {
+            showToast('검색 결과가 없습니다.', 'warning');
+        }
+    } else {
+        // 버튼으로 모달 연 경우: 그냥 목록만 보여주면 됨
+        window.custModalType = 'sales';
+        openCustModal();
+    }
+};
+
 // 모달에서 거래처 값 불러오기
 window.handleSelectedCust = function(row) {
 
@@ -368,17 +392,6 @@ window.handleSelectedCust = function(row) {
     document.getElementById('creditMax').value = Number(row.creditMax).toLocaleString();
     sumPrice();
     skuList();
-};
-
-window.afterCustSearch = function(result) {
-    const byEnter = custSearchByEnter === true;
-    custSearchByEnter = false;
-
-    if (byEnter) {
-        returnOnlyOne(result);
-    } else {
-        openCustModal();
-    }
 };
 
 // 품목 모달에서 값 불러오기
@@ -441,23 +454,14 @@ window.handleSelectedSku = function (row) {
 function openCustModalOnly(e) {
     e.preventDefault();
 
-    // 모달 input에 부모 검색어만 세팅
-    // const custCodeKeyword = custCodeSearch.value.trim();
-    // const custNameKeyword = custNameSearch.value.trim();
-
     const schCustCode = document.getElementById('schCustCode');
     const schCustName = document.getElementById('schCustName');
 
     if (schCustCode) schCustCode.value = '';
     if (schCustName) schCustName.value = '';
 
-    // if (schCustCode) schCustCode.value = custCodeKeyword;
-    // if (schCustName) schCustName.value = custNameKeyword;
-
     window.custModalType = 'sales';
     openCustModal();
-
-    getCustList();    // 전체 목록 or 필요한 대로
 }
 
 // 거래처 모달 검색 결과 전달 받음
