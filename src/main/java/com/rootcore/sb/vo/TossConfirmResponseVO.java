@@ -16,6 +16,7 @@ public class TossConfirmResponseVO {
 	private String cardCompany; // 내가 화면에 보여줄 매핑용 데이터로 null상태임
 	private String cardCompanyCode;
 	private String cardNumberMask; // ⭐ 선택(원하면 저장)
+	private String companyCode;
 	private String userId;
 	private String password;
 	// 값을 꺼내와서 넣어야 들어감

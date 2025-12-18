@@ -13,6 +13,33 @@
 	padding-top: 20px;
 }
 
+.period-select {
+	height: 36px;
+	/* 핵심: 왼쪽을 더 밀어서 시각적 중앙 보정 */
+	padding-left: 2.25rem;
+	padding-right: 2.25rem;
+	text-align: center;
+	text-align-last: center;
+}
+
+/* 옵션도 중앙 */
+.period-select option {
+	text-align: center;
+}
+/* 사용자 수 input */
+.user-count-input {
+	height: 36px;
+	padding-left: 2.25rem;
+	padding-right: 2.25rem;
+	text-align: center;
+}
+
+.content-wrapper {
+	background-color: #ffffff;
+	min-height: 100vh; /* 회색 잔여 영역 방지 */
+	text-align: center;
+}
+
 /* 상단 단계 영역 자체 여백 */
 .step-header {
 	max-width: 900px;
@@ -34,10 +61,17 @@
 	max-width: 1400px;
 	margin: 20px auto 0 auto;
 }
+
+.billing-fixed {
+	background-color: #f1f3f5; /* BASIC 카드와 같은 연회색 */
+	border-color: #adb5bd;
+	color: #212529;
+	cursor: default;
+}
 </style>
 </head>
 <body>
-	<div layout:fragment="content">
+	<div layout:fragment="content" class="content-wrapper">
 		<div class="subscription-container">
 
 			<!-- 상단 단계 표시 -->
@@ -49,7 +83,7 @@
 						<div
 							class="rounded-circle border d-flex align-items-center justify-content-center"
 							style="width: 40px; height: 40px; background: #f8f9fa;">1</div>
-						<div class="mt-2 fw-bold">회사 등록</div>
+						<div class="mt-2 ">회사 등록</div>
 					</div>
 
 					<!-- 2단계 -->
@@ -58,7 +92,7 @@
 							class="rounded-circle d-flex align-items-center justify-content-center"
 							style="width: 40px; height: 40px; background: #000; color: #fff; font-weight: bold;">
 							2</div>
-						<div class="mt-2">플랜 선택</div>
+						<div class="mt-2 fw-bold">플랜 선택</div>
 					</div>
 
 					<!-- 3단계 -->
@@ -83,12 +117,14 @@
 			<div class="row section-title">
 				<div class="col-12 text-center">
 					<h4 class="fw-bold mb-2">요금제 선택</h4>
-					<div class="text-secondary">*첫 결제는 일반결제로, 다음부터는 월별 자동결제로
-						등록가능합니다.</div>
+					<div class="text-secondary">
+						*요금제와 결제 방식을 선택한 후 결제를 진행해주세요.<br> 자동 결제를 선택하시면 이후 결제가 자동으로
+						처리됩니다.
+					</div>
 				</div>
 			</div>
-		
-			
+
+
 			<!-- 요금제 카드 영역 -->
 			<div class="row g-4 justify-content-center plan-cards">
 
@@ -112,7 +148,8 @@
 								<!-- 구독기간 -->
 								<div class="mb-3">
 									<label class="form-label mb-1">구독기간</label> <select
-										class="form-select form-select-sm" name="subsPeriod">
+										class="form-select form-select-sm select period-select"
+										name="subsPeriod">
 										<option value="1">1개월</option>
 										<option value="3" selected>3개월</option>
 										<option value="6">6개월</option>
@@ -124,7 +161,9 @@
 								<div class="mb-3">
 									<label class="form-label mb-1">사용자 수</label> <input
 										type="hidden" name="userCount" value="50"> <input
-										type="text" class="form-control" value="50명" readonly>
+										type="text"
+										class="form-control form-control-sm text-center-select user-count-input"
+										value="50명" readonly>
 
 									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
 								</div>
@@ -135,16 +174,13 @@
 
 									<div class="btn-group w-100" role="group">
 										<input type="radio" class="btn-check" name="billingPeriod"
-											id="basicMonthly" value="1" checked> <label
-											class="btn btn-outline-secondary btn-sm" for="basicMonthly">
-											매월 결제 </label> <input type="radio" class="btn-check"
-											name="billingPeriod" id="basicYearly" value="12"> <label
-											class="btn btn-outline-secondary btn-sm" for="basicYearly">
-											1년 선결제 (10%↓) </label>
+											id="basicYearly" value="12" checked> <label
+											class="btn btn-outline-secondary btn-sm w-100 billing-fixed"
+											for="basicYearly"> 1년이상 구독 시 (10%↓) </label>
 									</div>
 
-									<div class="form-text small mt-1">월 ₩15,000 / 1년 선결제 시 총
-										₩162,000 (약 10% 할인)</div>
+									<div class="form-text small mt-1">월 ₩15,000 / 1년 이상 구독 시
+										총 ₩162,000 (약 10% 할인)</div>
 								</div>
 
 								<button type="submit" class="btn btn-dark w-100">구독하기</button>
@@ -179,7 +215,8 @@
 								<!-- 구독기간 -->
 								<div class="mb-3">
 									<label class="form-label mb-1">구독기간</label> <select
-										class="form-select form-select-sm" name="subsPeriod">
+										class="form-select form-select-sm text-center-select period-select"
+										name="subsPeriod">
 										<option value="1">1개월</option>
 										<option value="3" selected>3개월</option>
 										<option value="6">6개월</option>
@@ -191,27 +228,25 @@
 								<div class="mb-3">
 									<label class="form-label mb-1">사용자 수</label> <input
 										type="hidden" name="userCount" value="100"> <input
-										type="text" class="form-control" value="100명" readonly>
+										type="text"
+										class="form-control form-control-sm text-center-select user-count-input"
+										value="100명" readonly>
 									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
 								</div>
 
-								<!-- 결제 방식 -->
+								<!-- 🔹 결제 방식 -->
 								<div class="mb-2">
 									<label class="form-label mb-1">결제 방식</label>
 
 									<div class="btn-group w-100" role="group">
 										<input type="radio" class="btn-check" name="billingPeriod"
-											id="standardMonthly" value="1" checked> <label
-											class="btn btn-outline-secondary btn-sm"
-											for="standardMonthly"> 매월 결제 </label> <input type="radio"
-											class="btn-check" name="billingPeriod" id="standardYearly"
-											value="12"> <label
-											class="btn btn-outline-secondary btn-sm" for="standardYearly">
-											1년 선결제 (10%↓) </label>
+											id="basicYearly" value="12" checked> <label
+											class="btn btn-outline-secondary btn-sm w-100 billing-fixed"
+											for="basicYearly"> 1년이상 구독 시 (10%↓) </label>
 									</div>
 
-									<div class="form-text small mt-1">월 ₩20,000 / 1년 선결제 시 총
-										₩216,000 (약 10% 할인)</div>
+									<div class="form-text small mt-1">월 ₩15,000 / 1년 이상 구독 시
+										총 ₩162,000 (약 10% 할인)</div>
 								</div>
 
 								<button type="submit" class="btn btn-dark w-100">구독하기</button>
@@ -240,7 +275,8 @@
 								<!-- 구독기간 -->
 								<div class="mb-3">
 									<label class="form-label mb-1">구독기간</label> <select
-										class="form-select form-select-sm" name="subsPeriod">
+										class="form-select form-select-sm text-center-select period-select"
+										name="subsPeriod">
 										<option value="1">1개월</option>
 										<option value="3" selected>3개월</option>
 										<option value="6">6개월</option>
@@ -250,28 +286,27 @@
 
 								<!-- 사용자 수 -->
 								<div class="mb-3">
-									<label class="form-label mb-1">사용자 수</label> <input
+									<label class="form-label mb-1 ">사용자 수</label> <input
 										type="hidden" name="userCount" value="200"> <input
-										type="text" class="form-control" value="200명" readonly>
+										type="text"
+										class="form-control form-control-sm text-center-select user-count-input"
+										value="200명" readonly>
 									<div class="form-text">사용자/직원별 기본 관리 기능 제공</div>
 								</div>
 
-								<!-- 결제 방식 -->
+								<!-- 🔹 결제 방식 -->
 								<div class="mb-2">
 									<label class="form-label mb-1">결제 방식</label>
 
 									<div class="btn-group w-100" role="group">
 										<input type="radio" class="btn-check" name="billingPeriod"
-											id="premiumMonthly" value="1" checked> <label
-											class="btn btn-outline-secondary btn-sm" for="premiumMonthly">
-											매월 결제 </label> <input type="radio" class="btn-check"
-											name="billingPeriod" id="premiumYearly" value="12">
-										<label class="btn btn-outline-secondary btn-sm"
-											for="premiumYearly"> 1년 선결제 (10%↓) </label>
+											id="basicYearly" value="12" checked> <label
+											class="btn btn-outline-secondary btn-sm w-100 billing-fixed"
+											for="basicYearly"> 1년이상 구독 시 (10%↓) </label>
 									</div>
 
-									<div class="form-text small mt-1">월 ₩50,000 / 1년 선결제 시 총
-										₩540,000 (약 10% 할인)</div>
+									<div class="form-text small mt-1">월 ₩15,000 / 1년 이상 구독 시
+										총 ₩162,000 (약 10% 할인)</div>
 								</div>
 
 								<button type="submit" class="btn btn-dark w-100">구독하기</button>

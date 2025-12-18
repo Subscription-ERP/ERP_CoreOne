@@ -175,6 +175,10 @@
         <div class="account-head">🔐 관리자 계정이 생성되었습니다!</div>
 
         <div class="account-line">
+          <div class="label">회사코드</div>
+          <div class="value" th:text="${billing.companyCode}">EMP...</div>
+        </div>
+        <div class="account-line">
           <div class="label">로그인아이디</div>
           <div class="value" th:text="${billing.userId}">EMP...</div>
         </div>
