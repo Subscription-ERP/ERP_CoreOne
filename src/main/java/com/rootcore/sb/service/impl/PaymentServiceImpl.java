@@ -2,13 +2,11 @@ package com.rootcore.sb.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,7 +39,9 @@ import com.rootcore.sb.vo.TossConfirmResponseVO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @RequiredArgsConstructor
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -284,6 +284,9 @@ public class PaymentServiceImpl implements PaymentService {
 		billingReq.setOrderName(plan.getPlanName()); // 예: "스탠다드 구독"
 		billingReq.setCustomerKey(customerKey);
 
+		log.info("[BILLING-FIRST] orderId={}, customerKey={}, amount={}",
+		        billingorder.getOrderId(), customerKey, billingorder.getOrderAmount());
+		
 		TossConfirmResponseVO tossResponse = tossPaymentClient.confirmBillingPayment(billingReq);
 
 		// ★ 결제 실패 시 롤백을 위해 상태 체크
