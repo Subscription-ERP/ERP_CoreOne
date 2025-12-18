@@ -8,7 +8,7 @@
 	<insert id="insertOrder"
 		parameterType="com.rootcore.sb.vo.OrderVO">
 		<selectKey keyProperty="orderId" order="BEFORE" resultType="String">
-		SELECT FN_MAKE_CODE('ORD') FROM DUAL
+		SELECT FN_MAKE_DATE_CODE('ORD') FROM DUAL
 		</selectKey>
 		INSERT INTO TB_PAYMENT_ORDER
 		(
