@@ -61,7 +61,7 @@ public class SecurityConfig {
                 // 업무 모듈들 (현재는 모두 permitAll, 메뉴필터로 세부권한 체크)
                 .requestMatchers("/cm/**", "/fi/**", "/hr/**", "/sd/**",
                         "/pm/**", "/mes/**", "/system/**").permitAll()
-
+                
                 // 나머지
                 .anyRequest().permitAll()
         );
