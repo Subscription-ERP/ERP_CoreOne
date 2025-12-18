@@ -104,9 +104,9 @@
 		         #{leaveType},
 		         #{usedDays},
 		         <choose>
-		        	<when test="leaveType == 'b1'">	
-				        #{annualStartDate},
-				        #{annualEndDate},
+		        	<when test="leaveType == 'b1'">
+				        TO_DATE(#{annualStartDate}, 'YYYY-MM-DD'),
+				        TO_DATE(#{annualEndDate}, 'YYYY-MM-DD'),
 		            </when>
 		            <when test="leaveType == 'b2'">
 		                TO_DATE(#{annualStartDate} || ' 09:00:00', 'RRRR-MM-DD HH24:MI:SS'),
@@ -116,7 +116,7 @@
 	                    TO_DATE(#{annualStartDate} || ' 14:00:00', 'RRRR-MM-DD HH24:MI:SS'),
 	                    TO_DATE(#{annualStartDate} || ' 18:00:00', 'RRRR-MM-DD HH24:MI:SS'),
 	                </when>
-		          </choose>
+		         </choose>
 		         #{rm})
 	</insert>
 
