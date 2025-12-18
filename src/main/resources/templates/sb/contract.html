@@ -12,6 +12,10 @@
 	margin: 0 auto;
 	padding-top: 20px;
 }
+.content-wrapper {
+    background-color: #ffffff;
+    min-height: 100vh; /* 회색 잔여 영역 방지 */
+}
 
 .step-header {
 	max-width: 900px;
@@ -58,7 +62,7 @@
 </head>
 
 <body>
-	<div layout:fragment="content">
+	<div layout:fragment="content" class="content-wrapper">
 		<div class="subscription-container">
 
 			<!-- 상단 단계 표시 -->

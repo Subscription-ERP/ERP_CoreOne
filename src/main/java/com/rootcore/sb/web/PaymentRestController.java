@@ -33,20 +33,18 @@ public class PaymentRestController {
 		
 		ContractVO contract = (ContractVO) session.getAttribute("contract");
 		PlanVO plan = (PlanVO) session.getAttribute("plan");
-		CompanyVO company = (CompanyVO) session.getAttribute("company");
 		
-		 String logincompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
-		 
-		  String companyCode = logincompanyCode != null ? logincompanyCode
-                  : (company != null ? company.getCompanyCode() : null);
+		// ✅ 로그인 회사코드(재구독일 때만 존재)
+	    String loginCompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
 		
 		OrderVO ordervo = new OrderVO();
 		ordervo.setOrderAmount(contract.getTotalPrice().longValue());
 		ordervo.setOrderName(plan.getPlanName());
 
-		 // ✅ 재구독이면 회사코드를 주문에 저장
-	    if (companyCode != null) {
-	        ordervo.setCompanyCode(companyCode);
+		 // ✅ 재구독이면 회사코드를 주문에 저장(로그인 회사코드만 신뢰)
+	    // 최초가입은 여기서 companyCode 세팅하지 말고 서비스에서 "0000" 처리
+	    if (loginCompanyCode != null && !loginCompanyCode.isBlank()) {
+	        ordervo.setCompanyCode(loginCompanyCode);
 	    }
 		
 		

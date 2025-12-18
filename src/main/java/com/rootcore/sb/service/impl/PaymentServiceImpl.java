@@ -68,14 +68,18 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public PaymentReadyResponseVO insertOrder(OrderVO ordervo, PlanVO plan) {
 
-
 		// ✅ 주문 정보 ORDER 테이블에 저장
 		ordervo.setOrderStatus("READY"); // 주문 상태
 		ordervo.setOrderType("NORMAL"); // 필요시 상수/enum 처리
 		ordervo.setCreateDate(LocalDateTime.now());
 		ordervo.setPlanCode(plan.getPlanCode());
 		ordervo.setCreatedBy("SYSTEM"); // 나중에 로그인 사용자로 교체
-		ordervo.setCompanyCode("0000"); // 나중에 로그인 사용자로 교체
+		
+		  // ✅ companyCode가 없으면(최초가입) 임시값 0000 세팅
+	    if (ordervo.getCompanyCode() == null || ordervo.getCompanyCode().isBlank()) {
+	        ordervo.setCompanyCode("0000");
+	    }
+		
 		orderMapper.insertOrder(ordervo);
 
 		// 프론트에서 Toss 위젯 호출할 때 필요한 값들 내려줌
@@ -110,8 +114,11 @@ public class PaymentServiceImpl implements PaymentService {
 
 		// ✅ 3) 재구독이면 주문에 companyCode가 들어있음
 	    String orderCompanyCode = order.getCompanyCode();
-		
+	    boolean isFirstJoin = (orderCompanyCode == null || "0000".equals(orderCompanyCode));
 
+	    // 4) 회사 확정
+	    CompanyVO realcompany;
+	    
 	    // ✅ 회사 확정
 	    CompanyVO existCompany = null;
 	    if (orderCompanyCode != null) {
@@ -231,15 +238,23 @@ public class PaymentServiceImpl implements PaymentService {
 		long diff = ChronoUnit.DAYS.between(today, endDate);
 		subDetail.setRemainDays((int) diff);
 
-		String label;
+		String subsLabel;
 		if (diff > 0)
-			label = "구독중";
+			subsLabel = "구독중";
 		else if (diff == 0)
-			label = "오늘 만료";
+			subsLabel = "오늘 만료";
 		else
-			label = "만료됨";
-
-		subDetail.setSubsStatusLabel(label);
+			subsLabel = "만료됨";
+		
+		String status = subDetail.getPaymentStat();
+		String paymentLabel;
+		if ("DONE".equals(status))
+			paymentLabel  ="결제완료";
+		else 
+			paymentLabel  = "결제실패";
+	
+		subDetail.setPaymentStatLabel(paymentLabel);
+		subDetail.setSubsStatusLabel(subsLabel);
 
 		// 4) 최종 가공된 VO 반환
 		return subDetail;
@@ -389,6 +404,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 			tossResponse.setUserId(accountInfo.get("userId"));
 			tossResponse.setPassword(accountInfo.get("password"));
+			tossResponse.setCompanyCode(company.getCompanyCode());
 		}
 
 		return tossResponse;

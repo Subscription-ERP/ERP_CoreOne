@@ -7,9 +7,10 @@
 	<!-- 결제 이력 INSERT -->
 	<insert id="insertPayment"
 		parameterType="com.rootcore.sb.vo.PaymentVO">
-		
-		<selectKey keyProperty="paymentCode" order="BEFORE" resultType="String">
-		SELECT FN_MAKE_CODE('PAY') FROM DUAL
+
+		<selectKey keyProperty="paymentCode" order="BEFORE"
+			resultType="String">
+			SELECT FN_MAKE_CODE('PAY') FROM DUAL
 		</selectKey>
 		INSERT INTO TB_PAYMENT
 		(
@@ -100,31 +101,49 @@
 	</select>
 	<select id="selectSubDetail" parameterType="string"
 		resultType="SubscribeVO">
-		SELECT *
-		FROM (
 		SELECT
-		SUB_CODE,
-		COMPANY_CODE,
-		SUBS_STATUS,
-		SUBS_START,
-		SUBS_END,
-		CREATED_BY,
-		CREATE_DATE,
-		UPDATED_BY,
-		UPDATE_DATE,
-		PLAN_CODE,
-		CONTRACT_CODE,
-		BILLING_PERIOD,
-		CURRENT_USER_COUNT,
-		CURRENT_PRICE,
-		NEXT_BILLING_DATE,
-		RECENT_BILLING_DATE
-		FROM TB_SUBSCRIBE
-		WHERE company_code = #{companyCode}
-		ORDER BY subs_start DESC
+		s.SUB_CODE,
+		s.COMPANY_CODE,
+		s.SUBS_STATUS,
+		s.SUBS_START,
+		s.SUBS_END,
+		s.CREATED_BY,
+		s.CREATE_DATE,
+		s.UPDATED_BY,
+		s.UPDATE_DATE,
+		s.PLAN_CODE,
+		p.PRICE,
+		t.PAYMENT_METHOD,
+		t.PAYMENT_STAT,
+		s.CONTRACT_CODE,
+		s.BILLING_PERIOD,
+		s.CURRENT_USER_COUNT,
+		s.CURRENT_PRICE,
+		s.NEXT_BILLING_DATE,
+		s.RECENT_BILLING_DATE
+		FROM
+		( SELECT *
+		FROM (
+		SELECT s.*,
+		ROW_NUMBER() OVER (ORDER BY s.SUBS_START DESC) AS rn
+		FROM TB_SUBSCRIBE s
+		WHERE s.COMPANY_CODE = #{companyCode}
 		)
-		WHERE
-		ROWNUM = 1
+		WHERE rn = 1
+		) s
+		JOIN TB_SUBSCRIBE_PLAN p
+		ON p.PLAN_CODE = s.PLAN_CODE
+		LEFT JOIN
+		( SELECT *
+		FROM (
+		SELECT t.*,
+		ROW_NUMBER() OVER (ORDER BY t.CREATE_DATE DESC) AS rn
+		FROM TB_PAYMENT t
+		WHERE t.COMPANY_CODE = #{companyCode}
+		)
+		WHERE rn = 1
+		) t
+		ON t.COMPANY_CODE = s.COMPANY_CODE
 	</select>
 
 

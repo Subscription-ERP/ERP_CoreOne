@@ -32,4 +32,5 @@ public class PaymentVO {
 	private String paymentType;
 	private String billingKey;
 	private String cardNumberMask; 
+	
 }
