@@ -34,9 +34,7 @@
 		       JOIN tb_cm_code cmcl
 		       ON cmcl.code = ald.leave_type
 		WHERE  1=1
-		<if test="companyCode != null and companyCode != '' " >
           AND  ald.company_code = #{companyCode}
-		</if>
 		<if test="userId != null and userId != '' " >
           AND  al.user_id = #{userId}
 		</if>

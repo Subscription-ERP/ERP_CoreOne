@@ -52,6 +52,9 @@ public class AnnualManageServiceImpl implements AnnualManageService {
 	@Transactional
 	public int insertmyAnnualApply(AnnualLeaveDetailVO param) {
 		int totalSuccess = 0;
+		
+		// 연차신청하기전에 연차상세관리 테이블에서 등록할려는 연차랑 겹치는지 확인하는 쿼리
+		
 
 		// 연차신청하면 연차상세관리 테이블에 등록되고
 		totalSuccess += annualManageMapper.insertmyAnnualApply(param);
