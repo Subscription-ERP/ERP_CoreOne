@@ -102,7 +102,7 @@ function getCustList(type) {
 }
 
 // 거래처 검색
-function searchCust() {
+function searchCust(fromParent = false) {
   const custCode = document.getElementById('schCustCode').value.trim();
   const custName = document.getElementById('schCustName').value.trim();
 
@@ -125,7 +125,7 @@ function searchCust() {
         custModalGrid.resetData(list);
         custModalGrid.refreshLayout();
 
-        if (typeof window.afterCustSearch === 'function') {
+        if (fromParent && typeof window.afterCustSearch === 'function') {
           window.afterCustSearch(list);
         }
 
