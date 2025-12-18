@@ -80,11 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'inordDetailNo',
                 align: 'center'
             },
-            {
-                header: '거래처코드',
-                name: 'custCode',
-                align: 'center'
-            },
             { header: '거래처명', name: 'custName' },
             {
                 header: '품목코드',
@@ -92,6 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 align: 'center'
             },
             { header: '품목명', name: 'skuName' },
+            {
+                header: '수량',
+                name: 'qty',
+                width: 100,
+                minWidth: 100,
+                align: 'right',
+                editor: 'text'
+            },
             {
                 header: '수주일자',
                 name: 'inordDate',
@@ -160,7 +163,6 @@ function loadInOrdHeader(outputStatusFilter) {
             const treeData = headerList.map(h => ({
                 // SelectInOrdList 결과 필드명에 맞게 매핑
                 inordNo: h.inordNo,
-                custCode: h.custCode,
                 custName: h.custName,
                 inordDate: h.inordDate,
                 price: h.totalPrice,
@@ -170,6 +172,10 @@ function loadInOrdHeader(outputStatusFilter) {
             }));
 
             grid.resetData(treeData);
+
+            grid.getData().forEach(row => {
+                grid.addRowClassName(row.rowKey, 'row-header');
+            });
         })
         .catch(console.error);
 }
@@ -194,10 +200,10 @@ function loadInOrdDetail(rowKey) {
             const children = detailList.map(d => ({
                 inordNo: d.inordNo,
                 inordDetailNo: d.inordDetailNo,
-                custCode: d.custCode,
                 custName: d.custName,
                 sku: d.sku,
                 skuName: d.skuName,
+                qty: d.qty,
                 inordDate: d.inordDate,
                 price: d.price,
                 outputStatus: d.outputStatusName,

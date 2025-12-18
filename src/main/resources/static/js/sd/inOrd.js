@@ -33,6 +33,7 @@ document.getElementById('btnSave').addEventListener('click', async (e) => {
 
     if (res.ok) {
         showToast('등록 완료', 'success');
+        resetData();
     } else {
         showToast('등록 실패', 'error');
     }
@@ -479,7 +480,7 @@ function searchCustModal() {
     // 2) 모달 JS의 검색 함수 호출
     if (typeof searchCust === 'function') {
         custSearchByEnter = true;
-        searchCust();
+        searchCust(true);
     }
 }
 
