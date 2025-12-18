@@ -23,40 +23,10 @@
 	<!-- 공통 스타일 -->
 	<link th:href="@{/css/general.css}" rel="stylesheet" />
 	<link th:href="@{/css/hr/hrUser.css}" rel="stylesheet" />
+	<link th:href="@{/css/hr/attendanceMe.css}" rel="stylesheet" />
 
 	<style>
-		/* 카드 안에서 Grid가 높이를 가져갈 수 있게 */
-		.card-ui.card-ui--grid {
-			/* 이미 inline style에서 높이를 주고 있으니 overflow만 관리 */
-			display: flex;
-			flex-direction: column;
-		}
 
-		.card-ui.card-ui--grid .card-ui__body {
-			flex: 1 1 auto;
-			/* 높이를 계산 가능하게 만들기 위해 */
-			min-height: 0;
-			overflow: hidden;
-			/* 외부 스크롤 제거, 내부는 ToastUI가 담당 */
-			padding: 0 12px;
-			/* 필요 없으면 0으로 */
-		}
-
-		/* Grid가 body 높이를 그대로 쓰도록 */
-		.grid-root {
-			height: 100%;
-			/* ★ 기존 min-height 대신 height:100% */
-			min-height: 0;
-		}
-
-		#myAttendanceGrid td.tui-grid-cell.row-annual {
-			background-color: #ffecec !important;
-		}
-
-		#workTimelineProgress {
-			transition: width 0.5s linear;
-			/* 너비가 바뀔 때 부드럽게 */
-		}
 	</style>
 
 </head>
@@ -71,110 +41,101 @@
 			<section class="card-ui" style="flex: 0 0 calc(80% - 10px); margin: 0 4px;">
 				<div class="card-ui__body">
 					<!-- 상단 날짜/상태 -->
-					<div class="d-flex justify-content-between align-items-center mb-4">
-						<div>
-							<strong id="todayWorkDateTime" style="font-size: var(--fs-b);">
-								<!-- 예: 2025년 11월 19일 (목) 오전 09:20:58 -->
-							</strong> 
-							<span class="badge bg-light text-dark ms-2" id="todayWorkStatusBadge"> 근무중 </span>
-							<span class="badge bg-white border text-muted ms-1 d-none" id="todayWorkPlaceBadge">
-							  <!-- JS에서 "사무실" / "외근" 같은 텍스트 들어감 -->
-							</span>
+					<div class="today-head">
+						<div class="today-head__left">
+							<strong id="todayWorkDateTime" class="today-head__datetime"></strong>
+
+							<!-- 배지 그룹: 날짜 옆에 고정 -->
+							<div class="today-badges">
+								<span class="pill pill--status" id="todayWorkStatusBadge">
+									<span class="pill__dot" aria-hidden="true"></span>
+									<span class="pill__text">근무중</span>
+								</span>
+
+								<span class="pill pill--place d-none" id="todayWorkPlaceBadge">
+									<i class="bi bi-building pill__icon" aria-hidden="true"></i>
+									<span class="pill__text">사무실</span>
+								</span>
+							</div>
 						</div>
-						<div class="d-flex align-items-center gap-2">
-							<span class="small text-muted" style="font-size: var(--fs-b)">총 근로시간</span> 
-							<strong id="todayTotalWorkTime" style="font-size: var(--fs-b)">0시간 00분</strong>
+
+						<!-- RIGHT -->
+						<div class="today-head__right">
+							<span class="today-head__label">총 근로시간</span>
+							<strong id="todayTotalWorkTime" class="today-head__total">0시간 00분</strong>
 						</div>
 					</div>
 
-					<!-- 근태 지표 요약 -->
-					<div class="small mb-3">
 
-						<!-- 1행: 출근 / 퇴근 / (빈 칸) -->
-						<div class="row">
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>출근시간</span> 
-									<span id="todayOnTime" class="mb-0">--:--:--</span>
-								</div>
+					<!-- 근태 지표 요약 (KPI) -->
+					<div class="kpi-grid mb-3">
+
+						<div class="kpi">
+							<div class="kpi__label">출근</div>
+							<div class="kpi__value" id="todayOnTime">--:--:--</div>
+						</div>
+
+						<div class="kpi">
+							<div class="kpi__label">퇴근</div>
+							<div class="kpi__value" id="todayOffTime">--:--:--</div>
+						</div>
+
+						<div class="kpi">
+							<div class="kpi__label">연장</div>
+							<div class="kpi__value" id="todayOverTime">00:00:00</div>
+						</div>
+
+						<div class="kpi">
+							<div class="kpi__label">야간</div>
+							<div class="kpi__value" id="todayNightTime">00:00:00</div>
+						</div>
+
+						<div class="kpi kpi--accent">
+							<div class="kpi__label">잔여연차</div>
+							<div class="kpi__value">
+								<span id="remainAnnualLeave">0</span><span class="kpi__unit">일</span>
 							</div>
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>퇴근시간</span> 
-									<span id="todayOffTime" class="mb-0">--:--:--</span>
-								</div>
-							</div>
-							<div class="col-md-4">
-								<!-- 필요하면 여기에 다른 내용 넣기 -->
+							<div class="kpi__sub">
+								총 <span id="totalAnnualLeave">0</span> · 사용 <span id="usedAnnualLeave">0</span>
 							</div>
 						</div>
 
-						<!-- 2행: 연장 / 야간 / (빈 칸) -->
-						<div class="row mt-1">
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>연장시간</span> 
-									<span id="todayOverTime" class="mb-0">00:00:00</span>
-								</div>
-							</div>
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>야간시간</span> 
-									<span id="todayNightTime" class="mb-0">00:00:00</span>
-								</div>
-							</div>
-							<div class="col-md-4">
-								<!-- 필요하면 여기에 다른 내용 넣기 -->
-							</div>
-						</div>
-
-						<!-- 3행: 총 연차일수 / 사용연차 / 잔여연차 -->
-						<div class="row mt-1">
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>총 연차일수</span> 
-									<span id="totalAnnualLeave" class="mb-0">0</span>
-								</div>
-							</div>
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>사용연차</span> 
-									<span id="usedAnnualLeave" class="mb-0">0</span>
-								</div>
-							</div>
-							<div class="col-md-4">
-								<div class="d-flex justify-content-between">
-									<span>잔여연차</span> 
-									<span id="remainAnnualLeave" class="mb-0">0</span>
-								</div>
-							</div>
+						<div class="kpi">
+							<div class="kpi__label">총 근로</div>
+							<div class="kpi__value" id="todayTotalWorkTime">0시간 00분</div>
 						</div>
 
 					</div>
 
 					<!-- 근무 타임라인 -->
-					<div>
-						<div class="d-flex align-items-center mb-1">
-							<span class="small text-muted">근무 타임라인</span>
-						</div>
+					<div class="timeline-block">
+						<div class="timeline-wrap" id="timelineWrap">
+							<div class="w-100" id="workTimelineBar">
 
-						<div class="w-100" id="workTimelineBar"
-							style="height: 10px; background: #e5e5e5; border-radius: 4px; overflow: hidden;">
-							<!-- JS에서 width 조절 -->
-							<div id="workTimelineProgress" style="height: 100%; width: 0; background: #788bc9;"></div>
+								<div id="timelineLunchRange"></div>
+								<div id="workTimelineProgress"></div>
+
+								<div class="timeline-marker timeline-marker--in d-none" id="timelineInDot"></div>
+								<div class="timeline-marker timeline-marker--out d-none" id="timelineOutDot"></div>
+
+								<div class="timeline-now" id="timelineNowDot"></div>
+							</div>
+
+							<div class="timeline-tip" id="timelineNowTip"></div>
 						</div>
 
 						<div class="d-flex justify-content-between small mt-1">
-							<span id="timelineStartLabel">09:00</span> 
-							<span id="timelineLunchLabel">13:00 점심</span> 
+							<span id="timelineStartLabel">09:00</span>
+							<span id="timelineLunchLabel">13:00 점심</span>
 							<span id="timelineEndLabel">18:00</span>
 						</div>
 					</div>
+
 				</div>
 			</section>
 
 			<!-- 오른쪽 카드 : 퇴근 / 근무상태 변경 -->
-			<section class="card-ui" style="flex: 0 0 calc(20% - 10px); margin: 0 4px;">
+			<!-- <section class="card-ui" style="flex: 0 0 calc(20% - 10px); margin: 0 4px;">
 				<div class="card-ui__body h-100 d-flex flex-column justify-content-between">
 					<div class="mb-3">
 						<button type="button" id="btnLeaveWork" class="btn btn-color btn-outer w-100" style="height: 115px;">
@@ -186,12 +147,27 @@
 						</select>
 					</div>
 				</div>
+			</section>  -->
+			<section class="card-ui side-action-card" style="flex: 0 0 calc(20% - 10px); margin: 0 4px;">
+				<div class="card-ui__body h-100 d-flex flex-column">
+
+					<!-- 메인 액션 버튼 -->
+					<button type="button" id="btnLeaveWork" class="btn btn-color btn-outer w-100" style="height: 115px;">
+						퇴근하기</button>
+
+					<!-- 근무형태 선택 -->
+					<div class="side-form">
+						<label class="side-form__label" for="workPlaceType">근무형태</label>
+						<!-- <select id="workPlaceType" name="workPlaceType" class="side-form__select">
+						</select> -->
+						<select id="workPlaceType" name="workPlaceType" class="form-select form-select-sm input-base">
+						</select>
+					</div>
+
+				</div>
 			</section>
+
 		</div>
-
-
-
-
 
 
 		<!-- ==================== 인사평가명 조회 =========================== -->
@@ -202,20 +178,22 @@
 					<!-- 조회기간 -->
 					<div class="col-12 col-md-6">
 						<div class="field-inline" style="align-items: center;">
-							<label for="reviewStartDate-search" class="field-inline__label">조회 	기간</label>
+							<label for="reviewStartDate-search" class="field-inline__label">조회 기간</label>
 
 							<div id="reviewStartDate-wrapper" class="col-md-3">
-								<input id="reviewStartDate-search" type="date" name="reviewStartDate" class="form-control input-base" style="max-width: 180px;" />
+								<input id="reviewStartDate-search" type="date" name="reviewStartDate" class="form-control input-base"
+									style="max-width: 180px;" />
 							</div>
 							<span class="mx-2">~</span>
 							<div id="reviewEndDate-wrapper" class="col-md-3">
-								<input id="reviewEndDate-search" type="date" name="reviewEndDate" class="form-control input-base" style="max-width: 180px;" />
+								<input id="reviewEndDate-search" type="date" name="reviewEndDate" class="form-control input-base"
+									style="max-width: 180px;" />
 							</div>
 						</div>
 					</div>
 
 					<!-- 조회 버튼 -->
-					<div class="col-12 col-md-2 ms-auto text-end">
+					<div class="col-12 col-md-4 ms-auto text-end">
 						<button id="btnResetSearch" type="button" class="btn btn-white btn-outer">초기화</button>
 						<button id="btnSearch" type="button" class="btn btn-color btn-outer">조회</button>
 					</div>

@@ -90,6 +90,25 @@
 	margin-top: 0;
 }
 
+
+/* 그리드 목록 사이즈 조정 ------------------------------------------ */
+.card-ui.card-ui--grid.section-flex {
+  display: flex;
+  flex-direction: column;
+}
+.card-ui.card-ui--grid.section-flex .card-ui__body {
+  flex: 1 1 auto;
+  min-height: 0;     
+  overflow: hidden;  
+  padding: 0;        
+}
+.card-ui.card-ui--grid.section-flex .grid-root {
+  height: 100%;
+  min-height: 0;
+}
+
+
+
 /* 자격증 / 경력 서브 그리드 ---------------------------------------------------- */
 .sub-grid {
 	border-radius: 6px;

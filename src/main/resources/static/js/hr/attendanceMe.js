@@ -209,6 +209,54 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 	/* ------------------------------------------------------------------
+	 * 퇴근
+	 * ------------------------------------------------------------------ */
+	const btnLeaveWork = document.querySelector("#btnLeaveWork");
+
+	if (btnLeaveWork) {
+		btnLeaveWork.addEventListener("click", async () => {
+
+			try {
+				const res = await fetch('/api/att/my/checkout', {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({})
+				});
+
+				if (!res.ok) {
+					throw new Error("서버오류");
+				}
+
+				const data = await res.json();
+
+				if (data.success) {
+					showToast("퇴근처리가 완료되었습니다.", 'success');
+
+					// 오늘 근태 상태 새로고침(퇴근시간 갱신)
+					await loadTodayMyAttendance();
+
+					// 근태 목록 전체 새로고침
+					await loadMyAttendanceList();
+
+					// 퇴근 버튼 비활성화
+					btnLeaveWork.disabled = true;
+					btnLeaveWork.classList.add("disabled");
+				} else {
+					showToast("퇴근 처리 실패하였습니다.", "warning");
+				}
+			} catch (err) {
+				console.error(err);
+				showToast("퇴근처리 중 에러가 발생했습니다.", "error");
+			}
+
+		});
+	};
+	
+
+
+	/* ------------------------------------------------------------------
 	 * 오늘의 근태상태
 	 * ------------------------------------------------------------------ */
 	async function loadTodayMyAttendance() {
@@ -239,22 +287,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 			document.querySelector("#todayTotalWorkTime").textContent = totalWorkText;
 
 			updateTodayWorkStatusBadge(inTimeRaw, outTimeRaw); // 배지업데이트
-			
+
+			const btnLeaveWork = document.querySelector("#btnLeaveWork");
+
 			// 출근/퇴근 상태에 따라 퇴근 버튼 활성/비활성
 			if (btnLeaveWork) {
-			    if (data.outTime) {
-			        // 이미 퇴근 했으므로 비활성
-			        btnLeaveWork.disabled = true;
-			        btnLeaveWork.classList.add("disabled");
-			    } else if (data.inTime) {
-			        // 출근은 했고 퇴근은 안 한 경우 → 활성화
-			        btnLeaveWork.disabled = false;
-			        btnLeaveWork.classList.remove("disabled");
-			    } else {
-			        // 오늘 출근도 안 했으면 비활성
-			        btnLeaveWork.disabled = true;
-			        btnLeaveWork.classList.add("disabled");
-			    }
+				if (data.outTime) {
+					// 이미 퇴근 했으므로 비활성
+					btnLeaveWork.disabled = true;
+					btnLeaveWork.classList.add("disabled");
+				} else if (data.inTime) {
+					// 출근은 했고 퇴근은 안 한 경우 → 활성화
+					btnLeaveWork.disabled = false;
+					btnLeaveWork.classList.remove("disabled");
+				} else {
+					// 오늘 출근도 안 했으면 비활성
+					btnLeaveWork.disabled = true;
+					btnLeaveWork.classList.add("disabled");
+				}
 			}
 
 		} catch (err) {
@@ -306,42 +356,46 @@ document.addEventListener("DOMContentLoaded", async () => {
 	/* ------------------------------------------------------------------
 	 * 오늘 진행바
 	 * ------------------------------------------------------------------ */
-
-	// 09:00 ~ 18:00 기준으로 오늘 하루 근무 진행률 계산해서 바에 반영
 	function updateWorkTimeline() {
-		const bar = document.getElementById('workTimelineProgress');
-		if (!bar) return;
+		const progress = document.getElementById('workTimelineProgress');
+		const nowDot = document.getElementById('timelineNowDot');
+		const tip = document.getElementById('timelineNowTip');
+		const lunchRange = document.getElementById('timelineLunchRange');
+
+		if (!progress || !nowDot || !tip) return;
 
 		const now = new Date();
 
-		// 오늘 날짜의 09:00, 18:00
 		const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
 		const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
 
-		let percent = 0;
+		const totalMs = end - start;
+		if (totalMs <= 0) return;
 
-		if (now <= start) {
-			// 출근 전
-			percent = 0;
-		} else if (now >= end) {
-			// 퇴근 이후
-			percent = 100;
-		} else {
-			// 근무 중: 오늘 9시부터 지금까지 / 전체 근무시간
-			percent = ((now - start) / (end - start)) * 100;
-		}
+		const clamp = (v) => Math.min(100, Math.max(0, v));
+		const nowPct = clamp(((now - start) / totalMs) * 100);
 
-		bar.style.width = `${percent}%`;
+		// 진행바
+		progress.style.width = `${nowPct}%`;
 
-		// 야근 여부에 따라 색상 변경
-		if (now >= end) {
-			// 야근 → 붉은색 계열
-			bar.style.background = "#e57373"; // 연한 빨강
-		} else {
-			// 근무시간 내 → 기본 파랑
-			bar.style.background = "#788bc9";
-		}
+		// 현재 동그라미
+		nowDot.style.left = `${nowPct}%`;
+
+		// 툴팁 위치 동기화
+		tip.style.left = `${nowPct}%`;
+
+		// 시간 텍스트
+		const hh = String(now.getHours()).padStart(2, '0');
+		const mm = String(now.getMinutes()).padStart(2, '0');
+		tip.textContent = `${hh}:${mm}`;
+
+		// 출근 전 / 퇴근 후 색상
+		nowDot.classList.toggle('is-off', now < start || now > end);
 	}
+
+
+
+
 
 	updateWorkTimeline();
 	setInterval(updateWorkTimeline, 60 * 1000); 	// 1분마다 갱신
@@ -352,66 +406,74 @@ document.addEventListener("DOMContentLoaded", async () => {
 	 * ------------------------------------------------------------------ */
 
 	function updateTodayWorkStatusBadge(inTimeRaw, outTimeRaw) {
-		const badge = document.querySelector("#todayWorkStatusBadge");
-		if (!badge) return;
+	  const badge = document.querySelector("#todayWorkStatusBadge");
+	  if (!badge) return;
 
-		const now = new Date();
-		const end = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate(),
-			18, 0, 0
-		);
+	  const now = new Date();
+	  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
 
-		const hasIn = !!inTimeRaw;
-		const hasOut = !!outTimeRaw;
+	  // 초기화
+	  badge.className = "pill pill--status";
 
-		let text = '근무중';
-		let colorClass = 'bg-light text-dark';
+	  const dot = badge.querySelector(".pill__dot");
+	  const textEl = badge.querySelector(".pill__text");
 
-		if (hasOut) {
-			// 1) 퇴근시간이 찍혀 있으면
-			text = '퇴근';
-			colorClass = 'bg-secondary text-light';
-		} else if (!hasIn) {
-			// 2) 출근시간 없음 → 출근 전
-			text = '출근 전';
-			colorClass = 'bg-light text-dark';
-		} else {
-			// 3) 출근했는데 퇴근 안 했음
-			if (now <= end) {
-				text = '근무중';
-				colorClass = 'bg-primary text-light';
-			} else {
-				text = '야근중😵';
-				colorClass = 'bg-danger text-light';
-			}
-		}
-
-		badge.textContent = text;
-		badge.className = `badge ms-2 ${colorClass}`;
+	  if (outTimeRaw) {
+	    badge.classList.remove("pill--status");
+	    badge.classList.add("pill--off");
+	    if (textEl) textEl.textContent = "퇴근";
+	  } else if (!inTimeRaw) {
+	    badge.classList.remove("pill--status");
+	    badge.classList.add("pill--before");
+	    if (textEl) textEl.textContent = "출근 전";
+	  } else {
+	    // 출근했고 퇴근 안 함
+	    if (now > end) {
+	      badge.classList.remove("pill--status");
+	      badge.classList.add("pill--night");
+	      if (textEl) textEl.textContent = "야근중";
+	    } else {
+	      badge.classList.add("pill--status");
+	      if (textEl) textEl.textContent = "근무중";
+	    }
+	  }
 	}
+
 
 	/* ------------------------------------------------------------------
 	 * 근무형태 배지
 	 * ------------------------------------------------------------------ */
 	// 근무장소 배지 동기화 함수
 	function syncWorkPlaceBadge() {
-		const select = document.querySelector('#workPlaceType');
-		const badge = document.querySelector('#todayWorkPlaceBadge');
-		if (!select || !badge) return;
+	  const select = document.querySelector('#workPlaceType');
+	  const badge = document.querySelector('#todayWorkPlaceBadge');
+	  if (!select || !badge) return;
 
-		const opt = select.options[select.selectedIndex];
-		const text = opt ? opt.textContent : '';
+	  const opt = select.options[select.selectedIndex];
+	  const text = opt ? opt.textContent.trim() : '';
 
-		if (text) {
-			badge.textContent = text;          // 예: "사무실", "외근"
-			badge.classList.remove('d-none');  // 보이게
-		} else {
-			badge.textContent = '';
-			badge.classList.add('d-none');     // 숨기기
-		}
+	  if (!text) {
+	    badge.classList.add('d-none');
+	    return;
+	  }
+
+	  // 아이콘 매핑 (원하면 더 추가)
+	  const iconClass =
+	    text.includes('사무실') ? 'bi-building' :
+	    text.includes('외근')   ? 'bi-geo-alt' :
+	    text.includes('출장')   ? 'bi-briefcase' :
+	    text.includes('재택')   ? 'bi-house' :
+	                              'bi-dot';
+
+	  const icon = badge.querySelector('.pill__icon');
+	  const label = badge.querySelector('.pill__text');
+
+	  if (icon) icon.className = `bi ${iconClass} pill__icon`;
+	  if (label) label.textContent = text;
+
+	  badge.classList.remove('d-none');
 	}
+
 
 	// 근무장소 코드
 	async function loadWorkPlaceType() {
@@ -605,52 +667,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 
-	/* ------------------------------------------------------------------
-	 * 퇴근
-	 * ------------------------------------------------------------------ */
 
-	const btnLeaveWork = document.querySelector("#btnLeaveWork");
-
-	if (btnLeaveWork) {
-		btnLeaveWork.addEventListener("click", async () => {
-
-			try {
-				const res = await fetch('/api/att/my/checkout', {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({})
-				});
-
-				if (!res.ok) {
-					throw new Error("서버오류");
-				}
-
-				const data = await res.json();
-				
-				if(data.success){
-					showToast("퇴근처리가 완료되었습니다.", 'success');
-					
-					// 오늘 근태 상태 새로고침(퇴근시간 갱신)
-					await loadTodayMyAttendance();
-					
-					// 근태 목록 전체 새로고침
-					await loadMyAttendanceList();
-					
-					// 퇴근 버튼 비활성화
-					btnLeaveWork.disabled = true;
-					btnLeaveWork.classList.add("disabled");	
-				} else{
-					showToast("퇴근 처리 실패하였습니다.", "warning");
-				}
-			} catch (err) {
-				console.error(err);
-				showToast("퇴근처리 중 에러가 발생했습니다.", "error");
-			}
-
-		});
-	};
 
 
 
