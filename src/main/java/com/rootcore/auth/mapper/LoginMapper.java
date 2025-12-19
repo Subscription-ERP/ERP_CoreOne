@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 public interface LoginMapper {
 
 	
-	// 회사코드 + 사용자 ID
+	// ✅ 회사코드 + 사용자 ID
     LoginUserVO selectLoginUser(
             @Param("companyCode") String companyCode,
             @Param("userId") String userId
@@ -51,5 +51,5 @@ public interface LoginMapper {
 
     
     //  10) 로그인 성공 후 세션 저장용 사용자 정보 조회
-    // LoginUserVO selectLoginUser(@Param("userId") String userId);
+    LoginUserVO selectLoginUser(@Param("userId") String userId);
 }

@@ -19,40 +19,24 @@ public class HrController {
 	
 	// 사원관리
 	@GetMapping("/hr/userManage")
-	public String userManage(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "사원관리"
-		    ));
+	public String userManage() {
 		return "hr/userManage";
 	}
 	// 조직도 관리
 	@GetMapping("/hr/deptManage")
-	public String deptManage(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "조직도 관리"
-		    ));
+	public String deptManage() {
 		return "hr/deptManage";
 	}
 	
 	// 연차
 	// 연차관리
 	@GetMapping("/hr/annualManage")
-	public String annaulManage(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "연차관리"
-		    ));
+	public String annaulManage() {
 		return "hr/annual/annualManage";
 	}
 	// 연차현황
 	@GetMapping("/hr/annualStatus")
-	public String annualStatus(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "연차현황조회"
-		    ));
+	public String annualStatus() {
 		return "hr/annual/annualStatus";
 	}
 	
@@ -60,11 +44,6 @@ public class HrController {
 	// 근태관리(관리자)
 	@GetMapping("/hr/attendanceManage")
 	public String attendanceManage(Model model) {
-		
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "근태관리"
-		    )); 
 		
 		List<Map<String, String>> attendTypes = List.of(
 		        Map.of("type", "h1", "label", "정상", "color", "#A0A0A0"),
@@ -85,59 +64,35 @@ public class HrController {
 	}
 	// 내근태관리
 	@GetMapping("/hr/attendanceMe")
-	public String attendanceMe(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "내 근태관리"
-		    ));
+	public String attendanceMe() {
 		return "hr/attendance/attendanceMe";
 	}
 	
 	// 급여	
 	// 급여 관리(조회) 페이지 이동
 	@GetMapping("/hr/payrollManage")
-	public String payrollManage(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "급여조회"
-		    ));
+	public String payrollManage() {
 		return "hr/payroll/payrollManage";
 	}
 	// 급여 대장 페이지 이동
 	@GetMapping("/hr/payrollReport")
-	public String payrollReport(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "급여대장"
-		    ));
+	public String payrollReport() {
 		return "hr/payroll/payrollReport";
 	}
 	
 	// 인사평가	
 	@GetMapping("/hr/reviewMaster")
-	public String reviewMaster(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "인사평가 기준관리"
-		    ));
+	public String reviewMaster() {
 		return "hr/review/reviewMaster";
 	}
 	@GetMapping("/hr/reviewManage")
-	public String reviewManage(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "인사평가관리"
-		    ));
+	public String reviewManage() {
 		return "hr/review/reviewManage";
 	}
 	
 	// 증명서 
 	@GetMapping("/hr/certificationManage")
-	public String certificationManage(Model model) {
-		model.addAttribute("breadcrumb", List.of(
-		        "인사",
-		        "증명서관리"
-		    ));
+	public String certificationManage() {
 		return "hr/certificationManage";
 	}
 	

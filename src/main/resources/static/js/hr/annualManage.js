@@ -195,9 +195,7 @@ function submitAnnualForm() {
 					getmyAnnualStatus();
 					// 그리드 데이터 다시 불러오기
 					annualDetailGrid.readData();
-				} else if (result < 0) {
-					showToast("해당하는 날짜는 이미 근태에 있습니다.", 'warning');
-					resetAnnualForm();
+
 				} else {
 					showToast("등록 실패 : " + result.message, 'error');
 				}
