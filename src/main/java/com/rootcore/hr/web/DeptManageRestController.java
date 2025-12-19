@@ -19,8 +19,6 @@ import lombok.RequiredArgsConstructor;
  * 조직도 관리 페이지 컨트롤러입니다. 조직도 관리 페이지에서 필요한 부서조회(다건), 사원조회(다건)가 이루어집니다.
  * 
  * @author 장준현
- * @version 1.1.0
- * @since 2025-12-12
  */
 @RestController
 @RequiredArgsConstructor
@@ -37,7 +35,6 @@ public class DeptManageRestController {
 	 * 
 	 * @param param   회사 코드를 담을 VO객체
 	 * @param session HTTP 세션
-	 * @since 1.1.0
 	 */
 	private void setCompanyCode(DeptMasterVO param, HttpSession session) {
 		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
@@ -49,7 +46,6 @@ public class DeptManageRestController {
 	 * 
 	 * @param param   사용자 Id를 담을 VO객체
 	 * @param session HTTP 세션
-	 * @since 1.1.0
 	 */
 	private void setUserId(DeptMasterVO param, HttpSession session) {
 		String UserId = (String) session.getAttribute("LOGIN_USER_ID");
@@ -62,7 +58,6 @@ public class DeptManageRestController {
 	 * 
 	 * @param list 그리드에 표시될 실제 데이터 목록 (예: List<UserVO>, List<DeptMasterVO> 등)
 	 * @return TUI Grid 데이터 읽기(read) 요청을 위한 표준 응답 Map.
-	 * @since 1.1.0
 	 */
 	private Map<String, Object> buildTuiGridResponse(List<?> list) {
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -90,7 +85,6 @@ public class DeptManageRestController {
 	 * @param session 회사 코드를 가져오기 위한 HTTP 세션
 	 * @return TUI Grid의 readData 형식에 맞는 Map 객체. data.contents에 사원 목록(UserVO)이
 	 *         포함됩니다.
-	 * @since 1.1.0
 	 */
 	@GetMapping("/deptUserList")
 	public Map<String, Object> selectDeptUserList(DeptMasterVO param, HttpSession session) {
