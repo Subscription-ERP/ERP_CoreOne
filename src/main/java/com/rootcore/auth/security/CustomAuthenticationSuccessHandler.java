@@ -126,7 +126,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     // 화면에서 바로 쓸 url 만들기 (사원이미지)
     private String resolvePhotoUrl(String rawPhoto) {
         // 기본 이미지
-        String defaultUrl = "/assets/img/user2-160x160.jpg";
+        String defaultUrl = "/assets/img/rootcore_user.png";
 
         if (rawPhoto == null) return defaultUrl;
         String p = rawPhoto.trim();

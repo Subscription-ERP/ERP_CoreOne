@@ -225,12 +225,86 @@
 			}
 		});
 	</script>
+	
+	
 
 	<!-- 메뉴 권한 세션 -> JS 로 내려주기 -->
 	<script th:inline="javascript">
 		window.LOGIN_MENU_AUTH = /*[[${session.LOGIN_MENU_AUTH}]]*/[];
 	</script>
 	<script src="/js/auth/sidebarMenu.js"></script>
+	
+	<!-- 메뉴 active 안닫히게 처리 -->
+	<script>
+	  document.addEventListener("DOMContentLoaded", () => {
+	    const sideMenu = document.getElementById("sideMenu");
+	    if (!sideMenu) return;
+	
+	    const norm = (p) => {
+	      if (!p) return "";
+	      // query/hash 제거 + 마지막 슬래시 제거
+	      p = p.split("?")[0].split("#")[0];
+	      return (p.length > 1 && p.endsWith("/")) ? p.slice(0, -1) : p;
+	    };
+	
+	    const current = norm(window.location.pathname);
+	
+	    const activate = () => {
+	      const links = sideMenu.querySelectorAll("a.nav-link[href]");
+	      if (!links.length) return false;
+	
+	      // href를 URL로 정규화해서 pathname 비교 (상대/절대/컨텍스트경로 대응)
+	      const activeLink = Array.from(links).find(a => {
+	        const raw = a.getAttribute("href");
+	        if (!raw || raw === "#" || raw.startsWith("javascript:")) return false;
+	
+	        const path = norm(new URL(a.href, window.location.origin).pathname);
+	        // 완전일치 우선, 안되면 endsWith로 한 번 더(컨텍스트 경로 차이 대응)
+	        return path === current || current.endsWith(path);
+	      });
+	
+	      if (!activeLink) return true; // 메뉴는 있는데 매칭 링크가 없는 경우
+	
+	      // 1) 해당 링크 active
+	      activeLink.classList.add("active");
+	
+	      // 2) 부모 트리(menu-open) 열기 + 부모 nav-link도 active
+	      let tree = activeLink.closest(".nav-treeview");
+	      while (tree) {
+	        const parentItem = tree.closest(".nav-item");
+	        if (parentItem) {
+	          parentItem.classList.add("menu-open");
+	
+	          const parentLink = parentItem.querySelector(":scope > a.nav-link");
+	          if (parentLink) parentLink.classList.add("active");
+	        }
+	
+	        // 접힘 스타일이 inline으로 남아있을 수 있어서 강제로 표시
+	        tree.style.display = "block";
+	        tree.style.height = "auto";
+	
+	        tree = parentItem?.parentElement?.closest(".nav-treeview");
+	      }
+	
+	      return true;
+	    };
+	
+	    // 1차 시도
+	    if (activate()) return;
+	
+	    // 메뉴가 비동기로 만들어지는 경우를 대비해서 변경 감시
+	    const obs = new MutationObserver(() => {
+	      if (activate()) obs.disconnect();
+	    });
+	    obs.observe(sideMenu, { childList: true, subtree: true });
+	
+	    // 혹시 mutation이 안 잡히는 방식(예: innerHTML 한방 교체) 대비해서 타임아웃도 같이
+	    setTimeout(() => {
+	      activate();
+	      obs.disconnect();
+	    }, 5000);
+	  });
+	</script>
 
 	<!-- 페이지별 스크립트 -->
 	<div layout:fragment="script"></div>

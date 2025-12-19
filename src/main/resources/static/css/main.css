@@ -84,7 +84,7 @@
   font-size: 0.92rem;
 }
 
-/* ✅ app-main 안에서 "화면 꽉" 차게 만드는 핵심 */
+
 .app-main {
   min-height: calc(100vh - var(--lte-header-height, 57px) - var(--lte-footer-height, 57px));
 }
@@ -119,7 +119,7 @@
   position: relative;
   z-index: 2;
 
-  min-height: inherit;  /* ✅ hero 높이 그대로 */
+  min-height: inherit; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +155,7 @@
 
 .guest-hero__title {
   color: #fff;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.4px;
   margin: 0 0 10px 0;
   font-size: 2rem;
@@ -181,3 +181,231 @@
 }
 
 
+/* =========================
+   게스트(비로그인) 페이지 전용: 레이아웃 여백 제거
+   ========================= */
+
+/* AdminLTE/공통 layout에서 content 영역에 padding을 주는 경우가 많음 */
+.page-guest .content-wrapper,
+.page-guest .content,
+.page-guest .container-fluid {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+/* hero */
+.page-guest .guest-hero{
+  position: relative;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  overflow: hidden;
+
+  /* 헤더/푸터 제외하고 화면 꽉 */
+  min-height: calc(100vh - var(--lte-header-height, 57px) - var(--lte-footer-height, 57px));
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.page-guest .guest-hero__overlay{
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(30,34,40,0.78), rgba(30,34,40,0.42));
+}
+
+.page-guest .guest-hero__inner{
+  position: relative;
+  z-index: 2;
+
+  min-height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+}
+
+.page-guest .guest-hero__card{
+  width: min(720px, 92vw);
+  padding: 30px;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.35);
+}
+
+
+/* =========================
+   비로그인(guest) 모드: 화면 전체 덮기
+   ========================= */
+
+/* 1) 비로그인일 때 헤더/사이드/푸터/메인 프레임을 전부 숨김 */
+body.guest-mode .app-header,
+body.guest-mode .app-sidebar,
+body.guest-mode .app-footer {
+  display: none !important;
+}
+
+/* app-wrapper/app-main이 남아 있으면 여백/배경 생길 수 있으니 최소화 */
+body.guest-mode .app-wrapper,
+body.guest-mode .app-main {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* 2) 비로그인 랜딩을 화면 전체 최상단으로 */
+body.guest-mode .guest-hero {
+  position: fixed;
+  inset: 0;              /* 화면 전체 */
+  z-index: 9999;         /* 최상단 */
+  margin: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 오버레이 */
+body.guest-mode .guest-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(30,34,40,0.78), rgba(30,34,40,0.42));
+}
+
+/* 가운데 카드 */
+body.guest-mode .guest-hero__inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+body.guest-mode .guest-hero__card {
+  width: min(760px, 92vw);
+  padding: 34px;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow: 0 12px 34px rgba(0,0,0,0.35);
+}
+
+body.guest-mode .guest-hero__badge {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+body.guest-mode .guest-hero__title {
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+}
+
+body.guest-mode .guest-hero__desc {
+  color: rgba(255,255,255,0.86);
+  line-height: 1.7;
+  margin: 0 0 18px 0;
+}
+
+body.guest-mode .guest-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+body.guest-mode .guest-hero__hint {
+  margin-top: 16px;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.95rem;
+}
+
+/* =========================
+   상단 로고
+   ========================= */
+.guest-hero__top {
+  position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  opacity: 0.9;
+}
+
+.guest-hero__logo {
+  height: 40px;          /* 로고 크기 */
+  width: auto;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+}
+
+/* =========================
+   하단 footer
+   ========================= */
+.guest-hero__footer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+
+
+/* 빛이 지나가는 그라데이션 쉬머 효과 */
+body.guest-mode .guest-hero::after {
+  content: "";
+  position: absolute;
+  inset: -120%;          /* 잘림 방지: 더 넓게 */
+  z-index: 1;
+  pointer-events: none;
+
+  /* 대각선 띠 */
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,0.05) 40%,
+    rgba(255,255,255,0.14) 50%,
+    rgba(255,255,255,0.05) 60%,
+    transparent 100%
+  );
+
+
+  animation: heroShimmer 9s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes heroShimmer {
+  0%   { transform: rotate(-18deg) translate3d(-35%, 0, 0); opacity: 0; }
+  15%  { opacity: 1; }
+  50%  { opacity: 0.9; }
+  100% { transform: rotate(-18deg) translate3d(35%, 0, 0); opacity: 0; }
+}

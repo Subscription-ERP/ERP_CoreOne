@@ -39,7 +39,7 @@ function getWeatherData() {
 			const temp = Math.round(data.main.temp * 10) / 10;
 			const weatherDesc = data.weather[0].description;
 			const iconCode = data.weather[0].icon;
-			const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
+			const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
 			// HTML 요소에 데이터 매핑
 			document.querySelector('.card.bg-info h2').innerText = `${temp}°C`;
