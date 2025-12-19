@@ -155,7 +155,7 @@
 	
 	
 	
-	
+	<!-- 인사평가관리 ============================================================================= -->
 	<!-- 인사평가 관리- 기준관리 전체조회(Y만 검색) -->
 	<select id="selectReviewOnlyY" resultType="HrReviewMasterVO">
 		SELECT 
@@ -308,12 +308,14 @@
 		INSERT INTO tb_hr_review_result (
 		    review_result_seq,
 		    review_code,
+		    eval_seq, 
 		    eval_item_score,
 		    created_by,
 		    create_date)
 		VALUES (
 		    #{reviewResultSeq},
 		    #{reviewCode},
+		    #{evalSeq},
 		    #{evalItemScore},
 		    #{createdBy},
 		    SYSDATE
@@ -331,14 +333,17 @@
 			review_comment,
 			company_code,
 			review_master_code
-		FROM tb_hr_review
+		FROM  tb_hr_review
 		WHERE target_user_id = #{targetUserId}
+		AND   review_code = #{reviewCode}
 	</select>
 	
 	<!-- 인사평가관리 - 상세조회 -->
-	<select id="selectReviewResultByTargetUserId" resultType="HrReviewResultVO" parameterType="String">
+	<select id="selectReviewResultByTargetUserId" resultType="HrReviewResultVO">
 		SELECT 
 		    review_result_seq,
+		    review_code,
+		    eval_seq,
 		    eval_item_score
 		FROM tb_hr_review_result
 		WHERE review_code = #{reviewCode}
@@ -364,7 +369,7 @@
 			updated_by = #{updatedBy},
 			update_date = SYSDATE
 		WHERE review_code = #{reviewCode}
-		AND   review_result_seq = #{reviewResultSeq} 
+		AND   eval_seq = #{evalSeq}
 	</update>
 	
 	

@@ -1,0 +1,183 @@
+/* main.css */
+
+@charset "UTF-8";
+
+/* 비로그인 랜딩(게스트) 화면 */
+.guest-hero {
+  position: relative;
+  min-height: calc(100vh - 120px); /* 헤더/푸터 높이에 따라 조절 */
+  /*border-radius: 18px;*/
+  overflow: hidden;
+  margin: 8px;
+  background-image: url("/assets/img/background_building.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 어두운 오버레이 + 살짝 블러 느낌 */
+.guest-hero__backdrop {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(0, 0, 0, 0.72),
+    rgba(0, 0, 0, 0.35)
+  );
+}
+
+.guest-hero__content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.guest-hero__card {
+  width: min(720px, 100%);
+  border-radius: 20px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.guest-hero__badge {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255,255,255,0.92);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.guest-hero__title {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin: 0 0 10px 0;
+}
+
+.guest-hero__desc {
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  margin: 0 0 18px 0;
+}
+
+.guest-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.guest-hero__sub {
+  margin-top: 16px;
+  font-size: 0.92rem;
+}
+
+/* ✅ app-main 안에서 "화면 꽉" 차게 만드는 핵심 */
+.app-main {
+  min-height: calc(100vh - var(--lte-header-height, 57px) - var(--lte-footer-height, 57px));
+}
+
+/* 비로그인 랜딩 */
+.guest-hero {
+  position: relative;
+  width: 100%;
+  /* 핵심: main의 높이를 꽉 채우기 */
+  min-height: calc(100vh - 57px - 57px); /* 헤더/푸터 높이(대략값) */
+  /*border-radius: 14px;*/
+  overflow: hidden;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* 바깥 여백 때문에 "띠"처럼 보이면 margin 제거 */
+  margin: 0;
+}
+
+/* 어두운 회색 오버레이(글자 가독성) */
+.guest-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(30, 34, 40, 0.78), rgba(30, 34, 40, 0.42));
+}
+
+/* 가운데 카드 정렬 */
+.guest-hero__inner {
+  position: relative;
+  z-index: 2;
+
+  min-height: inherit;  /* ✅ hero 높이 그대로 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+}
+
+/* 안내 카드(유리 느낌) */
+.guest-hero__card {
+  width: min(720px, 92vw);
+  padding: 30px;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow: 0 12px 34px rgba(0,0,0,0.35);
+}
+
+.guest-hero__badge {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.guest-hero__title {
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+}
+
+.guest-hero__desc {
+  color: rgba(255,255,255,0.86);
+  line-height: 1.7;
+  margin: 0 0 18px 0;
+}
+
+.guest-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.guest-hero__hint {
+  margin-top: 16px;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.95rem;
+}
+
+

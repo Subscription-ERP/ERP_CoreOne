@@ -1,12 +1,17 @@
 package com.rootcore.sd.web;
 
-import com.rootcore.sd.service.CustService;
-import com.rootcore.sd.vo.CustVO;
-import jakarta.servlet.http.HttpSession;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import com.rootcore.sd.service.CustService;
+import com.rootcore.sd.vo.CustVO;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class SdController {
@@ -20,7 +25,11 @@ public class SdController {
 
     // 거래처 메인
     @GetMapping("/sd/cust")
-    public String custMain() {
+    public String custMain(Model model) {
+    	model.addAttribute("breadcrumb", List.of(
+    	        "영업관리",
+    	        "거래처관리"
+    	    ));
         return "sd/cust";
     }
 
@@ -68,13 +77,21 @@ public class SdController {
 
     // 수주 등록 화면
     @GetMapping("/sd/inord")
-    public String inOrdMain() {
+    public String inOrdMain(Model model) {
+    	model.addAttribute("breadcrumb", List.of(
+    	        "영업관리",
+    	        "수주등록"
+    	    ));
         return "sd/inord";
     }
 
     // 수주 완료 처리
     @GetMapping("/sd/inordComplete")
-    public String inOrdComplete() {
+    public String inOrdComplete(Model model) {
+    	model.addAttribute("breadcrumb", List.of(
+    	        "영업관리",
+    	        "수주등록 완료처리"
+    	    ));
         return "sd/inordComplete";
     }
 
@@ -84,13 +101,21 @@ public class SdController {
 
     // 발주 등록 화면
     @GetMapping("/sd/outord")
-    public String outordMain() {
+    public String outordMain(Model model) {
+    	model.addAttribute("breadcrumb", List.of(
+    	        "영업관리",
+    	        "발주등록"
+    	    ));
         return "sd/outord";
     }
 
     // 발주 완료 처리
     @GetMapping("/sd/outordComplete")
-    public String outordComplete() {
+    public String outordComplete(Model model) {
+    	model.addAttribute("breadcrumb", List.of(
+    	        "영업관리",
+    	        "발주등록 완료처리"
+    	    ));
         return "sd/outordComplete";
     }
     

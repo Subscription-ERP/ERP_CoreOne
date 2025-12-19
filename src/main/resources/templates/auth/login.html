@@ -5,6 +5,7 @@
 <title>RootCore 로그인</title>
 
 <link rel="stylesheet" href="/css/adminlte.css" />
+<link rel="stylesheet" th:href="@{/css/general.css}" />
 <link rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
 
@@ -116,7 +117,7 @@ body {
 .join-btn {
     width: 100%;
     height: 48px;
-    background: #2F6FDB;
+    background: var(--base-color);
     border: none;
     border-radius: 12px;
     font-size: 16px;
@@ -125,7 +126,7 @@ body {
     cursor: pointer;
 }
 .join-btn:hover {
-    background: #3C7EF0;
+    background: var(--base-color-soft);
 }
 
 .etc-menu {

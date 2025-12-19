@@ -36,6 +36,10 @@ public class CompanyController {
 	@GetMapping("/cm/company")
 	public String companyForm(Model model) {
 		model.addAttribute("companyRequest", new CompanyVO());
+		model.addAttribute("breadcrumb", List.of(
+		        "공통기능",
+		        "회사등록"
+		    ));
 		return "sb/company"; // company.html
 	}
 
