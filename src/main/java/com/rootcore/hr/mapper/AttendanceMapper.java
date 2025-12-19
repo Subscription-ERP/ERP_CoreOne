@@ -41,5 +41,8 @@ public interface AttendanceMapper {
 	                             @Param("workPlaceType") String workPlaceType,
 	                             @Param("updatedBy")    String updatedBy);
 	
+	// 자동보정
+	int autoCheckoutMissingPastAll(@Param("updatedBy") String updatedBy);
+	
 	
 }
