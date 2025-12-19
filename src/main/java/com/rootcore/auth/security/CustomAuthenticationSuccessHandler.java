@@ -40,7 +40,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         // 로그인한 사용자 ID
         String userId = authentication.getName();
 
-        // 로그인 폼에서 넘어온 회사코드
+        // ✅ 로그인 폼에서 넘어온 회사코드
         String companyCode = request.getParameter("companyCode");
 
         // (방어) 회사코드가 비어있으면 로그인페이지로
@@ -49,7 +49,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
-        // 회사코드 + userId로 사용자 정보 조회
+        // ✅ 회사코드 + userId로 사용자 정보 조회
         LoginUserVO loginUser = loginMapper.selectLoginUser(companyCode, userId);
 
         // 회사코드 불일치 or 사용자 없음
@@ -96,22 +96,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         session.setAttribute("LOGIN_USER_NAME", loginUser.getUserName());
         session.setAttribute("LOGIN_COMPANY_CODE", dbCompanyCode);
         session.setAttribute("LOGIN_DEPT", loginUser.getDept());
-        session.setAttribute("LOGIN_DEPT_NAME", loginUser.getDeptName());
-        session.setAttribute("LOGIN_JOB_TITLE", loginUser.getJobTitle());
-        session.setAttribute("LOGIN_JOB_TITLE_NAME", loginUser.getJobTitleName());
         session.setAttribute("LOGIN_POSITION", loginUser.getPosition());
-        session.setAttribute("LOGIN_POSITION_NAME", loginUser.getPositionName());
-        //session.setAttribute("LOGIN_USER_PHOTO", loginUser.getUserPhoto());
         session.setAttribute("LOGIN_ROLE_CODE", finalRoleCode);
         session.setAttribute("LOGIN_MENU_AUTH", sideMenuList);
         session.setAttribute("LOGIN_USER_AUTH_LIST", userAuthList);
         session.setAttribute("LOGIN_ROLE_CODE_RAW", roleCode);
-        
-        // 사원이미지
-        String rawPhoto = loginUser.getUserPhoto(); // DB: "user/photo/xxx.png" 기대
-        session.setAttribute("LOGIN_USER_PHOTO", rawPhoto);
-        String photoUrl = resolvePhotoUrl(rawPhoto);
-        session.setAttribute("LOGIN_USER_PHOTO_URL", photoUrl);
 
         // 출근 로직
         attendanceService.checkinTodayIfNeeded(dbCompanyCode, userId);
@@ -122,31 +111,4 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         response.sendRedirect("/");
     }
-    
-    // 화면에서 바로 쓸 url 만들기 (사원이미지)
-    private String resolvePhotoUrl(String rawPhoto) {
-        // 기본 이미지
-        String defaultUrl = "/assets/img/rootcore_user.png";
-
-        if (rawPhoto == null) return defaultUrl;
-        String p = rawPhoto.trim();
-        if (p.isEmpty()) return defaultUrl;
-
-        // 역슬래시 방지(윈도우 경로 섞였을 때)
-        p = p.replace("\\", "/");
-
-        // 이미 완성된 URL이면 그대로
-        if (p.startsWith("/upload/")) return p;
-
-        // "upload/..." 형태면 앞에 / 붙여서 정리
-        if (p.startsWith("upload/")) return "/" + p;
-
-        // "/user/photo/..." 또는 "user/photo/..." 형태면 "/upload/" 붙여서 완성
-        if (p.startsWith("/")) p = p.substring(1);
-        return "/upload/" + p; // => /upload/user/photo/...
-    }
-
-    
-    
-    
 }

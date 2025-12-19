@@ -122,27 +122,18 @@
     <!-- ================================================= -->
     <!-- 로그인 성공 후 세션용 사용자 정보 조회 (회사 포함) -->
     <!-- ================================================= -->
-    <select id="selectLoginUser" resultType="com.rootcore.auth.vo.LoginUserVO">
-	    SELECT
-		    u.company_code,
-		    u.user_id,
-		    u.user_name,
-		    u.dept,
-		    d.dept_name,
-		    u.job_title,
-		    FN_FIND_CODENAME('0C', u.job_title) AS job_title_name,
-		    u.position,
-		    FN_FIND_CODENAME('0D', u.position) AS position_name,
-		    u.user_photo,
-		    u.role_code
-		FROM tb_user_master u
-		JOIN tb_dept_master d
-		ON u.dept = d.dept_code
-		WHERE u.company_code = #{companyCode}
-		  AND u.user_id = #{userId}
+    <select id="selectLoginUser"
+            resultType="com.rootcore.auth.vo.LoginUserVO">
+        SELECT
+            COMPANY_CODE,
+            USER_ID,
+            USER_NAME,
+            DEPT,
+            POSITION,
+            ROLE_CODE
+        FROM TB_USER_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+          AND USER_ID = #{userId}
     </select>
-    
-    
-
 
 </mapper>

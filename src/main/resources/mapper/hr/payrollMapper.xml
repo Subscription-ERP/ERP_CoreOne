@@ -81,9 +81,7 @@
 	<select id="selectUserList" resultType="PayrollUserVO" parameterType="PayrollUserVO">
 		SELECT um.user_id,
 		       um.user_name,
-		       dm.dept_name AS dept,
-		       um.email,
-		       um.tel
+		       dm.dept_name AS dept
 		FROM   tb_user_master um
 		       JOIN tb_dept_master dm
 		       ON um.dept = dm.dept_code
