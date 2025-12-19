@@ -588,17 +588,116 @@ input[type="checkbox"]:checked {
 } */
 
 /* 파일 셀 기본 정렬 */
-.form-grid__field--file {
-  display: flex; /* 혹시 몰라서 한 번 더 명시 */
-  align-items: center; /* 세로 가운데 정렬 */
+/* .form-grid__field--file {
+  display: flex; 혹시 몰라서 한 번 더 명시
+  align-items: center; 세로 가운데 정렬
 }
 
-/* 파일 인풋 모양 */
+파일 인풋 모양
 .form-grid__field--file .file-input {
-  flex: 1 1 auto; /* 가로로 꽉 차게 */
-  height: 34px; /* 다른 input과 동일 높이 */
+  flex: 1 1 auto; 가로로 꽉 차게
+  height: 34px; 다른 input과 동일 높이
   padding: 0 8px;
   box-sizing: border-box;
   border: none;
   box-shadow: none;
+}
+ */
+
+
+/* breadCrumb 스타일 정리 --------------------------------------------------------------------- */
+.app-header .breadcrumb {
+  --bs-breadcrumb-divider: ">";
+  font-size: 0.95rem;
+}
+
+.app-header .breadcrumb-item + .breadcrumb-item::before {
+  opacity: .6;
+}
+
+.app-header .breadcrumb-item.active {
+  font-weight: 600;
+}
+
+/* 환영 문구 ------------------------------------------------------------------------------*/
+.welcome-item {
+  display: flex;
+  align-items: center;   
+  margin-right: 12px;
+}
+
+/* 전체 문구 */
+.welcome-text {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #495057;
+  white-space: nowrap;
+}
+
+/* 이름 강조 */
+.welcome-name {
+  font-weight: 700;              
+  color: #212529;
+  margin-right: 4px;
+  position: relative;
+}
+
+/* 살짝 포인트 효과 */
+.welcome-name::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 6px;
+  background: rgba(13, 110, 253, 0.15); 
+  z-index: -1;
+  border-radius: 3px;
+}
+
+/* 뒤 문구 */
+.welcome-suffix {
+  font-weight: 400;
+  color: #6c757d;
+}
+
+
+/* 사원사진 --------------------------------------------------------------- */
+/* 헤더 오른쪽 영역: 안에 요소들 세로 중앙 */
+.app-header .navbar-nav.ms-auto {
+  align-items: center;
+}
+
+/* user-menu 트리거(프로필) 중앙정렬 + baseline 흔들림 제거 */
+.app-header .user-menu > .nav-link {
+  display: flex;
+  align-items: center;
+}
+
+/* img가 inline이라 baseline 타는 거 방지 */
+.app-header .user-menu > .nav-link img.user-image {
+  display: block;
+  margin: 0;              
+}
+
+/* 로그인 버튼 -------------------------------------------------------------- */
+.not-login{
+	width: 50px;
+	height: 30px;
+	display: flex;
+  justify-content: center;
+  align-items: center;
+	border-radius: 5px;
+	border: 1px solid #eee;
+	padding-top: 2px;
+	margin-right: 10px;
+  transition: .3s;
+}
+.not-login:hover{
+    background-color: var(--base-color);
+    border: 1px solid var(--base-color);
+}
+.not-login:hover i{
+  color: #fff;
 }
