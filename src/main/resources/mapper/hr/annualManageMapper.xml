@@ -39,7 +39,7 @@
           AND  al.user_id = #{userId}
 		</if>
 		<if test="annualStartDateSearch != null and annualStartDateSearch != '' " >
-          AND  ald.leave_start_date >= TO_DATE(#{annualStartDateSearch}, 'YYYY-MM-DD')
+          AND  ald.leave_start_date >= #{annualStartDateSearch}
 		</if>
 		<if test="annualStartEndSearch != null and annualStartEndSearch != '' " >
           AND  ald.leave_end_date &lt;= #{annualStartEndSearch}
@@ -174,6 +174,14 @@
                 </when>
 	        </choose>
 	    )
-</insert>
+	</insert>
+	
+	<!-- 연차신청할때 중복되는 날짜 등록 안되게 하기위해 미리 확인하는 select쿼리문 -->
+	<select id="selectAttendance" parameterType="AnnualLeaveDetailVO">
+		SELECT COUNT(*)
+		  FROM tb_attendance
+		 WHERE work_date >= TO_DATE(#{annualStartDate}, 'YYYY-MM-DD')
+		   AND work_date &lt;= TO_DATE(#{annualEndDate}, 'YYYY-MM-DD')
+	</select>
           
 </mapper>

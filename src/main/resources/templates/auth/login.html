@@ -5,6 +5,7 @@
 <title>RootCore 로그인</title>
 
 <link rel="stylesheet" href="/css/adminlte.css" />
+<link rel="stylesheet" th:href="@{/css/general.css}" />
 <link rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
 
@@ -116,7 +117,7 @@ body {
 .join-btn {
     width: 100%;
     height: 48px;
-    background: #2F6FDB;
+    background: var(--base-color);
     border: none;
     border-radius: 12px;
     font-size: 16px;
@@ -125,7 +126,7 @@ body {
     cursor: pointer;
 }
 .join-btn:hover {
-    background: #3C7EF0;
+    background: var(--base-color-soft);
 }
 
 .etc-menu {
@@ -183,10 +184,44 @@ body {
         align-items: center;
     }
 }
+
+/* =========================
+   로그인 페이지 상단 로고
+========================= */
+.login-logo {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.login-logo img {
+    height: 34px;   /* 랜딩 페이지랑 동일 */
+    width: auto;
+}
+
+/* =========================
+   로그인 페이지 Footer
+========================= */
+.login-footer {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+}
+
 </style>
 
 </head>
 <body>
+
+<!-- 상단 로고 -->
+<div class="login-logo">
+    <a href="/" aria-label="CoreOne 메인으로 이동">
+        <img src="/assets/img/coreone_logo.png" alt="CoreOne ERP">
+    </a>
+</div>
 
 <div class="login-wrapper">
 
@@ -197,7 +232,7 @@ body {
             안전하게 로그아웃 되었습니다. 다시 로그인 해주세요.
         </div>
 
-        <div class="login-title">RootCore 로그인</div>
+        <div class="login-title">로그인</div>
 
         <form method="post" action="/auth/doLogin">
 
@@ -284,6 +319,10 @@ body {
     </div>
 
 </div>
+<!-- 하단 footer -->
+	  <div class="login-footer">
+	    <span>© 2025 RootCore · CoreOne ERP Project</span>
+	  </div>
 
 </body>
 </html>

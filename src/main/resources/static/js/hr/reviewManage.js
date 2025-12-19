@@ -34,14 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			rowHeaders: ['rowNum'],
 			columns: [
 				{ header: "코드", name: "reviewMasterCode", hidden: true },
-				{ header: "인사평가명", name: "reviewMasterName", width: 700 },
+				{ header: "인사평가명", name: "reviewMasterName", width: 300 },
 				{ header: "시작일", name: "reviewStartDate", align: 'center' },
 				{ header: "종료일", name: "reviewEndDate", align: 'center' },
-				{ header: "상태", name: "reivewStatus", align: 'center', width: 150 },
+				{ header: "상태", name: "reivewStatus", align: 'center' },
 				{
 					header: "평가하기",
 					name: "evalBtn",
-					width: 150,
 					align: "center",
 					formatter: () =>
 						'<a class="grid-eval-btn" style="text-decoration: underline; cursor: pointer;">평가</a>'
@@ -128,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 템플릿 항목 그리기
 			if (currentReviewMasterCode) {
-				loadEvalItemList(currentReviewMasterCode);
+				await loadEvalItemList(currentReviewMasterCode);
 			}
 
 			// 3) 저장된 결과가 있는 경우에만 서버에서 가져와 매핑
@@ -159,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			    const commentInput = document.querySelector("#evalComment");
 			    if (finalScoreInput) finalScoreInput.value = "";
 			    if (commentInput) commentInput.value = "";
+				document.querySelectorAll('#reviewTbody .score-radio input[type="radio"]').forEach(r => (r.checked = false));
 			  }
 
 
@@ -250,6 +250,19 @@ document.addEventListener("DOMContentLoaded", () => {
 	/* ------------------------------------------------------------------
 	 * 화면 렌더링 (평가항목 테이블, 상세정보)
 	 * ------------------------------------------------------------------ */
+	// 라디오 평가점수 헬퍼함수 : 라디오 그룹 name 세팅 (행마다 유니크)
+	function bindScoreRadioGroupName(rowEl, groupKey) {
+	  const radios = rowEl.querySelectorAll('.score-radio input[type="radio"]');
+	  radios.forEach(r => (r.name = `evalScore_${groupKey}`));
+	}
+
+	// 라디오 평가점수 헬퍼함수 : 저장된 점수(A~E)를 라디오에 반영
+	function setScoreRadioValue(rowEl, grade) {
+	  if (!grade) return;
+	  const radio = rowEl.querySelector(`.score-radio input[type="radio"][value="${grade}"]`);
+	  if (radio) radio.checked = true;
+	}
+		
 	// 평가항목 테이블 렌더링
 	function renderEvalItems(list) {
 		const tbody = document.getElementById("reviewTbody");
@@ -283,18 +296,17 @@ document.addEventListener("DOMContentLoaded", () => {
 			const nameInput = rowEl.querySelector('input[name="evalName"]');
 			const detailInput = rowEl.querySelector('input[name="evalDetail"]');
 			const weightInput = rowEl.querySelector('input[name="evalWeight"]');
-			const scoreSelect = rowEl.querySelector('select[name="evalScore"]');
+			//const scoreSelect = rowEl.querySelector('select[name="evalScore"]');
 
 			if (seqInput) seqInput.value = item.evalSeq ?? (index + 1);
 			if (nameInput) nameInput.value = item.evalName ?? "";
 			if (detailInput) detailInput.value = item.evalDetail ?? "";
 			if (weightInput) weightInput.value = item.evalWeight ?? "";
 
-			// 이미 저장된 점수 값이 있다면 여기서 채우고,
-			// 아직 없다면 기본값("")으로 둬도 됩니다.
-			if (scoreSelect && item.evalScore) {
-				scoreSelect.value = item.evalScore;
-			}
+			const groupKey = seqInput?.value || (index + 1);
+			bindScoreRadioGroupName(rowEl, groupKey);
+			
+			setScoreRadioValue(rowEl, item.evalScore);
 
 			tbody.appendChild(rowEl);
 		});
@@ -313,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	function fillDetailBasicInfo(rowData) {
 		const userNameInput = document.getElementById("userName");
 		const deptNameInput = document.getElementById("deptName");
-		const totalScoreInput = document.getElementById("totalScore");
+		const totalScoreInput = document.getElementById("finalScore");
 
 		if (userNameInput) userNameInput.value = rowData.targetUserName || "";
 		if (deptNameInput) deptNameInput.value = rowData.targetDeptName || "";
@@ -342,16 +354,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		const rows = document.querySelectorAll("#reviewTbody tr:not(.empty-row)");
 
 		rows.forEach(row => {
-			const grade = row.querySelector('select[name="evalScore"]').value;
+			const checked = row.querySelector('.score-radio input[type="radio"]:checked');
+			const grade = checked ? checked.value : "";
 			const weightInput = row.querySelector('input[name="evalWeight"]');
 			const weight = weightInput ? parseFloat(weightInput.value || "0") : 0;
 
-			if (grade && scoreMap[grade]) {
-				const baseScore = scoreMap[grade]; // A~E -> 5~1 변환
-				const weighted = baseScore * (weight / 100); // 가중치 계산
-				total += weighted;
-
+			if(grade && scoreMap[grade]){
+				total += scoreMap[grade] * (weight / 100);
 			}
+
 		});
 
 		return total;
@@ -370,9 +381,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 점수 변화 감지하여 자동 업데이트(input #finalScore)
 	function bindScoreChangeEvents() {
-		const selects = document.querySelectorAll('#reviewTbody select[name="evalScore"]');
+		const radios = document.querySelectorAll('#reviewTbody .score-radio input[type="radio"]');
 
-		selects.forEach(sel => {
+		radios.forEach(sel => {
 			sel.addEventListener("change", () => {
 				const total = calculateFinalScore();
 				const finalGrade = convertFinalToGrade(total);
@@ -402,9 +413,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				const nameInput = row.querySelector('input[name="evalName"]');
 				const detailInput = row.querySelector('input[name="evalDetail"]');
 				const weightInput = row.querySelector('input[name="evalWeight"]');
-				const scoreSelect = row.querySelector('select[name="evalScore"]');
-
-				const grade = scoreSelect ? scoreSelect.value : '';
+				const checked = row.querySelector('.score-radio input[type="radio"]:checked');
+				
+				const grade = checked ? checked.value : '';
 
 				// 점수 선택된 항목만 AI로 보냄
 				if (grade) {
@@ -480,6 +491,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 
+	
+	
+	
 	/* ------------------------------------------------------------------
 	 * 초기화 (검색, 저장)
 	 * ------------------------------------------------------------------ */
@@ -487,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const btnResetSearch = document.querySelector("#btnResetSearch");
 
 	// 저장
-	if (btnDetailReset) {
+/*	if (btnDetailReset) {
 		btnDetailReset.addEventListener("click", () => {
 
 			// .form-allwrapper 아래의 input 모두 초기화
@@ -515,8 +529,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 		})
-	}
+	}*/
 
+	// 팀원목록 초기화 함수	
+	function resetRightPanel() {
+	  // 1) 현재 선택된 템플릿 초기화
+	  currentReviewMasterCode = null;
+
+	  // 2) 팀원 목록 그리드 비우기
+	  if (teamGrid) {
+	    teamGrid.resetData([]);
+	    teamGrid.blur?.();
+	    teamGrid.refreshLayout?.();
+	  }
+
+	  // 3) 우측 제목 숨김/초기화
+	  const title = document.querySelector("#evalTitle");
+	  if (title) {
+	    title.textContent = "";
+	    title.style.display = "none";
+	  }
+
+	  // 4) 평가항목 테이블 비우기 + 카운트 0
+	  renderEvalItems([]); 
+
+	  // 5) 상세 입력폼 초기화
+	  fillDetailBasicInfo({
+	    targetUserName: "",
+	    targetDeptName: "",
+	    finalScore: ""
+	  });
+
+	  const commentInput = document.querySelector("#evalComment");
+	  if (commentInput) commentInput.value = "";
+	}
+	
+	
 	// 검색
 	if (btnResetSearch) {
 		btnResetSearch.addEventListener("click", () => {
@@ -527,6 +575,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					else el.value = "";
 				})
 			loadReviewMasterList();
+			resetRightPanel();
+			
 		})
 	}
 
@@ -575,25 +625,36 @@ document.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 
-			// 평가항목 점수 수집
-			const rows = document.querySelectorAll("#reviewTbody tr:not(.empty-row)");
+			// 평가항목 점수 수집 + 유효성검사(전체항목 선택 필수)
+			const rows = document.querySelectorAll("#reviewTbody tr:not(.empty-row)");  
 			const hrReviewResultList = [];
 
-			rows.forEach(row => {
-				const scoreSelect = row.querySelector('select[name="evalScore"]');
-				if (!scoreSelect) return;
+			if(!rows || rows.length === 0){
+				showToast("평가항목이 없습니다.", "warning");
+				return;
+			}
+			
+			// 하나라도 점수가 비면 저장 막기
+			let missingCount = 0;
+			
+			rows.forEach((row) => {
+			  const seqInput = row.querySelector('input[name="evalSeq"]');
+			  const checked = row.querySelector('.score-radio input[type="radio"]:checked');
 
-				const grade = scoreSelect.value;
-				if (!grade) return;
+			  if (!checked) {
+			    missingCount++;
+			    return;
+			  }
 
-				hrReviewResultList.push({
-					evalItemScore: grade
-				});
+			  hrReviewResultList.push({
+				evalSeq: Number(seqInput?.value || 0),
+			    evalItemScore: checked.value                              // A~E
+			  });
 			});
 
-			if (hrReviewResultList.length == 0) {
-				showToast("점수가 입력된 평가항목이 없습니다.", 'warning');
-				return;
+			if (missingCount > 0) {
+			  showToast(`평가 점수가 선택되지 않은 항목이 ${missingCount}개 있습니다. 모든 항목을 선택해 주세요.`, "warning");
+			  return;
 			}
 
 			// 최종점수,코멘트
@@ -604,14 +665,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			const isModify = !!member.reviewCode;
 			
 			const payload = {
-				reviewMasterCode: currentReviewMasterCode,   
-				targetUserId: member.userId,                 // 피평가자
-				reviewCode: member.reviewCode || null,
-				finalScore: finalScoreInput ? finalScoreInput.value : "",
-				reviewComment: commentInput ? commentInput.value : "",
-				hrReviewResultList: hrReviewResultList       // 상세 점수 리스트
-			};
+			    reviewMasterCode: currentReviewMasterCode,
+			    targetUserId: member.userId,
+			    reviewCode: member.reviewCode || null,
+			    finalScore: finalScoreInput ? finalScoreInput.value : "",
+			    reviewComment: commentInput ? commentInput.value : "",
+			    hrReviewResultList: hrReviewResultList
+			  };
 
+			
+			// 서버전송
 			try {
 				if (window.globalLoader) globalLoader.style.display = "flex";
 
@@ -639,6 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (evalComment) {
 					evalComment.value = "";
 				}
+				loadReviewMasterList();
 
 			} catch (err) {
 				console.error(err);
@@ -669,21 +733,30 @@ document.addEventListener("DOMContentLoaded", () => {
 			commentInput.value = reviewData.reviewComment ?? "";
 		}
 
-		// 2) 상세 항목 점수 세팅
+		
+		// 2) 결과를 evalSeq 기준 Map으로 만들기
 		const resultList = reviewData.hrReviewResultList || [];
+		const scoreBySeq = new Map();
+		  resultList.forEach(r => {
+		    if (r.evalSeq != null) scoreBySeq.set(String(r.evalSeq), r.evalItemScore);
+		  });
+		
+		// 화면의 각 row(evalSeq)와 매칭해서 체크
 		const rows = document.querySelectorAll("#reviewTbody tr:not(.empty-row)");
+		rows.forEach(row => {
+		    const seqInput = row.querySelector('input[name="evalSeq"]');
+		    const seq = seqInput ? String(seqInput.value) : null;
+		    if (!seq) return;
 
-		rows.forEach((row, idx) => {
-			const result = resultList[idx];
-			if (!result) return;
+		    // 기존 체크 해제(안 하면 예전 값 남는 경우가 있음)
+		    row.querySelectorAll('.score-radio input[type="radio"]').forEach(r => (r.checked = false));
 
-			const scoreSelect = row.querySelector('select[name="evalScore"]');
-			if (!scoreSelect) return;
-
-			// 백엔드 JSON에서 점수 필드명: evalItemScore
-			scoreSelect.value = result.evalItemScore || "";
-		});
+		    const grade = scoreBySeq.get(seq);
+		    if (grade) setScoreRadioValue(row, grade);
+		  });
 	}
+	
+
 
 
 

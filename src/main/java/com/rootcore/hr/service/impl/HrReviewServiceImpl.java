@@ -191,7 +191,7 @@ public class HrReviewServiceImpl implements HrReviewService {
 	public HrReviewVO reviewResultByTargetUserId(String targetUserId, String reviewCode) {
 
 		// 상위 조회
-		HrReviewVO hrReviewVO = hrReviewMapper.selectReviewResultHeaderByTargetUserId(targetUserId);
+		HrReviewVO hrReviewVO = hrReviewMapper.selectReviewResultHeaderByTargetUserId(targetUserId, reviewCode);
 		
 		// 하위 조회
 		List<HrReviewResultVO> reviewResult = hrReviewMapper.selectReviewResultByTargetUserId(reviewCode);

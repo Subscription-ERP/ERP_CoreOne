@@ -52,9 +52,15 @@ public class AnnualManageServiceImpl implements AnnualManageService {
 	@Transactional
 	public int insertmyAnnualApply(AnnualLeaveDetailVO param) {
 		int totalSuccess = 0;
-		
+
 		// 연차신청하기전에 연차상세관리 테이블에서 등록할려는 연차랑 겹치는지 확인하는 쿼리
-		
+		if ((totalSuccess += annualManageMapper.selectAttendance(param)) > 0) {
+			System.out.println("totalSuccess:" + totalSuccess);
+			System.out.println("겹치는 데이터가 있습니다.");
+			return -1;
+		}
+		System.out.println("겹치는 데이터가 없습니다.");
+		++totalSuccess;
 
 		// 연차신청하면 연차상세관리 테이블에 등록되고
 		totalSuccess += annualManageMapper.insertmyAnnualApply(param);
@@ -68,25 +74,23 @@ public class AnnualManageServiceImpl implements AnnualManageService {
 		 * annualStartDate를 처음은 그냥 넣고 다음날짜를 +1해서 넣어줘야함
 		 */
 		// 반복 횟수 지정
-		// 만약에 b1경우(연차)는 uesdDays를 그대로 사용하고 나머지는(반차) 한번만 반복한다는 의미 
+		// 만약에 b1경우(연차)는 uesdDays를 그대로 사용하고 나머지는(반차) 한번만 반복한다는 의미
 		int loopCount = (param.getLeaveType().equals("b1")) ? (int) param.getUsedDays() : 1;
-		
+
 		// 형식 지정
 		// 나 이런 형식으로 쓸꺼에요~ 라고 지정해주는거다
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		
+
 		// param에 있는 annualStartDate를 String타입의 dateString에 담는다
 		String dateString = param.getAnnualStartDate();
-		
+
 		// dateString이 yyyy-MM-dd 이거 뒤에 붙는 것들을 다 잘라버린다
 		if (dateString.length() > 10) {
 			dateString = dateString.substring(0, 10);
 		}
 
-		// 
 		LocalDate originalDate = LocalDate.parse(dateString, formatter);
 
-		
 		for (int i = 0; i < loopCount; i++) {
 			LocalDate calculatedDate = originalDate.plusDays(i);
 			param.setAnnualStartDate(calculatedDate.format(formatter));

@@ -1,8 +1,10 @@
 package com.rootcore.hr.vo;
 
-import java.sql.Date;
+import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
 
@@ -18,17 +20,21 @@ public class AnnualLeaveDetailVO {
 	// 연차 사용 상세 정보 (TB_ANNUAL_LEAVE_DETAIL 연계)
 	private String leaveType; // 신청구분 (leave_type)
 	private double usedDays; // 사용일수 (used_days)
-	@DateTimeFormat(pattern = "yyyy-mm-dd")
 	private String annualStartDate; // 연차시작일 (leave_start_date)
 	private String annualEndDate; // 연차종료일 (leave_end_date)
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date leaveApplyDate; // 연차신청일 (leave_apply_date)
-	private String rm; // 사유 (rm)	
-	
-	private String annualLeaveCode;  // 연차관리코드
+	private String rm; // 사유 (rm)
+
+	private String annualLeaveCode; // 연차관리코드
 	private Long annualLeaveDetailSeq; // 연차상세관리번호
-	
-	private String annualStartDateSearch; // 연차검색시작일
-	private String annualStartEndSearch; // 연차검색종료일
-	private String leaveApplyStartDateSearch; // 연차신청검색시작일
-	private String leaveApplyEndDateSearch; // 연차신청검색종료일
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date annualStartDateSearch; // 연차검색시작일
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date annualStartEndSearch; // 연차검색종료일
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date leaveApplyStartDateSearch; // 연차신청검색시작일
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date leaveApplyEndDateSearch; // 연차신청검색종료일
 }
