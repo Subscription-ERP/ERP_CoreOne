@@ -158,6 +158,7 @@ function setupNativeDatePicker(wrapperId, inputId) {
 
 	// wrapper 아무 곳이나 클릭해도 달력 뜨게
 	wrapper.addEventListener('click', () => {
+		
 	    if (input.showPicker) {
 	      try {
 	        input.showPicker();      // 크롬/엣지에서 달력 팝업
@@ -225,6 +226,56 @@ function setupSubGrid({ tbodyId, templateId, addBtnId, countId }) {
 		//       readonly 처리 / 상태 플래그 등을 제어하면 됨.
 		console.log("edit clicked row:", tr);
 	});
+}
+
+
+
+/* ------------------------------------------------------------------
+ * 시작일 > 종료일 선택 못하게 막기 
+ * ------------------------------------------------------------------ */
+
+// 날짜 범위 검증 함수
+function validateDateRangeByIds(startId, endId, opts = {}){
+	const {
+		message = "종료일이 사직일보다 빠를 수 없습니다.",
+		clearOnInvalid = true,
+	} = opts;
+	
+	const startEl = document.querySelector(`#${startId}`);
+	const endEl = document.querySelector(`#${endId}`);
+	if(!startEl || !endEl) return true;
+	
+	const startVal = startEl.value;
+	const endVal = endEl.value;
+	
+	// 둘다 값이 있어야할 때 비교
+	if(!startVal || !endVal) return true;
+	
+	const startDate = new Date(startVal);
+	const endDate = new Date(endVal);
+	
+	if(endDate < startDate){
+		showToast(message, "warning");
+		if(clearOnInvalid){
+			startEl.value = "";
+			endEl.value = "";
+		}
+		return false;
+	}
+	return true;
+	
+}
+
+// 이벤트 연결
+function bindDateRangeValidation(startId, endId, opts){
+	const startEl = document.querySelector(`#${startId}`);
+	const endEl = document.querySelector(`#${endId}`);
+	if(!startEl || !endEl) return;
+	
+	const handler = () => validateDateRangeByIds(startId, endId, opts);
+	
+	startEl.addEventListener("change", handler);
+	endEl.addEventListener("change", handler);
 }
 
 
