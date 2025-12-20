@@ -131,20 +131,9 @@ public class HrServiceImpl implements HrService {
 		
 		// 자격증 -------------------------------------------------------------------
 		if(userVO.getCertificationList() != null && !userVO.getCertificationList().isEmpty()) {
-			for(int i=0; i<userVO.getCertificationList().size(); i++) {
-				CertificationVO cert = userVO.getCertificationList().get(i);
-				
+			for(CertificationVO cert : userVO.getCertificationList()) {
 				cert.setUserId(userId);
 				cert.setCompanyCode(companyCode);
-				
-				// 파일
-				if(certiFiles != null && i < certiFiles.size()) {
-					MultipartFile certFile = certiFiles.get(i);
-					if(certFile != null && !certFile.isEmpty()) {
-						String certFilePath = fileStorageUtil.store(certFile, "user/certification");
-						cert.setCertiFile(certFilePath);
-					}
-				}
 				int r2 = hrMapper.insertCertification(cert);
 				if (r2 == 0) return 0;
 			}
@@ -178,6 +167,10 @@ public class HrServiceImpl implements HrService {
 	        return 0;
 	    }
 	    
+	    // 기존 경로 백업(삭제판단용)
+	    String oldPhotoPath = origin.getUserPhoto();
+	    String oldUserFilePath = origin.getUserFile();		
+	    
 	    // companyCode 
 	    if (userVO.getCompanyCode() == null || userVO.getCompanyCode().isBlank()) {
 	        userVO.setCompanyCode(origin.getCompanyCode());
@@ -189,29 +182,47 @@ public class HrServiceImpl implements HrService {
 	    
 	    
 	    // 기본정보 ---------------------------------------------------------
-	    // 사진
+	    
+	    String newPhotoPath = oldPhotoPath;
+	    String newUserFilePath = oldUserFilePath;
+	    
+	    // 새로운 파일 업로드시 교체
+	    // 사진 
 	    if (userPhoto != null && !userPhoto.isEmpty()) {
-	        // 새 파일 업로드 → 파일 저장 후 경로 세팅
-	        String photoPath = fileStorageUtil.store(userPhoto, "user/photo");
-	        userVO.setUserPhoto(photoPath);
-	    } else {
-	        // 새 파일 안 올렸으면 기존 경로 유지
-	        userVO.setUserPhoto(origin.getUserPhoto());
+	        newPhotoPath = fileStorageUtil.store(userPhoto, "user/photo");
 	    }
-		
+	    userVO.setUserPhoto(newPhotoPath);
+
 	    // 첨부파일
 	    if (userFile != null && !userFile.isEmpty()) {
-	        String userFilePath = fileStorageUtil.store(userFile, "user/file");
-	        userVO.setUserFile(userFilePath);
-	    } else {
-	        userVO.setUserFile(origin.getUserFile());
+	        newUserFilePath = fileStorageUtil.store(userFile, "user/file");
 	    }
-		
-
-	    // 기본정보
+	    userVO.setUserFile(newUserFilePath);
+	
+	    // DB 업데이트
 	    int r1 = hrMapper.updateUser(userVO);
 	    if (r1 == 0) {
+	        
+	    	if(userPhoto != null && !userPhoto.isEmpty() && newPhotoPath != null && !newPhotoPath.equals(oldPhotoPath)) {
+	    		fileStorageUtil.delete(newPhotoPath);
+	    	}	
+	    	if (userFile != null && !userFile.isEmpty() && newUserFilePath != null && !newUserFilePath.equals(oldUserFilePath)) {
+	            fileStorageUtil.delete(newUserFilePath);
+	        }
 	        return 0;
+	    }
+	    
+	    // 기존파일 삭제
+	    if (userPhoto != null && !userPhoto.isEmpty()) {
+	        if (oldPhotoPath != null && !oldPhotoPath.isBlank() && !oldPhotoPath.equals(newPhotoPath)) {
+	            fileStorageUtil.delete(oldPhotoPath);
+	        }
+	    }
+
+	    if (userFile != null && !userFile.isEmpty()) {
+	        if (oldUserFilePath != null && !oldUserFilePath.isBlank() && !oldUserFilePath.equals(newUserFilePath)) {
+	            fileStorageUtil.delete(oldUserFilePath);
+	        }
 	    }
 	    
 	    
@@ -222,9 +233,7 @@ public class HrServiceImpl implements HrService {
 	    
 	    // 자격증
 	    if (userVO.getCertificationList() != null) {
-	        for (int i = 0; i < userVO.getCertificationList().size(); i++) {
-
-	            CertificationVO cert = userVO.getCertificationList().get(i);
+	        for (CertificationVO cert : userVO.getCertificationList()) {
 
 	            // 완전 빈 행 제외
 	            if (isEmptyCert(cert)) continue;
@@ -233,14 +242,6 @@ public class HrServiceImpl implements HrService {
 	            cert.setCompanyCode(companyCode);
 	            cert.setCreatedBy(actor);
 
-	            // 파일 처리
-	            if (certiFiles != null && i < certiFiles.size()) {
-	                MultipartFile certFile = certiFiles.get(i);
-	                if (certFile != null && !certFile.isEmpty()) {
-	                    String certPath = fileStorageUtil.store(certFile, "user/certification");
-	                    cert.setCertiFile(certPath);
-	                }
-	            }
 	            hrMapper.insertCertification(cert);
 	        }
 	    }
@@ -276,7 +277,6 @@ public class HrServiceImpl implements HrService {
 	            hist.setPrevJobTitle(origin.getJobTitle());
 	            hist.setNewDept(userVO.getDept());
 	            hist.setNewJobTitle(userVO.getJobTitle());
-	            hist.setDeptChangeReason("수정 화면에서 변경");
 	            hist.setCreatedBy(actor);
 
 	            hrMapper.insertUserHistory(hist);
@@ -294,7 +294,6 @@ public class HrServiceImpl implements HrService {
 	            hist.setHistType("f2");
 	            hist.setApplyDate(userVO.getHireDate());
 	            hist.setBaseSalary(userVO.getSalary());
-	            hist.setSalaryChangeReason("수정 화면에서 변경");
 	            hist.setUpdatedBy(actor);
 
 	            hrMapper.insertUserHistory(hist);

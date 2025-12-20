@@ -48,8 +48,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 	function initGrid() {
 		grid = new tui.Grid({
 			el: document.getElementById('userList'),
-			bodyHeight: 'fitToParent',
+			bodyHeight: 230,   
+			rowHeight: 40,     
 			rowHeaders: ['checkbox'],
+			pageOptions: {
+				useClient: true,    // 작성안할시 pagination 작동안함
+			    perPage: 10
+			},
 			columns: [
 				{ header: "사원번호", name: "userId", align: 'center', sortable: true },
 				{ header: "성명", name: "userName" },
@@ -261,7 +266,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if (!Array.isArray(certList)) {
 			tbody.innerHTML = `
 	      <tr class="empty-row">
-	        <td colspan="8" class="text-center text-muted py-3">
+	        <td colspan="6" class="text-center text-muted py-3">
 	          데이터가 없습니다. 추가해주세요.
 	        </td>
 	      </tr>
@@ -290,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		if (validList.length === 0) {
 			tbody.innerHTML = `
 	      <tr class="empty-row">
-	        <td colspan="8" class="text-center text-muted py-3">
+	        <td colspan="6" class="text-center text-muted py-3">
 	          데이터가 없습니다. 추가해주세요.
 	        </td>
 	      </tr>
@@ -311,31 +316,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 			row.querySelector('input[name="licenseNo"]').value = item.licenseNo ?? '';
 			row.querySelector('input[name="expireDate"]').value = item.expireDate ?? '';
 			row.querySelector('input[name="remark"]').value = item.remark ?? '';
-
-			// 첨부파일 있을시 다운로드버튼 생성
-			const fileBtn = row.querySelector('.cert-file-download');
-
-			if (fileBtn) {
-				if (item.certiFile) {
-					const filePath = item.certiFile;       // 예: "cert/uuid_자격증.pdf"
-
-					// 버튼 보이게
-					fileBtn.classList.remove('d-none');
-
-					// 나중에 클릭 시 사용할 수 있도록 경로 저장
-					fileBtn.dataset.filePath = `/upload/${filePath}`;
-
-					// 옵션: 호버 시 파일명 보이게 (툴팁)
-					const fileName = filePath.split('/').pop();
-					fileBtn.title = fileName;
-				} else {
-					// 파일 없으면 버튼 숨기기 + 이전 정보 제거
-					fileBtn.classList.add('d-none');
-					fileBtn.removeAttribute('data-file-path');
-					fileBtn.removeAttribute('title');
-				}
-			}
-
 
 			tbody.appendChild(fragment);
 		});
@@ -439,7 +419,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			const certTbody = document.querySelector('#certTbody');
 			certTbody.innerHTML = `
 			  <tr class="empty-row">
-			    <td colspan="8" class="text-center text-muted py-3">
+			    <td colspan="6" class="text-center text-muted py-3">
 			      데이터가 없습니다. 추가해주세요.
 			    </td>
 			  </tr>
@@ -894,18 +874,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 				formData.append("userFile", attachFile); // @RequestPart("userFile")
 			}
 
-			// (3) 자격증 파일들 (여러 개 가능)
-			const certRows = document.querySelectorAll("#certTbody tr:not(.empty-row)");
-			certRows.forEach(tr => {
-				const fileInput = tr.querySelector('input[type="file"][name="certiFile"]');
-				if (!fileInput || !fileInput.files[0]) return;
-
-				const file = fileInput.files[0];
-				// 같은 key로 여러 번 append → List<MultipartFile> certiFiles 로 바인딩
-				formData.append("certiFiles", file);  // @RequestPart("certiFiles")
-			});
-
-
+			
 			// userId 유무로 신규/수정 구분
 			const userId = payload.userId?.trim();
 			const isNew = !userId;
@@ -929,6 +898,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 					if (res.ok && json.result === "success") {
 						showToast(json.message, "success");
+						
+						// 다시 상세조회(이력테이블 최신조회)
+						const savedUserId = payload.userId;
+						  if (savedUserId) {
+						    fetch(`/api/hr/user/${encodeURIComponent(savedUserId)}`)
+						      .then(res => res.json())
+						      .then(data => {
+						        currentUserDetail = data;  
+						        InputUserBasicInfo(data);
+						        InputCertification(data.certificationList);
+						        InputWorkExperience(data.workExperienceList);
+						      });
+						  }
+						
 						loadUserList();
 						btnReset?.click();
 					} else {
@@ -969,27 +952,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		a.click();
 		document.body.removeChild(a);
 	});
-
-	// 자격증 첨부파일 다운로드 버튼 클릭 핸들러 (무조건 다운로드)
-	const certTbodyEl = document.querySelector("#certTbody");
-	if (certTbodyEl) {
-		certTbodyEl.addEventListener("click", (e) => {
-			const btn = e.target.closest(".cert-file-download");
-			if (!btn) return;
-
-			const filePath = btn.dataset.filePath;
-			if (!filePath) return;
-
-			const fileName = filePath.split("/").pop() || "download";
-
-			const a = document.createElement("a");
-			a.href = filePath;
-			a.download = fileName;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-		});
-	}
 
 
 	/* ------------------------------------------------------------------
