@@ -23,13 +23,6 @@
 	white-space: nowrap;
 }
 
-.page-title {
-	padding: 6px 8px;
-	font-size: 17px;
-	font-weight: 700;
-	color: var(--black-color);
-}
-
 .search-card .card-ui__body {
 	height: 120px;
 	padding: 16px;
@@ -105,8 +98,6 @@
 <body>
 	<section class="page page-fluid" layout:fragment="content">
 
-		<div class="page-title">품번 등록 및 조회</div>
-
 		<!-- 검색 영역 (원복 UI) -->
 		<section class="card-ui card-ui--search search-card">
 			<div class="card-ui__body">
@@ -149,7 +140,7 @@
 					<h3 class="card-ui__title">품목 목록</h3>
 				</div>
 				<div class="card-ui__body">
-					<div id="itemGrid" style="height: 520px;"></div>
+					<div id="itemGrid" style="height: 620px;"></div>
 				</div>
 			</div>
 
@@ -279,13 +270,13 @@
       el: document.getElementById('itemGrid'),
       data: [],
       rowHeaders: ['rowNum'],
-      bodyHeight: 480,
+      bodyHeight: 620,
       columns: [
-        { header:'품번', name:'sku', width: 150 },
-        { header:'품명', name:'skuName', minWidth: 180 },
-        { header:'분류', name:'skuType', width: 120 },
-        { header:'단위', name:'unit', width: 90 },
-        { header:'사용여부', name:'useYn', width: 100 }
+        { header:'품번', name:'sku', width: 150, align: 'center' },
+        { header:'품명', name:'skuName', minWidth: 180, align: 'center' },
+        { header:'분류', name:'skuType', width: 120, align: 'center' },
+        { header:'단위', name:'unit', width: 90, align: 'center' },
+        { header:'사용여부', name:'useYn', width: 100, align: 'center' }
       ]
     });
 
