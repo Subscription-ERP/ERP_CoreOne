@@ -22,6 +22,7 @@ import com.rootcore.sb.mapper.OrderMapper;
 import com.rootcore.sb.mapper.PaymentMapper;
 import com.rootcore.sb.mapper.SubscribeMapper;
 import com.rootcore.sb.mapper.UserMapper;
+import com.rootcore.sb.service.MailService;
 import com.rootcore.sb.service.PaymentService;
 import com.rootcore.sb.service.TossCardInfoEnricher;
 import com.rootcore.sb.vo.CompanyVO;
@@ -58,6 +59,8 @@ public class PaymentServiceImpl implements PaymentService {
 	private final BillingKeyCrypto billingKeyCrypto;
 	private final PasswordEncoder passwordEncoder;
 	private final TossCardInfoEnricher tossCardInfoEnricher;
+	
+	private final MailService mailService;
 
 	@Value("${project.url}")
 	String url;
@@ -492,6 +495,12 @@ public class PaymentServiceImpl implements PaymentService {
 
 		Map<String, String> result = new HashMap<>();
 		Date now = new Date();
+		
+		   // 0) 담당자 이메일 필수 체크
+        if (company.getManagerEmail() == null || company.getManagerEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("담당자 이메일이 없어 계정 안내 메일을 발송할 수 없습니다.");
+        }
+
 
 		/* 1) 임시 비밀번호 생성 */
 		String rawPassword = PasswordUtil.generateRandomPassword();
@@ -532,6 +541,9 @@ public class PaymentServiceImpl implements PaymentService {
 		userMapper.insertUser(user);
 
 		userMapper.insertRoleMenu(company.getCompanyCode());
+		
+		 // 5) ✅ 이메일 발송 (임시 비밀번호는 메일로만)
+        mailService.sendAccountMail(company.getManagerEmail(), userId, rawPassword,company.getCompanyCode());
 
 		// 6) 화면에 보여줄 정보만 반환
 		result.put("userId", userId);
