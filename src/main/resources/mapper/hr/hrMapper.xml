@@ -122,7 +122,6 @@
 		    c.get_date,
 		    c.license_no,
 		    c.expire_date,
-		    c.certi_file,
 		    c.remark
 		FROM         tb_user_master um
 		LEFT JOIN    tb_certification c
@@ -276,7 +275,6 @@
 		    get_date,
 		    license_no,
 		    expire_date,
-		    certi_file,
 		    remark,
 		    created_by,
 		    create_date)
@@ -289,7 +287,6 @@
 		    #{getDate},
 		    #{licenseNo},
 		    #{expireDate},
-		    #{certiFile},
 		    #{remark},
 		    #{createdBy},
 		    SYSDATE
@@ -398,7 +395,6 @@
 	        get_date        = #{getDate},
 	        license_no      = #{licenseNo},
 	        expire_date     = #{expireDate},
-	        certi_file      = #{certiFile},
 	        remark          = #{remark},
 	        updated_by      = #{updatedBy},
 	        update_date     = SYSDATE
@@ -470,14 +466,14 @@
 	</insert>
 	
 	<!-- 자격증 전체삭제 -->
-	<delete id="deleteCetification" parameterType="String">
+	<delete id="deleteCetification">
 		DELETE FROM tb_certification
 		WHERE company_code = #{companyCode}
 		  AND user_id      = #{userId}
 	</delete>
 	
 	<!-- 경력사항 전체삭제 -->
-	<delete id="deleteWorkExperience" parameterType="String">
+	<delete id="deleteWorkExperience">
 		DELETE FROM tb_work_experience
 		WHERE company_code = #{companyCode}
 		  AND user_id      = #{userId}

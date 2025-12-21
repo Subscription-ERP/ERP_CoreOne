@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 하단 상세 영역 초기화
 			renderEvalItems([]);
+			resetDetailForm();       //코멘트 초기화
 			fillDetailBasicInfo({
 				targetUserName: "",
 				targetDeptName: "",
@@ -122,6 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			const rowData = teamGrid.getRow(ev.rowKey);
 			if (!rowData) return;
 
+			resetDetailForm(); // 상세폼 항상 시작전 초기화
+			
 			// 기본정보 채우기
 			fillDetailBasicInfo(rowData); // 사원명/부서/총점 채우기
 
@@ -562,6 +565,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	  const commentInput = document.querySelector("#evalComment");
 	  if (commentInput) commentInput.value = "";
+	}
+	
+	// 상세폼 초기화 함수
+	function resetDetailForm() {
+	  // 기본정보
+	  fillDetailBasicInfo({
+	    targetUserName: "",
+	    targetDeptName: "",
+	    finalScore: ""
+	  });
+
+	  // 코멘트
+	  const commentInput = document.querySelector("#evalComment");
+	  if (commentInput) commentInput.value = "";
+
+	  // 점수 라디오 해제 (렌더링된 상태라면)
+	  document
+	    .querySelectorAll('#reviewTbody .score-radio input[type="radio"]')
+	    .forEach(r => (r.checked = false));
 	}
 	
 	
