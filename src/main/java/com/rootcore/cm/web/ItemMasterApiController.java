@@ -1,6 +1,7 @@
 package com.rootcore.cm.web;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -22,18 +23,19 @@ public class ItemMasterApiController {
         return itemMasterService.search(cond);
     }
 
-    /** 신규 등록 */
+    /** 저장 (신규 / 수정 공용) */
     @PostMapping("/save")
     public void save(@RequestBody SkuVO skuVO) {
-        itemMasterService.insertSku(skuVO);
+        itemMasterService.save(skuVO);
     }
 
-    /** SKU 자동생성 */
-    @PostMapping("/generate-sku")
-    public String generateSku(@RequestBody SkuVO cond) {
-        return itemMasterService.generateSku(
-                cond.getCompanyCode(),
-                cond.getSkuType()
+    /** SKU 자동생성 (GET) */
+    @GetMapping("/sku")
+    public Map<String, String> generateSku(
+            @RequestParam String companyCode
+    ) {
+        return Map.of(
+            "sku", itemMasterService.generateSku(companyCode)
         );
     }
 }

@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 		addBtnId: "btnEvalAdd",
 	});
 
+	// 날짜범위검증
+	bindDateRangeValidation("reviewStartDate-search", "reviewEndDate-search");   // 검색
+	bindDateRangeValidation("reviewStartDate","reviewEndDate");  // 평가일
+	
 
 
 	/* ------------------------------------------------------------------
@@ -267,12 +271,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	}
 
+	// 가중치숫자입력값 유효성검사
+	function sanitizeWeightInput(inputEl) {
+	  // 숫자만 남기기
+	  let v = String(inputEl.value ?? "").replace(/[^\d]/g, "");
+	  if (v === "") {
+	    inputEl.value = "";
+	    return;
+	  }
+
+	  // 정수로 변환
+	  let n = parseInt(v, 10);
+	  if (Number.isNaN(n)) {
+	    inputEl.value = "";
+	    return;
+	  }
+
+	  // 1~100 범위
+	  if (n < 1) n = 1;
+	  if (n > 100) n = 100;
+
+	  inputEl.value = String(n);
+	}
+	
+	// 가중치합계 이벤트
 	function attachWeightEvents() {
 		const tbody = document.querySelector('#evalTbody');
 		if (!tbody) return;
 
 		tbody.addEventListener('input', (e) => {
 			if (e.target.name === 'evalWeight') {
+				sanitizeWeightInput(e.target);
 				updateWeightSum();
 			}
 		});
@@ -297,6 +326,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			// input 초기화 (라디오 빼고)
 			wrapper.querySelectorAll("input").forEach((el) => {
+				if (el.disabled || el.readOnly) return;  // disabled,readOnly 값 유지
 				if (el.type === "radio") return;
 
 				if (el.type === "checkbox") {
@@ -386,12 +416,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	
 	/* ------------------------------------------------------------------
-	 * 등록 / 수정 공통 처리
+	 * 등록 / 수정 공통 처리 + 유효성검사(가중치합계, 필수값)
 	 * ------------------------------------------------------------------ */
 	const btnSave = document.querySelector("#btnSave");
 
 	if (btnSave) {
 	  btnSave.addEventListener("click", async () => {
+		
 	    const fr = document.querySelector(".form-allwrapper");
 
 	    // 1) 기본정보
@@ -430,7 +461,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 	      ...reviewPayload,
 	      evalItemList,
 	    };
-
+		
+		// 템플릿명, 시작~종료일, 평가항목 유효성검사
+		if (!reviewPayload.reviewMasterName.trim()) {
+		  showToast("템플릿명을 입력해 주세요.", "warning");
+		  return;
+		}
+		if (!reviewPayload.reviewStartDate || !reviewPayload.reviewEndDate) {
+		  showToast("평가 시작일/종료일을 입력해 주세요.", "warning");
+		  return;
+		}
+		if (evalItemList.length === 0) {
+		  showToast("평가항목을 1개 이상 추가해 주세요.", "warning");
+		  return;
+		}
+		
+		// 가중치 합 100 검사
+		const weightSum = Number(document.querySelector('#weightSum')?.textContent || '0');
+		if(weightSum !== 100){
+			showToast("가중치 합계는 100%여야 저장할 수 있습니다.", "warning");
+			return;
+		}		
+		
 	    // 수정일 때는 reviewMasterCode를 함께 보냄
 	    if (isModify) {
 	      payload.reviewMasterCode = currentReviewDetail.reviewMasterCode;
@@ -500,8 +552,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 	
 	
-	
-	
+
 	
 	
 

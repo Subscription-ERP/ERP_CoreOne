@@ -1,312 +1,408 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
 
 <head>
+<meta charset="UTF-8">
 <title>품번 등록 및 조회</title>
 
 <link rel="stylesheet"
-      href="https://uicdn.toast.com/grid/latest/tui-grid.css"/>
+	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 
 <style>
-.item-wrap {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    gap: 14px;
+
+/* 품번 자동생성 버튼 - input 높이 맞춤 */
+.btn-auto-sku {
+	height: 36px; /* input 높이와 동일 */
+	padding: 0 12px;
+	font-size: 14px;
+	line-height: 1;
+	display: flex;
+	align-items: center; /* 세로 중앙 정렬 */
+	white-space: nowrap;
 }
-.search-box {
-    background: #fff;
-    padding: 16px;
-    border-radius: 12px;
+
+.search-card .card-ui__body {
+	height: 120px;
+	padding: 16px;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
 }
-.search-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
-    gap: 12px;
-    align-items: end;
+
+.search-row {
+	width: 100%;
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr auto;
+	gap: 14px;
+	align-items: center;
 }
-.content-box {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 14px;
+
+.search-field {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
 }
-.card-ui {
-    background: #fff;
-    border-radius: 14px;
-    padding: 16px;
+
+.search-label {
+	min-width: 46px;
+	text-align: right;
+	font-size: var(--fs-s);
+	font-weight: 700;
+	white-space: nowrap;
+	line-height: 1;
 }
-.card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
+
+.search-field .input-base, .search-field .form-select {
+	height: 36px;
+	font-size: 14px;
 }
-.card-title {
-    font-weight: 700;
+
+.search-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: flex-end;
+	white-space: nowrap;
 }
-.card-header-right {
-    margin-left: auto;
-    display: flex;
-    gap: 6px;
+
+.content-grid {
+	display: grid;
+	grid-template-columns: 1.3fr 1fr;
+	gap: 10px;
+	flex: 1 1 auto;
+	overflow: hidden;
 }
-.form-row {
-    display: grid;
-    grid-template-columns: 110px 1fr;
-    gap: 10px;
-    margin-bottom: 10px;
+
+.item-form {
+	background: var(--white-color);
+	color: var(--black-color);
 }
-.radio-group {
-    display: flex;
-    gap: 16px;
+
+.item-form .input-base, .item-form select, .item-form textarea {
+	background-color: #fff !important;
+	color: #000 !important;
+	border: 1px solid var(--mid-light-gray-color);
+	font-size: var(--fs-s);
+}
+
+.item-form textarea {
+	resize: none;
+	min-height: 70px;
 }
 </style>
 </head>
 
 <body>
-<section class="item-wrap" layout:fragment="content">
+	<section class="page page-fluid" layout:fragment="content">
 
-    <!-- 🔍 검색 영역 -->
-    <div class="search-box">
-        <div class="search-grid">
-            <input id="searchSku" class="form-control" placeholder="품번">
-            <input id="searchSkuName" class="form-control" placeholder="품명">
-            <select id="searchSkuType" class="form-select">
-                <option value="">전체</option>
-                <option value="ITEM">원자재</option>
-                <option value="GOODS">부자재</option>
-                <option value="MODEL">제품</option>
-            </select>
+		<!-- 검색 영역 (원복 UI) -->
+		<section class="card-ui card-ui--search search-card">
+			<div class="card-ui__body">
+				<div class="search-row">
 
-            <div class="text-end">
-                <button id="btnReset" class="btn btn-outline-secondary">초기화</button>
-                <button id="btnSearch" class="btn btn-primary">조회</button>
-            </div>
-        </div>
-    </div>
+					<div class="search-field">
+						<span class="search-label">품번</span> <input id="searchSku"
+							class="form-control input-base" placeholder="품번">
+					</div>
 
-    <div class="content-box">
+					<div class="search-field">
+						<span class="search-label">품명</span> <input id="searchSkuName"
+							class="form-control input-base" placeholder="품명">
+					</div>
 
-        <!-- 왼쪽 GRID -->
-        <div class="card-ui">
-            <div class="card-header">
-                <div class="card-title">품목 목록</div>
-            </div>
-            <div id="itemGrid" style="height:520px;"></div>
-        </div>
+					<div class="search-field">
+						<span class="search-label">분류</span> <select id="searchSkuType"
+							class="form-select input-base">
+							<option value="">전체</option>
+							<option value="ITEM">원자재</option>
+							<option value="GOODS">부자재</option>
+							<option value="MODEL">제품</option>
+						</select>
+					</div>
 
-        <!-- 오른쪽 상세 -->
-        <div class="card-ui">
+					<div class="search-actions">
+						<button id="btnReset" class="btn btn-inner btn-white">초기화</button>
+						<button id="btnSearch" class="btn btn-outer btn-color">조회</button>
+					</div>
 
-            <div class="card-header">
-                <div class="card-title">품번 등록 / 수정</div>
-                <div class="card-header-right">
-                    <button id="btnNew" class="btn btn-outline-secondary btn-sm">등록</button>
-                    <button id="btnSave" class="btn btn-success btn-sm">저장</button>
-                </div>
-            </div>
+				</div>
+			</div>
+		</section>
 
-            <div class="form-row">
-                <label>품번</label>
-                <input id="itemSku" class="form-control">
-            </div>
+		<section class="content-grid">
 
-            <div class="form-row">
-                <label>품명</label>
-                <input id="itemSkuName" class="form-control">
-            </div>
+			<!-- 왼쪽 GRID -->
+			<div class="card-ui section-flex">
+				<div class="card-ui__header">
+					<h3 class="card-ui__title">품목 목록</h3>
+				</div>
+				<div class="card-ui__body">
+					<div id="itemGrid" style="height: 620px;"></div>
+				</div>
+			</div>
 
-            <div class="form-row">
-                <label>분류</label>
-                <select id="itemSkuType" class="form-select">
-                    <option value="ITEM">원자재</option>
-                    <option value="GOODS">부자재</option>
-                    <option value="MODEL">제품</option>
-                </select>
-            </div>
+			<!-- 오른쪽 FORM -->
+			<div class="card-ui section-flex item-form">
+				<div class="card-ui__header">
+					<h3 class="card-ui__title">품번 등록 / 수정</h3>
+					<div>
+						<button id="btnNew" class="btn btn-inner btn-white">신규</button>
+						<button id="btnSave" class="btn btn-inner btn-color">저장</button>
+					</div>
+				</div>
 
-            <div class="form-row">
-                <label>단위</label>
-                <select id="itemUnit" class="form-select">
-                    <option value="EA">EA</option>
-                    <option value="KG">KG</option>
-                    <option value="L">L</option>
-                </select>
-            </div>
+				<div class="card-ui__body section-scroll">
 
-            <div class="form-row">
-                <label>규격</label>
-                <input id="itemSpec" class="form-control">
-            </div>
+					<div class="form-grid">
+						<div class="form-grid__row">
+							<div class="form-grid__label">품번</div>
+							<div class="form-grid__field" style="display: flex; gap: 6px;">
+								<input id="itemSku" class="input-base" placeholder="자동생성"
+									readonly>
+								<button id="btnAutoSku"
+        class="btn btn-outline-secondary btn-auto-sku">
+    자동생성
+</button>
 
-            <div class="form-row">
-                <label>비고</label>
-                <textarea id="itemRemark" class="form-control"></textarea>
-            </div>
+							</div>
 
-            <div class="form-row">
-                <label>사용여부</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="useYn" value="Y"> 사용</label>
-                    <label><input type="radio" name="useYn" value="N"> 미사용</label>
-                </div>
-            </div>
+							<div class="form-grid__label">품명</div>
+							<div class="form-grid__field">
+								<input id="itemSkuName" class="input-base" placeholder="품명">
+							</div>
+						</div>
 
-            <div class="form-row">
-                <label>과세여부</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="taxYn" value="Y"> 과세</label>
-                    <label><input type="radio" name="taxYn" value="N"> 면세</label>
-                </div>
-            </div>
+						<div class="form-grid__row">
+							<div class="form-grid__label">분류</div>
+							<div class="form-grid__field">
+								<select id="itemSkuType" class="input-base">
+									<option value="ITEM">원자재</option>
+									<option value="GOODS">부자재</option>
+									<option value="MODEL">제품</option>
+								</select>
+							</div>
 
-        </div>
-    </div>
-</section>
+							<div class="form-grid__label">단위</div>
+							<div class="form-grid__field">
+								<select id="itemUnit" class="input-base">
+									<option value="EA">EA</option>
+									<option value="KG">KG</option>
+									<option value="L">L</option>
+								</select>
+							</div>
+						</div>
 
-<div layout:fragment="script">
-<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+						<div class="form-grid__row">
+							<div class="form-grid__label">규격</div>
+							<div class="form-grid__field form-grid__field--wide">
+								<input id="itemSpec" class="input-base" placeholder="규격">
+							</div>
+						</div>
 
-<script>
-/* ===============================
-   DOM 캐싱 (⭐ 가장 중요)
-=============================== */
-const btnSearch = document.getElementById('btnSearch');
-const btnReset  = document.getElementById('btnReset');
-const btnNew    = document.getElementById('btnNew');
-const btnSave   = document.getElementById('btnSave');
+						<div class="form-grid__row">
+							<div class="form-grid__label">비고</div>
+							<div class="form-grid__field form-grid__field--wide">
+								<textarea id="itemRemark" class="input-base" placeholder="비고"></textarea>
+							</div>
+						</div>
 
-const searchSku     = document.getElementById('searchSku');
-const searchSkuName = document.getElementById('searchSkuName');
-const searchSkuType = document.getElementById('searchSkuType');
+						<div class="form-grid__row">
+							<div class="form-grid__label">사용여부</div>
+							<div class="form-grid__field form-grid__field--checkbox">
+								<label><input type="radio" name="useYn" value="Y"
+									checked> 사용</label> &nbsp;&nbsp; <label><input
+									type="radio" name="useYn" value="N"> 미사용</label>
+							</div>
 
-const itemSku      = document.getElementById('itemSku');
-const itemSkuName  = document.getElementById('itemSkuName');
-const itemSkuType  = document.getElementById('itemSkuType');
-const itemUnit     = document.getElementById('itemUnit');
-const itemSpec     = document.getElementById('itemSpec');
-const itemRemark   = document.getElementById('itemRemark');
+							<div class="form-grid__label">과세여부</div>
+							<div class="form-grid__field form-grid__field--checkbox">
+								<label><input type="radio" name="taxYn" value="Y"
+									checked> 과세</label> &nbsp;&nbsp; <label><input
+									type="radio" name="taxYn" value="N"> 면세</label>
+							</div>
+						</div>
+					</div>
 
-let selectedSku = null;
+				</div>
+			</div>
 
-/* ===============================
-   오른쪽 상세 초기화
-=============================== */
-function resetDetailForm() {
-  selectedSku = null;
-  itemSku.value = '';
-  itemSkuName.value = '';
-  itemSkuType.value = 'ITEM';
-  itemUnit.value = 'EA';
-  itemSpec.value = '';
-  itemRemark.value = '';
-  document.querySelectorAll('[name=useYn],[name=taxYn]')
-    .forEach(r => r.checked = false);
-}
+		</section>
+	</section>
 
-/* ===============================
-   Grid 생성
-=============================== */
-const grid = new tui.Grid({
-  el: document.getElementById('itemGrid'),
-  data: [],
-  rowHeaders: ['rowNum'],
-  bodyHeight: 480,
-  columns: [
-    { header:'품번', name:'sku' },
-    { header:'품명', name:'skuName' },
-    { header:'분류', name:'skuType' },
-    { header:'단위', name:'unit' },
-    { header:'사용여부', name:'useYn' }
-  ]
-});
+	<div layout:fragment="script">
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 
-/* ===============================
-   조회
-=============================== */
-btnSearch.onclick = () => {
-  fetch('/api/cm/item/search', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      companyCode:'0000',
-      sku: searchSku.value,
-      skuName: searchSkuName.value,
-      skuType: searchSkuType.value
-    })
-  })
-  .then(r => r.json())
-  .then(d => grid.resetData(d));
-};
+		<script>
+    const $ = (id) => document.getElementById(id);
 
-/* ===============================
-   검색 초기화 (✔ 오른쪽 포함)
-=============================== */
-btnReset.onclick = () => {
-  searchSku.value = '';
-  searchSkuName.value = '';
-  searchSkuType.value = '';
-  grid.resetData([]);
-  grid.clearSelection();
+    const btnSearch = $('btnSearch');
+    const btnReset  = $('btnReset');
+    const btnNew    = $('btnNew');
+    const btnSave   = $('btnSave');
+    const btnAutoSku = $('btnAutoSku');
+
+    const searchSku     = $('searchSku');
+    const searchSkuName = $('searchSkuName');
+    const searchSkuType = $('searchSkuType');
+
+    const itemSku      = $('itemSku');
+    const itemSkuName  = $('itemSkuName');
+    const itemSkuType  = $('itemSkuType');
+    const itemUnit     = $('itemUnit');
+    const itemSpec     = $('itemSpec');
+    const itemRemark   = $('itemRemark');
+
+    function resetDetailForm() {
+      itemSku.value = '';
+      itemSkuName.value = '';
+      itemSkuType.value = 'ITEM';
+      itemUnit.value = 'EA';
+      itemSpec.value = '';
+      itemRemark.value = '';
+      document.querySelector('[name=useYn][value=Y]').checked = true;
+      document.querySelector('[name=taxYn][value=Y]').checked = true;
+    }
+
+    const grid = new tui.Grid({
+      el: document.getElementById('itemGrid'),
+      data: [],
+      rowHeaders: ['rowNum'],
+      bodyHeight: 620,
+      columns: [
+        { header:'품번', name:'sku', width: 150, align: 'center' },
+        { header:'품명', name:'skuName', minWidth: 180, align: 'center' },
+        { header:'분류', name:'skuType', width: 120, align: 'center' },
+        { header:'단위', name:'unit', width: 90, align: 'center' },
+        { header:'사용여부', name:'useYn', width: 100, align: 'center' }
+      ]
+    });
+
+    function normalizeList(resp){
+      if (Array.isArray(resp)) return resp;
+      if (!resp || typeof resp !== 'object') return [];
+      return resp.data || resp.list || resp.result || resp.rows || resp.items || [];
+    }
+
+    // 조회
+    btnSearch.onclick = async () => {
+      try {
+        const res = await fetch('/api/cm/item/search', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            companyCode: '0000',
+            sku: searchSku.value?.trim(),
+            skuName: searchSkuName.value?.trim(),
+            skuType: searchSkuType.value
+          })
+        });
+
+        const json = await res.json().catch(() => ({}));
+        const list = normalizeList(json);
+
+        grid.resetData(list);
+        grid.refreshLayout();
+      } catch (e) {
+        console.error(e);
+        grid.resetData([]);
+        grid.refreshLayout();
+      }
+    };
+
+    // 검색 초기화
+    btnReset.onclick = () => {
+      searchSku.value = '';
+      searchSkuName.value = '';
+      searchSkuType.value = '';
+      grid.resetData([]);
+      grid.refreshLayout();
+      resetDetailForm();
+    };
+
+    // 신규
+    btnNew.onclick = () => {
+  isEditMode = false;          // 🔓 신규 모드
+  btnAutoSku.disabled = false;
   resetDetailForm();
 };
 
-/* ===============================
-   신규 등록
-=============================== */
-btnNew.onclick = () => {
-  grid.clearSelection();
-  resetDetailForm();
-};
 
-/* ===============================
-   저장
-=============================== */
-btnSave.onclick = () => {
-  fetch('/api/cm/item/save', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      companyCode:'0000',
-      sku: itemSku.value,
-      skuName: itemSkuName.value,
-      skuType: itemSkuType.value,
-      unit: itemUnit.value,
-      spec: itemSpec.value,
-      remark: itemRemark.value,
-      useYn: document.querySelector('[name=useYn]:checked')?.value,
-      taxYn: document.querySelector('[name=taxYn]:checked')?.value
-    })
-  })
-  .then(() => {
-    alert(selectedSku ? '수정이 완료되었습니다.' : '등록이 완료되었습니다.');
-    btnSearch.click();
-    resetDetailForm();
-  });
-};
+    // 자동생성 (S00061 규칙)
+    btnAutoSku.onclick = async () => {
+      try {
+        const res = await fetch('/api/cm/item/sku?companyCode=0000');
+        const json = await res.json();
+        itemSku.value = json.sku;
+      } catch (e) {
+        console.error(e);
+        alert('품번 자동생성 실패');
+      }
+    };
 
-/* ===============================
-   Grid 클릭 → 상세 바인딩
-=============================== */
-grid.on('click', ev => {
-  if (ev.rowKey == null) return;
-  const row = grid.getRow(ev.rowKey);
-  if (!row) return;
+    // 저장 (신규/수정 공용)
+    btnSave.onclick = async () => {
+      try {
+        if (!itemSku.value?.trim()) {
+          alert('품번 자동생성을 먼저 해주세요.');
+          return;
+        }
+        if (!itemSkuName.value?.trim()) {
+          alert('품명을 입력해주세요.');
+          return;
+        }
 
-  selectedSku = row.sku;
+        await fetch('/api/cm/item/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            companyCode:'0000',
+            sku: itemSku.value.trim(),
+            skuName: itemSkuName.value.trim(),
+            skuType: itemSkuType.value,
+            unit: itemUnit.value,
+            spec: itemSpec.value?.trim(),
+            remark: itemRemark.value?.trim(),
+            useYn: document.querySelector('[name=useYn]:checked')?.value || 'Y',
+            taxYn: document.querySelector('[name=taxYn]:checked')?.value || 'Y'
+          })
+        });
 
-  itemSku.value = row.sku ?? '';
-  itemSkuName.value = row.skuName ?? '';
-  itemSkuType.value = row.skuType ?? '';
-  itemUnit.value = row.unit ?? '';
-  itemSpec.value = row.spec ?? '';
-  itemRemark.value = row.remark ?? '';
+        alert('저장 완료');
+        btnSearch.click();
+        resetDetailForm();
+      } catch (e) {
+        console.error(e);
+        alert('저장 중 오류가 발생했습니다.');
+      }
+    };
 
-  document.querySelectorAll('[name=useYn]').forEach(r => r.checked = r.value === row.useYn);
-  document.querySelectorAll('[name=taxYn]').forEach(r => r.checked = r.value === row.taxYn);
-});
-</script>
-</div>
+    // Grid 클릭 → 상세 바인딩 (수정 가능)
+    grid.on('click', ev => {
+      if (ev.rowKey == null) return;
+      const row = grid.getRow(ev.rowKey);
+      if (!row) return;
+      
+      isEditMode = true;           // 🔒 수정 모드
+      btnAutoSku.disabled = true;  // 🔒 자동생성 잠금
+
+
+      itemSku.value = row.sku ?? '';
+      itemSkuName.value = row.skuName ?? '';
+      itemSkuType.value = row.skuType ?? 'ITEM';
+      itemUnit.value = row.unit ?? 'EA';
+      itemSpec.value = row.spec ?? '';
+      itemRemark.value = row.remark ?? '';
+
+      document.querySelectorAll('[name=useYn]').forEach(r => r.checked = (r.value === (row.useYn ?? 'Y')));
+      document.querySelectorAll('[name=taxYn]').forEach(r => r.checked = (r.value === (row.taxYn ?? 'Y')));
+    });
+
+    window.addEventListener('load', () => grid.refreshLayout());
+  </script>
+	</div>
 
 </body>
 </html>

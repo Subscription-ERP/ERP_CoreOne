@@ -379,3 +379,68 @@ td.tui-grid-cell.tui-grid-cell-has-input.row-inactive {
 }
 
 
+
+/* ===============================
+   TUI Grid Pagination – Ultra Compact (Right)
+   =============================== */
+
+/* pagination 영역 */
+#userList .tui-grid-pagination {
+  display: flex;
+  justify-content: flex-end;   /* ✅ 오른쪽 정렬 */
+  align-items: center;
+
+  margin: 0 !important;
+  padding: 2px 6px 3px 6px !important;  /* ⬅ 최대한 압축 */
+  gap: 3px;
+
+  border-top: 1px solid #e9ecef; /* 구분선 (있어도 깔끔) */
+}
+
+/* 페이지 버튼 공통 */
+#userList .tui-page-btn {
+  min-width: 22px;      /* ⬅ 더 작게 */
+  height: 22px;
+  padding: 0 4px;
+
+  font-size: 11px;      /* ⬅ 최소 가독선 */
+  line-height: 20px;
+
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  color: #495057;
+}
+
+/* hover */
+#userList .tui-page-btn:hover {
+  background: #f3f5f7;
+}
+
+/* 활성 페이지 */
+#userList .tui-page-btn.tui-is-selected {
+  background: #2f4b8f;
+  border-color: #2f4b8f;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* << < > >> 아이콘 버튼 */
+#userList .tui-page-btn.tui-first,
+#userList .tui-page-btn.tui-prev,
+#userList .tui-page-btn.tui-next,
+#userList .tui-page-btn.tui-last {
+  min-width: 20px;
+  padding: 0;
+}
+
+/* 비활성 버튼 */
+#userList .tui-page-btn.tui-is-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Grid body 아래 여백 제거 */
+#userList .tui-grid-body-area {
+  margin-bottom: 0 !important;
+}

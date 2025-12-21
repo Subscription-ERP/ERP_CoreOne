@@ -16,7 +16,7 @@ const userContact = new tui.Grid({
 				method: "GET",
 			},
 		},
-	}, 
+	},
 	bodyHeight: 200, // HTML에서 설정한 높이와 일치시킵니다.
 	columns: [
 		{ header: "성명", name: "userName", align: "center", width: 70, sortable: true, },
@@ -28,12 +28,15 @@ const userContact = new tui.Grid({
 
 // 날씨 api
 function getWeatherData() {
-	const apiKey = "26471f105329b8011e1db04da15a57d8";
-	const city = "Daegu"; // 도시명
-	const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+	// 내 서버의 Proxy 경로를 호출합니다.
+	// 컨트롤러에서 /api/cm과 /weather를 합쳤으므로 주소는 아래와 같습니다.
+	const url = `/api/cm/weather?city=Daegu`;
 
 	fetch(url)
-		.then(response => response.json())
+		.then(response => {
+			if (!response.ok) throw new Error("날씨 데이터를 가져올 수 없습니다.");
+			return response.json();
+		})
 		.then(data => {
 			// 온도는 소수점 첫째자리까지 표시
 			const temp = Math.round(data.main.temp * 10) / 10;
@@ -45,7 +48,7 @@ function getWeatherData() {
 			document.querySelector('.card.bg-info h2').innerText = `${temp}°C`;
 			document.querySelector('.card.bg-info .small').innerText = weatherDesc;
 
-			// 아이콘 변경 (기존 FontAwesome 아이콘을 <img> 태그로 교체하거나 아래처럼 처리)
+			// 아이콘 변경
 			const iconContainer = document.querySelector('.card.bg-info .text-center');
 			iconContainer.innerHTML = `<img src="${iconUrl}" alt="weather icon" style="width: 80px;"> <div class="small">${weatherDesc}</div>`;
 		})

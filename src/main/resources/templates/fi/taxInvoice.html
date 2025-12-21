@@ -24,7 +24,7 @@
     <div class="card-header d-flex align-items-center">
 		<div th:replace="modal/inOrdModal :: inOrdModal"></div>
         <button class="btn btn-white btn-inner nowrap-btn" id="btnLoadOrder" style="width:150px;">수주 가져오기</button>
-
+		<label style="margin-left:20px; color:red;">* 수주 입력 전 거래처를 먼저 선택 해 주세요 </label>
       <div class="ms-auto d-flex gap-2">
         <button class="btn btn-white btn-inner" id="btnAddRow">행추가</button>
         <button class="btn btn-white btn-inner" id="btnReset">초기화</button>
@@ -54,34 +54,34 @@
 
               <tr>
                 <th class="bg-light text-center" style="width:160px;">사업자등록번호</th>
-                <td><input type="text" class="form-control input-base" id="frombno" readonly></td>
+                <td><input type="text" class="form-control input-base" id="frombno" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
-                <th class="bg-light text-center">상호</th>
+                <th class="bg-light text-center">거래처</th>
                 <td>
-                  <input type="text" class="form-control input-base" id="fromcompanyname" readonly>
+                  <input type="text" class="form-control input-base" id="fromcompanyname" style="background-color:#fafafa" readonly>
                 </td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">성명</th>
-                <td><input type="text" class="form-control input-base" id="frommanagername" readonly></td>
+                <td><input type="text" class="form-control input-base" id="frommanagername" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">주소</th>
-                <td><input type="text" class="form-control input-base" id="fromcompanyaddress" readonly></td>
+                <td><input type="text" class="form-control input-base" id="fromcompanyaddress" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">업종</th>
-                <td><input type="text" class="form-control input-base" id="fromindustrytype" readonly></td>
+                <td><input type="text" class="form-control input-base" id="fromindustrytype" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">업태</th>
-                <td><input type="text" class="form-control input-base" id="frombusinesstype" readonly></td>
+                <td><input type="text" class="form-control input-base" id="frombusinesstype" style="background-color:#fafafa" readonly></td>
               </tr>
 
             </tbody>
@@ -98,12 +98,12 @@
             <tbody>
 
               <tr>
-                <th class="bg-light text-center" style="width:160px;">사업자등록번호</th>
-                <td><input type="text" class="form-control input-base" id="tobno"></td>
+                <th class="bg-light text-center" style="width:160px; ">사업자등록번호</th>
+                <td><input type="text" class="form-control input-base" id="tobno"style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
-                <th class="bg-light text-center">상호</th>
+                <th class="bg-light text-center">거래처</th>
                 <td>
 				  <div th:replace="modal/custModal :: custModal"></div>
                   <div class="input-group">
@@ -115,22 +115,22 @@
 
               <tr>
                 <th class="bg-light text-center">성명</th>
-                <td><input type="text" class="form-control input-base" id="toceoname" readonly></td>
+                <td><input type="text" class="form-control input-base" id="toceoname" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">주소</th>
-                <td><input type="text" class="form-control input-base" id="toaddress" readonly></td>
+                <td><input type="text" class="form-control input-base" id="toaddress" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">업종</th>
-                <td><input type="text" class="form-control input-base" id="tobitem" readonly></td>
+                <td><input type="text" class="form-control input-base" id="tobitem" style="background-color:#fafafa" readonly></td>
               </tr>
 
               <tr>
                 <th class="bg-light text-center">업태</th>
-                <td><input type="text" class="form-control input-base" id="tobtype" readonly></td>
+                <td><input type="text" class="form-control input-base" id="tobtype" style="background-color:#fafafa" readonly></td>
               </tr>
 
             </tbody>

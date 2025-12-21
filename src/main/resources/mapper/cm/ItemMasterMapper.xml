@@ -41,7 +41,17 @@
             AND SKU_TYPE = #{skuType}
         </if>
 
-        ORDER BY SKU
+        ORDER BY TO_NUMBER(SUBSTR(SKU, 2)) DESC
+    </select>
+
+    <!-- ===============================
+         SKU 존재 여부 체크
+    =============================== -->
+    <select id="existsSku" resultType="int">
+        SELECT COUNT(1)
+        FROM TB_SKU_MASTER
+        WHERE COMPANY_CODE = #{companyCode}
+          AND SKU = #{sku}
     </select>
 
     <!-- ===============================
@@ -61,7 +71,9 @@
             USE_YN,
             TAX_YN,
             CREATED_BY,
-            CREATE_DATE
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE
         ) VALUES (
             #{companyCode},
             #{sku},
@@ -73,22 +85,47 @@
             NVL(#{useYn}, 'Y'),
             NVL(#{taxYn}, 'Y'),
             NVL(#{createdBy}, 'ADMIN'),
+            SYSDATE,
+            NVL(#{updatedBy}, 'ADMIN'),
             SYSDATE
         )
     </insert>
 
     <!-- ===============================
-         SKU 자동생성용 MAX 조회
-         (Mapper @Param 기준)
+         품번 수정
     =============================== -->
-    <select id="selectMaxSku"
-            resultType="string">
+    <update id="updateSku"
+            parameterType="com.rootcore.cm.vo.SkuVO">
 
-        SELECT MAX(SKU)
+        UPDATE TB_SKU_MASTER
+        SET
+            SKU_NAME    = #{skuName},
+            SKU_TYPE    = #{skuType},
+            UNIT        = #{unit},
+            SPEC        = #{spec},
+            REMARK      = #{remark},
+            USE_YN      = #{useYn},
+            TAX_YN      = #{taxYn},
+            UPDATED_BY  = #{updatedBy},
+            UPDATE_DATE = SYSDATE
+        WHERE COMPANY_CODE = #{companyCode}
+          AND SKU = #{sku}
+    </update>
+
+    <!-- ===============================
+         SKU 자동생성 (S00060 -> S00061)
+         - COMPANY_CODE 기준
+    =============================== -->
+    <select id="generateSku" resultType="string">
+        SELECT
+          'S' || LPAD(
+              NVL(MAX(TO_NUMBER(SUBSTR(SKU, 2))), 0) + 1,
+              5,
+              '0'
+          )
         FROM TB_SKU_MASTER
         WHERE COMPANY_CODE = #{companyCode}
-          AND SKU_TYPE = #{skuType}
-
+          AND SKU LIKE 'S%'
     </select>
 
 </mapper>

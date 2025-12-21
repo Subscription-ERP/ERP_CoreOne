@@ -19,7 +19,6 @@ public class CertificationVO {
 	private String licenseNo;        // 자격증번호
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date expireDate;         // 유효,만료일
-	private String certiFile;        // 파일
 	private String remark;           // 비고
 	private String createdBy;
 	private Date createDate;
