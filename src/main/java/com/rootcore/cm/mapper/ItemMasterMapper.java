@@ -16,7 +16,13 @@ public interface ItemMasterMapper {
     /** 신규 품번 등록 */
     void insertSku(SkuVO skuVO);
 
-    /** 품번 자동생성용 MAX 조회 */
-    String selectMaxSku(@Param("companyCode") String companyCode,
-                        @Param("skuType") String skuType);
+    /** 품번 수정 */
+    void updateSku(SkuVO skuVO);
+
+    /** SKU 존재 여부 체크 */
+    int existsSku(@Param("companyCode") String companyCode,
+                  @Param("sku") String sku);
+
+    /** SKU 자동생성 (S00001 ~ S99999 방식) */
+    String generateSku(@Param("companyCode") String companyCode);
 }
