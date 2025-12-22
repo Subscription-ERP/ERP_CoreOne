@@ -74,8 +74,6 @@ public class HrController {
 		        Map.of("type", "h5", "label", "연차", "color", "#4FC3F7"),
 		        Map.of("type", "h6", "label", "반차", "color", "#AED581"),
 		        Map.of("type", "h7", "label", "병가", "color", "#9575CD"),
-		        Map.of("type", "h8", "label", "외근", "color", "#BA68C8"),
-		        Map.of("type", "h9", "label", "출장", "color", "#64B5F6"),
 		        Map.of("type", "h10", "label", "휴무", "color", "#90A4AE")
 		    );
 

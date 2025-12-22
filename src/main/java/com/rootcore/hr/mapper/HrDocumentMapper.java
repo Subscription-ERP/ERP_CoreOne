@@ -18,7 +18,8 @@ public interface HrDocumentMapper {
 	// 증명서 등록
 	int insertHrDocument(HrDocumentVO hrDocumentVO);
 	
-	
+	// 증명서 종류 단건조회
+	HrDocumentVO selectDocumentByCode(String docCode);
 	
 	
 	

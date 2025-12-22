@@ -35,6 +35,65 @@
 		AND attend_type = 'h5'
 	</select>
 	
+	<!-- 사원목록 -->
+	<select id="selectAttendanceUsers" resultType="map">
+		SELECT 
+		    att.user_id,
+		    um.user_name,
+		    att.work_date,
+		    dept.dept_name,
+		    FN_FIND_CODENAME('0H', att.attend_type) AS attend_type_name
+		FROM tb_attendance att
+		JOIN tb_user_master um ON att.user_id = um.user_id
+		JOIN tb_dept_master dept ON um.dept = dept.dept_code
+		<where>
+			att.company_code = #{companyCode} 
+			AND TRUNC(att.work_date) = #{date}
+			AND att.attend_type = #{attendType}
+			
+			<if test="userId != null and userId != ''">
+		          AND att.user_id = #{userId}
+		      </if>
+			<if test="deptCode != null and deptCode != ''">
+				AND um.dept = #{deptCode}		
+			</if>
+		</where>		  
+	</select>
+	
+	<!-- 검색(사원,부서) -->
+	<select id="SearchMonthlyByIdnDept" resultType="AttendanceVO">
+		SELECT 
+		    att.company_code,
+		    att.atten_code,
+		    att.user_id,
+		    um.user_name,
+		    att.work_date,
+		    att.attend_type,
+		    FN_FIND_CODENAME('0H', att.attend_type) AS attend_type_name,
+		    dept.dept_name
+		FROM tb_attendance att
+		JOIN tb_user_master um
+		ON att.user_id = um.user_id
+		JOIN tb_dept_master dept
+		ON um.dept = dept.dept_code
+		<where>
+			att.company_code = #{companyCode}
+			AND att.work_date <![CDATA[ >= ]]> TO_DATE(#{month} || '-01', 'YYYY-MM-DD')
+			AND att.work_date <![CDATA[ < ]]> ADD_MONTHS(TO_DATE(#{month} || '-01', 'YYYY-MM-DD'), 1)
+			
+			<if test="userId != null and userId != ''">
+		          AND att.user_id = #{userId}
+		      </if>
+			<if test="deptCode != null and deptCode != ''">
+				AND um.dept = #{deptCode}		
+			</if>
+		</where>
+		
+		ORDER BY att.user_id DESC		
+	</select>
+
+	
+	
 	<!-- 내 근태관리 ========================================================== -->
 	<!-- 내 근태 전체조회 -->
 	<select id="selectMyAttendanceAllList" resultType="AttendanceVO" parameterType="String">

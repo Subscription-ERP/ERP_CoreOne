@@ -25,6 +25,7 @@ public class JasperPdfView extends AbstractView {
             HttpServletResponse response) throws Exception {
 
         String reportName = (String) model.get("reportName");
+        
         @SuppressWarnings("unchecked")
         Map<String, Object> params = (Map<String, Object>) model.get("params");
 

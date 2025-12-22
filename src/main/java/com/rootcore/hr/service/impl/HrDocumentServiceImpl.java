@@ -28,6 +28,12 @@ public class HrDocumentServiceImpl implements HrDocumentService{
 	public int insertHrDocument(HrDocumentVO hrDocumentVO) {
 		return hrDocumentMapper.insertHrDocument(hrDocumentVO);
 	}
+
+	// 증명서 종류 단건조회
+	@Override
+	public HrDocumentVO selectDocumentByCode(String docCode) {
+		return hrDocumentMapper.selectDocumentByCode(docCode);
+	}
 	
 	
 
