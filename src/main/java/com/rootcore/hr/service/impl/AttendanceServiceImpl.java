@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,22 @@ public class AttendanceServiceImpl implements AttendanceService  {
 		return attendanceMapper.seletMonthAttendance(month);
 	}
 
+	// 사원목록
+	@Override
+	public List<Map<String, Object>> selectAttendanceUsers(String companyCode, String date, 
+			                                               String type, String userId, String deptCode) {
+		return attendanceMapper.selectAttendanceUsers(companyCode, date, type, userId, deptCode);
+	}
+		
+	// 검색(사원, 부서)
+	@Override
+	public List<AttendanceVO> SearchMonthlyByIdnDept(String companyCode, String month, String userId, String deptCode) {
+		return attendanceMapper.SearchMonthlyByIdnDept(companyCode, month, userId, deptCode);
+	}
+	
+	
+	
+	
 	// 내근태관리 --------------------------------------------------------------
 	// 내근태관리 전체조회
 	@Override
@@ -183,6 +200,8 @@ public class AttendanceServiceImpl implements AttendanceService  {
 		
 		return attendanceMapper.updateTodayWorkPlaceType(companyCode, userId, workPlaceType, updatedBy);
 	}
+
+
 
 
 }

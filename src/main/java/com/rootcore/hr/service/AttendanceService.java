@@ -2,6 +2,7 @@ package com.rootcore.hr.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.rootcore.hr.vo.AttendanceVO;
 
@@ -9,7 +10,13 @@ public interface AttendanceService {
 	
 	// 근태
 	List<AttendanceVO> seletMonthAttendance(String month);                 // 월별 전체조회
-
+	// 사원목록
+	List<Map<String,Object>> selectAttendanceUsers(String companyCode, String date, String type, String userId, String deptCode);
+	// 검색
+	List<AttendanceVO> SearchMonthlyByIdnDept(String companyCode, String month,
+			                                  String userId, String deptCode);
+	
+	
 	// 내근태관리
 	List<AttendanceVO> selectMyAttendanceAllList(String userId);                 // 내근태관리 전체조회
 	AttendanceVO selectTodayMyAttendance(String userId);                         // 내근태관리 오늘

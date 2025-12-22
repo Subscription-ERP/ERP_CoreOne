@@ -28,12 +28,42 @@ public class AttendanceRestController {
 
 	// 근태관리 ---------------------------------------------------------------------
 	// 근태 월별 조회
-	@GetMapping("/attMonthList")
-	public List<AttendanceVO> getAttMonthList(String month) {
-		return attendanceService.seletMonthAttendance(month);
-
+	/*
+	 * @GetMapping("/attMonthList") public List<AttendanceVO> getAttMonthList(String
+	 * month) { return attendanceService.seletMonthAttendance(month);
+	 * 
+	 * }
+	 */
+	
+	// 근태관리(관리자) - 날짜+타입으로 사원목록
+	@GetMapping("/manage/list")
+	public List<Map<String, Object>> getAttendanceUserList(
+	    @RequestParam String date,
+	    @RequestParam String type,
+	    @RequestParam(required=false) String userId,
+	    @RequestParam(required=false) String deptCode,
+	    HttpSession session
+	){
+	    String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+	    return attendanceService.selectAttendanceUsers(companyCode, date, type, userId, deptCode);
 	}
+	
+	// 검색(사원,부서) + 월별 근태 조회
+	@GetMapping("/attMonthList")
+	public List<AttendanceVO> attMonthList(
+	        @RequestParam String month,
+	        @RequestParam(required=false) String userId,
+	        @RequestParam(required=false) String deptCode,
+	        HttpSession session
+	){
+	    String companyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
 
+	    // 검색조건 반영된 월 조회
+	    return attendanceService.SearchMonthlyByIdnDept(companyCode, month, userId, deptCode);
+	}
+	
+	
+	
 	// 내근태관리 -------------------------------------------------------------------
 	// 전체조회
 	@GetMapping("/my")
