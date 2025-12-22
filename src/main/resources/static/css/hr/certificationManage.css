@@ -38,11 +38,11 @@
 
 /* 증명서 미리보기 영역 */
 .cert-preview-wrapper {
-	margin-top: 16px;
-	border: 1px solid var(--mid-light-gray-color);
+	margin-top: 14px;
+	/* border: 1px solid var(--mid-light-gray-color) */;
 	border-radius: 6px;
 	background: #fff;
-	height: 560px;
+	height: 620px;
 	overflow: hidden;
 }
 
@@ -72,24 +72,3 @@
 	box-sizing: border-box;
 }
 
-/* 저장 버튼 영역 */
-.cert-footer {
-	margin-top: 10px;
-	display: flex;
-	justify-content: flex-start;
-}
-
-
-/* .cert-preview-wrapper {
-  border: 1px solid #ddd;
-}
-
-.cert-preview-scroll {
-  height: 600px;       
-  overflow: auto;
-}
-
-.cert-preview-page {
-  width: 100%;
-  height: 100%;
-} */
