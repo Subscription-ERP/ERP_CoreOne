@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.rootcore.sb.service.CompanyDraftService;
 import com.rootcore.sb.service.PaymentService;
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
@@ -24,8 +25,10 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/api")
 public class PaymentController {
-	
+
 	private final PaymentService paymentService;
+	private final CompanyDraftService companyDraftService;
+
 	/**
 	 * (선택) 3. successUrl, failUrl에서 보여줄 페이지가 필요하면 이런 식으로 구현 가능 - 여기서는 단순히 메시지를 리턴하는
 	 * 예제입니다.
@@ -39,50 +42,48 @@ public class PaymentController {
 		req.setPaymentKey(paymentKey);
 		req.setOrderId(orderId);
 		req.setAmount(amount);
-		
-	
-		CompanyVO company = (CompanyVO) session.getAttribute("company");
+
+		CompanyVO company = companyDraftService.getDraft(session);
 		PlanVO plan = (PlanVO) session.getAttribute("plan");
 		ContractVO contract = (ContractVO) session.getAttribute("contract");
-	
 
 		// 2) 결제 승인 API 호출
-		TossConfirmResponseVO res = paymentService.confirmPayment(req, company, plan, contract,session);
-		
+		TossConfirmResponseVO res = paymentService.confirmPayment(req, company, plan, contract, session);
+
 		// 3) 결제후 DB에 등록되었을때 세션삭제
-		session.removeAttribute("company");
+		companyDraftService.clearDraft(session);
 		session.removeAttribute("plan");
 		session.removeAttribute("contract");
-		
+
 		// 3) 사용자에게 보여줄 데이터 모델에 담기
 		model.addAttribute("payment", res);
+		model.addAttribute("email", company.getManagerEmail());
 
 		// 4) 결제완료 화면 렌더링
 		return "sb/success";// resources/templates/payments/success.html
 
 	}
 
-	@GetMapping("/billing/success") 
-	public String billingSuccess(@RequestParam String authKey,
-	                                   @RequestParam String customerKey,
-	                                   HttpSession session, Model model) {
-	    
-	    CompanyVO company = (CompanyVO) session.getAttribute("company");
-	    PlanVO plan = (PlanVO) session.getAttribute("plan");
-	    ContractVO contract = (ContractVO) session.getAttribute("contract");
+	@GetMapping("/billing/success")
+	public String billingSuccess(@RequestParam String authKey, @RequestParam String customerKey, HttpSession session,
+			Model model) {
 
-	    // authKey로 billingKey 발급하고, 구독/결제/계약/회사까지 한 번에 처리
-	    TossConfirmResponseVO res = paymentService.createSubscriptionWithBillingKey(
-	            authKey, customerKey, company, plan, contract);
-	    // 3) 결제후 DB에 등록되었을때 세션삭제
-	    session.removeAttribute("company");
+		CompanyVO company = companyDraftService.getDraft(session);
+		PlanVO plan = (PlanVO) session.getAttribute("plan");
+		ContractVO contract = (ContractVO) session.getAttribute("contract");
+
+		// authKey로 billingKey 발급하고, 구독/결제/계약/회사까지 한 번에 처리
+		TossConfirmResponseVO res = paymentService.createSubscriptionWithBillingKey(authKey, customerKey, company, plan,
+				contract);
+		// 3) 결제후 DB에 등록되었을때 세션삭제
+		companyDraftService.clearDraft(session);
 		session.removeAttribute("plan");
 		session.removeAttribute("contract");
-	    model.addAttribute("billing",res);
-	    model.addAttribute("billingKey", res.getBillingKey()); // 응답 VO에 넣어두면 화면에서 볼 수 있음(선택)
-	    return "sb/billingsuccess";
+		model.addAttribute("billing", res);
+		model.addAttribute("billingKey", res.getBillingKey()); // 응답 VO에 넣어두면 화면에서 볼 수 있음(선택)
+		model.addAttribute("email", company.getManagerEmail());
+		return "sb/billingsuccess";
 	}
-
 
 	@GetMapping("/fail")
 	public String paymentFail(@RequestParam String code, @RequestParam String message, @RequestParam String orderId,

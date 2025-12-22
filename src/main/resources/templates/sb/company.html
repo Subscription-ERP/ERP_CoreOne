@@ -60,15 +60,16 @@ html, body {
 	overflow: hidden !important; /* 전체 스크롤 제거 */
 	height: 100%;
 }
+
 .btn-outline-secondary {
-  color: #666;
-  border-color: #999;
+	color: #666;
+	border-color: #999;
 }
 
 .btn-outline-secondary:hover {
-  background: #aaa;
-  color: #fff;
-  border-color: #999;
+	background: #aaa;
+	color: #fff;
+	border-color: #999;
 }
 </style>
 </head>
@@ -144,6 +145,11 @@ html, body {
 										<div class="col-sm-8">
 											<input type="text" class="form-control"
 												th:field="*{companyName}" placeholder="회사명을 입력하세요">
+
+											<!-- 필수값 오류 문구 -->
+											<div class="text-danger mt-1"
+												th:if="${fieldErrors != null and fieldErrors['companyName'] != null}"
+												th:text="${fieldErrors['companyName']}"></div>
 										</div>
 									</div>
 
@@ -155,6 +161,9 @@ html, body {
 										<div class="col-sm-8">
 											<input type="text" class="form-control" th:field="*{ceoName}"
 												placeholder="대표자명을 입력하세요">
+											<div class="text-danger mt-1"
+												th:if="${fieldErrors != null and fieldErrors['ceoName'] != null}"
+												th:text="${fieldErrors['ceoName']}"></div>
 										</div>
 									</div>
 
@@ -168,7 +177,11 @@ html, body {
 												<input type="text" class="form-control"
 													th:field="*{ceoPhone}" placeholder="'-' 없이 숫자만 입력">
 											</div>
-											<div class="helper-text mt-1">인증번호 전송 후 본인 인증을 진행합니다.</div>
+											<div class="helper-text mt-1">본 번호는 실제 인증 없이 입력값 검증만
+												진행됩니다.</div>
+											<div class="text-danger mt-1"
+												th:if="${fieldErrors != null and fieldErrors['ceoPhone'] != null}"
+												th:text="${fieldErrors['ceoPhone']}"></div>
 										</div>
 									</div>
 
@@ -180,7 +193,6 @@ html, body {
 												<input type="email" class="form-control"
 													th:field="*{companyEmail}"
 													placeholder="example@company.com">
-												<button type="button" class="btn btn-outline-secondary">중복확인</button>
 											</div>
 										</div>
 									</div>
@@ -224,23 +236,14 @@ html, body {
 											<div class="input-group">
 												<input type="text" class="form-control" th:field="*{bno}"
 													placeholder="'-' 없이 숫자만 입력">
-												<button type="button" class="btn btn-outline-secondary">중복확인</button>
 											</div>
-											<div class="helper-text mt-1">국세청 등록정보와 일치 여부를 확인합니다.</div>
+											<div class="text-danger mt-1"
+												th:if="${fieldErrors != null and fieldErrors['bno'] != null}"
+												th:text="${fieldErrors['bno']}"></div>
 										</div>
 									</div>
 
-									<!-- 인증번호 + 확인 -->
-									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">인증번호</label>
-										<div class="col-sm-8">
-											<div class="input-group">
-												<input type="text" class="form-control"
-													th:field="*{checkNo}" placeholder="수신한 인증번호 입력">
-												<button type="button" class="btn btn-dark">확인</button>
-											</div>
-										</div>
-									</div>
+
 
 									<!-- 회사 주소 + 검색 -->
 									<div class="mb-3 row">
@@ -248,10 +251,7 @@ html, body {
 										<div class="col-sm-8">
 											<div class="input-group">
 												<input type="text" class="form-control"
-													th:field="*{companyAddress}" placeholder="주소를 검색해주세요">
-												<button type="button" class="btn btn-outline-secondary">
-													<i class="bi bi-search"></i>
-												</button>
+													th:field="*{companyAddress}" placeholder="주소를 입력해주세요">
 											</div>
 										</div>
 									</div>
@@ -282,16 +282,19 @@ html, body {
 												th:field="*{managerName}" placeholder="담당자 이름">
 										</div>
 									</div>
-										<!-- 회사 E-mail + 중복확인 -->
+									<!-- 회사 E-mail + 중복확인 -->
 									<div class="mb-3 row">
-										<label class="col-sm-4 col-form-label">담당자 이메일</label>
+										<label class="col-sm-4 col-form-label">담당자 이메일<span
+											class="required-star">*</span></label>
 										<div class="col-sm-8">
 											<div class="input-group">
 												<input type="email" class="form-control"
 													th:field="*{managerEmail}"
 													placeholder="example@company.com">
-												<button type="button" class="btn btn-outline-secondary">중복확인</button>
 											</div>
+											<div class="text-danger mt-1"
+												th:if="${fieldErrors != null and fieldErrors['managerEmail'] != null}"
+												th:text="${fieldErrors['managerEmail']}"></div>
 										</div>
 									</div>
 
@@ -301,7 +304,9 @@ html, body {
 							</div>
 
 							<!-- 하단 버튼 -->
-							<button type="submit" class="btn btn-dark px-4">다음으로</button>
+							<div class="d-flex justify-content-end">
+								<button type="submit" class="btn btn-dark px-4">다음으로</button>
+							</div>
 
 						</form>
 					</div>
