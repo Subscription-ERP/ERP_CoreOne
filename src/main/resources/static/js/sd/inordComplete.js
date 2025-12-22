@@ -1,3 +1,10 @@
+const btnReset = document.getElementById('btnReset');
+const btnSearch = document.getElementById('btnSearch');
+const inordDateFrom = document.getElementById('inordDateFrom');
+const inordDateTo = document.getElementById('inordDateTo');
+const searchCustCode = document.getElementById('searchCustCode');
+const searchCustName = document.getElementById('searchCustName');
+
 let grid;
 let currentStatus = 'NOT_DONE';
 
@@ -18,13 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = btn.dataset.status;
             currentStatus = status;
 
+            const custCode = searchCustCode.value.trim();
+            const custName = searchCustName.value.trim();
+            const inordDateFromValue = inordDateFrom.value;
+            const inordDateToValue = inordDateTo.value;
+
             if (status === 'DONE') {
                 btnOutPut.disabled = true;
             } else {
                 btnOutPut.disabled = false;
             }
 
-            loadInOrdHeader(status);
+            loadInOrdHeader(status, custCode, custName, inordDateFromValue, inordDateToValue);
         });
     });
     
@@ -34,14 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
      * ------------------------------------------------------------------ */
     const btnOutPut = document.getElementById('btnOutPut');
 
-    btnOutPut.addEventListener('click', (e) => {
+    btnOutPut.addEventListener('click', async (e) => {
         e.preventDefault();
-        processOutput()
-            .then(r => r.json())
-            .then(result => {
-                console.log(result);
-            })
-            .catch(err => console.error(err));
+
+        try {
+            await processOutput();
+        } catch (err) {
+            console.error(err);
+            showToast('처리 중 오류가 발생했습니다.', 'error');
+        }
 
     });
 
@@ -63,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollY: true,
         treeColumnOptions: {
             name: 'inordNo',
-            useCascadingCheckbox: false
+            useCascadingCheckbox: true
         },
         columns: [
             {
@@ -147,15 +160,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    loadInOrdHeader('NOT_DONE');
+    /* ------------------------------------------------------------------
+     * 조회
+     * ------------------------------------------------------------------ */
+
+    // 조회 버튼 클릭
+    btnSearch.addEventListener('click', () => {
+        const custCode = searchCustCode.value.trim();
+        const custName = searchCustName.value.trim();
+        const from = inordDateFrom.value;
+        const to = inordDateTo.value;
+
+        if (from && to && from > to) {
+            showToast('시작일은 종료일 이전이어야 합니다.', 'warning');
+            return;
+        }
+
+        loadInOrdHeader(currentStatus, custCode, custName, from, to);
+    });
+
+    /* ------------------------------------------------------------------
+     * 초기화
+     * ------------------------------------------------------------------ */
+    btnReset.addEventListener('click', resetSearch);
+
+    // 초기 로드
+    loadInOrdHeader('NOT_DONE', inordDateFrom.value, inordDateTo.value);
 
 
 
 })
 
 // 수주 헤더 정보
-function loadInOrdHeader(outputStatusFilter) {
-    const url = '/api/inOrd/info?status=' + encodeURIComponent(outputStatusFilter);
+function loadInOrdHeader(outputStatusFilter, custCode, custName, inordDateFrom, inordDateTo) {
+    const status = outputStatusFilter || 'NOT_DONE';
+    let url = '/api/inOrd/info?status=' + encodeURIComponent(status);
+
+    // 거래처 관련 검색
+    if (custCode) {
+        url += '&custCode=' + encodeURIComponent(custCode);
+    }
+    if (custName) {
+        url += '&custName=' + encodeURIComponent(custName);
+    }
+
+    // 수주일자 범위 검색
+    if (inordDateFrom) {
+        url += '&inordDateFrom=' + encodeURIComponent(inordDateFrom);
+    }
+    if (inordDateTo) {
+        url += '&inordDateTo=' + encodeURIComponent(inordDateTo);
+    }
+
 
     fetch(url)
         .then(res => res.json())
@@ -259,11 +315,33 @@ async function processOutput() {
         return;
     }
 
-    loadInOrdHeader('NOT_DONE');
-}
+    // 출고처리 이후에도 검색 조건 유지
+    const custCode = searchCustCode.value.trim();
+    const custName = searchCustName.value.trim();
+    const inordDateFromValue = inordDateFrom.value;
+    const inordDateToValue = inordDateTo.value;
+    
+    loadInOrdHeader(currentStatus, custCode, custName, inordDateFromValue, inordDateToValue);
 
+    return res;
+}
 
 function getSelectedRowsFromGrid(grid) {
     const rowKeys = grid.getCheckedRowKeys();
     return rowKeys.map(key => grid.getRow(key));
+}
+
+function resetSearch() {
+    inordDateFrom.value = '';
+    inordDateTo.value = '';
+    searchCustCode.value = '';
+    searchCustName.value = '';
+
+    loadInOrdHeader(
+        currentStatus,
+        inordDateFrom.value,
+        inordDateTo.value,
+        searchCustCode.value,
+        searchCustName.value
+    );
 }
