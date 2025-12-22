@@ -64,7 +64,9 @@ public class AnnualManageRestController {
 	@PostMapping("/myAnnualApply")
 	public int myAnnualApply(@RequestBody AnnualLeaveDetailVO param, HttpSession session) {
 		String CompanyCode = (String) session.getAttribute("LOGIN_COMPANY_CODE");
+		String userId = (String) session.getAttribute("LOGIN_USER_ID");
 		param.setCompanyCode(CompanyCode);
+		param.setUserId(userId);
 		return annualManageService.insertmyAnnualApply(param);
 	}
 }
