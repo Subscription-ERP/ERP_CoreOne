@@ -84,19 +84,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 			// ===== 유효성 검사 =====
 			if (!docType) {
-				showToast("증명서 종류를 선택해주세요.", "error");
+				showToast("증명서 종류를 선택해주세요.", "warning");
 				return;
 			}
 			if (!userId) {
-				showToast("사원을 선택해주세요.", "error");
+				showToast("사원을 선택해주세요.", "warning");
 				return;
 			}
 			if (!issueDate) {
-				showToast("발급일을 선택해주세요.", "error");
+				showToast("발급일을 선택해주세요.", "warning");
 				return;
 			}
 			if (!purpose) {
-				showToast("용도를 입력해주세요.", "error");
+				showToast("용도를 입력해주세요.", "warning");
 				return;
 			}
 
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 				const vo = await res.json();   // controller에서 반환한 HrDocumentVO
 				const docCode = vo.docCode;    // vo안에 있는 docCode 필드
-
+				
 				showToast("증명서가 생성되었습니다.", "success");
 
 				// 미리보기 (Jasper PDF iframe)
@@ -149,6 +149,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 		})
 	}
 
+	
+	/* ------------------------------------------------------------------
+	 * 초기화 버튼 클릭 이벤트
+	 * ------------------------------------------------------------------ */
+	const btnReset = document.querySelector("#btnReset");
+
+	if (btnReset) {
+		btnReset.addEventListener("click", () => {
+
+			const fr = document.querySelector(".form-allwrapper");
+
+			// 1) 증명서 종류 → 재직으로 기본 세팅
+			const docTypeSelect = fr.querySelector("#docType");
+			if (docTypeSelect) {
+				docTypeSelect.value = "i1" ; 
+			}
+
+			// 2) 사원 초기화
+			const userId = fr.querySelector("#UserId");
+			const userName = fr.querySelector("#UserName");
+			if (userId) userId.value = "";
+			if (userName) userName.value = "";
+
+			// 3) 발급일 초기화
+			const issueDate = fr.querySelector("#IssueDate");
+			if (issueDate) issueDate.value = "";
+
+			// 4) 용도 초기화
+			const purpose = fr.querySelector("#purpose");
+			if (purpose) purpose.value = "";
+
+			// 5) 미리보기 영역 초기화
+			const previewContainer = document.querySelector("#certPreviewPage");
+			if (previewContainer) {
+				previewContainer.innerHTML = `
+					증명서 미리보기 영역입니다.<br />
+					상단에서 증명서 종류, 사원, 용도를 선택한 뒤<br />
+					[확인] 버튼을 클릭하면<br />
+					해당 증명서가 이 영역에 표시됩니다.
+				`;
+			}
+
+		});
+	}
+	
 
 
 

@@ -237,7 +237,7 @@ function setupSubGrid({ tbodyId, templateId, addBtnId, countId }) {
 // 날짜 범위 검증 함수
 function validateDateRangeByIds(startId, endId, opts = {}){
 	const {
-		message = "종료일이 사직일보다 빠를 수 없습니다.",
+		message = "종료일이 시작일보다 빠를 수 없습니다.",
 		clearOnInvalid = true,
 	} = opts;
 	
