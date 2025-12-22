@@ -34,5 +34,15 @@ public class InOrdVO {
     private Date updateDate;            // 수정일자
 
     private String outputStatusFilter;  // 수주 목록 조건
+
+
+    // 검색 날짜 조건
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date inordDateFrom;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date inordDateTo;
 }
 

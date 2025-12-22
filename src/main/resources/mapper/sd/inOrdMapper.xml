@@ -21,7 +21,7 @@
                               total_price,
                               created_by,
                               create_date)
-        VALUES ('0000',
+        VALUES (#{companyCode},
                 #{inordNo},
                 #{inordDate},
                 #{dueDate},
@@ -32,7 +32,7 @@
                 #{totalSupplyPrice},
                 #{totalSurtax},
                 #{totalPrice},
-                '박봉근',
+                #{createdBy},
                 SYSDATE)
     </insert>
 
@@ -54,8 +54,8 @@
                                      remark,
                                      created_by,
                                      create_date)
-        VALUES ( #{inordDetailNo},
-                '0000',
+        VALUES (#{inordDetailNo},
+                #{companyCode},
                 #{inordNo},
                 #{sku},
                 #{qty},
@@ -64,7 +64,7 @@
                 #{surtax},
                 #{price},
                 #{remark},
-                '박봉근',
+                #{createdBy},
                 SYSDATE)
     </insert>
 
@@ -89,6 +89,28 @@
             <if test="outputStatusFilter == 'DONE'">
                 AND ior.output_status = 2
             </if>
+
+            <!-- 거래처코드 -->
+            <if test="custCode != null and custCode != ''">
+                AND ior.cust_code LIKE '%' || #{custCode} || '%'
+            </if>
+
+            <!-- 거래처명 -->
+            <if test="custName != null and custName != ''">
+                AND ior.cust_name LIKE '%' || #{custName} || '%'
+            </if>
+
+            <!-- 수주일자 조건 -->
+            <if test="inordDateFrom != null and inordDateTo != null">
+                AND TRUNC(ior.inord_date) BETWEEN TRUNC(#{inordDateFrom, jdbcType=DATE}) AND TRUNC(#{inordDateTo, jdbcType=DATE})
+            </if>
+            <if test="inordDateFrom != null and inordDateTo == null">
+                AND TRUNC(ior.inord_date) >= TRUNC(#{inordDateFrom, jdbcType=DATE})
+            </if>
+            <if test="inordDateFrom == null and inordDateTo != null">
+                AND TRUNC(ior.inord_date) <![CDATA[<=]]> TRUNC(#{inordDateTo, jdbcType=DATE})
+            </if>
+
         </where>
         ORDER BY ior.create_date DESC
     </select>
