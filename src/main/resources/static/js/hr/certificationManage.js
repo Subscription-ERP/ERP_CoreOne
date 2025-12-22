@@ -29,62 +29,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 			}).catch(err => console.error(err));
 
 	}
-	
-	const divId = { '0I': 'docType'  }
+
+	const divId = { '0I': 'docType' }
 	getCmCodeOptions2(divId);
 
-	
-	
+
+
 	/* ------------------------------------------------------------------
 	 * 모달
 	 * ------------------------------------------------------------------ */
-	
+
 	// 화면에 보이는 사원명 input
-	const UserName     = document.getElementById("UserName");
+	const UserName = document.getElementById("UserName");
 	// 실제 선택된 사원 ID (hidden)
-	const UserId = document.getElementById("UserId");  
+	const UserId = document.getElementById("UserId");
 
 	// 사원명 input 클릭 시 모달 열기
 	if (UserName) {
-	  UserName.addEventListener("click", (e) => {
-	    if (typeof openUserSearchModal === 'function') {
-	      openUserSearchModal(e);
-	    } else {
-	      console.error("에러가 발생했습니다.");
-	    }
-	  });
+		UserName.addEventListener("click", (e) => {
+			if (typeof openUserSearchModal === 'function') {
+				openUserSearchModal(e);
+			} else {
+				console.error("에러가 발생했습니다.");
+			}
+		});
 	}
 
 	// 모달에서 row 선택 시 호출되는 콜백 (전역)
 	window.handleSelectedEmp = function(row) {
-	  if (UserId) {
-	    UserId.value = row.userId;
-	  }
-	  if (UserName) {
-	    UserName.value = row.userName;
-	  }
+		if (UserId) {
+			UserId.value = row.userId;
+		}
+		if (UserName) {
+			UserName.value = row.userName;
+		}
 	};
 
 
 	/* ------------------------------------------------------------------
 	 * 확인 버튼 클릭 이벤트 -> 증명서 등록(insert)
 	 * ------------------------------------------------------------------ */
-	
+
 	const btnConfirm = document.querySelector("#btnConfirm");
-	
-	if(btnConfirm){
+
+	if (btnConfirm) {
 		btnConfirm.addEventListener("click", async () => {
-			
+
 			const fr = document.querySelector(".form-allwrapper");
-			
-			const payload = {
-				userId : fr.querySelector("#UserId")?.value ?? "",
-				docType : fr.querySelector("#docType")?.value ?? "",
-				issueDate : fr.querySelector("#IssueDate")?.value ?? "",
-				purpose : fr.querySelector("#purpose")?.value ?? "",
+
+			const userId = fr.querySelector("#UserId")?.value ?? "";
+			const docType = fr.querySelector("#docType")?.value ?? "";
+			const issueDate = fr.querySelector("#IssueDate")?.value ?? "";
+			const purpose = fr.querySelector("#purpose")?.value ?? "";
+
+			// ===== 유효성 검사 =====
+			if (!docType) {
+				showToast("증명서 종류를 선택해주세요.", "error");
+				return;
 			}
-			
-			try{
+			if (!userId) {
+				showToast("사원을 선택해주세요.", "error");
+				return;
+			}
+			if (!issueDate) {
+				showToast("발급일을 선택해주세요.", "error");
+				return;
+			}
+			if (!purpose) {
+				showToast("용도를 입력해주세요.", "error");
+				return;
+			}
+
+			const payload = { userId, docType, issueDate, purpose }
+
+			try {
+				globalLoader.style.display = "flex";
+
 				const res = await fetch('/api/hr/docs', {
 					method: "POST",
 					headers: {
@@ -92,24 +112,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 					},
 					body: JSON.stringify(payload),
 				});
-				
-				if(!res.ok){
-					if(res.status === 401){
+
+				if (!res.ok) {
+					if (res.status === 401) {
 						throw new Error("로그인이 필요합니다.");
 					}
 					throw new Error("증명서 등록 중 서버 오류");
 				}
-				
+
 				const vo = await res.json();   // controller에서 반환한 HrDocumentVO
 				const docCode = vo.docCode;    // vo안에 있는 docCode 필드
-				
+
 				showToast("증명서가 생성되었습니다.", "success");
-				
+
 				// 미리보기 (Jasper PDF iframe)
 				const previewContainer = document.querySelector("#certPreviewPage");
-				if(previewContainer && docCode){
+				if (previewContainer && docCode) {
 					const previewUrl = `/api/hr/docs/${docCode}/preview`;
-					
+
 					previewContainer.innerHTML = `
 					          <iframe
 					              src="${previewUrl}"
@@ -117,17 +137,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 					          ></iframe>
 					        `;
 				}
-								
-			}catch(err){
+
+			} catch (err) {
 				console.error(err);
 				showToast("증명서 등록을 실패했습니다.", "error")
+			} finally {
+				globalLoader.style.display = "none";
 			}
-			
-			
+
+
 		})
 	}
-	
 
-	
-	
+
+
+
 });

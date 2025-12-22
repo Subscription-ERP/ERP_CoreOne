@@ -62,26 +62,35 @@ public class HrDocumentRestController {
 	}
 	
 	
-	// Jasper Controller
+	// Jasper Controller  
+	// i1 재직, i2 경력
 	@GetMapping("/docs/{docCode}/preview")
 	public ModelAndView previewPdfFromJasper(@PathVariable String docCode,HttpSession session) {
 		
+		HrDocumentVO doc = hrDocumentService.selectDocumentByCode(docCode);
+		
+		String reportName;
+		
+		if ("i1".equalsIgnoreCase(doc.getDocType())) {
+		    reportName = "empCerti";   // 재직
+		} else if ("i2".equalsIgnoreCase(doc.getDocType())) {
+		    reportName = "carrerCerti";  // 경력
+		} else {
+		    throw new IllegalStateException("알 수 없는 docType=" + doc.getDocType());
+		}
+				
 		Map<String, Object> params = new HashMap<>();
 		params.put("docCode", docCode); 
 		
 		Map<String, Object> model = new HashMap<>();
-		model.put("reportName", "empCerti");      // 템플릿 : /jasper/empCerti.jasper
+		model.put("reportName", reportName);      // 템플릿 : /jasper/empCerti.jasper
 		model.put("params", params);
-		model.put("fileName", "empCerti_" + docCode + ".pdf");
+		model.put("fileName", reportName + "_" + docCode + ".pdf");
 		model.put("disposition", "inline");       // iframe 미리보기
 		
+		System.out.println("docCode=" + docCode + ", docType=" + doc.getDocType());
 		return new ModelAndView("jasperPdfView", model);
 	}
-	
-	
-	
-	
-	
 	
 	
 	
