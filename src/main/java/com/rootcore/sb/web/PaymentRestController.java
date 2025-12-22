@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rootcore.sb.service.PaymentService;
-import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.OrderVO;
 import com.rootcore.sb.vo.PaymentReadyResponseVO;
