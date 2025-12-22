@@ -182,6 +182,7 @@
 		  FROM tb_attendance
 		 WHERE work_date >= TO_DATE(#{annualStartDate}, 'YYYY-MM-DD')
 		   AND work_date &lt;= TO_DATE(#{annualEndDate}, 'YYYY-MM-DD')
+		   AND user_id = #{userId}
 	</select>
           
 </mapper>
