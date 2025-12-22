@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rootcore.cm.mapper.DashBoardMapper">
+<!-- 대쉬보드 매퍼 -->
+
+	<!-- 오늘의 휴가자 불러오는 매퍼 -->
+	<select id="selectDashBoardAnnualLeaveDetail" resultType="AnnualLeaveDetailVO"
+		parameterType="AnnualLeaveDetailVO">
+		SELECT ald.annual_leave_code,
+		       ald.leave_start_date,
+		       ald.leave_end_date,
+		       um.user_name,
+		       fn_find_codename('0B',leave_type),
+		       dm.dept_name
+		FROM   tb_annual_leave_detail ald
+		       JOIN tb_annual_leave al
+		       ON al.annual_leave_code = ald.annual_leave_code
+		       JOIN tb_user_master um
+		       ON um.user_id = al.user_id
+		       JOIN tb_dept_master dm
+		       ON dm.dept_code = um.dept
+		WHERE  ald.company_code = #{companyCode}
+		  AND  SYSDATE &lt;= ald.leave_start_date
+		  AND  SYSDATE >= ald.leave_end_date
+	</select>	
+	
+</mapper>
