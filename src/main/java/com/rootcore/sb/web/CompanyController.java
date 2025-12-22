@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.rootcore.sb.service.CompanyDraftService;
 import com.rootcore.sb.service.PlanService;
+import com.rootcore.sb.service.impl.CompanyDraftServiceImpl.ValidationException;
 import com.rootcore.sb.vo.CompanyVO;
 import com.rootcore.sb.vo.ContractVO;
 import com.rootcore.sb.vo.PlanVO;
@@ -28,27 +30,33 @@ import lombok.RequiredArgsConstructor;
 public class CompanyController {
 
 	@Value("${toss.api.client-key}")
-	String clientKey ;
-	
+	String clientKey;
+
 	private final PlanService planService;
+	private final CompanyDraftService companyDraftService;
 
 	// 1단계 회사 등록화면
 	@GetMapping("/cm/company")
 	public String companyForm(Model model) {
-		model.addAttribute("companyRequest", new CompanyVO());
-		model.addAttribute("breadcrumb", List.of(
-		        "공통기능",
-		        "회사등록"
-		    ));
+		if (!model.containsAttribute("companyRequest")) {
+		    model.addAttribute("companyRequest", new CompanyVO());
+		}
+		model.addAttribute("breadcrumb", List.of("공통기능", "회사등록"));
 		return "sb/company"; // company.html
 	}
 
 	// 1단계 회사등록 + 플랜선택화면이동
 	@PostMapping("/companies")
-	public String registerCompany(@ModelAttribute CompanyVO requestVO, HttpSession session) {
-		session.setAttribute("company", requestVO);
+	public String registerCompany(@ModelAttribute CompanyVO requestVO, HttpSession session,  RedirectAttributes ra) {
+		 try {
+		        companyDraftService.saveDraft(requestVO, session);
+		        return "redirect:/plans";
+		 } catch (ValidationException e) {
+		        ra.addFlashAttribute("fieldErrors", e.getFieldErrors());
+		        ra.addFlashAttribute("companyRequest", requestVO);
+		        return "redirect:/cm/company";
+		    }
 		// GET /{companyCode}/plans 으로 redirect
-		return "redirect:/plans";
 	}
 
 	/*
@@ -88,7 +96,7 @@ public class CompanyController {
 	@GetMapping("/sub/contract")
 	public String showContractPage(Model model, HttpSession session) {
 		// 생성자로 주입된 객체를 호출해야함
-		CompanyVO company = (CompanyVO) session.getAttribute("company");
+		CompanyVO company = companyDraftService.getDraft(session);
 		PlanVO plan = (PlanVO) session.getAttribute("plan");
 
 		BigDecimal baseTotal = planService.calculateBaseTotal(plan);

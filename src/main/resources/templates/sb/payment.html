@@ -232,6 +232,191 @@
 .payment-panel .panel-footer {
 	margin-top: auto; /* ✅ 아래로 밀어줌 */
 }
+/* ===== 합친 카드 레이아웃 ===== */
+.merged-card {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 14px;
+	padding: 28px;
+	box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.merged-grid {
+	display: grid;
+	grid-template-columns: 1.35fr 0.65fr; /* 왼쪽 넓게 / 오른쪽 좁게 */
+	gap: 24px;
+	align-items: start;
+}
+
+/* 모바일에서는 세로로 */
+@media ( max-width : 992px) {
+	.merged-grid {
+		grid-template-columns: 1fr;
+	}
+	.right-section {
+		margin-top: 8px;
+	}
+}
+
+.left-section {
+	padding-right: 8px;
+}
+
+.right-section {
+	border-left: 1px solid #eef2f7;
+	padding-left: 24px;
+}
+
+/* 오른쪽 영역이 너무 “텅 빈 카드”처럼 보이지 않게 */
+.right-title {
+	font-weight: 800;
+	margin-bottom: 10px;
+}
+
+/* ===== 요약 타이틀/행 간격 정리 ===== */
+.summary-title {
+	font-weight: 800;
+	text-align: left; /* 가운데 → 좌측 정렬이 더 SaaS 느낌 */
+	margin-bottom: 14px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #eef2f7;
+	font-size: 16px;
+}
+
+.summary-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+	font-size: 14px;
+	color: #111827;
+}
+
+.summary-row span:first-child {
+	color: #6b7280; /* 라벨은 살짝 연하게 */
+	font-weight: 700;
+}
+
+.summary-divider {
+	border-top: 1px solid #eef2f7;
+	margin: 16px 0;
+}
+
+.summary-total {
+	font-weight: 900;
+}
+
+.summary-total span:last-child {
+	font-size: 16px;
+}
+
+/* ===== 결제 방식 버튼을 더 “선택 카드”처럼 ===== */
+.method-toggle {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+}
+
+@media ( max-width : 576px) {
+	.method-toggle {
+		grid-template-columns: 1fr;
+	}
+}
+
+.method-btn {
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	background: #fff;
+	padding: 14px 14px;
+	font-weight: 900;
+	font-size: 14px;
+	cursor: pointer;
+	line-height: 1.2;
+	transition: transform .08s ease, border-color .15s ease, background .15s
+		ease;
+}
+
+.method-btn:hover {
+	transform: translateY(-1px);
+	border-color: #cbd5e1;
+}
+
+.method-sub {
+	display: block;
+	margin-top: 6px;
+	font-size: 12px;
+	font-weight: 800;
+	color: #6b7280;
+}
+
+.method-btn.is-active {
+	border-color: rgba(37, 99, 235, .55);
+	background: rgba(37, 99, 235, .08);
+	color: #1d4ed8;
+}
+
+.method-desc {
+	margin-top: 10px;
+	font-size: 12px;
+	color: #6b7280;
+	line-height: 1.5;
+}
+
+/* ===== 오른쪽 안내 박스: 더 “정보 카드” 느낌 ===== */
+.billing-box {
+	border: 1px solid rgba(37, 99, 235, .20);
+	background: rgba(37, 99, 235, .06);
+	border-radius: 12px;
+	padding: 14px;
+}
+
+.billing-title {
+	font-weight: 900;
+	color: #1d4ed8;
+	margin-bottom: 6px;
+}
+
+.billing-text {
+	font-size: 13px;
+	color: #374151;
+	line-height: 1.55;
+}
+
+.right-foot {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px dashed #e5e7eb;
+	font-size: 12px;
+	color: #6b7280;
+	line-height: 1.5;
+}
+
+/* ===== 버튼 줄: 왼쪽 섹션 안에서 깔끔하게 ===== */
+.btn-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 18px;
+}
+
+/* 기존 버튼 컬러는 유지 */
+.btn-dark {
+	background: #364d99;
+	border-color: #364d99;
+}
+
+.btn-dark:hover {
+	background: #788bc9;
+	border-color: #788bc9;
+}
+.billing-text {
+  word-break: keep-all;
+  line-height: 1.6;
+}
+
+.merged-grid {
+  grid-template-columns: 1.25fr 0.75fr;
+}
 </style>
 </head>
 
@@ -284,13 +469,12 @@
 				</div>
 			</div>
 
-			<!-- 본문: 왼쪽 요약 / 오른쪽 결제 UI -->
-			<div class="row g-4">
-				<!-- 왼쪽: 결제 요약 카드 -->
-				<div class="col-12 col-lg-6">
-					<div class="summary-card">
+			<!-- ✅ 큰 카드 1개로 합치기 -->
+			<div class="merged-card">
+				<div class="merged-grid">
 
-						<!-- 요금제명 -->
+					<!-- 왼쪽 섹션(요약 + 결제방식 + 버튼) -->
+					<div class="left-section">
 						<div class="summary-title">
 							<span th:text="${session.plan.planName}">Professional</span>
 						</div>
@@ -300,12 +484,10 @@
 							<span>구독기간</span> <span
 								th:text="${session.contract.subsPeriod + '개월'}">3개월</span>
 						</div>
-
 						<div class="summary-row">
 							<span>사용자 수</span> <span
 								th:text="${session.contract.userCount + '명'}">100명</span>
 						</div>
-
 						<div class="summary-row">
 							<span>포함 기능</span> <span th:text="${session.plan.planInfo}">중간
 								등급 플랜</span>
@@ -317,25 +499,27 @@
 						<div class="summary-row">
 							<span>월 구독료</span> <span th:text="${session.plan.price + '원'}">20,000원</span>
 						</div>
-						<!-- 할인금액: 구독기간 12개월 AND 결제주기 12개월일 때만 노출 -->
+
 						<div class="summary-row"
 							th:if="${session.contract.subsPeriod == 12 and session.contract.billingPeriod == 12}">
 							<span>할인 금액</span> <span
 								th:text="'-' + ${#numbers.formatInteger(session.contract.discountAmount, 3, 'COMMA')} + '원'">-24,000원</span>
 						</div>
+
 						<div class="summary-row">
 							<span>부가세(10%)</span> <span
 								th:text="${session.contract.vat + '원'}">6,000원</span>
 						</div>
+
 						<div class="summary-row summary-total">
-							<span> 총 금액( <span
-								th:text="${session.contract.subsPeriod + '개월'}">3개월</span> )
+							<span>총 금액(<span
+								th:text="${session.contract.subsPeriod + '개월'}">3개월</span>)
 							</span> <span th:text="${session.contract.totalPrice + '원'}">66,000원</span>
 						</div>
 
 						<div class="summary-divider"></div>
 
-						<!-- ✅ 결제 방식 선택(카드 안) -->
+						<!-- 결제 방식 -->
 						<div class="pay-method-in-card">
 							<div class="mb-2 fw-bold">결제 방식 선택</div>
 
@@ -344,7 +528,6 @@
 									data-paytype="SUBSCRIPTION">
 									정기결제 <span class="method-sub">카드 등록 후 다음 결제부터 자동결제</span>
 								</button>
-
 								<button type="button" class="method-btn" data-paytype="ONE_TIME">
 									간편결제(1회) <span class="method-sub">이번 결제만 진행</span>
 								</button>
@@ -355,37 +538,29 @@
 
 							<input type="hidden" id="payType" value="SUBSCRIPTION" />
 						</div>
-						<!-- 하단 버튼 -->
-						<div class="row mt-4">
-							<div class="d-flex justify-content-between align-items-center w-100 mt-4">
-								<a th:href="@{/sub/contract}"
-									class="btn btn-outline-secondary px-5">이전으로</a>
-								<button type="button" id="payBtn" class="btn btn-dark px-5">결제하기</button>
-							</div>
+
+						<!-- 버튼 -->
+						<div class="btn-row">
+							<a th:href="@{/sub/contract}"
+								class="btn btn-outline-secondary px-5">이전으로</a>
+							<button type="button" id="payBtn" class="btn btn-dark px-5">결제하기</button>
 						</div>
-
-
-
 					</div>
-				</div>
 
-				<!-- 오른쪽: 결제 수단 + 약관 -->
-				<div class="col-12 col-lg-6">
-					<div class="payment-panel w-100 h-100">
-						<div class="fw-bold mb-2">안내</div>
+					<!-- 오른쪽 섹션(안내) -->
+					<div class="right-section">
+						<div class="right-title">안내</div>
 
-
-						<!-- ✅ 정기결제 안내 (기본 보임) -->
 						<div id="billingGuideArea" class="billing-guide-area">
 							<div class="billing-box">
 								<div class="billing-title">정기결제 안내</div>
 								<div class="billing-text">
-									결제하기를 누르면 카드 등록(빌링키)이 진행됩니다.<br /> 첫 결제 이후 다음 결제부터 자동으로 결제됩니다.
+									<div>결제하기를 누르면 카드 등록(빌링키)이 진행됩니다.</div>
+									<div>첫 결제 이후 다음 결제부터 자동으로 결제됩니다.</div>
 								</div>
 							</div>
 						</div>
 
-						<!-- ✅ 간편결제 안내 (ONE_TIME 선택 시 보임) -->
 						<div id="oneTimeGuideArea" class="billing-guide-area is-hidden">
 							<div class="billing-box">
 								<div class="billing-title">간편결제(1회) 안내</div>
@@ -395,10 +570,9 @@
 							</div>
 						</div>
 
-						<div class="panel-footer mt-3"
-							style="font-size: 12px; color: #6b7280; line-height: 1.5;">
-							결제 완료 후 관리자 계정이 자동으로 생성됩니다.</div>
+						<div class="right-foot">결제 완료 후 관리자 계정이 자동으로 생성됩니다.</div>
 					</div>
+
 				</div>
 			</div>
 

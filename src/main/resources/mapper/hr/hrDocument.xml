@@ -58,6 +58,14 @@
 		)
 	</insert>
 	
+	<!-- 단건조회(증명서 종류) -->
+	<select id="selectDocumentByCode" resultType="HrDocumentVO">
+		SELECT
+		   doc_code,
+		   doc_type
+		FROM tb_hr_document
+		WHERE doc_code = #{docCode}
+	</select>
 	
 	
 

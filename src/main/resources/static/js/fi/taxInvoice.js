@@ -10,6 +10,7 @@ const backdrop = document.querySelector(".modal-layer__backdrop");
 const btnAddRow = document.getElementById('btnAddRow');
 const btnLoadOrder = document.getElementById("btnLoadOrder");
 let searchCustCode = '';
+let custSearchByEnter = false;
 let currentSkuRowKey = null;
 
 class IconRenderer {
@@ -100,7 +101,7 @@ function searchCustModal() {
     // 2) 모달 JS의 검색 함수 호출
     if (typeof searchCust === 'function') {
         custSearchByEnter = true;
-        searchCust();
+        searchCust(true);
     }
 }
 
@@ -348,15 +349,23 @@ document.addEventListener("DOMContentLoaded", function () {
 	};
 	
 	window.afterCustSearch = function(result) {
-	    const byEnter = custSearchByEnter === true;
-	    custSearchByEnter = false;
-	
-	    if (byEnter) {
-	        returnOnlyOne(result);
-	    } else {
-	        // 버튼으로 모달을 열어 내부에서 검색한 경우 등: 그냥 모달 보여주기만
-	        openCustModal();
-	    }
+		const byEnter = custSearchByEnter === true;
+		custSearchByEnter = false;
+
+		if (byEnter) {
+			if (result.length === 1) {
+				// 1건이면 바로 선택
+				returnOnlyOne(result);  // 모달 JS의 전역 함수 호출
+			} else if (result.length > 1) {
+				// 여러 건이면 모달 열어서 선택하게
+				openCustModal();
+			} else {
+				showToast('검색 결과가 없습니다.', 'warning');
+			}
+		} else {
+			// 버튼으로 모달 연 경우: 그냥 목록만 보여주면 됨
+			openCustModal();
+		}
 	};
 
 	btnLoadOrder.addEventListener("click", function () {

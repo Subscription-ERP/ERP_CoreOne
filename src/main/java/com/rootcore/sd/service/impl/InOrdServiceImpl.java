@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service("InOrdService")
@@ -28,8 +29,15 @@ public class InOrdServiceImpl implements InOrdService {
     }
 
     @Override
-    public List<InOrdVO> getInOrd(String outputStatusFilter) {
-        return inOrdMapper.SelectInOrdList(outputStatusFilter);
+    public List<InOrdVO> getInOrd(String outputStatusFilter, String custCode, String custName, Date inordDateFrom, Date inordDateTo) {
+        InOrdVO param = new InOrdVO();
+        param.setOutputStatusFilter(outputStatusFilter);
+        param.setCustCode(custCode);
+        param.setCustName(custName);
+        param.setInordDateFrom(inordDateFrom);
+        param.setInordDateTo(inordDateTo);
+
+        return inOrdMapper.SelectInOrdList(param);
     }
 
     @Override

@@ -13,6 +13,7 @@ public class TossConfirmResponseVO {
 	private String status; // SUCCESS, FAILED 등
 	private Long totalAmount;
 	private OffsetDateTime approvedAt;
+	private String approvedAtView;
 	private String cardCompany; // 내가 화면에 보여줄 매핑용 데이터로 null상태임
 	private String cardCompanyCode;
 	private String cardNumberMask; // ⭐ 선택(원하면 저장)

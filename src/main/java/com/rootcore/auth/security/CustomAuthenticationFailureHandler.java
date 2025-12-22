@@ -34,7 +34,22 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
         log.warn("로그인 실패 원인: {}", exception.getMessage());
 
-        // ✅ 1) 회사코드 불일치
+        
+        // 0) 연차 당일 로그인 차단
+        Throwable cause = exception.getCause();
+        if (exception instanceof LockedException
+                && "ANNUAL_LEAVE_TODAY".equals(exception.getMessage())) {
+            response.sendRedirect("/auth/login?error=annualLeave");
+            return;
+        }
+        if (cause instanceof LockedException
+                && "ANNUAL_LEAVE_TODAY".equals(cause.getMessage())) {
+            response.sendRedirect("/auth/login?error=annualLeave");
+            return;
+        }
+        
+        
+        // 1) 회사코드 불일치
         if (exception instanceof AuthenticationServiceException
                 && "NO_COMPANY".equals(exception.getMessage())) {
 

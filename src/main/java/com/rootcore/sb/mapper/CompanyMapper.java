@@ -20,6 +20,8 @@ public interface CompanyMapper {
     CompanyVO selectCompanyDetail(String companyCode);
 
     int updateCompany(CompanyVO vo);
+    
+    int countByBno(String bno);
 
 
 }

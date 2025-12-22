@@ -2,6 +2,7 @@ package com.rootcore.hr.mapper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,6 +15,19 @@ public interface AttendanceMapper {
 	// 근태관리
 	List<AttendanceVO> seletMonthAttendance(String month);                 // 월별 전체조회
 	int countAnnualLeaveToday(String userId);                              // 연차(h5)로그인막기 조회
+	
+	// 사원목록
+	List<Map<String,Object>> selectAttendanceUsers(@Param("companyCode") String companyCode, 
+												   @Param("date") String date, 
+												   @Param("attendType") String attendType, 
+												   @Param("userId") String userId, 
+												   @Param("deptCode") String deptCode);
+	// 검색 (사원,부서)
+	List<AttendanceVO> SearchMonthlyByIdnDept(@Param("companyCode") String companyCode,
+			                                  @Param("month") String month,
+			                                  @Param("userId") String userId,
+			                                  @Param("deptCode") String deptCode);
+	
 	
 	// 내근태관리 -----------------------------------------------------------------------------
 	List<AttendanceVO> selectMyAttendanceAllList(String userId);           // 내근태관리 전체조회
