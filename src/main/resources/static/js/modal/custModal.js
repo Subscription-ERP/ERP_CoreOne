@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
     searchCust();
   });
 
-  schCustCode.addEventListener('keydown', handleEnter);
-  schCustName.addEventListener('keydown', handleEnter);
+  schCustCode.addEventListener('keydown', handleCustModalEnter);
+  schCustName.addEventListener('keydown', handleCustModalEnter);
 
   custModalGrid.on('click', (e) => {
     const rowKey = e.rowKey;
@@ -134,7 +134,7 @@ function searchCust(fromParent = false) {
 }
 
 // Enter 입력 시 검색
-function handleEnter(e) {
+function handleCustModalEnter(e) {
   if(e.key === 'Enter') {
     e.preventDefault();
     searchCust();
