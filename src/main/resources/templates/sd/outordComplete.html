@@ -48,18 +48,18 @@
                 <!-- 탭 -->
                 <ul class="nav nav-tabs ui-tabs" id="empTabs">
                     <li class="nav-item">
-                        <button class="nav-link active tab-btn" type="button" data-tab="notdone" data-status="NOT_DONE">미출고/부분출고</button>
+                        <button class="nav-link active tab-btn" type="button" data-tab="notdone" data-status="NOT_DONE">미입고/부분입고</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link tab-btn" type="button" data-tab="done" data-status="DONE">
-                            출고완료</button>
+                            입고완료</button>
                     </li>
                 </ul>
 
                 <!-- 우측 액션 -->
                 <div class="toolbar">
                     <button id="btnOutPut" type="button" class="btn btn-color btn-inner">
-                        출고
+                        입고
                     </button>
                 </div>
             </header>
@@ -74,6 +74,6 @@
     <div id="toastContainer" class="rc-toast"></div>
 
     <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/sd/inordComplete.js}"></script>
+    <script th:src="@{/js/sd/outordComplete.js}"></script>
 </body>
 </html>
