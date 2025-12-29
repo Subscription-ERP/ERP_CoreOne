@@ -22,27 +22,28 @@
 <br/>
 
 ## ⚙️ 구현 기술
-<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white" alt="java">
-<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="springboot">
-<img src="https://img.shields.io/badge/Thymeleaf.js-005F0F?style=for-the-badge&logo=Thymeleaf&logoColor=white" alt="Thymeleaf">
-<img src="https://img.shields.io/badge/BootStrap-7952B3?style=for-the-badge&logo=BootStrap&logoColor=white" alt="BootStrap">
-<img src="https://img.shields.io/badge/aws-293340?style=for-the-badge&logo=aws&logoColor=white" alt="aws">
-<img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=white" alt="Jenkins">
-<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="docker">
-<img src="https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="oracle">
-
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white" alt="java">
+    <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="springboot">
+    <img src="https://img.shields.io/badge/Thymeleaf.js-005F0F?style=for-the-badge&logo=Thymeleaf&logoColor=white" alt="Thymeleaf">
+    <img src="https://img.shields.io/badge/BootStrap-7952B3?style=for-the-badge&logo=BootStrap&logoColor=white" alt="BootStrap">
+    <img src="https://img.shields.io/badge/aws-293340?style=for-the-badge&logo=aws&logoColor=white" alt="aws">
+    <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=white" alt="Jenkins">
+    <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="docker">
+    <img src="https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="oracle">
+</div>
 
 ## 📅 개발기간
 > 전체일정 : 25.11.14 ~ 25.12.26
 
-|    구분    |      기간       |  활동  |               비고               |
-|:--------------------:|:-------------:|:----:|:------------------------------:|
-| &nbsp; &nbsp;사전 기획 &nbsp; &nbsp;| 11.14 ~ 11.17 |   프로젝트 기획, 요구사항 분석   |            요구사항정의서             |
-| &nbsp; &nbsp;화면 설계  &nbsp; &nbsp;  | 11.18 ~ 11.19 |   화면 UIUX 설계, 업무 흐름도   |             화면설계서              |
-| &nbsp; &nbsp;DB 설계  &nbsp; &nbsp; | 11.20 ~ 11.21 |   테이블정의서, ERD 작성, 공통코드 설계서   |     ERD, 테이블정의서, 공통코드 설계서      |
-| &nbsp; &nbsp; &nbsp;개발  &nbsp; &nbsp; &nbsp; | 11.24 ~ 12.12 |   화면구현, 기능구현   | 프로그램 목록, 간트차트, 개발일지, 단위테스트 명세서 |
-|   테스트    | 12.17 ~ 12.22 |   초기배포, 통합테스트, 결함 기록 및 수정   | 통합테스트 시나리오, 결함대장 |
-|    배포    | 12.23 |   최종 빌드 배포, 운영환경 적용   | 완료보고서 |
+|  구분   |      기간       |  활동  |               비고               |
+|:-----:|:-------------:|:----:|:------------------------------:|
+| 사전 기획 | `11.14 ~ 11.17` |   `프로젝트 기획`, `요구사항 분석`   |            `요구사항정의서`             |
+| 화면 설계 | `11.18 ~ 11.19` |   `화면 UIUX 설계`, `업무 흐름도`   |             `화면설계서`              |
+| DB 설계 | `11.20 ~ 11.21` |   `테이블정의서`, `ERD 작성`, `공통코드 설계서`   |     `ERD`, `테이블정의서`, `공통코드 설계서`      |
+|  개발   | `11.24 ~ 12.12` |   `화면구현`, `기능구현`   | `프로그램 목록`, `간트차트`, `개발일지`, `단위테스트 명세서` |
+|  테스트  | `12.17 ~ 12.22` |   `초기배포`, `통합테스트`, `결함 기록 및 수정`   | `통합테스트 시나리오`, `결함대장` |
+|  배포   | `12.23` |   `최종 빌드 배포`, `운영환경 적용`   | `완료보고서` |
 
 ## 💭 느낀점
 - ERP라는 도메인에 대해 좀 더 깊게 공부해 볼 수 있는 시간이 되었음
