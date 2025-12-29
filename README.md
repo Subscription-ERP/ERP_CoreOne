@@ -1,4 +1,4 @@
-# 🖥️ 구독형 ERP README
+# 🖥️ 구독형 ERP CoreONE
 
 <img width="100%" alt="Image" src="image/main.png" />
 
