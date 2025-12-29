@@ -31,6 +31,18 @@
                         </div>
                     </div>
 
+                    <!-- 발주일자 (시작일 ~ 종료일) -->
+                    <div class="col-12 col-md-3">
+                        <div class="field-inline">
+                            <label class="field-inline__label">발주일자</label>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <input type="date" id="inordDateFrom" class="form-control input-base" style="flex: 1; min-width: 0" />
+                                <span>~</span>
+                                <input type="date" id="inordDateTo" class="form-control input-base" style="flex: 1; min-width: 0" />
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 조회 버튼 -->
                     <div class="col-12 col-md-2 ms-auto text-end">
                         <button id="btnSearch" type="button" class="btn btn-color btn-outer">
@@ -48,18 +60,18 @@
                 <!-- 탭 -->
                 <ul class="nav nav-tabs ui-tabs" id="empTabs">
                     <li class="nav-item">
-                        <button class="nav-link active tab-btn" type="button" data-tab="notdone" data-status="NOT_DONE">미출고/부분출고</button>
+                        <button class="nav-link active tab-btn" type="button" data-tab="notdone" data-status="NOT_DONE">미입고/부분입고</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link tab-btn" type="button" data-tab="done" data-status="DONE">
-                            출고완료</button>
+                            입고완료</button>
                     </li>
                 </ul>
 
                 <!-- 우측 액션 -->
                 <div class="toolbar">
                     <button id="btnOutPut" type="button" class="btn btn-color btn-inner">
-                        출고
+                        입고
                     </button>
                 </div>
             </header>
@@ -74,6 +86,6 @@
     <div id="toastContainer" class="rc-toast"></div>
 
     <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/sd/inordComplete.js}"></script>
+    <script th:src="@{/js/sd/outordComplete.js}"></script>
 </body>
 </html>
