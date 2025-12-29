@@ -8,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/modal/custModal.css}">
     <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.min.css">
     <script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
+    <link rel="stylesheet" href="../../static/css/general.css">
 </head>
 
 <body th:fragment="skuModal">
@@ -34,14 +35,22 @@
 
                 <div class="modal-history__field col-auto">
 
-                    <span class="modal-history__label" style="width: 70px">품번</span>
+                    <span class="modal-history__label" style="width: 80px">품번</span>
                     <span class="modal-history__value" style="width: 150px; padding: 0;">
-                        <input type="text" id="schSkuCode" class="form-control input-base">
+                        <label for="schSkuCode" hidden="hidden"></label>
+                        <input type="text" id="schSkuCode" class="form-control input-base"
+                               style="width:100%; height: 34px; padding: 0 8px; display: block;
+                               border: none; border-radius: 0 !important; box-shadow: none;
+                               box-sizing: border-box;">
                     </span>
 
-                    <span class="modal-history__label" style="width: 70px">품명</span>
+                    <span class="modal-history__label" style="width: 80px">품명</span>
                     <span class="modal-history__value" style="width: 150px; padding: 0;">
-                        <input type="text" id="schSkuName" class="form-control input-base">
+                        <label for="schSkuName" hidden="hidden"></label>
+                        <input type="text" id="schSkuName" class="form-control input-base"
+                               style="width:100%; height: 34px; padding: 0 8px; display: block;
+                               border: none; border-radius: 0 !important; box-shadow: none;
+                               box-sizing: border-box;">
                     </span>
 
                 </div>
